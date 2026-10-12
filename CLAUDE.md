@@ -2,10 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Status
-
-Only a README and an empty `docs/` folder exist. No code, build, lint, or test commands yet. When the stack is chosen, add the commands (including single-test) and the architecture here.
-
 ## Mandatory skills
 
 Every developer must have these installed. Using them in every session is required, not optional:
