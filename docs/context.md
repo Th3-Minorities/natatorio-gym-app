@@ -1,8 +1,8 @@
 # Project Context
 
-Last updated: 2026-10-11
+Last updated: 2026-10-14
 
-The proposal (`docs/capstone_proposal/main.tex`) is the current baseline until further notice. This document says what changes it and why. The requirements are in `docs/requirements/SRS.md` and the open questions in `docs/decisions.md`. `docs/capstone_proposal/v0/` is frozen: changes to the proposal go in a new version.
+The proposal (`docs/capstone_proposal/main.tex`) is the current baseline until further notice. This document says what changes it and why. The requirements are in `docs/requirements/SRS.md` and the open questions in `docs/decisions/` (`cti.md`, `gym.md`, `team.md`). `docs/capstone_proposal/v0/` is frozen: changes to the proposal go in a new version.
 
 Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation), **Pending** (information is missing).
 
@@ -11,14 +11,25 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 | Topic | Proposal | Now | Why |
 |---|---|---|---|
 | Stack | React, TypeScript and Vite on Vercel; Supabase for Auth, PostgreSQL, Edge Functions, Storage and Realtime (`main.tex:348-350`) | Same PWA; Laravel backend; PostgreSQL in a container; everything in `docker-compose` | Something CTI can host in December, with no external services holding student data and at the lowest cost (section 2) |
-| Real time | Optional real-time updates (`main.tex:350`) | Periodic polling every 20 to 30 s (Proposed) | Occupancy only changes with a Check In or an expiration. SSE did not work through the tunnel |
+| Real time | Optional real-time updates (`main.tex:350`) | Polling every 20 to 30 s first. Live updates (SSE or WebSockets) later, only if CTI allows them and time remains. The Objective 3 test compares values after each screen updates (Decided, Q&A 2026-10-13) | Occupancy only changes with a Check In or an expiration. SSE did not work through the tunnel and was not tested on the CTI VM |
 | Login | Supabase Auth with JWT; "institutional login" (`main.tex:120, 350`) | Own accounts with Sanctum and Fortify (Proposed). No SAML | Some paid members have no institutional email |
 | Hosting | Vercel and Supabase on free plans, only for the demo (`main.tex:348, 468`) | `docker-compose` on each member's PC in development and on a CTI VM in production; UPRM subdomain | What is tested is what runs in December |
 | Language | Not stated | Spanish by default, button to switch everything to English; texts in translation files from the start | Requested after the proposal |
-| Paid member registration | Authorization Number; "email" without saying which one (`main.tex:204`) | Authorization Number; the account email is the WooCommerce payment email | Some members have no institutional email |
-| Athlete registration | Student number in the roster and confirm the institutional email (`main.tex:206`) | Same, and the account is created after opening a link sent to the roster email | The student number is not secret |
-| Staff and roster | The Administrator maintains the roster (`main.tex:206, 218`) | Only designated Staff, with a separate permission, digitize and change the roster each semester. A record entered this way is preapproved. Who designates: Pending | Some of the department staff are Staff and already do this work with the lists each semester |
-| Demo and real data | Final integrated prototype; free plans for the demo | Demo in December before professors, with the project "complete" (what it means: Pending). Real WooCommerce data only to test the integration; fake data in development | Less student data on the team's PCs |
+| Paid member registration | Authorization Number; "email" without saying which one (`main.tex:204`) | Authorization Number only. The system shows the payment email masked and creates the account at that moment. The account email is always the WooCommerce payment email. No email verification. Protections: lookup limits per IP and in total, the same message for invalid and claimed numbers with a contact number, release of a mistaken claim by PIN holders, recovery by the owner with the password reset | Some members have no institutional email. The Authorization Number reaches the payer by email, which serves as the check. A 6-digit number can be guessed, so lookups need limits. Whether it is unique across orders is not verified |
+| Athlete registration | Student number in the roster and confirm the institutional email (`main.tex:206`) | Same, and the account is created after opening a link sent to the roster email. An athlete not in the roster gets a clear message and a contact number. If CTI has no outgoing mail, Staff (no PIN needed) register in person athletes already in the roster; a person not in the roster waits until a PIN holder adds them | The student number is not secret: someone could claim another athlete's number first. An earlier idea of setting the password right away was dropped for this reason. A clear message helps athletes who were left off the list |
+| Gym roles and roster | Separate User, Staff and Administrator roles; the Administrator maintains the roster (`main.tex:175-177, 206, 218`) | One shared gym account. Without the PIN (Staff) it sees sessions, verifies Gym IDs, does assisted Check In and corrections. With the PIN (Administrator) it manages the roster, terms, imports, schedules, notices, information, analytics and the PIN. No designated roster Staff and no review step | Team decision (Q&A 2026-10-13). One PIN known only to the administration protects sensitive actions. The audit log replaces a review of roster entries |
+| Demo and real data | Final integrated prototype; free plans for the demo | Demo in December before professors. "Complete" means all 5 objectives, without Stretch: roster, permissions, schedules, closures and analytics are committed; the roster tool and the Install button move to the MVP. Real WooCommerce data only to test the integration; fake data in development | Objectives 4 and 5 test items the scope table called Secondary; the team chose to meet every objective. Less student data on the team's PCs |
+| Refunds | Re-import handles corrected, refunded or cancelled orders (`main.tex:371`); risk criterion names them (`main.tex:456`) | No refunds or cancellations. Memberships only expire at the end of the term. The import only handles new and corrected orders. REQ-F-27 removed | The gym does not refund memberships. v1 of the proposal must drop refunds and cancellations from `main.tex:371` and from the criterion in `main.tex:456` |
+| Athletes-only periods | Not stated | PIN holders mark schedule slots as athletes only. Paid members cannot Check In then and see a notice. When a User does Check In or has an active session and an athletes-only period starts within that 60-minute session, the app shows the start time of the period. The session is never cut. No separate lead-time setting | The gym has periods for athletes (team note), and members need to know before they try to Check In |
+| Athletes and time | 60-minute session for everyone (`main.tex:365`) | Same session for counting. Athletes have no time limit in the gym and can see their account | Team decision (Q&A 2026-10-13). Occupancy needs one counting rule for everyone |
+| Type change and renewal | One account across types (`main.tex:202, 356`) | Renewal and type change happen inside the existing account: a new Authorization Number with the same payment email attaches to it; "I am an athlete" links a roster record. The account email does not change | One account and one history per person, with no staff merging |
+| Safety records | Waivers, emergency contacts, documents and medical warnings, if the gym needs them (`main.tex:220`) | Waiver acceptance with full name, email and emergency contact (name and phone). No street address, documents or medical warnings. Staff see it from the Staff dashboard | Least sensitive data that covers an emergency |
+| Session security | Not stated | 10 failed sign-in attempts, then a growing wait. No inactivity timeout: the session lasts until sign out or sign in on another device. The one-device rule applies only to Users | A timeout could sign a user out between Check In and the front desk. The gym account is shared, so the one-device rule does not fit it |
+| Account deletion | Not stated | The user requests it from the app, only without an active authorization. Personal data and photos are deleted; anonymous Check In counts stay | Less personal data kept, and analytics keep working |
+| Audit log | Records Staff actor and time (`main.tex:212, 513`) | Records account, time, IP address, device and browser, and values before and after, for corrections, assisted Check In, roster, terms, schedules, imports and PIN changes. Each entry is kept until the end of the semester in which it happened (Decided, 2026-10-14). Only PIN holders see it | With one shared account the log cannot name a person; time and IP let the gym cross-check the shift schedule if someone misused the account |
+| Analytics | The Administrator reviews utilization analytics (`main.tex:220`, Objective 5 in `main.tex:184-190`) | Facility statistics (peak hours, use by day and hour, occupancy over time, average and maximum occupancy, paid members versus athletes, distinct people) open to every signed-in role, with aggregated counts only and no names. Not behind the PIN. Other metrics set in design | Team decision (Q&A 2026-10-14). The counts hold no personal data, and users can plan when to go. v1 of the proposal must change who sees analytics |
+| PIN session | Not stated | The PIN stays active until 15 minutes of inactivity; a warning appears after 10 minutes; the warning says the PIN closes in 5 minutes | Team decision (Q&A 2026-10-14) |
+| Session corrections | "Permitted corrections" not defined (`main.tex:210`) | End early and void. A void keeps the record but stops counting | Fixes mistakes without losing the trail |
 
 ## 2. Stack decisions and why
 
@@ -30,24 +41,24 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 | Backend | Laravel (PHP 8.3 or higher) | Decided |
 | Database | PostgreSQL in a container | Decided |
 | Single active session per user | PostgreSQL exclusion constraint on the session time range (`btree_gist` extension), written in SQL inside the migrations. Authorization Number and roster claims use UNIQUE constraints | Decided |
-| Login | Sanctum (cookies for the SPA) and Fortify (registration, password recovery, email verification) | Proposed |
-| Single active device | On sign in, the user's other sessions are deleted, or `current_session_id` is stored on the user and a middleware checks it. Chosen during implementation. Whether it applies to Staff and Administrator: Pending | Decided |
-| Permissions | Laravel Policies plus database constraints (replaces RLS) | Proposed |
-| Photos and documents | Private disk on a volume | Proposed |
-| On-screen occupancy | Periodic polling every 20 to 30 seconds | Proposed, needs confirmation |
+| Login | Sanctum (cookies for the SPA) and Fortify (registration, password recovery, email link for athletes, attempt limits) | Proposed |
+| Single active device | On sign in, the user's other sessions are deleted, or `current_session_id` is stored on the user and a middleware checks it. Chosen during implementation. Applies only to Users, not to the gym account | Decided |
+| Permissions | One shared gym account; Administrator actions need a PIN, stored hashed, with limited attempts. Laravel Policies plus database constraints (replaces RLS) | Decided (PIN model); Proposed (Policies) |
+| Photos | Private disk on a volume. JPEG, PNG or HEIC up to 10 MB, converted to JPEG without location metadata | Proposed (storage); Decided (types and size) |
+| On-screen occupancy | Periodic polling every 20 to 30 seconds; live updates later if possible | Decided |
 | Session expiration (60 min) | Calculated on the server when queried. Scheduled task for cleanup | Proposed |
-| External authentication (SAML) | Not used. Own accounts. The account email is the one already in the record: the WooCommerce payment email for paid members and the institutional email from the roster for athletes | Decided. Whether the paid member's email is verified and how: Pending |
-| Supabase | Out of the plan. Only reconsidered if CTI does not provide a VM or does not allow containers | Proposed (confirmation is still open) |
-| Athlete registration | Student number looked up in the roster, confirm the institutional email, password and photo. The account is created only after opening the link sent to the email in the record | Decided. Same response whether or not it is in the roster: Proposed |
+| External authentication (SAML) | Not used. Own accounts. The account email is the one already in the record: the WooCommerce payment email for paid members and the institutional email from the roster for athletes | Decided. The paid member's email is not verified |
+| Supabase and Vercel | Out of the plan. CTI services only | Decided (Q&A 2026-10-13) |
+| Athlete registration | Student number looked up in the roster, confirm the institutional email, password and photo. The account is created only after opening the link sent to the email in the record. Athletes not in the roster get a clear message | Decided |
 | Containers | `docker-compose`: proxy (nginx or Caddy), PHP, PostgreSQL, scheduled tasks, and in development a fake mail server | Decided |
 | Single origin | The PWA at `/` and the API at `/api` under the same domain name | Proposed |
 | Domain | Provided by UPRM | Decided |
 | Development | On each member's PC with Docker Desktop. Phone tests through a tunnel | Decided |
 | Production | CTI VM, to be requested now | Decided |
-| Mail in production | CTI SMTP or relay if it exists. If not, an external provider only with approval, because student emails and names go through a third party. In development: fake mail server | Pending |
+| Mail in production | CTI SMTP or relay. Needed for athlete registration and password reset. If CTI has none, Staff (no PIN needed) register in person athletes already in the roster, and there is no password reset. An external provider was not chosen. In development: fake mail server | Pending (CTI) |
 | Where data is stored | Section 7 | Pending |
 | API contract | Documented with OpenAPI, and API tests that do not depend on the framework | Proposed |
-| Who looks after the system | Defined later | Pending |
+| Who looks after the system | Asked to the gym (gym.md, G-01) | Pending |
 | Budget | Minimum cost for the gym. Rely on CTI where possible | Decided |
 
 Reasons:
@@ -59,7 +70,8 @@ Reasons:
 - **Supabase out.** If the backend and PostgreSQL run in the containers, Supabase does not add what is needed. It adds an external dependency, student data outside UPRM, and the free plan pauses after a week without use. Auth, RLS, Storage, Realtime and Edge Functions have a direct replacement in Laravel.
 - **Vercel out.** With the PWA on Vercel and the API somewhere else, the browser sees two sites and cookie login stops being reliable. The free plan is only for personal non-commercial use. It is an external service with student data that CTI has not approved, and one more piece to look after when the PWA is static files that nginx serves just as well. Automatic previews per PR are lost; they are replaced with a tunnel. Reconsidered only if the VM is delayed and something public is needed.
 - **Cookies and a single origin.** No CORS and no cross-domain cookies. Sanctum advises against tokens for a first-party SPA. The cookie must not declare the domain of all of UPRM, so other `uprm.edu` applications cannot read it.
-- **Periodic polling.** Occupancy is an estimate that only changes with a Check In or an expiration. A delay of 20 to 30 seconds does not change any decision. It can be replaced later without touching the rest. The test that requires the same value on all interfaces (`main.tex:166`) must be measured after an update.
+- **Periodic polling.** Occupancy is an estimate that only changes with a Check In or an expiration. A delay of 20 to 30 seconds does not change any decision. It can be replaced later without touching the rest. The test that requires the same value on all interfaces (`main.tex:166`) is measured after each screen updates.
+- **One gym account with a PIN.** Per-person gym accounts add sign-ins and account management the gym does not do today. A PIN keeps sensitive actions away from the front desk. The cost: the audit log cannot name a person, so the gym checks the shift schedule using the time and IP address.
 
 Migrating between Laravel and Node (reasoned estimate, not measured): the frontend does not change if the API contract stays the same; the database does not change if the critical rules are in SQL; the backend is rewritten (login, Check In, WooCommerce import, roles and scheduled tasks).
 
@@ -119,7 +131,7 @@ flowchart LR
 
     subgraph DATA["Database"]
       D1[("PostgreSQL")]
-      D2["Private volume<br/>photos and documents"]
+      D2["Private volume<br/>photos"]
     end
   end
 
@@ -152,9 +164,9 @@ Verified:
 We do not know:
 
 - Whether gym data (student number, athlete status, photo, Check Ins) counts as an education record. UPRM decides.
-- Whether another law applies to emergency contacts and medical notices. They are sensitive data even if they do not fall under FERPA.
+- Whether another law applies to emergency contacts. They are sensitive data even if they do not fall under FERPA.
 
-Already in the design: Staff see only the essentials, there is an audit log and photos are private.
+Already in the design: Staff see only the essentials, there is an audit log and photos are private. No street address, documents or medical warnings are stored. IP addresses in the audit log are personal data.
 
 Missing: confirm with the Registrar's Office or with CTI whether the gym is covered; a privacy notice in Spanish and English; retention rules; do not send student data to external services without approval.
 
@@ -166,13 +178,14 @@ Options by data type. **Not decided.** The current design stores everything on t
 | Photos and documents | Private volume on the VM. CTI or UPRM storage if it exists. An external service only with approval | Does CTI offer storage? Can student photos be stored in an external service? |
 | Backups | Copy outside the VM: CTI storage, another UPRM server or an approved external service | Where can backups go? How long are they kept? |
 | Original lists and WooCommerce exports | Protected folder outside the repository. Not in OneDrive or git | Where does the department keep them today and who has access? |
-| Verification emails | CTI SMTP. An external provider only with approval | Is there SMTP and with what sender address? |
+| Athlete registration and password reset emails | CTI SMTP. An external provider was not chosen | Is there SMTP and with what sender address? |
 
 ## 8. Not verified
 
 - That Rocky 10 uses Podman.
 - The nginx configuration for SSE.
 - Cookie behavior inside the installed PWA on iPhone.
+- Whether the Authorization Number is unique across orders. It may be a card approval code that can repeat (team.md, E-30).
 - Whether WebSockets and SSE work on ngrok.
 - Costs of a rented server.
 - Whether CTI developers maintain Laravel applications. Inferred from CTI's email.
