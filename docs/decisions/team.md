@@ -7,9 +7,10 @@
 | Section | Total | Answered | Open |
 |---|---|---|---|
 | Requirement questions | 16 | 15 | 1 |
+| Decisions from the design-readiness review | 17 | 17 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 0 | 6 |
-| Total | 27 | 15 | 12 |
+| Total | 44 | 32 | 12 |
 
 ## Scope and priorities
 
@@ -116,7 +117,7 @@
 | Field | Value |
 |---|---|
 | Question | Does the one-device rule also apply to Staff and the Administrator? A: yes. B: no, only to Users. |
-| Affects | REQ-F-03 One authenticated session per account |
+| Affects | REQ-F-03 One sign-in session per account |
 | Feature | 3.1 Accounts and Sign In |
 | Why we ask | Staff may share a front desk computer or move between a phone and a computer (gym.md, G-06). With A, signing in on one device signs them out of the other. |
 | Answer | B: only Users (paid members and athletes). The gym uses one shared gym account, and the rule does not apply to it. |
@@ -173,7 +174,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 |---|---|
 | Question | How do we make sure the classroom demo location boundary cannot reach production? For example: production refuses to start with a boundary outside the gym, or the boundary is set only on the server. |
 | Affects | REQ-NF-29 Boundary configurable per environment |
-| Feature | 6.5 Other Quality Attributes |
+| Feature | 6.4 Other Quality Attributes |
 | Why we ask | The demo runs in a classroom, not at the gym. If that boundary reaches production, users could do Check In from the classroom. |
 | Answer | Production refuses to start if the configured boundary is outside a range around the gym coordinates. The range is 50 meters. The coordinates are measured at the gym (REQ-NF-28). |
 | Answered by | Carlos Pepin |
@@ -184,8 +185,8 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Field | Value |
 |---|---|
 | Question | Who tests on real phones, and with which ones? 1: location accuracy at the gym, on iPhone with Safari and Android with Chrome. 2: login cookies inside the installed PWA on iPhone. Which member has an iPhone? |
-| Affects | REQ-NF-28 Location boundary set with tests; REQ-F-03 One authenticated session per account; REQ-F-66 Install button and iPhone help; REQ-NF-43 Location and PWA tested on phones |
-| Feature | 6.5 Other Quality Attributes, 3.14 PWA Installation, 8.2 Testing |
+| Affects | REQ-NF-28 Location boundary set with tests; REQ-F-03 One sign-in session per account; REQ-F-66 Install button and iPhone help; REQ-NF-43 Location and PWA tested on phones |
+| Feature | 6.4 Other Quality Attributes, 3.14 PWA Installation, 8.2 Testing |
 | Why we ask | Tests so far used only a Samsung phone at home. Cookie behavior inside the installed PWA on iPhone is not verified. Gym access for the tests is asked in gym.md, G-08. |
 | Answer | Closed: not a requirement. All three members can test on iPhone, Android, Mac and other computers, and the team can test inside and around the gym whenever it wants. The cookie test inside the installed PWA on iPhone is still to be done. |
 | Answered by | Carlos Pepin |
@@ -214,6 +215,28 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Answer | B, with 12-hour time: ISO date plus 12-hour time with AM/PM, the same in Spanish and English. Example: `2026-10-13 3:05 PM`. |
 | Answered by | Carlos Pepin |
 | Date | 2026-10-13 |
+
+## Decisions from the design-readiness review (2026-10-14)
+
+| ID | Topic | Answer | Answered by | Date |
+|---|---|---|---|---|
+| E-31 | PIN scope | An entered PIN is active only in the browser or device where it was typed, not for the whole gym account. SRS REQ-NF-48, 3.10. | Carlos Pepin | 2026-10-14 |
+| E-32 | PIN inactivity | Only a tap or key press by a person counts as activity. Automatic polling does not. SRS REQ-NF-48. | Carlos Pepin | 2026-10-14 |
+| E-33 | Gym ID lookup | Staff verify a Gym ID by searching the person by name in the active sessions list and comparing the photo. The Gym ID has no code or QR. SRS REQ-F-45. | Carlos Pepin | 2026-10-14 |
+| E-34 | Order to term | An order belongs to the term that contains its payment date. Assumed: the store only sells memberships while a term runs; no summer membership unless a summer term is configured (gym.md, G-26). Orders dated outside every term are rejected and listed in the import result. SRS REQ-F-22, REQ-F-29. | Carlos Pepin | 2026-10-14 |
+| E-35 | Manual authorization | PIN holders can grant an authorization by hand to an existing account, until the end of a chosen term, and revoke one, for order errors. Proposed: a reason is required, and the action is logged with time, IP and reason. SRS REQ-F-87. | Carlos Pepin | 2026-10-14 |
+| E-36 | Check In while closed | Check In is rejected, with a notice, when the gym is closed by its published schedule or a published closure. SRS REQ-F-33, REQ-F-35, REQ-F-55. | Carlos Pepin | 2026-10-14 |
+| E-37 | Waiver | Accepted once, when the account is created, and valid while the account exists. Not repeated each term or when the text changes. Without it the account is not created. Proposed: the User can edit the emergency contact at any time; Staff see the current value. SRS REQ-F-60. | Carlos Pepin | 2026-10-14 |
+| E-38 | Athlete photo per term | The first time an athlete signs in during a new term, the app asks for the new photo before Check In is allowed. SRS REQ-F-25, REQ-F-26. | Carlos Pepin | 2026-10-14 |
+| E-39 | After 60 minutes | Paid member: the Gym ID shows "expired" with text and icon; nobody has to leave. Athlete: the Gym ID does not expire while the term authorization is active; Staff verify against the roster. Occupancy undercounts athletes who stay longer. SRS REQ-F-38, REQ-F-40, REQ-F-41, REQ-F-81. | Carlos Pepin | 2026-10-14 |
+| E-40 | Gym account creation | The team creates the gym account, its password and the first PIN once with a server install command and gives them to the Administrator. The Administrator then changes both from the app using the current PIN. Changing the password withdraws access when an employee leaves. SRS 2.2, REQ-NF-48. | Carlos Pepin | 2026-10-14 |
+| E-41 | Athlete registration flows | Only the email-link flow (REQ-F-15) is built. The in-person flow (REQ-F-77) is built only if CTI confirms there is no outgoing mail. | Carlos Pepin | 2026-10-14 |
+| E-42 | Demo environment | The December demo runs in a separate environment with the classroom boundary. Production never carries it. The 50 meter rule stays. SRS REQ-NF-29. | Carlos Pepin | 2026-10-14 |
+| E-43 | Registration photo failure | The account and the claim are saved together in one operation only after the photo is saved. If the photo fails nothing is claimed. The Authorization Number is checked and the masked email shown as soon as it is typed. SRS REQ-F-13. | Carlos Pepin | 2026-10-14 |
+| E-44 | Athlete removed mid-term | The Gym ID stops being valid at once; the athlete counts in occupancy until the current session ends; no new Check In. SRS REQ-F-49, REQ-F-22. | Carlos Pepin | 2026-10-14 |
+| E-45 | Import undo | Any import can be undone at any time. Undo deletes its membership records and dependent authorizations. Accounts and photos stay; people claim again with the corrected file (Proposed). Logged. SRS REQ-F-31. | Carlos Pepin | 2026-10-14 |
+| E-46 | Audit log and deleted users | Entries that mention a deleted user stay intact until the end of their term, then follow the normal retention rule. The distinct people count (REQ-F-86) does not change. SRS REQ-F-09, REQ-NF-05, REQ-NF-39. | Carlos Pepin | 2026-10-14 |
+| E-47 | Terminology | Use "term" instead of "semester" except in quotes from the proposal. "Sign-in session" is the login session; "facility session" or "session" is the 60-minute gym session. SRS 1.2. | Carlos Pepin | 2026-10-14 |
 
 ## Questions for the professor or advisors
 

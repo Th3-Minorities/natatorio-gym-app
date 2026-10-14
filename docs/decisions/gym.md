@@ -16,9 +16,9 @@
 
 | Field | Value |
 |---|---|
-| Question | After December, who at the gym looks after the system: creates Staff accounts, assigns roles, helps users with problems, and calls for help if it fails? |
+| Question | After December, who at the gym looks after the system: holds the PIN and the gym account password, changes them when an employee leaves, helps users with problems, and calls for help if it fails? |
 | Affects | REQ-NF-23 No routine developer access to safety data; REQ-NF-31 Uptime target and manual procedure |
-| Feature | 2.5 Assumptions and Dependencies, 6.5 Other Quality Attributes |
+| Feature | 2.5 Assumptions and Dependencies, 6.4 Other Quality Attributes |
 | Why we ask | CTI does not manage the server or the application, and CTI will ask about this during the VM evaluation. If nobody is named, the team would run it, which conflicts with REQ-NF-23. |
 | Answer | Partly answered. Gym administration actions now need the PIN of the one shared gym account, so whoever holds the PIN runs them (see G-29). Who looks after the system after December, helps users and calls for help if it fails: unknown, the gym answers. |
 | Answered by | Carlos Pepin (team), gym to confirm |
@@ -32,7 +32,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 |---|---|
 | Question | If the system stops working, what do staff do? A: go back to the paper log and the manual payment check. B: another procedure (describe it). How long can it be down before it causes a real problem? |
 | Affects | REQ-NF-31 Uptime target and manual procedure |
-| Feature | 6.5 Other Quality Attributes |
+| Feature | 6.4 Other Quality Attributes |
 | Why we ask | There is no offline Check In. REQ-NF-31 needs both a backup procedure and an uptime target. |
 | Answer | Partly answered. The team does not know what staff do if the system fails or how long downtime is tolerable. The gym answers both. |
 | Answered by | Carlos Pepin (team), gym to confirm |
@@ -42,7 +42,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 
 | Field | Value |
 |---|---|
-| Question | Which devices do front desk staff use? A: their own phones. B: a gym computer at the front desk. C: both. If there is a computer, do several Staff members share it? |
+| Question | Which devices do front desk staff use? A: their own phones. B: a gym computer at the front desk. C: both. If there is a computer, do several staff members share it? |
 | Affects | REQ-F-44 Staff see active sessions |
 | Feature | 2.3 Operating Environment, 3.8 Staff Operations |
 | Why we ask | The Staff screens are designed for these devices. A shared computer affects whether the one-device rule fits Staff (team.md, E-13). |
@@ -54,7 +54,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 
 | Field | Value |
 |---|---|
-| Question | About how many members are active each semester (paid members and athletes)? About how many people arrive in the busiest hour? |
+| Question | About how many members are active each term (paid members and athletes)? About how many people arrive in the busiest hour? |
 | Affects | REQ-NF-15 Serve about 150 people per day |
 | Feature | 6.2 Performance |
 | Why we ask | The proposal estimates 150 people per day. The busiest hour sets how many Check Ins at once we test. |
@@ -128,11 +128,11 @@ Also asked in cti.md, if CTI manages the store.
 
 ## Terms and athlete roster
 
-### G-18: Semester dates
+### G-18: Term dates
 
 | Field | Value |
 |---|---|
-| Question | Who provides the start and end dates of each semester, and who enters them in the system? A: the dates come from the UPRM academic calendar and the Administrator enters them. B: the gym sets its own dates. |
+| Question | Who provides the start and end dates of each term, and who enters them in the system? A: the dates come from the UPRM academic calendar and the Administrator enters them. B: the gym sets its own dates. |
 | Affects | REQ-F-21 Administrator edits academic terms; REQ-F-22 Authorization expires at term end |
 | Feature | 3.4 Authorization, Academic Terms and Renewal |
 | Why we ask | Every authorization expires at the end of its term. A wrong date gives or removes access for everyone at once. |
@@ -152,11 +152,11 @@ Also asked in cti.md, if CTI manages the store.
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
-### G-13: Who names the roster Staff
+### G-13: Who names the roster Staff (closed: no roster Staff)
 
 | Field | Value |
 |---|---|
-| Question | Who decides which Staff members get the roster permission? A: the Administrator, in the system. B: the department names them and the Administrator grants the permission. |
+| Question | (Closed: there is no roster permission; see Answer.) Who decides which Staff members get the roster permission? A: the Administrator, in the system. B: the department names them and the Administrator grants the permission. |
 | Affects | REQ-F-53 Only PIN holders change the PIN; REQ-F-49 Only PIN holders change the roster |
 | Feature | 3.10 Gym Account, PIN and Permissions, 3.9 Athlete Roster |
 | Why we ask | Only Staff with this permission can change the roster. REQ-F-53 stays Pending until we know who grants it. |
@@ -168,7 +168,7 @@ Also asked in cti.md, if CTI manages the store.
 
 | Field | Value |
 |---|---|
-| Question | Should the Administrator also be able to add, change or remove athletes? A: yes, together with the roster Staff. B: no, only the roster Staff. |
+| Question | Should the Administrator also be able to add, change or remove athletes? A: yes, together with the roster Staff. B: no, only the roster Staff. (Closed: the roster Staff role no longer exists; see Answer.) |
 | Affects | REQ-F-54 Administrator manages athlete authorizations (now Removed) |
 | Feature | 3.10 Gym Account, PIN and Permissions |
 | Why we ask | The proposal gave this task to the Administrator; now designated Staff do it. The gym knows how the work is split. With B, REQ-F-54 is removed and the team rewrites the Objective 4 test. |
@@ -180,11 +180,11 @@ Also asked in cti.md, if CTI manages the store.
 
 | Field | Value |
 |---|---|
-| Question | Records entered by roster Staff are approved right away. Does the gym want a check of what they entered? A: no. B: a report each semester. C: another kind of review (describe it). |
+| Question | Records entered by roster Staff (a role that no longer exists) are approved right away. Does the gym want a check of what they entered? A: no. B: a report each term. C: another kind of review (describe it). |
 | Affects | REQ-F-50 Roster entries are preapproved (now Removed) |
 | Feature | 3.9 Athlete Roster |
 | Why we ask | With B or C, the team adds a report or review step to REQ-F-50. |
-| Answer | Replaced by the audit log. Every roster change is recorded with time, IP address, device and the values before and after. Whether the gym also wants a semester report is asked in G-30. |
+| Answer | Replaced by the audit log. Every roster change is recorded with time, IP address, device and the values before and after. Whether the gym also wants a term report is asked in G-30. |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
@@ -254,10 +254,10 @@ Also asked in cti.md, if CTI manages the store.
 
 | Field | Value |
 |---|---|
-| Question | Are paid memberships sold in summer? If yes, what are the start and end dates of that period? If not, is it fine that accounts stay expired between semesters? |
+| Question | The team assumes the WooCommerce store only sells memberships while a term is running (the store controls this, not the app), and that there is no summer membership unless a summer term is configured. Is that right? If memberships are sold in summer, what are the start and end dates of that period? |
 | Affects | REQ-F-21 Administrator edits academic terms; REQ-F-22 Authorization expires at term end |
 | Feature | 3.4 Authorization, Academic Terms and Renewal |
-| Why we ask | The system can hold a summer term with its own dates, but only if the gym uses one. |
+| Why we ask | An order belongs to the term that contains its payment date. An order dated outside every term is rejected by the import (REQ-F-22). Without a summer term, accounts stay expired between terms. |
 | Answer | |
 | Answered by | |
 | Date | |
@@ -274,11 +274,11 @@ Also asked in cti.md, if CTI manages the store.
 | Answered by | |
 | Date | |
 
-### G-30: Semester report of roster changes (optional)
+### G-30: Term report of roster changes (optional)
 
 | Field | Value |
 |---|---|
-| Question | Does the gym want a report each semester with the roster changes taken from the audit log? A: no. B: yes. |
+| Question | Does the gym want a report each term with the roster changes taken from the audit log? A: no. B: yes. |
 | Affects | REQ-NF-39 Audit log of gym actions |
 | Feature | 4.3 Reports, 8.1 Audit |
 | Why we ask | The audit log already records every roster change with time and IP address. A report is optional and adds work. |
@@ -308,7 +308,7 @@ Also asked in cti.md, if CTI manages the store.
 | Affects | REQ-NF-04 Discard photos from earlier terms; REQ-NF-05 Retention rules by data type; REQ-NF-39 Audit log of Staff actions |
 | Feature | 4.4 Data Acquisition, Integrity, Retention, and Disposal, 8.1 Audit |
 | Why we ask | The default today is to discard old photos unless UPRM requires keeping them. Without periods, the system cannot delete anything on schedule. |
-| Answer | Partly answered. Audit log: each entry is kept until the end of the semester in which it happened (decided 2026-10-14). IP addresses in the log are personal data and follow the same rule. Every other period is unknown; the gym and UPRM answer. No provisional values. |
+| Answer | Partly answered. Audit log: each entry is kept until the end of the term in which it happened (decided 2026-10-14). IP addresses in the log are personal data and follow the same rule. Every other period is unknown; the gym and UPRM answer. No provisional values. |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
@@ -372,7 +372,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 |---|---|
 | Question | Can the team test phone location inside and around the gym? On which days and at what hours? |
 | Affects | REQ-NF-28 Location boundary set with tests |
-| Feature | 6.5 Other Quality Attributes, 3.6 Check In and Facility Session |
+| Feature | 6.4 Other Quality Attributes, 3.6 Check In and Facility Session |
 | Why we ask | The Check In boundary and the accepted accuracy must be measured at the gym on iPhone and Android. Without access, these values stay unknown. |
 | Answer | Yes. The team can test inside and around the gym whenever it wants, for Capstone purposes. |
 | Answered by | Carlos Pepin (team), gym to confirm |

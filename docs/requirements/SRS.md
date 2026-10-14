@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.2 draft, not approved
+**Version:** 0.4 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -31,7 +31,8 @@
 |---|---|---|---|
 | Carlos J. Pepin Delgado | 2026-10-11 | First draft based on the proposal and the later changes | 0.1 |
 | Carlos J. Pepin Delgado | 2026-10-13 | Applied the team answers from the Q&A of 2026-10-13: scope and final priority, registration flows, one gym account with a PIN, no refunds, athletes-only periods, waiver, audit log, quality targets | 0.2 |
-| Carlos J. Pepin Delgado | 2026-10-14 | Follow-up answers: audit log retention and photo comparison confirmed, in-person athlete registration by Staff, PIN session timeout, athletes-only notice within the session, analytics open to all roles | 0.2 |
+| Carlos J. Pepin Delgado | 2026-10-14 | Follow-up answers: audit log retention and photo comparison confirmed, in-person athlete registration by Staff, PIN session timeout, athletes-only notice within the session, analytics open to all roles | 0.3 |
+| Carlos J. Pepin Delgado | 2026-10-14 | Design-readiness review decisions: PIN scope and activity, Gym ID lookup, order to term, manual authorization, Check In only while open, waiver once, athlete photo per term, Gym ID after 60 minutes, gym account setup, registration flows, demo environment, atomic registration, roster removal, import undo, deleted users in the audit log, terminology | 0.4 |
 
 ## 1. Introduction
 
@@ -50,6 +51,7 @@ The baseline is the proposal (`docs/capstone_proposal/main.tex`), in force until
   - **Status:** **Clear** (can be built and tested with what is known), **Pending** (information is missing; the field says what is missing and who answers) or **Removed** (kept only so the ID is not reused).
   - **Source:** `main.tex:N` (proposal line); **Team** (team decision, in `context.md`); **Later change** (requested after the proposal, in `context.md`); **Review** (came from the requirements review after the proposal). "Q&A 2026-10-13" marks what the team answered on that date.
 - **Proposed:** a rule the team suggests that still needs confirmation. **Interpretation:** the team's reading of a note, to be confirmed.
+- Terms used: "term" means academic term (the proposal says "semester"). "Sign-in session" is the login session on a device. "Facility session" or "session" is the 60-minute gym session.
 - TBD: missing information. The "Summary of Open Items" section collects every TBD.
 
 ### 1.3 Project Scope
@@ -59,6 +61,14 @@ The system is a PWA for the Weight Gym in the UPRM Natatorio Complex. It replace
 Out of scope (`main.tex:116, 328`): payment processing (stays in WooCommerce), other facilities such as the pool, medical records, and capacity-based admission while UPRM has no official policy.
 
 Delivery: demo in December before professors, with the project "complete" (Later change).
+
+Stretch features, built only if the committed scope is complete and tested (`main.tex:295, 307`). They have no design yet.
+
+| ID | Requirement | Final priority | Status |
+|---|---|---|---|
+| REQ-F-67 | The system shall be able to limit admission by capacity, only when UPRM has an official capacity policy. | Low | Pending: UPRM policy (gym) |
+| REQ-F-68 | The system shall be able to extend to other facilities, such as the Natatorio. | Low | Pending: rules of those facilities (gym) |
+| REQ-F-69 | The system shall be able to predict occupancy when there is enough history. | Low | Pending: how much history is enough (team) |
 
 "Complete" means all 5 objectives of the proposal (`main.tex:123-192`) are met, without Stretch (Team, Q&A 2026-10-13). So the roster tool, the gym permissions, schedules and closures, and analytics are committed. The roster tool moves up to the MVP, because athletes cannot register without it. The Install button and the iPhone help text (REQ-F-66) are also in the MVP.
 
@@ -84,22 +94,22 @@ Related systems:
 | System | Relationship |
 |---|---|
 | UPRM WooCommerce | Source of truth for payments. The system imports orders from Export Orders and does not process payments (`main.tex:369-371`) |
-| Department athlete lists | Administrators (PIN holders) digitize them each semester into the roster (Later change; Q&A 2026-10-13) |
+| Department athlete lists | Administrators (PIN holders) digitize them each term into the roster (Later change; Q&A 2026-10-13) |
 | User's browser | Provides location through the Geolocation API (`main.tex:499-503`) |
-| Outgoing mail server | Sends athlete registration links and password reset links. TBD whether CTI offers it in production (see 5.4) |
+| Outgoing mail server | Sends athlete registration links and password reset links. TBD whether CTI offers it in production (see 5.3) |
 | CTI VM | Hosts the system in production (Team) |
 
 ### 2.2 User Classes and Characteristics
 
 | Class | Who | What they do |
 |---|---|---|
-| User, paid member | Person with a semester membership paid in WooCommerce. Some have no institutional email (Team) | Creates an account, does Check In, shows the Gym ID, sees occupancy and facility information |
-| User, athlete | Student on the athlete roster for the semester. Does not buy a membership (`main.tex:206`). Has no time limit in the gym (Q&A 2026-10-13) | Same as the paid member, and can do Check In during athletes-only periods. Paid members and athletes see the facility analytics |
+| User, paid member | Person with a term membership paid in WooCommerce. Some have no institutional email (Team) | Creates an account, does Check In, shows the Gym ID, sees occupancy and facility information |
+| User, athlete | Student on the athlete roster for the term. Does not buy a membership (`main.tex:206`). Has no time limit in the gym (Q&A 2026-10-13) | Same as the paid member, and can do Check In during athletes-only periods. Paid members and athletes see the facility analytics |
 | Staff | Gym staff, including students at the front desk (`main.tex:118`). They use the shared gym account without the PIN | See active sessions, verify Gym IDs, do Staff-assisted Check In and session corrections, see the waiver and emergency contact, register an athlete in person (only without outgoing mail), see the facility analytics |
-| Administrator | Athletic Activities administration. They use the same shared gym account and know the PIN | Everything Staff do, plus the actions that need the PIN (3.10) |
+| Administrator | Athletic Activities administration. They use the same shared gym account and know the PIN | Everything Staff do, plus the actions that need the PIN (3.10), including changing the gym account password and the PIN |
 | Developer | Project team | Outside the gym roles; no routine access to production data (`main.tex:437, 509`) |
 
-There is one shared gym account, not one account per person (Q&A 2026-10-13). "Staff" and "Administrator" are two ways of using it: without the PIN and with the PIN.
+There is one shared gym account, not one account per person (Q&A 2026-10-13). "Staff" and "Administrator" are two ways of using it: without the PIN and with the PIN. The team creates the gym account, its password and the first PIN once, with an install command on the server, and gives them to the Administrator. After that the Administrator changes the password and the PIN from the app, using the current PIN. Changing the password is also how access is withdrawn when an employee leaves (Q&A 2026-10-14).
 
 Estimated use: about 150 people per day (`main.tex:104`). Main use is from the phone (`main.tex:198`).
 
@@ -133,11 +143,12 @@ Estimated use: about 150 people per day (`main.tex:104`). Main use is from the p
 | Depends on | What is assumed | If it fails | TBD and who answers |
 |---|---|---|---|
 | CTI | Provides a VM with containers, subdomain and HTTPS | No production in December | Date, approval requirements, public IP: CTI |
-| CTI | There is outgoing mail (SMTP or relay) from the VM | No athlete registration links and no password reset (REQ-F-06, REQ-F-15). Staff register athletes already in the roster in person (REQ-F-77) | Whether it exists, sender address, SPF and DKIM: CTI. An external mail provider was not chosen |
+| CTI | There is outgoing mail (SMTP or relay) from the VM. Only the email-link athlete flow (REQ-F-15) is built | No athlete registration links and no password reset (REQ-F-06, REQ-F-15). Then, and only then, the in-person flow (REQ-F-77) is built: Staff register athletes already in the roster | Whether it exists, sender address, SPF and DKIM: CTI. An external mail provider was not chosen |
 | CTI | CTI accepts PostgreSQL | REQ-F-17, REQ-F-36 and REQ-NF-02 need another design | CTI |
 | Gym | Validates access, renewal, PIN, exception, privacy, retention and account recovery rules (`main.tex:332`) | Pending requirements cannot be closed | See Summary of Open Items |
 | Gym | Provides the athlete lists, schedules, the athletes-only periods, rules, equipment information and a contact number for people who cannot register (`main.tex:332`; Q&A 2026-10-13) | No data for the roster, schedules or the information section | Gym |
 | WooCommerce | The team keeps authorized access to Orders and Export Orders (`main.tex:369`) | No import | API access: CTI |
+| WooCommerce | The store only sells memberships while a term is running. The store controls this, not this system. There is no summer membership unless a summer term is configured (Q&A 2026-10-14) | Orders dated outside every term are rejected by the import (REQ-F-22) | Gym to confirm |
 | WooCommerce | Memberships are not refunded or cancelled. They only expire at the end of the term (Q&A 2026-10-13) | Removed REQ-F-27 would have to come back | None |
 | Professor or advisor | Accepts the stack change from the proposal | It would have to be justified or reverted | Whether approval is needed, rubric and deliverables: professor |
 | Gym and CTI | Someone looks after the system after December (gym account, PIN, support) | Nobody operates the system; if the team operates it, it conflicts with REQ-NF-23 | Gym. Not in the proposal |
@@ -150,28 +161,28 @@ Estimated use: about 150 people per day (`main.tex:104`). Main use is from the p
 
 #### 3.1.1 Description
 
-Each person has one account that lasts across semesters. The account is separate from the authorization (`main.tex:202, 355-357`). Acceptance criterion (Objective 1, `main.tex:140-144`): every case in the controlled dataset returns the expected decision.
+Each person has one account that lasts across terms. The account is separate from the authorization (`main.tex:202, 355-357`). Acceptance criterion (Objective 1, `main.tex:140-144`): every case in the controlled dataset returns the expected decision.
 
 #### 3.1.2 Stimulus/Response Sequences
 
-1. The User enters email and password. The system signs the User in and ends any other session of that account on another device.
+1. The User enters email and password. The system signs the User in and ends any other sign-in session of that account on another device.
 2. The previous device tries a protected action. The system rejects it and asks the User to sign in.
-3. The User loses or changes the phone. The User signs in on the new phone with the password, and the old session ends. If the User forgot the password, the User resets it by email (REQ-F-06).
+3. The User loses or changes the phone. The User signs in on the new phone with the password, and the old sign-in session ends. If the User forgot the password, the User resets it by email (REQ-F-06).
 4. The User has no active authorization and asks to delete the account. The system deletes the personal data and photos and keeps anonymous Check In counts.
 
 #### 3.1.3 Functional Requirements
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-01 | The system shall keep one account per person, which persists across semesters. | MVP | High | Clear | main.tex:202, 355 |
+| REQ-F-01 | The system shall keep one account per person, which persists across terms. | MVP | High | Clear | main.tex:202, 355 |
 | REQ-F-02 | The User shall be able to create their own account and sign in with email and password. The system shall not use external authentication (SAML). | MVP | High | Clear. Note: `main.tex:120` says "institutional login"; v1 of the proposal must correct it (team) | main.tex:202; Team |
-| REQ-F-03 | The system shall allow only one authenticated session per User account (paid member or athlete). Signing in on another device shall end the previous one. The rule does not apply to the gym account. The session lasts until the User signs out or signs in on another device. | MVP | High | Clear. Still to test: cookies inside the installed PWA on iPhone (team) | main.tex:202, 363; Q&A 2026-10-13 |
-| REQ-F-04 | The system shall accept protected actions only from the device of the current authenticated session. | MVP | High | Clear | main.tex:363 |
+| REQ-F-03 | The system shall allow only one sign-in session per User account (paid member or athlete). Signing in on another device shall end the previous one. The rule does not apply to the gym account. The sign-in session lasts until the User signs out or signs in on another device. | MVP | High | Clear. Still to test: cookies inside the installed PWA on iPhone (team) | main.tex:202, 363; Q&A 2026-10-13 |
+| REQ-F-04 | The system shall accept protected actions only from the device of the current sign-in session. | MVP | High | Clear | main.tex:363 |
 | REQ-F-05 | The system shall allow account recovery when the User loses or changes their phone, under the rule of REQ-F-03. | N/A | High | Clear. Covered by REQ-F-03 (sign in on the new phone) and REQ-F-06 (forgotten password). No staff process | main.tex:328, 332; Q&A 2026-10-13 |
 | REQ-F-06 | The User shall be able to reset their password on their own with a link sent to the account email. | N/A | High | Pending: requires outgoing mail in production (CTI) | Review; Q&A 2026-10-13 |
 | REQ-F-07 | The system shall limit failed sign-in attempts: after 10 failed attempts the account or IP address must wait, and the wait grows with each lockout. Attempts are counted per account and per IP address. | N/A | High | Clear. Exact waits set in design (team) | Review; Q&A 2026-10-13 |
-| REQ-F-08 | The system shall end the authenticated session after a period of inactivity. | N/A | N/A | Removed: no inactivity timeout. The session lasts until sign out or sign in on another device (REQ-F-03) | Review; Q&A 2026-10-13 |
-| REQ-F-09 | The User shall be able to request the deletion of their account from the app, only when the User has no active authorization. The system shall delete the personal data and photos and keep only anonymous Check In counts for analytics. | N/A | Medium | Clear. Retention of other data: REQ-NF-05 | Review; Q&A 2026-10-13 |
+| REQ-F-08 | The system shall end the sign-in session after a period of inactivity. | N/A | N/A | Removed: no inactivity timeout. The sign-in session lasts until sign out or sign in on another device (REQ-F-03) | Review; Q&A 2026-10-13 |
+| REQ-F-09 | The User shall be able to request the deletion of their account from the app, only when the User has no active authorization. The system shall delete the personal data and photos and keep only anonymous Check In counts for analytics. Audit log entries that mention the deleted user stay intact until the end of their term and are then deleted by the normal retention rule (REQ-NF-05). Counts of distinct people already computed (REQ-F-86) do not change. | N/A | Medium | Clear. Retention of other data: REQ-NF-05 | Review; Q&A 2026-10-13, 2026-10-14 |
 
 #### 3.1.4 Error Handling
 
@@ -191,7 +202,7 @@ The Authorization Number is the 6-digit value in the "Payment Description" of th
 #### 3.2.2 Stimulus/Response Sequences
 
 1. The User enters the Authorization Number. The system looks it up in the imported records.
-2. If it is valid and not claimed, the system shows the payment email masked (for example `c***@upr.edu`) and asks the User to create a password and upload a photo. The system creates the account with the payment email at that moment.
+2. If it is valid and not claimed, the system shows the payment email masked (for example `c***@upr.edu`) right away and asks the User to create a password and upload a photo. After the photo is saved, the system creates the account with the payment email and claims the number in one operation. If the photo fails, nothing is claimed and the number stays free.
 3. If the payment email already has an account, the system attaches the new authorization to that account and does not create a new one (renewal, REQ-F-78).
 4. If the number is not valid or is already claimed, the system shows the same message for both cases, with the contact number (REQ-F-72, REQ-F-73).
 
@@ -202,13 +213,13 @@ The Authorization Number is the 6-digit value in the "Payment Description" of th
 | REQ-F-10 | The system shall validate the Authorization Number against the local membership records imported from WooCommerce. | MVP | High | Pending: whether the Authorization Number is unique across orders. It may be a card approval code that can repeat; not verified. Confirm with a real export (team, gym) | main.tex:204, 371; Q&A 2026-10-13 |
 | REQ-F-11 | The paid member's account email shall be the payment email from the WooCommerce record. The member shall not type or change it during registration. | MVP | High | Clear | main.tex:204; Team; Q&A 2026-10-13 |
 | REQ-F-12 | The system shall verify the paid member's email before creating the account. | N/A | N/A | Removed: no email verification. The Authorization Number arrives by email to the payer, which serves as the check | Team; Q&A 2026-10-13 |
-| REQ-F-13 | On registration, the User (paid member or athlete) shall create a password and upload a current photo as a file. | MVP | High | Clear | main.tex:202, 204, 206; Q&A 2026-10-13 |
+| REQ-F-13 | On registration, the User (paid member or athlete) shall create a password and upload a current photo as a file. The system shall save the account and the claim of the Authorization Number or roster record together, in one operation, only after the photo was saved. If the photo fails, nothing is claimed and the number or record stays free. The Authorization Number is still checked as soon as it is typed, and the masked email is shown then. | MVP | High | Clear | main.tex:202, 204, 206; Q&A 2026-10-13, 2026-10-14 |
 | REQ-F-70 | During paid member registration, the system shall show the payment email of the matched record masked (for example `c***@upr.edu`). | N/A | High | Clear | Team; Q&A 2026-10-13 |
 | REQ-F-71 | The system shall limit failed Authorization Number lookups per IP address and shall also apply a global limit on failed lookups. | N/A | High | Clear. Values set in design (team) | Team; Q&A 2026-10-13 |
 | REQ-F-72 | The system shall show the same message when an Authorization Number is invalid and when it is already claimed. The message shall include the contact number of REQ-F-73. | N/A | High | Clear | Team; Q&A 2026-10-13 |
 | REQ-F-73 | When an Authorization Number or a student number does not match a valid record, the system shall show the contact number of someone who can help. | N/A | High | Pending: the number (gym) | Team; Q&A 2026-10-13 |
 | REQ-F-74 | An Administrator (with the PIN) shall be able to release an Authorization Number claimed by mistake, so it can be claimed again. The action is recorded in the audit log. | N/A | Medium | Clear | Team; Q&A 2026-10-13 |
-| REQ-F-75 | If someone else claimed a member's Authorization Number, the real owner shall be able to take the account back with the password reset (REQ-F-06), because the account email is the payment email. Signing in ends the other device's session (REQ-F-03). | N/A | High | Pending: requires outgoing mail (CTI) | Team; Q&A 2026-10-13 |
+| REQ-F-75 | If someone else claimed a member's Authorization Number, the real owner shall be able to take the account back with the password reset (REQ-F-06), because the account email is the payment email. Signing in ends the other device's sign-in session (REQ-F-03). | N/A | High | Pending: requires outgoing mail (CTI) | Team; Q&A 2026-10-13 |
 
 #### 3.2.4 Error Handling
 
@@ -223,22 +234,22 @@ The athlete registers with their student number, which the system looks up in th
 
 #### 3.3.2 Stimulus/Response Sequences
 
-1. The User enters their student number. The system looks it up in the roster for the current semester.
+1. The User enters their student number. The system looks it up in the roster for the current term.
 2. If it is in the roster and not claimed, the system sends a link to the institutional email in the roster.
-3. The User opens the link, creates the password and uploads the photo. The system creates the account and marks the roster record as claimed.
+3. The User opens the link, creates the password and uploads the photo. After the photo is saved, the system creates the account and marks the roster record as claimed in one operation. If the photo fails, nothing is claimed.
 4. If it is not in the roster, the system shows the message of REQ-F-76.
-5. If CTI offers no outgoing mail, the athlete goes to the gym. Staff (gym account, no PIN needed) check identification, find the athlete's record in the roster and create the account (REQ-F-77). If the athlete is not in the roster, Staff cannot add them; the athlete waits until a PIN holder adds them to the roster.
+5. Only if CTI confirms there is no outgoing mail (and REQ-F-77 is built), the athlete goes to the gym. Staff (gym account, no PIN needed) check identification, find the athlete's record in the roster and create the account (REQ-F-77). If the athlete is not in the roster, Staff cannot add them; the athlete waits until a PIN holder adds them to the roster.
 
 #### 3.3.3 Functional Requirements
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-14 | The athlete shall be able to register with their student number, which the system looks up in the roster for the current semester, and shall confirm the associated institutional email. | MVP | High | Clear | main.tex:206 |
-| REQ-F-15 | The system shall create the athlete's account only after the link sent to the institutional email in the roster is opened. | MVP | High | Pending: requires outgoing mail in production (CTI). Fallback: REQ-F-77 | Team; main.tex:206; Q&A 2026-10-13 |
+| REQ-F-14 | The athlete shall be able to register with their student number, which the system looks up in the roster for the current term, and shall confirm the associated institutional email. | MVP | High | Clear | main.tex:206 |
+| REQ-F-15 | The system shall create the athlete's account only after the link sent to the institutional email in the roster is opened. | MVP | High | Pending: requires outgoing mail in production (CTI). This is the only athlete registration flow built unless CTI confirms there is no outgoing mail (then REQ-F-77) | Team; main.tex:206; Q&A 2026-10-13, 2026-10-14 |
 | REQ-F-16 | The system shall give the same visible response whether or not the student number is in the roster. | N/A | N/A | Removed: replaced by a clear message for athletes not in the roster (REQ-F-76) | Team; Q&A 2026-10-13 |
 | REQ-F-17 | Each roster record and each Authorization Number shall be claimable by only one account, also under simultaneous requests. | MVP | High | Clear | main.tex:206, 371, 462, 511 |
-| REQ-F-76 | If the student number is not in the roster for the current semester, the system shall say that the person does not appear as a registered athlete and must go to the Department of Athletic Activities to be registered or to check for an error. The message shall include the contact number of REQ-F-73. | N/A | High | Clear (contact number pending, see REQ-F-73) | Team; Q&A 2026-10-13 |
-| REQ-F-77 | If CTI offers no outgoing mail, Staff (gym account, no PIN needed) shall be able to register an athlete in person: check identification, find the athlete's record in the current-term roster and create the account. Staff shall not be able to register a person who is not in the roster or add records to the roster; only PIN holders add roster records (REQ-F-49). The action is recorded in the audit log. | N/A | High | Pending: only built if CTI has no outgoing mail (CTI) | Team; Q&A 2026-10-13, 2026-10-14 |
+| REQ-F-76 | If the student number is not in the roster for the current term, the system shall say that the person does not appear as a registered athlete and must go to the Department of Athletic Activities to be registered or to check for an error. The message shall include the contact number of REQ-F-73. | N/A | High | Clear (contact number pending, see REQ-F-73) | Team; Q&A 2026-10-13 |
+| REQ-F-77 | If CTI offers no outgoing mail, Staff (gym account, no PIN needed) shall be able to register an athlete in person: check identification, find the athlete's record in the current-term roster and create the account. Staff shall not be able to register a person who is not in the roster or add records to the roster; only PIN holders add roster records (REQ-F-49). The action is recorded in the audit log. | N/A | High | Pending: built only if CTI confirms there is no outgoing mail (CTI). Not built otherwise | Team; Q&A 2026-10-13, 2026-10-14 |
 
 #### 3.3.4 Error Handling
 
@@ -252,17 +263,19 @@ The athlete registers with their student number, which the system looks up in th
 
 The authorization says whether the person has access in the current academic term. A User can have several authorizations over time (`main.tex:356, 361`). Acceptance criterion (Objective 1, `main.tex:144`): every User with a valid authorization is approved and every User without one is denied.
 
-Term dates come from the UPRM academic calendar and the Administrator enters them (Q&A 2026-10-13). The term model can hold a summer term. Whether paid memberships are sold in summer is TBD (gym). If there is no summer term, accounts stay expired between semesters.
+Term dates come from the UPRM academic calendar and the Administrator enters them (Q&A 2026-10-13). An order belongs to the term that contains its payment date. The team assumes the WooCommerce store only sells memberships while a term is running; the store controls this, not this system. There is no summer membership unless a summer term is configured; without one, accounts stay expired between terms (Q&A 2026-10-14; gym to confirm).
 
-An athlete in the current-term roster has nothing to renew: authorization is automatic while the athlete is on the roster. A paid member renews with a new Authorization Number.
+An athlete in the current-term roster has nothing to renew: authorization is automatic while the athlete is on the roster. A paid member renews with a new Authorization Number. For order errors, an Administrator can grant or revoke an authorization by hand (REQ-F-87). This gives access without a WooCommerce payment record, which the proposal does not have.
 
 #### 3.4.2 Stimulus/Response Sequences
 
 1. The end of the configured term arrives. The system marks the authorizations of that term as expired, disables Check In and shows the Authorization Number field to renew.
 2. The paid member enters a new Authorization Number. The system finds the existing account with the same payment email and attaches the new authorization to it.
-3. An Administrator adds the athlete to the roster for the new semester. The system gives the athlete authorization for that term.
+3. An Administrator adds the athlete to the roster for the new term. The system gives the athlete authorization for that term. The first time the athlete signs in during the new term, the app asks for the new photo before Check In is allowed.
 4. An athlete becomes a paid member. The athlete pays in WooCommerce and enters the Authorization Number in the field the account shows when there is no active authorization. The authorization is attached to the same account.
 5. A paid member becomes an athlete. The member signs in and chooses "I am an athlete" and enters the student number. If it is in the current-term roster and unclaimed, the system links it to the account. The account email stays as it is.
+6. An order error leaves a member without access. An Administrator enters the PIN, grants an authorization to the existing account until the end of a chosen term and writes a reason. The system records it in the audit log (REQ-F-87).
+7. An Administrator removes an athlete from the roster mid-term. The athlete's Gym ID stops being valid at once, the current session keeps counting until its 60 minutes end, and the athlete cannot do another Check In (REQ-F-49).
 
 #### 3.4.3 Functional Requirements
 
@@ -272,15 +285,16 @@ An athlete in the current-term roster has nothing to renew: authorization is aut
 | REQ-F-19 | The system shall store the authorization separately from the account, and a User shall be able to have several authorizations over time. | MVP | High | Clear | main.tex:350, 356 |
 | REQ-F-20 | The User shall be able to move between paid-member and athlete authorization without losing the account or the Check In history. The User signs in to the existing account and adds the new authorization from inside it (REQ-F-79, REQ-F-80). The account email does not change, no new account is created, and staff do not merge accounts. | MVP | High | Clear | main.tex:202, 356, 406; Q&A 2026-10-13 |
 | REQ-F-21 | The Administrator shall be able to create and edit academic terms with a start date and an end date, taken from the UPRM academic calendar. | N/A | High | Clear | main.tex:350, 361; Q&A 2026-10-13 |
-| REQ-F-22 | Each authorization shall expire at the end of its configured academic term, regardless of the purchase date. | MVP | High | Clear. Summer term: TBD (gym) | main.tex:361 |
+| REQ-F-22 | Each authorization shall expire at the end of its configured academic term, regardless of the purchase date. An order belongs to the term that contains its payment date. An order dated outside every term shall be rejected: it gives no authorization and appears in the import result for the Administrator. An athlete authorization also ends when the athlete is removed from the roster (REQ-F-49). | MVP | High | Clear. Gym to confirm that the store only sells memberships while a term runs | main.tex:361; Q&A 2026-10-14 |
 | REQ-F-23 | When the authorization expires, the system shall keep the account, disable Check In and show the expired status with the Renew option. | MVP | High | Clear | main.tex:204 |
 | REQ-F-24 | The paid member shall be able to renew with a new Authorization Number on the same account. | MVP | High | Clear | main.tex:320 |
-| REQ-F-25 | The athlete shall renew through the roster for the new semester, with no purchase or Authorization Number. | MVP | High | Clear | main.tex:206, 218, 321 |
-| REQ-F-26 | The User shall upload a current photo at each renewal and shall not be able to replace it during an active authorization. The photo is stored with the authorization. | MVP | High | Clear | main.tex:202, 426 |
+| REQ-F-25 | The athlete shall renew through the roster for the new term, with no purchase or Authorization Number. The first time the athlete signs in during a new term, the app shall ask for the new photo before Check In is allowed. | MVP | High | Clear | main.tex:206, 218, 321; Q&A 2026-10-14 |
+| REQ-F-26 | The User shall upload a current photo at each renewal and shall not be able to replace it during an active authorization. The photo is stored with the authorization. For athletes, the new photo is asked the first time they sign in during a new term, before Check In is allowed. | MVP | High | Clear | main.tex:202, 426; Q&A 2026-10-14 |
 | REQ-F-27 | A refunded or cancelled WooCommerce order, once imported, shall remove the authorization that depended on it. | MVP | N/A | Removed: there are no refunds or cancellations. Memberships only expire at the end of the term | main.tex:371, 456; Q&A 2026-10-13 |
 | REQ-F-78 | When a User enters an Authorization Number whose payment email matches an existing account, the system shall attach the new authorization to that account and shall not create a new one. | N/A | High | Clear | Team; Q&A 2026-10-13 |
 | REQ-F-79 | When the account has no active authorization, the account screen shall show the Authorization Number field. | N/A | High | Clear | Team; Q&A 2026-10-13 |
 | REQ-F-80 | A signed-in User shall be able to enter a student number ("I am an athlete"). If it is in the current-term roster and unclaimed, the system shall link the roster record to the account. | N/A | High | Clear | Team; Q&A 2026-10-13 |
+| REQ-F-87 | An Administrator (with the PIN) shall be able to grant an authorization by hand to an existing account, valid only until the end of a chosen term, and to revoke an authorization. It is used for order errors. Proposed: a reason is required, and the action is recorded in the audit log with time, IP address and reason. | N/A | Medium | Clear (reason and log rules Proposed) | Team; Q&A 2026-10-14 |
 
 #### 3.4.4 Error Handling
 
@@ -291,27 +305,30 @@ An athlete in the current-term roster has nothing to renew: authorization is aut
 
 #### 3.5.1 Description
 
-WooCommerce remains the source of payments. The system copies only what is needed to authorize (`main.tex:369-371`). There are no refunds or cancellations; the import only handles new and corrected orders (Q&A 2026-10-13). Acceptance criterion, adapted from `main.tex:456`: re-importing does not create duplicates, and corrected orders update the authorization. The proposal criterion also names refunded and cancelled orders; that part no longer applies.
+WooCommerce remains the source of payments. The system copies only what is needed to authorize (`main.tex:369-371`). There are no refunds or cancellations; the import only handles new and corrected orders (Q&A 2026-10-13). An order belongs to the term that contains its payment date; an order dated outside every term is rejected and listed in the import result (REQ-F-22). Any import can be undone (REQ-F-31). Acceptance criterion, adapted from `main.tex:456`: re-importing does not create duplicates, and corrected orders update the authorization. The proposal criterion also names refunded and cancelled orders; that part no longer applies.
 
 #### 3.5.2 Stimulus/Response Sequences
 
 1. The Administrator uploads an Export Orders file. The system creates or updates one local record per order.
 2. The Administrator uploads the same file again. The system confirms the same records without duplicating them.
 3. An order was corrected in WooCommerce. The Administrator imports it again. The system updates the same record.
+4. An order is dated outside every configured term. The system rejects it and lists it in the import result.
+5. The Administrator undoes an import. The system deletes the membership records that import brought and the authorizations that depend on them, keeps the accounts and photos, and records the undo in the audit log.
 
 #### 3.5.3 Functional Requirements
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
 | REQ-F-28 | The Administrator shall be able to load membership data from a WooCommerce Export Orders file. | MVP | High | Pending: file format and columns (team, with an authorized export; gym) | main.tex:369, 371 |
-| REQ-F-29 | The import shall copy only name, email, student number when applicable, membership details, Authorization Number, order reference, status, academic term and last synchronization time. It shall not copy billing or address data. | MVP | High | Clear | main.tex:204, 371 |
+| REQ-F-29 | The import shall copy only name, email, student number when applicable, membership details, Authorization Number, order reference, status, payment date, academic term (set from the payment date) and last synchronization time. It shall not copy billing or address data. | MVP | High | Clear | main.tex:204, 371 |
 | REQ-F-30 | Processing the same order more than once shall update or confirm the same record, without creating duplicates. | MVP | High | Clear | main.tex:371, 456 |
-| REQ-F-31 | The Administrator shall be able to run a controlled re-import or reconciliation when WooCommerce corrects orders. | MVP | High | Clear | main.tex:371; Q&A 2026-10-13 |
+| REQ-F-31 | The Administrator shall be able to run a controlled re-import or reconciliation when WooCommerce corrects orders. The Administrator shall be able to undo any import at any time. Undo deletes the membership records that import brought and the authorizations that depend on them. Accounts and photos of people who already registered stay; they can claim again when the corrected file is imported (Proposed). The undo is recorded in the audit log. | MVP | High | Clear (undo effect on accounts Proposed) | main.tex:371; Q&A 2026-10-13, 2026-10-14 |
 | REQ-F-32 | The system shall be able to synchronize with WooCommerce through approved API or webhook access, updating the same local records. | Stretch | Low | Pending: whether there is API access and what restrictions CTI sets (CTI) | main.tex:307, 371 |
 
 #### 3.5.4 Error Handling
 
 - Row with data that cannot be verified: gives no authorization (REQ-F-18). How it is reported to the Administrator: TBD (team, design).
+- Order dated outside every term: rejected, no authorization, listed in the import result (REQ-F-22).
 - File with an unexpected format: nothing is imported. Message detail: TBD (team, design).
 
 ### 3.6 Check In and Facility Session
@@ -332,20 +349,20 @@ The User does Check In from their phone. The system checks authorization and loc
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-33 | Before creating a session, the system shall verify that the User has a current authorization and that the device location is within the gym boundary. | MVP | High | Clear (boundary and accuracy in REQ-NF-28) | main.tex:210, 458 |
+| REQ-F-33 | Before creating a session, the system shall verify that the User has a current authorization, that the device location is within the gym boundary, and that the gym is open according to its published schedule and closures. | MVP | High | Clear (boundary and accuracy in REQ-NF-28) | main.tex:210, 458; Q&A 2026-10-14 |
 | REQ-F-34 | The system shall ask for location only when a new session must be created. | MVP | High | Clear | main.tex:416 |
-| REQ-F-35 | The system shall not create a session if the location is outside the boundary, if location permission is denied, if accuracy is insufficient, if there is no current authorization or if there is no connection. | MVP | High | Clear | main.tex:458, 460, 573 |
+| REQ-F-35 | The system shall not create a session if the location is outside the boundary, if location permission is denied, if accuracy is insufficient, if there is no current authorization, if there is no connection, or if the gym is closed by its published schedule or a published closure. A closed-gym rejection shows a notice. | MVP | High | Clear | main.tex:458, 460, 573; Q&A 2026-10-14 |
 | REQ-F-36 | A valid Check In shall create exactly one 60-minute session. The active session check and the creation shall be one protected backend operation. | MVP | High | Clear | main.tex:155, 210, 365, 416 |
 | REQ-F-37 | If the User already has an active session, another Check In shall return the current session and Gym ID without creating another session. | MVP | High | Clear | main.tex:365, 416 |
-| REQ-F-38 | The session shall expire after 60 minutes according to backend time, with no checkout or User action, and shall stop counting toward occupancy. | MVP | High | Clear | main.tex:210, 350, 365 |
+| REQ-F-38 | The session shall expire after 60 minutes according to backend time, with no checkout or User action, and shall stop counting toward occupancy. For a paid member, the Gym ID then shows "expired" (REQ-F-40). The expiry does not make anyone leave the gym. | MVP | High | Clear | main.tex:210, 350, 365; Q&A 2026-10-14 |
 | REQ-F-39 | After the session expires, a valid Check In shall be able to create a new session. | MVP | High | Clear | main.tex:365 |
-| REQ-F-81 | For athletes, the 60-minute session shall be a counting rule only; athletes have no time limit in the gym. Athletes shall be able to see their account and the facility analytics (3.13), like every other role. | N/A | Medium | Clear | Team; Q&A 2026-10-13, 2026-10-14 |
+| REQ-F-81 | For athletes, the 60-minute session shall be a counting rule only; athletes have no time limit in the gym. Athletes shall be able to see their account and the facility analytics (3.13), like every other role. Occupancy counts an athlete only during the 60-minute session, so it undercounts athletes who stay longer: occupancy is an estimate. | N/A | Medium | Clear | Team; Q&A 2026-10-13, 2026-10-14 |
 | REQ-F-82 | During an athletes-only period (REQ-F-84), the system shall reject Check In by paid members and show them a notice. Athletes shall be able to do Check In. | N/A | Medium | Pending: list of athletes-only periods (gym) | Team; Q&A 2026-10-13 |
 | REQ-F-83 | When a User does Check In, or while the User's session is active, and an athletes-only period starts at any time within that 60-minute session, the system shall show a notice with the start time of the period. The session shall never be cut. There is no separate lead-time setting: the window is the session length. | N/A | Medium | Clear | Team; Q&A 2026-10-13, 2026-10-14 |
 
 #### 3.6.4 Error Handling
 
-- Each rejection in REQ-F-35 and REQ-F-82 shows its cause (outside the boundary, permission denied, accuracy, authorization, connection, athletes-only period). Texts: TBD (team, design).
+- Each rejection in REQ-F-35 and REQ-F-82 shows its cause (outside the boundary, permission denied, accuracy, authorization, connection, gym closed by schedule or closure, athletes-only period). Texts: TBD (team, design).
 - Simultaneous requests from the same User: at most one session (REQ-NF-02).
 
 ### 3.7 Gym ID and Occupancy
@@ -365,8 +382,8 @@ Acceptance criterion (Objective 3, `main.tex:162-166`), rewritten for polling: r
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-40 | The Gym ID shall show name, photo, authorization, Check In status, the minutes left in the session, and a moving element such as a clock, so staff can tell a live screen from a screenshot. | MVP | High | Clear | main.tex:153, 210; Q&A 2026-10-13 |
-| REQ-F-41 | Estimated occupancy shall equal the number of active sessions and shall be recalculated after each Check In, expiration or Staff correction. | MVP | High | Clear | main.tex:164-166, 214 |
+| REQ-F-40 | The Gym ID shall show name, photo, authorization, Check In status, the minutes left in the session, and a moving element such as a clock, so staff can tell a live screen from a screenshot. For a paid member, after 60 minutes the Gym ID shall show "expired" with text and an icon. For an athlete, the Gym ID shall not expire while the term authorization is active; Staff verify the athlete against the roster. The Gym ID has no code or QR. | MVP | High | Clear | main.tex:153, 210; Q&A 2026-10-13, 2026-10-14 |
+| REQ-F-41 | Estimated occupancy shall equal the number of active sessions and shall be recalculated after each Check In, expiration or Staff correction. It counts an athlete only during the 60-minute session, so it undercounts athletes who stay longer: occupancy is an estimate, not a headcount. | MVP | High | Clear | main.tex:164-166, 214; Q&A 2026-10-14 |
 | REQ-F-42 | User, Staff and Administrator shall see the same occupancy value, measured after each screen has updated. | MVP | High | Clear | main.tex:166, 214; Q&A 2026-10-13 |
 | REQ-F-43 | The occupancy and active session screens shall update by polling the backend every 20 to 30 seconds. | N/A (replaces the optional real time of main.tex:350) | High | Clear. Live updates are a later improvement (CTI, team) | Team; Q&A 2026-10-13 |
 
@@ -383,16 +400,17 @@ Staff supervise use and handle exceptions (`main.tex:210-212, 218`). Staff use t
 #### 3.8.2 Stimulus/Response Sequences
 
 1. Staff open the session view. The system shows the active sessions with Check In time, authorization and Gym ID.
-2. An authorized User arrives without a phone. A paid member shows a photo of the payment confirmation, and Staff find the account by Authorization Number. An athlete gives the student number. Staff compare the stored photo with the person, check authorization in the backend and create the session. The system records it in the audit log.
-3. Staff end a session early or void a session created by mistake. The system applies the correction, recalculates occupancy and records it in the audit log.
-4. Staff open a User's record during Check In or an emergency. The system shows the waiver and the emergency contact (REQ-F-85).
+2. A User shows a Gym ID at the desk. Staff search the person by name in the active sessions list and compare the photo (REQ-F-45). For an athlete whose 60 minutes ended, Staff check the roster.
+3. An authorized User arrives without a phone. A paid member shows a photo of the payment confirmation, and Staff find the account by Authorization Number. An athlete gives the student number. Staff compare the stored photo with the person, check authorization in the backend and create the session. The system records it in the audit log.
+4. Staff end a session early or void a session created by mistake. The system applies the correction, recalculates occupancy and records it in the audit log.
+5. Staff open a User's record during Check In or an emergency. The system shows the waiver and the emergency contact (REQ-F-85).
 
 #### 3.8.3 Functional Requirements
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
 | REQ-F-44 | Staff shall be able to see active sessions with Check In time, authorization and Gym ID. | MVP | High | Clear | main.tex:218, 322 |
-| REQ-F-45 | Staff shall be able to verify a Gym ID against backend data, not only against the User's screen. | MVP | High | Clear | main.tex:210 |
+| REQ-F-45 | Staff shall be able to verify a Gym ID against backend data, not only against the User's screen: Staff search the person by name in the active sessions list and compare the photo. The Gym ID has no code or QR. | MVP | High | Clear | main.tex:210; Q&A 2026-10-14 |
 | REQ-F-46 | Staff shall be able to do a Staff-assisted Check In for an authorized User who is present without a phone and create the same 60-minute session. Identification: a paid member shows a photo of the payment confirmation and Staff find the account by Authorization Number; an athlete gives the student number. Staff shall compare the photo stored in the account with the person. Staff shall not be able to bypass authorization or create a second active session. | De facto MVP (test plan, main.tex:573; not in the scope table) | High | Clear | main.tex:212, 573; Q&A 2026-10-13, 2026-10-14 |
 | REQ-F-47 | The system shall record each Staff-assisted Check In as an exception in the audit log (REQ-NF-39). | De facto MVP (main.tex:573) | High | Clear. With one shared gym account the log cannot name the Staff member (REQ-NF-39) | main.tex:212, 573 |
 | REQ-F-48 | Staff shall be able to make two session corrections: end a session early, and void a session created by mistake. A void keeps the record and its audit log entry, and the session stops counting in occupancy and analytics. Staff shall not be able to extend a session or create a session without authorization. | MVP | High | Clear | main.tex:210, 218; Q&A 2026-10-13 |
@@ -406,18 +424,19 @@ Staff supervise use and handle exceptions (`main.tex:210-212, 218`). Staff use t
 
 #### 3.9.1 Description
 
-Change from the proposal: the department's athlete lists are digitized each semester by Administrators, that is, by whoever holds the PIN of the gym account (Later change; Q&A 2026-10-13). There is no separate roster permission and no review step: the audit log records every roster change with time and IP address (REQ-NF-39). Roster management moves up to the MVP (1.3).
+Change from the proposal: the department's athlete lists are digitized each term by Administrators, that is, by whoever holds the PIN of the gym account (Later change; Q&A 2026-10-13). There is no separate roster permission and no review step: the audit log records every roster change with time and IP address (REQ-NF-39). Roster management moves up to the MVP (1.3).
 
 #### 3.9.2 Stimulus/Response Sequences
 
-1. An Administrator enters the PIN and creates, imports or edits roster records for the semester. The system stores them and records each change in the audit log.
-2. Someone on the gym account without the PIN tries to open the roster tool. The system asks for the PIN and denies access without it.
+1. An Administrator enters the PIN and creates, imports or edits roster records for the term. The system stores them and records each change in the audit log.
+2. An Administrator removes an athlete from the roster mid-term. The Gym ID stops being valid at once, the athlete keeps counting in occupancy until the current 60-minute session ends, and the athlete cannot do another Check In.
+3. Someone on the gym account without the PIN tries to open the roster tool. The system asks for the PIN and denies access without it.
 
 #### 3.9.3 Functional Requirements
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-49 | Only Administrators (with the PIN) shall be able to create, import and change the athlete roster for each semester. | Secondary (moved to MVP, Q&A 2026-10-13) | High | Pending: format of the lists (gym) | main.tex:206, 218; Later change; Q&A 2026-10-13 |
+| REQ-F-49 | Only Administrators (with the PIN) shall be able to create, import and change the athlete roster for each term. If an athlete is removed from the roster mid-term, the athlete's Gym ID shall stop being valid immediately, the athlete shall keep counting in occupancy until the current 60-minute session ends, and the athlete shall not be able to do another Check In. | Secondary (moved to MVP, Q&A 2026-10-13) | High | Pending: format of the lists (gym) | main.tex:206, 218; Later change; Q&A 2026-10-13, 2026-10-14 |
 | REQ-F-50 | A record entered by designated Staff shall be preapproved, with no Administrator approval. | Secondary | N/A | Removed: there is no designated roster Staff and no review step. The audit log (REQ-NF-39) records each roster change | Later change; Q&A 2026-10-13 |
 | REQ-F-51 | Each roster record shall have at least student number, name, institutional email and academic term. | Secondary (moved to MVP with the roster tool) | High | Pending: final list of fields (gym) | main.tex:206; Team |
 
@@ -429,7 +448,7 @@ Change from the proposal: the department's athlete lists are digitized each seme
 
 #### 3.10.1 Description
 
-There is one shared gym account. A single PIN, known only to the administration, protects sensitive actions (Q&A 2026-10-13). "Staff" means using the gym account without the PIN; "Administrator" means using it with the PIN. The developer role stays outside the gym roles (REQ-NF-22).
+There is one shared gym account. A single PIN, known only to the administration, protects sensitive actions (Q&A 2026-10-13). "Staff" means using the gym account without the PIN; "Administrator" means using it with the PIN. An entered PIN is active only in the browser or device where it was typed, not for the whole gym account (Q&A 2026-10-14). The developer role stays outside the gym roles (REQ-NF-22).
 
 | Action | Without PIN (Staff) | With PIN (Administrator) |
 |---|---|---|
@@ -443,7 +462,8 @@ There is one shared gym account. A single PIN, known only to the administration,
 | Athlete roster | No | Yes |
 | Academic terms | No | Yes |
 | WooCommerce import | No | Yes |
-| Change the PIN | No | Yes |
+| Change the PIN and the gym account password | No | Yes |
+| Grant or revoke an authorization by hand (REQ-F-87) | No | Yes |
 | Schedules, including athletes-only periods | No | Yes |
 | Notices and facility information | No | Yes |
 | Audit log | No | Yes |
@@ -453,10 +473,10 @@ Acceptance criterion (Objective 4, `main.tex:173-177`), rewritten: every tested 
 
 #### 3.10.2 Stimulus/Response Sequences
 
-1. Someone on the gym account requests a PIN action. The system asks for the PIN, checks it and allows the action.
+1. Someone on the gym account requests a PIN action. The system asks for the PIN, checks it and allows the action, only in that browser or device.
 2. A wrong PIN is entered too many times. The system blocks PIN entry for a time (REQ-NF-48).
-3. The PIN was entered and the gym account has been inactive for 10 minutes. The app warns that the PIN will close in 5 minutes. At 15 minutes of inactivity the PIN closes, and PIN actions need the PIN again (REQ-NF-48).
-4. An Administrator changes the PIN. The system stores the new PIN hashed and records the change in the audit log.
+3. The PIN was entered and nobody has tapped or pressed a key in that browser for 10 minutes (automatic polling does not count). The app warns that the PIN will close in 5 minutes. At 15 minutes of inactivity the PIN closes, and PIN actions need the PIN again (REQ-NF-48).
+4. An Administrator changes the PIN or the gym account password, using the current PIN. The system stores the new value hashed and records the change in the audit log. Changing the password is how access is withdrawn when an employee leaves.
 5. A User or the gym account without the PIN requests an action it is not allowed. The backend denies it.
 
 #### 3.10.3 Functional Requirements
@@ -487,7 +507,7 @@ Today rules and instructions are communicated in person or on paper (`main.tex:2
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-55 | The Administrator shall be able to manage schedules, special hours and closures, and the User shall be able to see them. | Secondary | Medium | Clear | main.tex:218 |
+| REQ-F-55 | The Administrator shall be able to manage schedules, special hours and closures, and the User shall be able to see them. Check In is rejected while the gym is closed by the published schedule or a published closure (REQ-F-35). | Secondary | Medium | Clear | main.tex:218; Q&A 2026-10-14 |
 | REQ-F-56 | The Administrator shall be able to publish maintenance notices and other operational updates, and the User shall be able to see them. | N/A (need in main.tex:104) | Medium | Clear | main.tex:104 |
 | REQ-F-57 | The Administrator shall be able to manage facility information: rules, towel, footwear (including the Crocs and flip-flop restriction), available machines and approved equipment instructions. The User shall be able to see it. | Secondary | Medium | Clear | main.tex:218 |
 | REQ-F-58 | Texts the gym writes (rules, notices, closures, information) shall have a Spanish and an English version. If a text has no English version, the Spanish text is shown. | N/A | Medium | Pending: who provides English for notices published after December (gym). The team translates the initial texts and the gym approves them | Later change; Q&A 2026-10-13 |
@@ -506,14 +526,15 @@ Digital records that replace paper, only if Athletic Activities determines them 
 
 #### 3.12.2 Stimulus/Response Sequences
 
-1. The User accepts the waiver and enters an emergency contact (name and phone). The system stores them with the full name and email from the payment record (paid member) or the roster (athlete).
-2. Staff open the User's record from the Staff dashboard. The system shows the waiver and the emergency contact.
+1. When the account is created, the User accepts the waiver and enters an emergency contact (name and phone). The system stores them with the full name and email from the payment record (paid member) or the roster (athlete). Without the waiver, the account is not created.
+2. The User edits the emergency contact from the account (Proposed). Staff see the current value.
+3. Staff open the User's record from the Staff dashboard. The system shows the waiver and the emergency contact.
 
 #### 3.12.3 Functional Requirements
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-60 | The system shall store a liability waiver acceptance with full name, email and an emergency contact (name and phone). Name and email come from the payment record (paid member) or the roster (athlete). The system shall not collect a street address, documents or medical warnings. | Secondary | Medium | Clear. Gym to confirm that no documents or medical warnings are needed (gym) | main.tex:220, 466; Q&A 2026-10-13 |
+| REQ-F-60 | The system shall store a liability waiver acceptance with full name, email and an emergency contact (name and phone). Name and email come from the payment record (paid member) or the roster (athlete). The system shall not collect a street address, documents or medical warnings. The waiver is accepted once, when the account is created, and stays valid while the account exists; it is not repeated each term or when the gym changes the text. Without it the account is not created. Proposed: the User can edit the emergency contact at any time from the account, and Staff always see the current value. | Secondary | Medium | Clear. Gym to confirm that no documents or medical warnings are needed (gym) | main.tex:220, 466; Q&A 2026-10-13, 2026-10-14 |
 | REQ-F-85 | Staff shall be able to see a User's waiver acceptance and emergency contact from the Staff dashboard. | N/A | Medium | Clear | Team; Q&A 2026-10-13 |
 
 #### 3.12.4 Error Handling
@@ -566,28 +587,6 @@ Chrome does not always show the install prompt, and on iPhone the app is install
 
 - Browser without support for the install event: the button does not appear.
 
-### 3.15 Future Features
-
-#### 3.15.1 Description
-
-Stretch: only if the committed scope is complete and tested (`main.tex:295, 307`).
-
-#### 3.15.2 Stimulus/Response Sequences
-
-N/A: these features have no design.
-
-#### 3.15.3 Functional Requirements
-
-| ID | Requirement | Proposal priority | Final priority | Status | Source |
-|---|---|---|---|---|---|
-| REQ-F-67 | The system shall be able to limit admission by capacity, only when UPRM has an official capacity policy. | Stretch | Low | Pending: UPRM policy (gym) | main.tex:116, 307 |
-| REQ-F-68 | The system shall be able to extend to other facilities, such as the Natatorio. | Stretch | Low | Pending: rules of those facilities (gym) | main.tex:307 |
-| REQ-F-69 | The system shall be able to predict occupancy when there is enough history. | Stretch | Low | Pending: how much history is enough (team) | main.tex:307 |
-
-#### 3.15.4 Error Handling
-
-N/A: no design.
-
 ## 4. Data Requirements
 
 ### 4.1 Logical Data Model
@@ -596,13 +595,13 @@ Based on `main.tex:350, 354-359, 426` and the Q&A of 2026-10-13. No diagram in t
 
 | Entity | Contains | Related to |
 |---|---|---|
-| User | Persistent identity, email, password, chosen language | Authorizations, authenticated sessions, facility sessions, waiver acceptance |
-| Gym account | One shared account, PIN hash | Audit log entries |
+| User | Persistent identity, email, password, chosen language | Authorizations, sign-in sessions, facility sessions, waiver acceptance |
+| Gym account | One shared account, password hash, PIN hash | Audit log entries, sign-in sessions |
 | Academic term | Name, start date, end date (a summer term is possible) | Authorizations, roster records, memberships |
-| Authorization | Type (paid or athlete), term, status, photo for the term | User, term, membership or roster record |
-| Imported membership | Fields of REQ-F-29, claim status | WooCommerce order, authorization |
+| Authorization | Type (paid, athlete or manual), term, status, photo for the term, reason (manual only) | User, term, membership, roster record or none (manual) |
+| Imported membership | Fields of REQ-F-29, claim status, import it came from | WooCommerce order, import, authorization |
 | Roster record | Fields of REQ-F-51, claim status | Term, authorization |
-| Authenticated session | Device with an open session | User (one at a time, REQ-F-03) or gym account (no limit) |
+| Sign-in session | Device with an open sign-in session; for the gym account, whether the PIN is active in that browser and the last person activity | User (one at a time, REQ-F-03) or gym account (no limit) |
 | Facility session | Start, end (start plus 60 minutes), status (active, expired, ended early, void), whether it was assisted | User |
 | Schedule slot | Type (regular hours, special hours, closure, athletes only), start, end, text in Spanish and English | None |
 | Notice, facility information | Text in Spanish and English, dates | None |
@@ -624,7 +623,7 @@ Based on `main.tex:350, 354-359, 426` and the Q&A of 2026-10-13. No diagram in t
 | Emergency contact | Person to call in an emergency | Name and phone |
 | IP address | Address of the device that made a gym action | Personal data; kept with the audit log (REQ-NF-39) |
 | Failed sign-in limit | Attempts before a wait | 10, per account and per IP address (REQ-F-07) |
-| PIN session | Time an entered PIN stays active | Closes after 15 minutes of inactivity; warning after 10 minutes (REQ-NF-48) |
+| PIN session | Time an entered PIN stays active, only in the browser where it was typed | Closes after 15 minutes without a tap or key press; warning after 10 minutes. Polling does not count as activity (REQ-NF-48) |
 | Void | Status of a session created by mistake | Kept with its log entry; not counted in occupancy or analytics (REQ-F-48) |
 
 No street address is stored (2.4). The full dictionary is written in the design phase.
@@ -635,8 +634,8 @@ No street address is stored (2.4). The full dictionary is written in the design 
 |---|---|---|
 | Utilization analytics | REQ-F-61 to REQ-F-65, REQ-F-86. Aggregated counts only, no names | Every signed-in role: User, Staff and Administrator |
 | Audit log | REQ-NF-39 | Administrator (with the PIN) |
-| Import result | Orders created, updated and rejected | Administrator. Detail TBD (team, design) |
-| Roster changes per semester | Roster changes from the audit log | Optional. TBD whether the gym wants it (gym) |
+| Import result | Orders created, updated and rejected, including orders dated outside every term | Administrator. Detail TBD (team, design) |
+| Roster changes per term | Roster changes from the audit log | Optional. TBD whether the gym wants it (gym) |
 
 Visual design and export of reports: TBD (team, design).
 
@@ -648,7 +647,7 @@ Visual design and export of reports: TBD (team, design).
 | REQ-NF-02 | Claim uniqueness and the single active session rule shall be enforced in the database, not only in the frontend. | N/A | High | Clear. Depends on CTI accepting PostgreSQL (CTI) | main.tex:462, 511 |
 | REQ-NF-03 | Location shall be used only for Check In and shall not be stored as movement history. The validation result may be stored. | N/A | High | Clear | main.tex:210, 511 |
 | REQ-NF-04 | The system shall discard photos from earlier terms, unless UPRM requires keeping them. | N/A | Medium | Pending: UPRM rule (gym, UPRM) | main.tex:511 |
-| REQ-NF-05 | The system shall apply retention rules by data type: photos, waivers, emergency contacts, Check Ins and audit log (including IP addresses). Each audit log entry is kept until the end of the semester in which it happened (decided). | N/A | Medium | Pending: every period except the audit log (gym, UPRM). No provisional values | main.tex:328, 466; Q&A 2026-10-13 |
+| REQ-NF-05 | The system shall apply retention rules by data type: photos, waivers, emergency contacts, Check Ins and audit log (including IP addresses). Each audit log entry is kept until the end of the term in which it happened (decided), also when it mentions a user whose account was deleted. | N/A | Medium | Pending: every period except the audit log (gym, UPRM). No provisional values | main.tex:328, 466; Q&A 2026-10-13 |
 | REQ-NF-06 | There shall be backups of the database and the files, and a tested restore before each milestone. | N/A | Medium | Pending: what is backed up, how often, where (outside the VM) and for how long (CTI, team) | main.tex:468, 513; Review |
 | REQ-NF-07 | Real WooCommerce data shall be used only to test the integration: with permission, only the needed fields, outside git and synced folders, and deleted when the test ends. | N/A | Medium | Pending: how many records, on which machines and for how long (team, CTI) | Later change |
 | REQ-NF-08 | Development shall use fake data. | N/A | High | Clear | Later change |
@@ -662,7 +661,7 @@ Screens by role (detailed design in a separate specification, TBD):
 
 - User: registration, sign in, Check In, Gym ID, occupancy, schedules, notices, facility information, renewal, "I am an athlete", facility analytics, waiver and emergency contact, account deletion request.
 - Staff (gym account without the PIN): active sessions, Gym ID verification, Staff-assisted Check In, corrections, waiver and emergency contact, in-person athlete registration (only athletes already in the roster), facility analytics.
-- Administrator (gym account with the PIN): roster, terms, import, PIN, schedules (including athletes-only periods), notices, information, audit log, release of claimed Authorization Numbers, plus everything Staff see.
+- Administrator (gym account with the PIN): roster, terms, import and import undo, manual authorizations, PIN and gym account password, schedules (including athletes-only periods), notices, information, audit log, release of claimed Authorization Numbers, plus everything Staff see.
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
@@ -677,17 +676,13 @@ Screens by role (detailed design in a separate specification, TBD):
 - WooCommerce: input through an Export Orders file (REQ-F-28). Format (for example CSV): TBD until an authorized export is seen. API or webhook: Stretch (REQ-F-32).
 - PostgreSQL: system database (2.4).
 
-### 5.3 Hardware Interfaces
-
-N/A: the system does not connect to its own hardware. It uses the phone's location through the browser (REQ-NF-11).
-
-### 5.4 Communications Interfaces
+### 5.3 Communications Interfaces
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
 | REQ-NF-12 | All traffic shall go over HTTPS, also in development tests on the phone. The Geolocation API requires it. | N/A | High | Clear | main.tex:332; Team |
 
-- Outgoing mail: needed for athlete registration (REQ-F-15) and password reset (REQ-F-06, REQ-F-75). In development, a fake mail server. In production: CTI SMTP or relay, TBD (CTI). Still unknown: the sender address and who sets up SPF and DKIM in DNS. An external mail provider was not chosen. If CTI offers no outgoing mail, athletes are registered in person (REQ-F-77) and there is no password reset.
+- Outgoing mail: needed for athlete registration (REQ-F-15, the only athlete flow built by default) and password reset (REQ-F-06, REQ-F-75). In development, a fake mail server. In production: CTI SMTP or relay, TBD (CTI). Still unknown: the sender address and who sets up SPF and DKIM in DNS. An external mail provider was not chosen. If CTI confirms there is no outgoing mail, the in-person flow is built (REQ-F-77) and there is no password reset.
 - Real IP address: behind the proxy, the backend reads the client IP address from the proxy header (REQ-NF-39).
 
 ## 6. Quality Attributes
@@ -719,22 +714,18 @@ N/A: the system does not connect to its own hardware. It uses the phone's locati
 | REQ-NF-23 | Developers shall not have routine access to safety or emergency data in production. | N/A | High | Pending: if the team manages the VM, it has access; still unknown who manages the VM and who looks after the system (CTI, gym) | main.tex:437, 509 |
 | REQ-NF-24 | Uploaded photos shall be JPEG, PNG or HEIC, up to 10 MB. The server shall convert them to JPEG and strip location metadata. | N/A | High | Clear | Review; Q&A 2026-10-13 |
 | REQ-NF-25 | The system shall show a privacy notice in Spanish and English before collecting personal data. | N/A | High | Pending: the team drafts the text; the gym approves it (gym) | Team; Q&A 2026-10-13 |
-| REQ-NF-48 | The PIN shall be stored hashed. PIN attempts shall be limited. Only PIN holders shall be able to change it. Once entered, the PIN shall stay active until 15 minutes of inactivity and then close. After 10 minutes of inactivity the app shall warn that the PIN will close in 5 minutes. | N/A | High | Clear. Attempt limit and wait set in design (team) | Team; Q&A 2026-10-13, 2026-10-14 |
+| REQ-NF-48 | The PIN shall be stored hashed. PIN attempts shall be limited. Only PIN holders shall be able to change it. An entered PIN shall be active only in the browser or device where it was typed. Once entered, the PIN shall stay active until 15 minutes of inactivity and then close. After 10 minutes of inactivity the app shall warn that the PIN will close in 5 minutes. Only a tap or key press by a person counts as activity; automatic polling does not. The team creates the gym account, its password and the first PIN once with an install command on the server and gives them to the Administrator; after that the Administrator changes the password and the PIN from the app using the current PIN. | N/A | High | Clear. Attempt limit and wait set in design (team) | Team; Q&A 2026-10-13, 2026-10-14 |
 
 Attempt limits: REQ-F-07 (sign in), REQ-F-71 (Authorization Number lookups), REQ-NF-48 (PIN). There is no inactivity timeout (REQ-F-08 removed).
 
-### 6.4 Safety
-
-N/A as a product requirement: the system does not control doors, machines or admission, and it is not a medical records system (`main.tex:116, 328`). The system stores no medical warnings (REQ-F-60). What staff do if the system stops working is in REQ-NF-31.
-
-### 6.5 Other Quality Attributes
+### 6.4 Other Quality Attributes
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-26 | Sign in, authorization, sessions, the one-device rule and Gym ID verification shall require a connection. Without a connection no session is created. | N/A | High | Clear | main.tex:460 |
+| REQ-NF-26 | Sign in, authorization, facility sessions, the one-device rule and Gym ID verification shall require a connection. Without a connection no session is created. | N/A | High | Clear | main.tex:460 |
 | REQ-NF-27 | The service worker shall not cache responses from `/api`. | N/A | High | Clear | Review |
 | REQ-NF-28 | The location boundary and the accepted accuracy shall be set with tests inside and around the gym on iPhone and Android. The gym coordinates are measured in the same tests. | N/A | High | Pending: the values, until the team measures them. The team can test at the gym whenever it wants, and all three members can test on iPhone, Android, Mac and other computers | main.tex:435, 458; Q&A 2026-10-13 |
-| REQ-NF-29 | The location boundary shall be configurable per environment. Production shall refuse to start if the configured boundary is more than 50 meters from the gym coordinates (REQ-NF-28), so the classroom demo boundary cannot reach production. | N/A | High | Clear. The 50 meters can be adjusted after the boundary is measured at the gym. The demo classroom must be farther than 50 meters from the gym (team) | Review; Q&A 2026-10-14 |
+| REQ-NF-29 | The location boundary shall be configurable per environment. Production shall refuse to start if the configured boundary is more than 50 meters from the gym coordinates (REQ-NF-28), so the classroom demo boundary cannot reach production. The December demo runs in a separate environment with the classroom boundary; production never carries that boundary. | N/A | High | Clear. The 50 meters can be adjusted after the boundary is measured at the gym. The demo classroom must be farther than 50 meters from the gym (team) | Review; Q&A 2026-10-14 |
 | REQ-NF-30 | The main flows shall pass on iPhone with Safari, Android with Chrome, and Windows with Chrome and Edge; macOS and Firefox as a secondary check. | N/A | High | Clear | main.tex:464 |
 | REQ-NF-31 | Availability: uptime target and manual procedure if the system fails. | N/A | Medium | Pending: what staff do if the system fails and how long downtime is tolerable (gym); who looks after the system after December (gym) | Review |
 | REQ-NF-32 | Database migrations shall be reproducible, and the development configuration shall be separate from the production configuration. | N/A | High | Clear | main.tex:515 |
@@ -760,7 +751,7 @@ Gym texts in two languages: REQ-F-58.
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-39 | The system shall record, for each Staff correction, Staff-assisted Check In, roster change, term or schedule change, import, PIN change, release of a claimed Authorization Number and in-person athlete registration: the account, the time, the IP address, the device and browser, and what changed (values before and after). Behind the proxy, the real IP address is read from the proxy header. Because the gym account is shared, the log cannot name the person; the gym identifies who it was by checking the shift schedule. Only Administrators (with the PIN) can see the log. | N/A | High | Clear. Each entry is kept until the end of the semester in which it happened (REQ-NF-05) | main.tex:212, 513; Q&A 2026-10-13, 2026-10-14 |
+| REQ-NF-39 | The system shall record, for each Staff correction, Staff-assisted Check In, roster change, term or schedule change, import, PIN change, release of a claimed Authorization Number, manual grant or revoke of an authorization (with its reason), import undo, gym account password change and in-person athlete registration: the account, the time, the IP address, the device and browser, and what changed (values before and after). Behind the proxy, the real IP address is read from the proxy header. Because the gym account is shared, the log cannot name the person; the gym identifies who it was by checking the shift schedule. Only Administrators (with the PIN) can see the log. Entries that mention a user whose account was deleted stay intact until the end of their term. | N/A | High | Clear. Each entry is kept until the end of the term in which it happened (REQ-NF-05) | main.tex:212, 513; Q&A 2026-10-13, 2026-10-14 |
 
 ### 8.2 Testing
 
@@ -804,9 +795,10 @@ Gym texts in two languages: REQ-F-58.
 | Export Orders | WooCommerce feature that exports orders to a file |
 | FERPA | Family Educational Rights and Privacy Act: U.S. federal law that protects students' education records |
 | Gym account | The one shared account the gym uses. Without the PIN it works as Staff; with the PIN, as Administrator |
-| Gym ID | Credential in the PWA with name, photo, authorization, Check In status, minutes left and a moving clock. Staff verify it against the backend |
+| Gym ID | Credential in the PWA with name, photo, authorization, Check In status, minutes left and a moving clock. No code or QR. Staff verify it by name and photo in the active sessions list. A paid member's Gym ID shows "expired" after 60 minutes; an athlete's does not expire while the term authorization is active |
 | HTTPS | Hypertext Transfer Protocol Secure: encrypted HTTP |
-| Paid member | User with a semester membership paid in WooCommerce |
+| Paid member | User with a term membership paid in WooCommerce |
+| Manual authorization | Authorization an Administrator grants by hand to an existing account, until the end of a chosen term, for order errors (REQ-F-87) |
 | MVP | Minimum Viable Product: scope validated first (`main.tex:295`) |
 | Estimated occupancy | Number of active facility sessions. It is not a physical headcount |
 | PIN | Single secret number, known only to the gym administration, that unlocks the Administrator actions of the gym account |
@@ -815,19 +807,19 @@ Gym texts in two languages: REQ-F-58.
 | SAML | Security Assertion Markup Language: standard for signing in through an external provider |
 | Secondary | Scope planned after the MVP is stable (`main.tex:295`). Committed for December (1.3) |
 | Service worker | Browser script that lets the PWA be installed and cache files |
-| Authenticated session | Device signed in to an account |
+| Sign-in session | Device signed in to an account. Not the same as a facility session |
 | Facility session | 60-minute period created by a valid Check In (facility session, `main.tex:358`) |
 | SMTP | Simple Mail Transfer Protocol: protocol for sending email |
 | SPF | Sender Policy Framework: DNS record that says which servers can send email for a domain |
 | Staff | Gym staff, including front desk students, using the gym account without the PIN |
 | Stretch | Scope done only if the committed scope is complete and tested (`main.tex:295`) |
 | TBD | To Be Determined: missing information |
-| Academic term | Semester (or summer term, if the gym uses one) with configured start and end dates |
+| Academic term (term) | Period of the UPRM academic calendar with configured start and end dates. The proposal calls it "semester". A summer term exists only if configured |
 | UPRM | University of Puerto Rico at Mayagüez |
 | User | Person with an account: paid member or athlete |
 | VM | Virtual Machine |
 | Void | Staff correction that marks a session created by mistake. The record and its log stay, and the session stops counting in occupancy and analytics |
-| Waiver | Liability waiver the User accepts, stored with full name, email and emergency contact |
+| Waiver | Liability waiver the User accepts once, when the account is created, stored with full name, email and emergency contact |
 | WCAG | Web Content Accessibility Guidelines: W3C accessibility guidelines |
 | WooCommerce | Commerce system on WordPress that UPRM uses to charge for memberships |
 
@@ -841,6 +833,7 @@ Use cases by role:
 | User | Register as athlete | REQ-F-13 to REQ-F-15, REQ-F-17, REQ-F-73, REQ-F-76 |
 | User | Sign in, change phone, reset password | REQ-F-02 to REQ-F-07 |
 | User | Delete account | REQ-F-09 |
+| User | Edit emergency contact (Proposed) | REQ-F-60 |
 | User | Renew or change type | REQ-F-20, REQ-F-23 to REQ-F-26, REQ-F-78 to REQ-F-80 |
 | User | Accept waiver and give emergency contact | REQ-F-60 |
 | User | Check In and show Gym ID | REQ-F-33 to REQ-F-40, REQ-F-81 to REQ-F-83 |
@@ -853,9 +846,10 @@ Use cases by role:
 | User, Staff, Administrator | See facility analytics | REQ-F-61 to REQ-F-65, REQ-F-86 |
 | Administrator | Maintain the roster | REQ-F-49, REQ-F-51 |
 | Administrator | Release a claimed Authorization Number | REQ-F-74 |
-| Administrator | Enter and change the PIN | REQ-F-52, REQ-F-53, REQ-NF-48 |
+| Administrator | Grant or revoke an authorization by hand | REQ-F-87 |
+| Administrator | Enter and change the PIN; change the gym account password | REQ-F-52, REQ-F-53, REQ-NF-48 |
 | Administrator | Configure terms | REQ-F-21 |
-| Administrator | Import and reconcile WooCommerce | REQ-F-28 to REQ-F-31 |
+| Administrator | Import, reconcile and undo an import | REQ-F-28 to REQ-F-31 |
 | Administrator | Publish schedules, athletes-only periods, notices and information | REQ-F-55 to REQ-F-58, REQ-F-84 |
 | Administrator | See the audit log | REQ-NF-39 |
 
@@ -863,7 +857,7 @@ Use cases by role:
 
 | TBD | What is missing | Who answers | Blocks |
 |---|---|---|---|
-| Outgoing mail | CTI SMTP or relay, sender address, SPF and DKIM. Critical: athlete registration and password reset depend on it | CTI | REQ-F-06, REQ-F-15, REQ-F-75, REQ-F-77, REQ-NF-35 |
+| Outgoing mail | CTI SMTP or relay, sender address, SPF and DKIM. Critical: athlete registration and password reset depend on it. Only if CTI confirms there is none, REQ-F-77 is built | CTI | REQ-F-06, REQ-F-15, REQ-F-75, REQ-F-77, REQ-NF-35 |
 | PostgreSQL | Whether CTI accepts it or requires MySQL | CTI | REQ-F-17, REQ-F-36, REQ-NF-02 |
 | VM | Public IP, containers, subdomain, HTTPS, single name | CTI | 2.3, 2.4, REQ-NF-12 |
 | WooCommerce API | Whether there is access and with what restrictions | CTI | REQ-F-32 |
@@ -874,12 +868,12 @@ Use cases by role:
 | Authorization Number uniqueness | Whether the number is unique across orders; check with a real export | Team, gym | REQ-F-10 |
 | Export Orders | File format and columns | Team, gym | REQ-F-28 |
 | Contact number | Number shown to people who cannot register | Gym | REQ-F-72, REQ-F-73, REQ-F-76 |
-| Summer | Whether paid memberships are sold in summer and how that period is handled | Gym | REQ-F-21, REQ-F-22 |
+| Store sells only during terms | Confirm the store sells memberships only while a term runs, and whether a summer term is configured | Gym | REQ-F-21, REQ-F-22 |
 | Athletes-only periods | List of periods | Gym | REQ-F-82 to REQ-F-84 |
 | PIN holders | Who holds the PIN | Gym | REQ-F-53 |
 | Access and PIN table | Confirm the table in 3.10.1 matches how the gym works | Gym | REQ-F-52 |
 | Roster lists | Fields and format of the lists | Gym | REQ-F-49, REQ-F-51 |
-| Roster change report | Whether the gym wants a semester report of roster changes (optional) | Gym | 4.3 |
+| Roster change report | Whether the gym wants a term report of roster changes (optional) | Gym | 4.3 |
 | Safety records | Confirm that no documents or medical warnings are needed | Gym | REQ-F-60 |
 | English for later notices | Who provides English for notices published after December | Gym | REQ-F-58 |
 | Privacy notice | Approval of the team's draft | Gym | REQ-NF-25 |

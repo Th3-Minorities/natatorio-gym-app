@@ -40,7 +40,7 @@
 |---|---|
 | Question | Who creates the UPRM subdomain and the HTTPS certificate: A: CTI, or B: the team, with CTI approval? Can the app and the API share one name (app at `/`, API at `/api`)? |
 | Affects | REQ-NF-12 All traffic goes over HTTPS |
-| Feature | 2.4 Design and Implementation Constraints (single origin), 5.4 Communications Interfaces |
+| Feature | 2.4 Design and Implementation Constraints (single origin), 5.3 Communications Interfaces |
 | Why we ask | Phone location only works over HTTPS. The plan uses one name so login cookies work without cross-site rules. If two names are required, the login design changes. |
 | Answer | |
 | Answered by | |
@@ -54,8 +54,8 @@
 |---|---|
 | Question | What does CTI need from us to evaluate and approve the VM, and how long does it take? Please include: the form or process, technical data (operating system, CPU, memory, disk, network), who must manage the server and the application, and any security, network or monitoring conditions the system must meet. |
 | Affects | REQ-NF-31 Uptime target and manual procedure |
-| Feature | 2.5 Assumptions and Dependencies, 6.3 Security, 6.5 Other Quality Attributes |
-| Why we ask | Production in December depends on this approval. Any security or monitoring condition CTI sets becomes a requirement in 6.3 or 6.5. An unknown approval time is the main risk to the December demo. |
+| Feature | 2.5 Assumptions and Dependencies, 6.3 Security, 6.4 Other Quality Attributes |
+| Why we ask | Production in December depends on this approval. Any security or monitoring condition CTI sets becomes a requirement in 6.3 or 6.4. An unknown approval time is the main risk to the December demo. |
 | Answer | |
 | Answered by | |
 | Date | |
@@ -94,7 +94,7 @@
 |---|---|
 | Question | How can the system send email in production? A: through a CTI mail server or relay. B: there is none, but an external mail provider is allowed. C: no outgoing mail. For A or B: what sender address do we use (for example an `@uprm.edu` address), and who sets up the SPF and DKIM records? |
 | Affects | REQ-F-06 Password reset by email link; REQ-F-15 Athlete account created after email link; REQ-F-75 Owner recovers a claimed number with the password reset; REQ-F-77 In-person athlete registration (fallback); REQ-NF-35 Emails in the user's language |
-| Feature | 5.4 Communications Interfaces, 3.1 Accounts and Sign In, 3.2 Paid Member Registration, 3.3 Athlete Registration |
+| Feature | 5.3 Communications Interfaces, 3.1 Accounts and Sign In, 3.2 Paid Member Registration, 3.3 Athlete Registration |
 | Why we ask | Outgoing mail is now needed for two things: athlete registration (the account is created only after the athlete opens a link sent by email) and password reset. The paid member email is no longer verified, so REQ-F-12 was removed. With C, there is no password reset, and front desk staff must register each athlete in person after checking identification, only for athletes already in the roster (REQ-F-77). The team has not chosen an external mail provider; with B, student names and emails go through a third party, which needs approval (M-11). Please answer soon. |
 | Answer | |
 | Answered by | |
