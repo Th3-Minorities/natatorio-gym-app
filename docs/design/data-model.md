@@ -9,11 +9,15 @@ This document turns the logical data model in `design-notes.md` into PostgreSQL 
 - Times are `timestamptz`. Term dates are `date` in the `America/Puerto_Rico` time zone (REQ-NF-37).
 - `PK` primary key, `FK` foreign key, `UK` unique. A composite unique key is written in the field comment.
 - Solid lines are foreign keys in SQL. Dotted lines are links with no foreign key column.
-- Laravel framework tables are not drawn: `migrations`, `cache` (also holds the attempt limit counters of REQ-F-07, REQ-F-71 and REQ-NF-48), `jobs`, `failed_jobs` and `password_reset_tokens` (REQ-F-06, pending CTI M-07).
+- Laravel framework tables are not drawn: `migrations`, `cache` (also holds the attempt limit counters of REQ-F-07, REQ-F-71, REQ-F-89 and REQ-NF-48, and the request limit for emailed links), `jobs`, `failed_jobs` and `password_reset_tokens` (REQ-F-06, pending CTI M-07).
 
 ## 1. Overview: tables and links
 
-All 15 tables and how they relate. Fields are in sections 2 to 4.
+All 16 tables and how they relate. One of them, `email_links`, is Proposed (D9). Fields are in sections 2 to 4.
+
+### 1. All tables and links
+
+**Type:** Entity-relationship diagram. **Use it to:** see which tables exist and which ones point at which, before writing the migrations one by one.
 
 ```mermaid
 erDiagram
@@ -28,6 +32,8 @@ erDiagram
   imports ||--o{ imported_memberships : "brings"
   imported_memberships |o--o| authorizations : "claimed by"
   roster_records |o--o| authorizations : "claimed by"
+  roster_records ||--o{ email_links : "link sent for"
+  users |o--o{ email_links : "asked for by"
   authorizations |o--o{ facility_sessions : "used for"
   gym_accounts |o--o{ audit_log_entries : "records"
   schedule_slots {
@@ -49,6 +55,10 @@ erDiagram
 
 ## 2. Accounts and access
 
+### 2. Accounts and access tables
+
+**Type:** Entity-relationship diagram. **Use it to:** write the migrations and constraints for accounts, the gym account, sign-in sessions, terms, imports, the roster, emailed links and authorizations.
+
 ```mermaid
 erDiagram
   users ||--o{ authorizations : "holds"
@@ -61,33 +71,47 @@ erDiagram
   imports ||--o{ imported_memberships : "brings"
   imported_memberships |o--o| authorizations : "claimed by"
   roster_records |o--o| authorizations : "claimed by"
+  roster_records ||--o{ email_links : "link sent for"
+  users |o--o{ email_links : "asked for by"
 
   users {
     bigint id PK
     varchar(255) email UK "unique on lower(email), NULL after deletion"
     varchar(255) password "hash, NULL after deletion"
     varchar(2) locale "es or en"
-    varchar(255) current_session_id "decision D3"
-    timestamptz deleted_at "set when the account is deleted, decision D2"
+    varchar(255) current_session_id "the one session allowed in"
+    timestamptz deleted_at "set when the account is deleted"
   }
   gym_accounts {
     bigint id PK "CHECK id = 1, one row only"
     varchar(50) username UK
     varchar(255) password "hash"
     varchar(255) pin_hash
+    integer pin_version "starts at 1, plus 1 on every PIN change"
+    varchar(255) recovery_code_hash "hash of the one-time paper code"
+    timestamptz recovery_code_created_at "when the current code was made"
   }
   sign_in_sessions {
     varchar(255) id PK "Laravel session id"
     bigint user_id FK "index only, NULL for the gym account"
-    varchar(45) ip_address "decision D4"
-    text user_agent "decision D4"
-    text payload "PIN state and last person activity, decision D5"
+    varchar(45) ip_address "kept or blanked, still to decide"
+    text user_agent "kept or blanked, still to decide"
+    text payload "PIN unlock time and version, last person activity"
     integer last_activity "Unix time of the last request"
+  }
+  email_links {
+    bigint id PK "Proposed table"
+    varchar(20) purpose "athlete_registration or athlete_link"
+    varchar(64) token_hash UK "hash of the token in the link"
+    bigint roster_record_id FK "record whose email gets the link"
+    bigint user_id FK "signed-in User, NULL for registration"
+    timestamptz expires_at
+    timestamptz used_at "NULL until opened, single use"
   }
   waiver_acceptances {
     bigint id PK
     bigint user_id FK, UK
-    varchar(255) full_name "also the display name, decision D7"
+    varchar(255) full_name "also the display name"
     varchar(255) email
     varchar(255) emergency_contact_name
     varchar(30) emergency_contact_phone
@@ -112,7 +136,7 @@ erDiagram
     bigint import_id FK "import that created the row"
     bigint academic_term_id FK "term that contains paid_at"
     varchar(100) order_reference UK
-    varchar(20) authorization_number "UK with term, decision D1"
+    varchar(20) authorization_number "UK with term"
     varchar(255) name
     varchar(255) email "payment email"
     varchar(20) student_number "NULL when absent"
@@ -149,17 +173,23 @@ Notes:
 - **Expiry** is not stored. An authorization is current when `status = 'active'` and today in `America/Puerto_Rico` is on or before the term's `ends_on` (REQ-F-22, REQ-NF-01). A revoke (REQ-F-87) sets `status = 'revoked'` and keeps the claim, so the number is not freed.
 - **`created_account`** is set when registration created the account in the same step as the claim (REQ-F-13). Release uses it to decide whether the account is deleted (REQ-F-74). It cannot be derived from "first authorization", because an import undo can delete the first one.
 - **Import rows** store only counts. The list of created, updated and rejected orders (REQ-F-28) is returned on screen and not stored, so rejected orders leave no personal data behind.
-- **Athlete link (REQ-F-15).** A signed, expiring link (Laravel temporary signed URL) carries the roster record id, so it needs no table. This assumes the password, photo and waiver are entered after the link is opened. If the registration flow collects them before, a pending registration table is needed.
+- **Emailed links (REQ-F-15, E-58).** Athlete registration and "I am an athlete" use the same link: a random token sent to the roster record's `institutional_email`. `email_links` stores only the token's hash (Proposed, D9). A link works once, before `expires_at`; opening it sets `used_at`. For "I am an athlete" (`purpose = 'athlete_link'`), the claim (an `athlete` authorization) is created only when the link is opened, not when the student number is entered. Link requests are limited with a counter in the `cache` table. The registration link still assumes the password, photo and waiver are entered after the link is opened; if the flow collects them before, a pending registration table is needed. Both need outgoing mail (CTI M-07).
+- **Staff read the roster (E-59).** Staff search `roster_records` of the current term by name or student number, read only. No table change: who may write stays a backend permission rule.
+- **Recovery code (E-60, REQ-F-89).** The install command makes a one-time code, shows it once, and stores only its hash in `recovery_code_hash`. Using the code sets a new `password` and `pin_hash`, raises `pin_version`, and stores the hash of a new code with a new `recovery_code_created_at`, all in one transaction, so the old code is used up. Attempts are limited with a counter in the `cache` table, like the PIN, and each use writes an audit log entry.
 
 ### Sign-in sessions and the PIN
 
 - `sign_in_sessions` is Laravel's database session table, with `config('session.table')` set to `sign_in_sessions`. Its columns are Laravel's, unchanged except as decision D4 says.
 - **One device per User (REQ-F-03).** Not a SQL constraint: Laravel writes the session row at the end of each request, and a unique index on `user_id` would make the new device's insert fail silently. The rule is checked by the backend (decision D3). The gym account has no device limit.
-- **PIN active per browser and last person activity (REQ-NF-48).** Both live in the session `payload` of that browser: `pin_unlocked_at` and `last_person_activity_at`. Only requests the frontend marks as made by a person update `last_person_activity_at`. The `last_activity` column cannot be used for the 15-minute rule, because every request, polling included, updates it.
+- **PIN active per browser and last person activity (REQ-NF-48, E-56).** Both live in the session `payload` of that browser, under the keys `pin_unlocked_at`, `pin_version` (the gym account's `pin_version` at the moment of unlock) and `last_person_activity_at`. Every Administrator request compares the session's `pin_version` with `gym_accounts.pin_version`; if they differ, the PIN is closed. A PIN change (also through the recovery code) adds 1 to `gym_accounts.pin_version`, which closes the PIN in every browser at once. Only requests the frontend marks as made by a person update `last_person_activity_at`. The `last_activity` column cannot be used for the 15-minute rule, because every request, polling included, updates it.
 
 ## 3. Sessions and occupancy
 
 `users` and `authorizations` appear only as links; their fields are in section 2.
+
+### 3. Sessions and schedule tables
+
+**Type:** Entity-relationship diagram. **Use it to:** write the migrations and constraints for facility sessions and schedule slots.
 
 ```mermaid
 erDiagram
@@ -186,7 +216,7 @@ erDiagram
   schedule_slots {
     bigint id PK
     varchar(20) type "regular_hours, special_hours, closure or athletes_only"
-    smallint weekday "weekly slots only, decision D8"
+    smallint weekday "weekly slots only"
     time start_time "weekly slots only"
     time end_time "weekly slots only"
     timestamptz starts_at "dated slots only"
@@ -208,6 +238,10 @@ Notes:
 
 `gym_accounts` appears only as a link; its fields are in section 2.
 
+### 4. Content and audit tables
+
+**Type:** Entity-relationship diagram. **Use it to:** write the migrations and constraints for the audit log, notices, facility information and settings.
+
 ```mermaid
 erDiagram
   gym_accounts |o--o{ audit_log_entries : "records"
@@ -217,7 +251,7 @@ erDiagram
   }
   audit_log_entries {
     bigint id PK
-    bigint gym_account_id FK "NULL for system alerts of REQ-F-71"
+    bigint gym_account_id FK "NULL for system alerts"
     timestamptz occurred_at
     inet ip_address "real client IP from the proxy header"
     text user_agent "device and browser"
@@ -243,7 +277,7 @@ erDiagram
   }
   settings {
     varchar(50) name PK
-    text value "for example the contact number of REQ-F-73"
+    text value "for example the gym contact number"
   }
 ```
 
@@ -275,6 +309,8 @@ Rules written as SQL in the migrations. Laravel's schema builder cannot express 
 | A manual grant has a reason | `authorizations` | `CHECK (type <> 'manual' OR reason IS NOT NULL)`. Drop it if the gym does not confirm the reason | REQ-F-87 (Proposed) |
 | One waiver per account | `waiver_acceptances` | `UNIQUE (user_id)` | REQ-F-60 |
 | One shared gym account | `gym_accounts` | `CHECK (id = 1)` | REQ-F-52, REQ-F-88 |
+| A PIN change closes the PIN in every browser | `gym_accounts` | `pin_version integer NOT NULL DEFAULT 1`. Every PIN change runs `SET pin_hash = ..., pin_version = pin_version + 1` in one UPDATE | REQ-NF-48 (E-56) |
+| An emailed link is found only by its hash and has the right owner | `email_links` | `UNIQUE (token_hash)`, `CHECK (purpose IN ('athlete_registration','athlete_link'))`, `CHECK ((purpose = 'athlete_link') = (user_id IS NOT NULL))` | REQ-F-15 (E-58, Proposed table) |
 | Chosen language is Spanish or English | `users` | `CHECK (locale IN ('es','en'))` | REQ-NF-33, REQ-NF-35 |
 | A schedule slot is either weekly or dated, never both | `schedule_slots` | `CHECK ((weekday IS NOT NULL AND start_time IS NOT NULL AND end_time IS NOT NULL AND starts_at IS NULL AND ends_at IS NULL) OR (weekday IS NULL AND start_time IS NULL AND end_time IS NULL AND starts_at IS NOT NULL AND ends_at IS NOT NULL))`, plus `CHECK (type IN (...))` and `CHECK (type NOT IN ('special_hours','closure') OR starts_at IS NOT NULL)` | REQ-F-55 |
 
@@ -284,9 +320,9 @@ Photo files live outside the database, so no foreign key can delete them. The ba
 
 | Table or data | (a) User deletes the account (REQ-F-09) | (b) Import is undone (REQ-F-31) | (c) Administrator releases an Authorization Number (REQ-F-74) |
 |---|---|---|---|
-| `users` | Row kept with no personal data: `email`, `password`, `locale`, `current_session_id` set to NULL, `deleted_at` set (decision D2). The email is free again | Kept | Kept. If `created_account` is true on the released authorization, the account goes through (a) |
+| `users` | Row kept with no personal data: `email`, `password`, `locale`, `current_session_id` set to NULL, `deleted_at` set (decision D2). The email is free again | Kept: accounts stay (E-57) | Kept. If `created_account` is true on the released authorization, the account goes through (a) |
 | `authorizations` | Deleted. Only expired or revoked ones can exist, because deletion needs no active authorization | Those that point at the deleted memberships are deleted (ON DELETE CASCADE) | The released one is deleted. Others of the same account stay, unless (a) applies |
-| Photo files | Deleted with their authorizations | Deleted with their authorizations (decision D6) | Deleted with the released authorization |
+| Photo files | Deleted with their authorizations | Deleted with their authorizations, row and file (E-57). The User uploads a new photo on the next claim | Deleted with the released authorization, row and file (E-57), also when the number was added to an existing account |
 | `waiver_acceptances` | Deleted | Kept | Kept, unless (a) applies |
 | `sign_in_sessions` | All of the User's rows deleted | Kept | Kept, unless (a) applies |
 | `facility_sessions` | Kept and still linked to the anonymous `users` row, so Check In counts, paid versus athlete and distinct people do not change (REQ-F-61) | Kept; `authorization_id` set to NULL; `authorization_type` keeps the type | Kept; `authorization_id` set to NULL |
@@ -295,6 +331,7 @@ Photo files live outside the database, so no foreign key can delete them. The ba
 | `imports` | Not affected | Row kept with `undone_at` set | Not affected |
 | `audit_log_entries` | Kept unchanged until the end of the term in which each happened (REQ-NF-05) | Kept; an undo entry is added (REQ-NF-39) | Kept; a release entry is added (REQ-NF-39) |
 | `password_reset_tokens` | Rows for the old email deleted | Not affected | Not affected, unless (a) applies |
+| `email_links` (Proposed) | The User's rows deleted | Not affected | Not affected, unless (a) applies |
 
 Foreign key on-delete behavior that follows from this table:
 
@@ -310,6 +347,8 @@ Foreign key on-delete behavior that follows from this table:
 | `imported_memberships.import_id` | RESTRICT | Import rows are never deleted; undo sets `undone_at` |
 | `audit_log_entries.gym_account_id` | RESTRICT | The gym account is never deleted |
 | `sign_in_sessions.user_id` | No SQL foreign key (Laravel default) | The backend deletes the rows in (a) |
+| `email_links.roster_record_id` | CASCADE | A link for a removed roster record must stop working |
+| `email_links.user_id` | CASCADE | Only reached if a users row is ever hard-deleted; the backend deletes the rows in (a) |
 
 ## 7. Personal data check (REQ-NF-21)
 
@@ -322,6 +361,8 @@ Foreign key on-delete behavior that follows from this table:
 | `waiver_acceptances`: all fields | REQ-F-60 |
 | `audit_log_entries`: `ip_address`, `user_agent`, `before_values`, `after_values` | REQ-NF-39 |
 | `sign_in_sessions.ip_address`, `sign_in_sessions.user_agent` | Not listed. See decision D4 |
+| `email_links` (Proposed) | No new personal data: a token hash, times, and links to a roster record and an account. The email goes to `roster_records.institutional_email`, already allowed (REQ-F-51) |
+| `gym_accounts.recovery_code_hash`, `gym_accounts.recovery_code_created_at` | Not personal data: a hashed secret of the shared gym account (REQ-F-89) |
 
 ## Design decisions to confirm
 
@@ -347,16 +388,9 @@ Foreign key on-delete behavior that follows from this table:
 - B: extend Laravel's database session handler so it writes NULL in both columns. A few lines of code. The audit log still gets the IP from the request itself.
 - Recommendation: B, because REQ-NF-21 says the system stores only the listed data.
 
-**D5. Where the PIN state and last person activity live (REQ-NF-48).** Status: Proposed.
-- A: in the session `payload` of that browser. No new columns; per browser by nature; ends when the session ends.
-- B: new columns `pin_unlocked_at` and `last_person_activity_at` on `sign_in_sessions`. Easy to query, but needs a custom session handler to write them.
-- Recommendation: A. Nothing needs to query these values across browsers.
+**D5. Where the PIN state and last person activity live (REQ-NF-48).** Decided (E-56): option A, in the session `payload` of that browser, plus `gym_accounts.pin_version` so a PIN change closes the PIN in every browser at once.
 
-**D6. Photos when an import is undone (REQ-F-31).** REQ-F-31 proposes that photos stay, but the photo is stored with the authorization, and undo deletes the authorization. Status: Proposed.
-- A: delete the photo with the authorization. When the User claims again with the corrected file, they upload a photo, as in any renewal (REQ-F-26). Simplest; one more step for the User.
-- B: move the photo path to a new `users.pending_photo_path` and reuse it on the next claim. Keeps the photo, but adds a column and splits where photos live.
-- C: a separate `photos` table linked to user and term. Changes the logical model.
-- Recommendation: A, and change the Proposed text of REQ-F-31 to "accounts stay".
+**D6. Photos when an import is undone (REQ-F-31).** Decided (E-57): option A, the photo (row and file) is deleted with the authorization, on undo and on release; accounts stay, and REQ-F-31 now says so.
 
 **D7. Where the User's name comes from (REQ-F-40, REQ-F-45).** The Gym ID and the Staff search need a name. Status: Proposed.
 - A: `waiver_acceptances.full_name`, already required by REQ-F-60 and copied from the payment record or roster. One place; survives import undo.
@@ -370,9 +404,14 @@ Foreign key on-delete behavior that follows from this table:
 - C: two tables, weekly and dated. Cleaner columns, two places to read for "is the gym open".
 - Recommendation: A. It matches how a gym publishes hours. Summer hours that differ would need a term link later (G-28 is pending).
 
+**D9. How emailed links are stored (REQ-F-15, E-58).** E-58 asks for links that are single use, expire, are stored hashed and have limited requests, for athlete registration and "I am an athlete". Status: Proposed.
+- A: a small `email_links` table with the token hash, the roster record, the User (for "I am an athlete"), `expires_at` and `used_at`. Meets every E-58 point. One more table.
+- B: a Laravel temporary signed URL with no table. No table, but the link can be opened many times until it expires, so it is not single use.
+- Recommendation: A, because B does not meet the single use rule.
+
 ## Gaps and questions
 
-1. **REQ-F-31 and design-notes disagree on photos.** REQ-F-31 (Proposed) keeps photos on undo, but the photo is stored with the authorization, which undo deletes. See D6.
+1. **Resolved by E-57.** Undo and release delete the photo (row and file) with the authorization; accounts stay.
 2. **REQ-F-31, undo after a reconciliation.** When import 2 only updated orders that import 1 created, undoing import 2 deletes nothing and does not restore the old values. Undoing import 1 deletes those orders, including import 2's corrections. The SRS does not say what undo means for updated rows.
 3. **REQ-NF-05, audit entries between terms.** Entries are kept "until the end of the term in which it happened", but REQ-F-21 allows gaps between terms. An entry in a gap has no term. What happens after the term ends is pending (G-03).
 4. **REQ-NF-21 and Laravel sessions.** The default session table stores IP and user agent (D4). The `cache` table holds attempt counters keyed by IP and email for a short time (REQ-F-07, REQ-F-71); REQ-NF-21 does not list that either.
@@ -387,43 +426,51 @@ Foreign key on-delete behavior that follows from this table:
 
 ## Traceability
 
-| Requirement | Where it appears |
+Diagram titles: 1. All tables and links; 2. Accounts and access tables; 3. Sessions and schedule tables; 4. Content and audit tables.
+
+| Requirement or decision | Where it appears |
 |---|---|
 | REQ-F-01 | 5. Database rules (one account per email); Gaps 10 |
-| REQ-F-03 | 2. Sign-in sessions and the PIN; D3 |
-| REQ-F-09 | 6. Deletion, column (a); D2; 4. Content and audit notes |
+| REQ-F-03 | Diagram 2 (`users.current_session_id`); Sign-in sessions and the PIN; D3 |
+| REQ-F-09 | 6. Deletion, column (a); D2; section 4 notes |
 | REQ-F-10 | 5. Database rules; D1 |
-| REQ-F-13 | 2. Accounts and access notes (`created_account`) |
-| REQ-F-15 | 2. Accounts and access notes (athlete link) |
-| REQ-F-17 | 1. Overview; 5. Database rules (claims and simultaneous claims) |
-| REQ-F-19 | 1. Overview; 2. Accounts and access (`authorizations`); 5. Database rules |
-| REQ-F-21 | 2. Accounts and access (`academic_terms`); 5. Database rules (exclusion on `daterange`) |
-| REQ-F-22 | 2. Accounts and access notes (expiry); 5. Database rules (order outside every term) |
-| REQ-F-26 | 2. Accounts and access notes (photo); D6 |
-| REQ-F-29 | 2. Accounts and access (`imported_memberships`); 7. Personal data check |
+| REQ-F-13 | Diagram 2 (`authorizations.created_account`) and its notes |
+| REQ-F-15 | Diagrams 1 and 2 (`email_links`); section 2 notes (emailed links); 5. Database rules; D9 |
+| REQ-F-17 | Diagram 1; 5. Database rules (claims and simultaneous claims) |
+| REQ-F-19 | Diagram 1; Diagram 2 (`authorizations`); 5. Database rules |
+| REQ-F-21 | Diagram 2 (`academic_terms`); 5. Database rules (exclusion on `daterange`) |
+| REQ-F-22 | Section 2 notes (expiry); 5. Database rules (order outside every term) |
+| REQ-F-26 | Diagram 2 (`authorizations.photo_path`); section 2 notes (photo); D6 |
+| REQ-F-29 | Diagram 2 (`imported_memberships`); 7. Personal data check |
 | REQ-F-30 | 5. Database rules (`order_reference`) |
-| REQ-F-31 | 6. Deletion, column (b); D6; Gaps 1 and 2 |
-| REQ-F-36 | 3. Sessions and occupancy notes; 5. Database rules (exclusion with `btree_gist`) |
+| REQ-F-31 | 6. Deletion, column (b); D6; Gaps 1 (resolved) and 2 |
+| REQ-F-36 | Diagram 3 (`facility_sessions`); section 3 notes; 5. Database rules (exclusion with `btree_gist`) |
 | REQ-F-37 | 5. Database rules |
-| REQ-F-38 | 3. Sessions and occupancy notes; 5. Database rules |
-| REQ-F-41 | 3. Sessions and occupancy notes |
-| REQ-F-48 | 3. Sessions and occupancy notes; 5. Database rules |
+| REQ-F-38 | Section 3 notes; 5. Database rules |
+| REQ-F-41 | Section 3 notes |
+| REQ-F-48 | Diagram 3 (`facility_sessions.status`); section 3 notes; 5. Database rules |
 | REQ-F-49 | 6. Deletion, FK table (`roster_record_id`) |
-| REQ-F-51 | 2. Accounts and access (`roster_records`); 5. Database rules |
-| REQ-F-52 | 5. Database rules (one gym account) |
-| REQ-F-55 | 3. Sessions and occupancy (`schedule_slots`); 5. Database rules; D8 |
-| REQ-F-58 | 3 and 4 (`text_en` NULL shows Spanish) |
-| REQ-F-60 | 2. Accounts and access (`waiver_acceptances`); 5. Database rules |
-| REQ-F-61 | 3. Sessions and occupancy notes; 6. Deletion, column (a) |
-| REQ-F-74 | 6. Deletion, column (c); 2. Accounts and access notes |
+| REQ-F-51 | Diagram 2 (`roster_records`); 5. Database rules |
+| REQ-F-52 | Diagram 2 (`gym_accounts`); 5. Database rules (one gym account) |
+| REQ-F-55 | Diagram 3 (`schedule_slots`); 5. Database rules; D8 |
+| REQ-F-58 | Diagrams 3 and 4 (`text_en` NULL shows Spanish) |
+| REQ-F-60 | Diagram 2 (`waiver_acceptances`); 5. Database rules |
+| REQ-F-61 | Diagram 3 (`authorization_type`); section 3 notes; 6. Deletion, column (a) |
+| REQ-F-74 | 6. Deletion, column (c); section 2 notes |
 | REQ-F-78 | 5. Database rules (one account per email) |
-| REQ-F-87 | 2. Accounts and access (`authorizations`); 5. Database rules |
+| REQ-F-87 | Diagram 2 (`authorizations`); 5. Database rules |
 | REQ-F-88 | 5. Database rules; Gaps 9 |
-| REQ-NF-01 | 3. Sessions and occupancy notes; 5. Database rules |
-| REQ-NF-05 | 4. Content and audit notes; 6. Deletion; Gaps 3 |
-| REQ-NF-20 | 2. Accounts and access notes (photo) |
+| REQ-F-89 | Diagram 2 (`gym_accounts.recovery_code_hash`, `recovery_code_created_at`); section 2 notes (recovery code); 7. Personal data check |
+| REQ-NF-01 | Section 3 notes; 5. Database rules |
+| REQ-NF-05 | Section 4 notes; 6. Deletion; Gaps 3 |
+| REQ-NF-20 | Section 2 notes (photo) |
 | REQ-NF-21 | 7. Personal data check; D4 |
 | REQ-NF-33 | 5. Database rules (locale) |
-| REQ-NF-39 | 4. Content and audit (`audit_log_entries`); 6. Deletion |
+| REQ-NF-39 | Diagram 4 (`audit_log_entries`); 6. Deletion |
 | REQ-NF-42 | 5. Database rules (simultaneous requests) |
-| REQ-NF-48 | 2. Sign-in sessions and the PIN; D5 |
+| REQ-NF-48 | Diagram 2 (`gym_accounts.pin_version`, `sign_in_sessions.payload`); Sign-in sessions and the PIN; 5. Database rules; D5 |
+| E-56 | Diagram 2 (`gym_accounts.pin_version`); Sign-in sessions and the PIN; 5. Database rules; D5 |
+| E-57 | 6. Deletion, columns (b) and (c); D6; Gaps 1 |
+| E-58 | Diagrams 1 and 2 (`email_links`, Proposed); section 2 notes (emailed links); 6. Deletion; D9 |
+| E-59 | Section 2 notes (Staff read the roster). No table change |
+| E-60 | Diagram 2 (`gym_accounts.recovery_code_hash`); section 2 notes (recovery code); 7. Personal data check |
