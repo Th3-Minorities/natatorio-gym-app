@@ -79,7 +79,7 @@ The baseline is the proposal, in force until further notice. `docs/context.md` l
 - **Proposal priority:** MVP, Secondary or Stretch from the proposal scope table (Proposal:293-310); N/A if it is not in that table.
 - **Final priority:** MVP is High, Secondary is Medium, Stretch is Low. Exceptions: a Secondary or N/A row that an MVP flow needs is High; any other N/A row is Medium. High and Medium are committed for December; High is built first. Low is built only if the rest is complete and tested.
 - **Status:** **Clear** (can be built and tested now) or **Pending** (information is missing; the cell names who answers and the question ID in `docs/decisions/`).
-- **Source:** **Proposal:LINE** (a line of the proposal, see 1.4); **Team decision** (recorded in `context.md` or `docs/decisions/team.md`); **Review gap** (found in the requirements review, not in the proposal).
+- **Source:** **Proposal:LINE** (a line of the proposal, see 1.4); **Team decision** (recorded in `context.md` or `docs/decisions/team.md`); **Review gap** (found in the requirements review, not in the proposal); **Professor feedback** (from the grading comments on the proposal).
 - **Proposed:** a rule the team suggests that still needs confirmation.
 - Terms: "term" means academic term (the proposal says "semester"). "Sign-in session" is the login on a device. "Session" alone is the 60-minute facility session.
 
@@ -112,6 +112,8 @@ Stretch features, built only if the committed scope is complete and tested (Prop
 | SRS Template, `software-documentation` repository | https://github.com/gusonkuntarto/software-documentation/blob/main/Software%20Requirements%20Specification%20(SRS)%20Template.docx | Structure of this document |
 | WCAG 2.2, W3C, December 12, 2024 | https://www.w3.org/TR/WCAG22/ | Cited in Proposal:594 |
 | Geolocation, W3C | https://www.w3.org/TR/geolocation/ | Cited in Proposal:596 |
+| NIST SP 800-63B-4, Digital Identity Guidelines: Authentication and Authenticator Management, final, July 2025 | https://csrc.nist.gov/pubs/sp/800/63/b/4/final | Checked in design for password and session rules |
+| OWASP Application Security Verification Standard (ASVS), 5.0.0 | https://owasp.org/www-project-application-security-verification-standard/ | Checked in design for authentication and session controls |
 
 ## 2. Overall Description
 
@@ -416,6 +418,8 @@ Screens by role follow the Overview table. Detailed screen design: design phase.
 
 ### 6.3 Security
 
+Authentication rules (passwords, sessions, attempt limits) are checked in design against NIST SP 800-63B-4 and OWASP ASVS (see 1.4).
+
 Attempt limits: REQ-F-07 (sign in), REQ-F-71 (Authorization Number lookups), REQ-NF-48 (PIN).
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
@@ -466,6 +470,8 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-71 (Authorization Number lookups), REQ
 | REQ-NF-42 | Tests shall show that simultaneous Check In requests and repeated Authorization Number or roster claims produce at most one session or one claim. | N/A | High | Clear | Proposal:462, 573 |
 | REQ-NF-43 | Location and PWA behavior shall be tested on real phones. | N/A | High | Clear | Proposal:515 |
 | REQ-NF-44 | Each test plan case shall be linked to an objective and shall use controlled datasets. | N/A | High | Clear | Proposal:515, 573-575 |
+| REQ-NF-49 | Before the release, gym staff and real users (paid members and athletes) shall run the main flows on their own phones and computers: registration, Check In, Gym ID, Staff-assisted Check In and import. The gym records whether each flow is accepted. | N/A | High | Pending: who takes part and when (gym) | Professor feedback |
+| REQ-NF-50 | A load test shall run simultaneous Check Ins above the expected peak. At most one session per User shall be created and the occupancy shall stay correct. | N/A | High | Pending: peak number (REQ-NF-15, G-05), fixed in design (team) | Professor feedback |
 
 ### 8.3 Legal, Intellectual Property and Privacy
 
