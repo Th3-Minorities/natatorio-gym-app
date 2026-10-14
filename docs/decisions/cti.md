@@ -79,8 +79,8 @@
 | Field | Value |
 |---|---|
 | Question | Does CTI accept PostgreSQL in a container? A: yes. B: CTI prefers MySQL but accepts PostgreSQL. C: CTI requires MySQL to approve the VM. |
-| Affects | REQ-F-17 One account per roster record or number; REQ-F-36 Check In creates exactly one session; REQ-NF-02 Rules enforced in the database |
-| Feature | 2.4 Design and Implementation Constraints, 3.3 Athlete Registration, 3.6 Check In and Facility Session, 4.4 Data Requirements |
+| Affects | REQ-F-17 One account per roster record or number; REQ-F-36 Check In creates exactly one session (both now hold the database rule of old REQ-NF-02) |
+| Feature | 2.4 Design and Implementation Constraints, 3.3 Athlete Registration, 3.6 Check In and Facility Session, 4.3 Data Acquisition, Integrity, Retention, and Disposal |
 | Why we ask | The rule of one active session per user uses a PostgreSQL feature (exclusion constraint) that MySQL does not have. With C, these three requirements need a new design. |
 | Answer | |
 | Answered by | |
@@ -108,7 +108,7 @@
 |---|---|
 | Question | Can the database, student photos and documents stay on the VM disk? Is that disk encrypted? Does CTI offer other storage we should use instead? |
 | Affects | REQ-NF-20 Private storage for photos and documents |
-| Feature | 4.4 Data Acquisition, Integrity, Retention, and Disposal, 6.3 Security |
+| Feature | 4.3 Data Acquisition, Integrity, Retention, and Disposal, 6.3 Security |
 | Why we ask | The current design keeps all data on the VM, with no external service. If the disk is not encrypted, the team must decide whether to encrypt files itself. |
 | Answer | |
 | Answered by | |
@@ -120,7 +120,7 @@
 |---|---|
 | Question | Where can we keep backups of the database and photos outside the VM, and for how long? A: VM snapshots made by CTI. B: CTI storage or another UPRM server. C: an approved external service. |
 | Affects | REQ-NF-06 Backups and a tested restore |
-| Feature | 4.4 Data Acquisition, Integrity, Retention, and Disposal |
+| Feature | 4.3 Data Acquisition, Integrity, Retention, and Disposal |
 | Why we ask | A backup kept only on the VM is lost with the VM. REQ-NF-06 stays Pending until we know the place and how long copies are kept. |
 | Answer | |
 | Answered by | |
@@ -148,7 +148,7 @@ Also asked in gym.md: G-01 (who looks after the system after December).
 |---|---|
 | Question | Who approves sending student data (names, emails, student numbers, photos, emergency contacts) to a service outside UPRM? Is any external service allowed during the prototype? |
 | Affects | REQ-NF-09 No external services without approval |
-| Feature | 4.4 Data Acquisition, Integrity, Retention, and Disposal, 2.4 Design and Implementation Constraints |
+| Feature | 4.3 Data Acquisition, Integrity, Retention, and Disposal, 2.4 Design and Implementation Constraints |
 | Why we ask | Today the rule is: no student data in external services without approval, and nobody is named to approve. The answer decides whether an external mail provider (M-07 B) or external backup (M-06 C) is possible. |
 | Answer | |
 | Answered by | |
@@ -160,7 +160,7 @@ Also asked in gym.md: G-01 (who looks after the system after December).
 |---|---|
 | Question | Does FERPA or another UPR policy apply to gym data (student number, athlete status, photo, Check In history, emergency contacts)? Which UPRM office can confirm it, for example the Registrar or a compliance office? |
 | Affects | REQ-NF-47 Comply with applicable laws and policies; REQ-NF-04 Discard photos from earlier terms; REQ-NF-05 Retention rules by data type |
-| Feature | 8.4 Legal, Intellectual Property and Privacy, 4.4 Data Acquisition, Integrity, Retention, and Disposal |
+| Feature | 8.3 Legal, Intellectual Property and Privacy, 4.3 Data Acquisition, Integrity, Retention, and Disposal |
 | Why we ask | We found signs that FERPA applies to UPR, but no confirmation, and we do not know if gym data counts as an education record. The answer sets the rules for retention, access and the privacy notice. |
 | Answer | |
 | Answered by | |
@@ -174,7 +174,7 @@ Also asked in gym.md: G-03 (retention periods).
 |---|---|
 | Question | Can the team copy real WooCommerce order records to its own computers to test the import? A: no, only on a UPRM machine or the VM. B: yes, within CTI limits (number of records, which machines, how long). C: CTI has no rule; the team sets limits with the gym's permission. |
 | Affects | REQ-NF-07 Real data only for integration tests |
-| Feature | 4.4 Data Acquisition, Integrity, Retention, and Disposal |
+| Feature | 4.3 Data Acquisition, Integrity, Retention, and Disposal |
 | Why we ask | Development uses fake data. One test with real records is needed to check the import. REQ-NF-07 stays Pending until we know the limits. |
 | Answer | |
 | Answered by | |

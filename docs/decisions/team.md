@@ -6,11 +6,11 @@
 
 | Section | Total | Answered | Open |
 |---|---|---|---|
-| Requirement questions | 16 | 15 | 1 |
-| Decisions from the design-readiness review | 17 | 17 | 0 |
+| Requirement questions | 17 | 15 | 2 |
+| Decisions from the design-readiness review | 24 | 24 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 0 | 6 |
-| Total | 44 | 32 | 12 |
+| Total | 52 | 39 | 13 |
 
 ## Scope and priorities
 
@@ -82,7 +82,7 @@
 |---|---|
 | Question | Is the Authorization Number unique across orders? It may be a card approval code, which can repeat. Check it with a real Export Orders file. |
 | Affects | REQ-F-10 Validate Authorization Number against imports; REQ-F-17 One account per roster record or number |
-| Feature | 3.2 Paid Member Registration, 4.2 Data Dictionary |
+| Feature | 3.2 Paid Member Registration, 4.1 Data Dictionary |
 | Why we ask | Registration uses only the Authorization Number, which has 6 digits in the sample receipt. If two orders can share a number, the lookup can match the wrong order. Also asked in gym.md, G-19. |
 | Answer | |
 | Answered by | |
@@ -93,7 +93,7 @@
 | Field | Value |
 |---|---|
 | Question | Do users reset a forgotten password on their own with an email link? A: yes. B: no, staff help at the front desk. |
-| Affects | REQ-F-06 Password reset by email link; REQ-F-05 Account recovery after a lost phone |
+| Affects | REQ-F-06 Password reset by email link; REQ-F-03 Account recovery after a lost phone (was REQ-F-05) |
 | Feature | 3.1 Accounts and Sign In |
 | Why we ask | A needs outgoing mail (cti.md, M-07). With B, every forgotten password goes through staff (gym.md, G-04). |
 | Answer | A: yes, reset by email link (REQ-F-06). It depends on CTI outgoing mail (cti.md, M-07). There is no staff process for a lost phone: the user signs in on the new phone, and the old session ends. |
@@ -158,7 +158,7 @@
 |---|---|
 | Question | Which photo file types and what maximum size do we accept? For example JPEG, PNG and HEIC (the iPhone default), up to a set number of MB. |
 | Affects | REQ-NF-24 Photo types, size and metadata |
-| Feature | 6.3 Security, 4.2 Data Dictionary |
+| Feature | 6.3 Security, 4.1 Data Dictionary |
 | Why we ask | REQ-NF-24 needs the list and the limit. Rejecting HEIC makes iPhone users convert photos first. |
 | Answer | JPEG, PNG and HEIC, up to 10 MB. The server converts the photo to JPEG and strips location metadata. |
 | Answered by | Carlos Pepin |
@@ -225,18 +225,41 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-33 | Gym ID lookup | Staff verify a Gym ID by searching the person by name in the active sessions list and comparing the photo. The Gym ID has no code or QR. SRS REQ-F-45. | Carlos Pepin | 2026-10-14 |
 | E-34 | Order to term | An order belongs to the term that contains its payment date. Assumed: the store only sells memberships while a term runs; no summer membership unless a summer term is configured (gym.md, G-26). Orders dated outside every term are rejected and listed in the import result. SRS REQ-F-22, REQ-F-29. | Carlos Pepin | 2026-10-14 |
 | E-35 | Manual authorization | PIN holders can grant an authorization by hand to an existing account, until the end of a chosen term, and revoke one, for order errors. Proposed: a reason is required, and the action is logged with time, IP and reason. SRS REQ-F-87. | Carlos Pepin | 2026-10-14 |
-| E-36 | Check In while closed | Check In is rejected, with a notice, when the gym is closed by its published schedule or a published closure. SRS REQ-F-33, REQ-F-35, REQ-F-55. | Carlos Pepin | 2026-10-14 |
+| E-36 | Check In while closed | Check In is rejected, with a notice, when the gym is closed by its published schedule or a published closure. SRS REQ-F-33 (old REQ-F-35 merged into it), REQ-F-55. | Carlos Pepin | 2026-10-14 |
 | E-37 | Waiver | Accepted once, when the account is created, and valid while the account exists. Not repeated each term or when the text changes. Without it the account is not created. Proposed: the User can edit the emergency contact at any time; Staff see the current value. SRS REQ-F-60. | Carlos Pepin | 2026-10-14 |
 | E-38 | Athlete photo per term | The first time an athlete signs in during a new term, the app asks for the new photo before Check In is allowed. SRS REQ-F-25, REQ-F-26. | Carlos Pepin | 2026-10-14 |
-| E-39 | After 60 minutes | Paid member: the Gym ID shows "expired" with text and icon; nobody has to leave. Athlete: the Gym ID does not expire while the term authorization is active; Staff verify against the roster. Occupancy undercounts athletes who stay longer. SRS REQ-F-38, REQ-F-40, REQ-F-41, REQ-F-81. | Carlos Pepin | 2026-10-14 |
-| E-40 | Gym account creation | The team creates the gym account, its password and the first PIN once with a server install command and gives them to the Administrator. The Administrator then changes both from the app using the current PIN. Changing the password withdraws access when an employee leaves. SRS 2.2, REQ-NF-48. | Carlos Pepin | 2026-10-14 |
+| E-39 | After 60 minutes | Paid member: the Gym ID shows "expired" with text and icon; nobody has to leave. Athlete: the Gym ID does not expire while the term authorization is active; Staff verify against the roster. Occupancy undercounts athletes who stay longer. SRS REQ-F-38, REQ-F-40, REQ-F-41 (old REQ-F-81 merged into these). | Carlos Pepin | 2026-10-14 |
+| E-40 | Gym account creation | The team creates the gym account, its password and the first PIN once with a server install command and gives them to the Administrator. The Administrator then changes both from the app using the current PIN. Changing the password withdraws access when an employee leaves. SRS REQ-F-88, REQ-NF-48. | Carlos Pepin | 2026-10-14 |
 | E-41 | Athlete registration flows | Only the email-link flow (REQ-F-15) is built. The in-person flow (REQ-F-77) is built only if CTI confirms there is no outgoing mail. | Carlos Pepin | 2026-10-14 |
 | E-42 | Demo environment | The December demo runs in a separate environment with the classroom boundary. Production never carries it. The 50 meter rule stays. SRS REQ-NF-29. | Carlos Pepin | 2026-10-14 |
 | E-43 | Registration photo failure | The account and the claim are saved together in one operation only after the photo is saved. If the photo fails nothing is claimed. The Authorization Number is checked and the masked email shown as soon as it is typed. SRS REQ-F-13. | Carlos Pepin | 2026-10-14 |
 | E-44 | Athlete removed mid-term | The Gym ID stops being valid at once; the athlete counts in occupancy until the current session ends; no new Check In. SRS REQ-F-49, REQ-F-22. | Carlos Pepin | 2026-10-14 |
 | E-45 | Import undo | Any import can be undone at any time. Undo deletes its membership records and dependent authorizations. Accounts and photos stay; people claim again with the corrected file (Proposed). Logged. SRS REQ-F-31. | Carlos Pepin | 2026-10-14 |
-| E-46 | Audit log and deleted users | Entries that mention a deleted user stay intact until the end of their term, then follow the normal retention rule. The distinct people count (REQ-F-86) does not change. SRS REQ-F-09, REQ-NF-05, REQ-NF-39. | Carlos Pepin | 2026-10-14 |
+| E-46 | Audit log and deleted users | Entries that mention a deleted user stay intact until the end of their term, then follow the normal retention rule. The distinct people count (REQ-F-61 (f), was REQ-F-86) does not change. SRS REQ-F-09, REQ-NF-05, REQ-NF-39. | Carlos Pepin | 2026-10-14 |
 | E-47 | Terminology | Use "term" instead of "semester" except in quotes from the proposal. "Sign-in session" is the login session; "facility session" or "session" is the 60-minute gym session. SRS 1.2. | Carlos Pepin | 2026-10-14 |
+| E-48 | Term overlap | Terms never overlap: when the Administrator saves a term, dates that overlap another term are rejected. Gaps between terms are fine. SRS REQ-F-21. | Carlos Pepin | 2026-10-14 |
+| E-49 | Assisted Check In in athletes-only periods | Staff-assisted Check In follows the athletes-only rule: it is rejected for a paid member during an athletes-only period. SRS REQ-F-46, REQ-F-82. | Carlos Pepin | 2026-10-14 |
+| E-50 | User with no active authorization | Sees the status ("expired" or "not on the roster"), the Authorization Number field, the contact number, schedules, notices, facility information and analytics. Cannot do Check In. SRS REQ-F-23. | Carlos Pepin | 2026-10-14 |
+| E-51 | PIN warning | The warning after 10 minutes has a "Keep going" button that resets the full 15 minutes. It takes keyboard focus and is read by screen readers (WCAG 2.2.1). SRS REQ-NF-48. | Carlos Pepin | 2026-10-14 |
+| E-52 | Release of a wrong claim | When the Administrator releases an Authorization Number claimed by mistake, if that claim created the account, the account is deleted with its photo; if the number was added to an existing account (for example a renewal), only that authorization is removed and the account stays. The number is free again. SRS REQ-F-74. | Carlos Pepin | 2026-10-14 |
+| E-53 | Global lookup limit | The per-IP limit stays. The global limit on failed Authorization Number lookups never blocks registrations: it only slows each lookup and leaves an alert entry in the audit log for the Administrator. SRS REQ-F-71, REQ-NF-39. | Carlos Pepin | 2026-10-14 |
+| E-54 | Assisted Check In without a phone | For a paid member, Staff search the person by name and compare the stored photo with the person. No receipt or payment confirmation is needed. Athletes still give the student number. SRS REQ-F-46. Changes the answer of gym.md, G-16. | Carlos Pepin | 2026-10-14 |
+
+## WooCommerce import
+
+### E-55: Review the Export Orders example
+
+| Field | Value |
+|---|---|
+| Question | Review the Export Orders example: columns, how the term is read, and whether the Authorization Number is unique. |
+| Affects | REQ-F-28 Load an Export Orders file; REQ-F-29 Fields the import copies; REQ-F-10 Validate the Authorization Number (with E-30) |
+| Feature | 3.5 WooCommerce Import, 3.2 Paid Member Registration |
+| Why we ask | The team has an example file but cannot share it yet. The import cannot be designed without the real columns. |
+| Owner | Carlos Pepin |
+| Status | Open |
+| Answer | |
+| Answered by | |
+| Date | |
 
 ## Questions for the professor or advisors
 
@@ -296,7 +319,7 @@ These are course questions, not requirement questions.
 |---|---|
 | Question | Which Capstone or UPRM policy decides who owns the code and under which license it is released? |
 | Affects | REQ-NF-46 Ownership and license follow UPRM policy |
-| Feature | 8.4 Legal, Intellectual Property and Privacy |
+| Feature | 8.3 Legal, Intellectual Property and Privacy |
 | Why we ask | REQ-NF-46 stays Pending until the terms are known. They matter before any long-term deployment at UPRM. |
 | Answer | |
 | Answered by | |

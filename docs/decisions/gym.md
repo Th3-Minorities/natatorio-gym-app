@@ -93,9 +93,9 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Field | Value |
 |---|---|
 | Question | When a user loses or changes their phone and cannot get back into the account, what do staff do? A: nothing, the user signs in on the new phone with the password. B: staff check the person's ID at the front desk and help restore access. C: another process (describe it). |
-| Affects | REQ-F-05 Account recovery after a lost phone |
+| Affects | REQ-F-03 Account recovery after a lost phone (was REQ-F-05) |
 | Feature | 3.1 Accounts and Sign In |
-| Why we ask | Each account works on one device at a time. REQ-F-05 stays Pending until the staff role is defined. |
+| Why we ask | Each account works on one device at a time. REQ-F-05 (now part of REQ-F-03) stayed Pending until the staff role was defined. |
 | Answer | A: the user signs in on the new phone with the password, and the old session ends. A user who forgot the password uses the email reset (team.md, E-11). There is no staff process. |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
@@ -106,7 +106,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 |---|---|
 | Question | What does the Authorization Number look like? How long is it, does it use letters or only digits, is it random or in sequence, and can it be used only once? A sample with part of the number hidden helps. |
 | Affects | REQ-F-10 Validate Authorization Number against imports |
-| Feature | 3.2 Paid Member Registration, 4.2 Data Dictionary |
+| Feature | 3.2 Paid Member Registration, 4.1 Data Dictionary |
 | Why we ask | The number is the paid member's proof of purchase. If it is short or in sequence, someone can guess another member's number, and registration needs extra protection. |
 | Answer | From a sample receipt email: the Authorization Number is the 6-digit value in the Payment Description. Registration uses only this number, with these protections: limits on failed lookups per IP address and in total, a masked payment email, the same message for an invalid and an already claimed number, release of a number claimed by mistake by PIN holders, and recovery by the real owner with the password reset. Still open: whether the number is unique across orders. The team checks it with a real export (team.md, E-30). |
 | Answered by | Carlos Pepin (team), gym to confirm |
@@ -157,9 +157,9 @@ Also asked in cti.md, if CTI manages the store.
 | Field | Value |
 |---|---|
 | Question | (Closed: there is no roster permission; see Answer.) Who decides which Staff members get the roster permission? A: the Administrator, in the system. B: the department names them and the Administrator grants the permission. |
-| Affects | REQ-F-53 Only PIN holders change the PIN; REQ-F-49 Only PIN holders change the roster |
+| Affects | REQ-NF-48 Only PIN holders change the PIN (was REQ-F-53); REQ-F-49 Only PIN holders change the roster |
 | Feature | 3.10 Gym Account, PIN and Permissions, 3.9 Athlete Roster |
-| Why we ask | Only Staff with this permission can change the roster. REQ-F-53 stays Pending until we know who grants it. |
+| Why we ask | Only Staff with this permission can change the roster. REQ-F-53 (now part of REQ-NF-48) stayed Pending until we knew who grants it. |
 | Answer | Closed. There is no separate roster permission. The gym uses one shared gym account, and the roster tool needs the PIN. Who holds the PIN is asked in G-29. |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
@@ -198,7 +198,7 @@ Also asked in cti.md, if CTI manages the store.
 | Affects | REQ-F-46 Staff-assisted Check In |
 | Feature | 3.8 Staff Operations |
 | Why we ask | Staff must find the account and confirm it is the same person. REQ-F-46 stays Pending until the accepted identification is set. |
-| Answer | A paid member shows a photo of the payment confirmation, and staff find the account by Authorization Number. An athlete gives the student number. Staff also compare the photo stored in the account with the person in front of them (confirmed 2026-10-14). |
+| Answer | A paid member shows a photo of the payment confirmation, and staff find the account by Authorization Number. An athlete gives the student number. Staff also compare the photo stored in the account with the person in front of them (confirmed 2026-10-14). Changed 2026-10-14 (team.md, E-54): for a paid member, Staff search by name and compare the stored photo; no receipt or payment confirmation is needed. Athletes still give the student number. |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
@@ -231,9 +231,9 @@ Also asked in cti.md, if CTI manages the store.
 | Field | Value |
 |---|---|
 | Question | The team will send a one-page table with the access and renewal rules and with what the shared gym account can do without the PIN (front desk) and with the PIN (administration), including who sees the audit log. Does it match how the gym works? Mark any change. |
-| Affects | REQ-F-22 to REQ-F-26 Expiry and renewal rules; REQ-F-52 Gym account actions allowed by PIN; REQ-F-53 Only PIN holders change the PIN; REQ-NF-39 Audit log of gym actions |
+| Affects | REQ-F-22 to REQ-F-26 Expiry and renewal rules; REQ-F-52 Gym account actions allowed by PIN; REQ-NF-48 Only PIN holders change the PIN (was REQ-F-53); REQ-NF-39 Audit log of gym actions |
 | Feature | 3.4 Authorization, Academic Terms and Renewal, 3.10 Gym Account, PIN and Permissions, 8.1 Audit |
-| Why we ask | The proposal says the gym validates these rules. The team replaced per-person roles with one gym account and a PIN (SRS 3.10.1). The gym must confirm it fits how they work. |
+| Why we ask | The proposal says the gym validates these rules. The team replaced per-person roles with one gym account and a PIN (SRS Overview, role table). The gym must confirm it fits how they work. |
 | Answer | |
 | Answered by | |
 | Date | |
@@ -267,7 +267,7 @@ Also asked in cti.md, if CTI manages the store.
 | Field | Value |
 |---|---|
 | Question | Who in the administration will know the PIN of the gym account? |
-| Affects | REQ-F-52 Gym account actions allowed by PIN; REQ-F-53 Only PIN holders change the PIN; REQ-NF-48 PIN stored hashed and attempts limited |
+| Affects | REQ-F-52 Gym account actions allowed by PIN; REQ-NF-48 PIN stored hashed, attempts limited, only PIN holders change it (includes old REQ-F-53) |
 | Feature | 3.10 Gym Account, PIN and Permissions |
 | Why we ask | The PIN unlocks the roster, terms, imports, schedules and the audit log. Analytics are open to every role. Front desk staff must not know it. |
 | Answer | |
@@ -280,7 +280,7 @@ Also asked in cti.md, if CTI manages the store.
 |---|---|
 | Question | Does the gym want a report each term with the roster changes taken from the audit log? A: no. B: yes. |
 | Affects | REQ-NF-39 Audit log of gym actions |
-| Feature | 4.3 Reports, 8.1 Audit |
+| Feature | 4.2 Reports, 8.1 Audit |
 | Why we ask | The audit log already records every roster change with time and IP address. A report is optional and adds work. |
 | Answer | |
 | Answered by | |
@@ -306,7 +306,7 @@ Also asked in cti.md, if CTI manages the store.
 |---|---|
 | Question | How long must each type of data be kept: photos from past terms, waivers, emergency contacts, medical warnings, Check In history, audit log? Is there a UPRM rule for this, and how long are the paper records kept today? |
 | Affects | REQ-NF-04 Discard photos from earlier terms; REQ-NF-05 Retention rules by data type; REQ-NF-39 Audit log of Staff actions |
-| Feature | 4.4 Data Acquisition, Integrity, Retention, and Disposal, 8.1 Audit |
+| Feature | 4.3 Data Acquisition, Integrity, Retention, and Disposal, 8.1 Audit |
 | Why we ask | The default today is to discard old photos unless UPRM requires keeping them. Without periods, the system cannot delete anything on schedule. |
 | Answer | Partly answered. Audit log: each entry is kept until the end of the term in which it happened (decided 2026-10-14). IP addresses in the log are personal data and follow the same rule. Every other period is unknown; the gym and UPRM answer. No provisional values. |
 | Answered by | Carlos Pepin (team), gym to confirm |
@@ -334,7 +334,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 |---|---|
 | Question | Who writes the English version of rules, notices, closures and facility information? A: the gym. B: the team translates and the gym approves. |
 | Affects | REQ-F-58 Gym texts in Spanish and English |
-| Feature | 3.11 Facility Information and Notices, 7 Internationalization and Localization Requirements |
+| Feature | 3.11 Facility Information, Schedules and Notices, 7 Internationalization and Localization Requirements |
 | Why we ask | Every text the gym publishes needs both versions. With A, publishing a notice takes the gym two texts each time. |
 | Answer | B for the initial texts: the team translates and the gym approves. Notices published after December are asked in G-27. |
 | Answered by | Carlos Pepin (team), gym to confirm |
@@ -357,7 +357,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 | Field | Value |
 |---|---|
 | Question | Which schedule periods are for athletes only? |
-| Affects | REQ-F-82 Paid members cannot Check In during athletes-only periods; REQ-F-83 Notice when a period starts within the session; REQ-F-84 Mark a slot as athletes only |
+| Affects | REQ-F-82 Paid members cannot Check In during athletes-only periods; REQ-F-83 Notice when a period starts within the session; REQ-F-55 (b) Mark a slot as athletes only (was REQ-F-84) |
 | Feature | 3.6 Check In and Facility Session, 3.11 Facility Information, Schedules and Notices |
 | Why we ask | During these periods paid members cannot do Check In. A User whose 60-minute session overlaps the start of a period sees its start time; the session is not cut. |
 | Answer | |
