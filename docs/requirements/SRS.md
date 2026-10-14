@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.5 draft, not approved
+**Version:** 0.6 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -47,13 +47,15 @@
 | Staff-assisted Check In; end a session early or void it | No | Yes | Yes |
 | See a User's waiver and emergency contact | No | Yes | Yes |
 | Register in person an athlete already on the roster (only if there is no outgoing mail, REQ-F-77) | No | Yes | Yes |
-| Athlete roster, academic terms, WooCommerce import and undo | No | No | Yes |
+| See the current-term athlete roster, read only (REQ-F-49) | No | Yes | Yes |
+| Change the athlete roster; academic terms; WooCommerce import and undo | No | No | Yes |
 | Schedules, closures, athletes-only slots, notices, facility information | No | No | Yes |
 | Grant or revoke an authorization by hand; release a claimed Authorization Number | No | No | Yes |
 | Delete a User's account when the User asks (REQ-F-09) | No | No | Yes |
 | See the audit log; change the PIN and the gym account password | No | No | Yes |
+| Set a new gym account password and PIN with the recovery code (REQ-F-89) | No | Only with the code | Only with the code |
 
-**Still open.** Pending requirements: REQ-F-06, F-10, F-15, F-28, F-32, F-49, F-51, F-52, F-58, F-67, F-68, F-69, F-73, F-75, F-77, F-82, REQ-NF-04, NF-05, NF-06, NF-07, NF-09, NF-23, NF-25, NF-28, NF-31, NF-46, NF-47. Details: Summary of Open Items.
+**Still open.** Pending requirements: REQ-F-06, F-10, F-15, F-28, F-32, F-49, F-51, F-52, F-58, F-67, F-68, F-69, F-73, F-75, F-77, F-80, F-82, REQ-NF-04, NF-05, NF-06, NF-07, NF-09, NF-23, NF-25, NF-28, NF-31, NF-46, NF-47. Details: Summary of Open Items.
 
 ## Revision History
 
@@ -64,6 +66,7 @@
 | Carlos J. Pepin Delgado | 2026-10-14 | Follow-up answers: audit log retention, photo comparison, in-person athlete registration, PIN timeout, athletes-only notice, analytics open to all roles | 0.3 |
 | Carlos J. Pepin Delgado | 2026-10-14 | Design-readiness decisions E-31 to E-47 (`team.md`) | 0.4 |
 | Carlos J. Pepin Delgado | 2026-10-14 | Shortened: merged duplicate requirements (Appendix B), moved design details to `docs/design/design-notes.md` and team rules to `context.md`, added the Overview, plain Source labels | 0.5 |
+| Carlos J. Pepin Delgado | 2026-10-14 | Design review decisions E-56 to E-60 (`team.md`): PIN state per browser with a PIN version, photos deleted on import undo, email link for "I am an athlete", Staff see the roster read only, gym account recovery code (new REQ-F-89) | 0.6 |
 
 ## 1. Introduction
 
@@ -201,7 +204,7 @@ The paid member registers with the Authorization Number, the 6-digit value in th
 | REQ-F-71 | The system shall limit failed Authorization Number lookups per IP address: when that limit is hit, lookups from that IP address pause for a time. A global limit on failed lookups never blocks registrations: it only slows each lookup and writes an alert entry in the audit log for the Administrator. | N/A | High | Clear. Values: design | Team decision (E-53) |
 | REQ-F-72 | The system shall show the same message when an Authorization Number is invalid and when it is already claimed, with the contact number of REQ-F-73. | N/A | High | Clear | Team decision |
 | REQ-F-73 | When an Authorization Number or a student number does not match a valid record, the system shall show the contact number of someone who can help. | N/A | High | Pending: the number (gym, G-25) | Team decision |
-| REQ-F-74 | An Administrator shall be able to release an Authorization Number claimed by mistake. If that claim created the account, the account is deleted together with its photo. If the number was added to an account that already existed (for example a renewal), only that authorization is removed and the account stays. In both cases the number can be claimed again. | N/A | Medium | Clear | Team decision (E-52) |
+| REQ-F-74 | An Administrator shall be able to release an Authorization Number claimed by mistake. If that claim created the account, the account is deleted together with its photo. If the number was added to an account that already existed (for example a renewal), only that authorization and its term photo are removed and the account stays. In both cases the number can be claimed again. | N/A | Medium | Clear | Team decision (E-52, E-57) |
 | REQ-F-75 | If someone else claimed a member's Authorization Number, the real owner shall be able to take the account back with the password reset (REQ-F-06), because the account email is the payment email. | N/A | High | Pending: CTI, M-07 | Team decision |
 
 Errors not covered above: an Authorization Number from an ended term cannot be used to register.
@@ -234,7 +237,7 @@ The authorization says whether the person has access in the current term. A User
 | REQ-F-25 | The athlete shall renew through the roster for the new term, with no purchase or Authorization Number. | MVP | High | Clear | Proposal:206, 218, 321 |
 | REQ-F-26 | The User shall upload a current photo for each term (at registration and at each renewal) and shall not be able to replace it during an active authorization. An athlete is asked for the new photo the first time they sign in during a new term, before Check In is allowed. | MVP | High | Clear | Proposal:202, 426; Team decision |
 | REQ-F-78 | When a User enters an Authorization Number whose payment email matches an existing account, the system shall attach the new authorization to that account and shall not create a new one. This is how a paid member renews. | N/A | High | Clear | Proposal:320; Team decision |
-| REQ-F-80 | A signed-in User shall be able to enter a student number ("I am an athlete"). If it is in the current-term roster and unclaimed, the system links the roster record to the account; otherwise it shows the message of REQ-F-76. | N/A | High | Clear | Team decision |
+| REQ-F-80 | A signed-in User shall be able to enter a student number ("I am an athlete"). If it is in the current-term roster and unclaimed, the system sends a link to the institutional email in that roster record and links the record to the account only when the link is opened, as in REQ-F-15. Otherwise it shows the message of REQ-F-76. | N/A | High | Pending: CTI, M-07 | Team decision (E-58) |
 | REQ-F-87 | An Administrator shall be able to grant an authorization by hand to an existing account, valid until the end of a chosen term, and to revoke an authorization. It is used for order errors and gives access without a WooCommerce payment record. Proposed: a reason is required and is logged (REQ-NF-39). | N/A | Medium | Clear (reason Proposed) | Team decision |
 
 Errors not covered above: with no term configured for the current date, no new authorization is created (message to the Administrator: design).
@@ -248,7 +251,7 @@ WooCommerce stays the source of payments; the system copies only what is needed 
 | REQ-F-28 | The Administrator shall be able to load membership data from a WooCommerce Export Orders file. A file with an unexpected format imports nothing. The import result lists orders created, updated and rejected. | MVP | High | Pending: file format and columns (team, E-55) | Proposal:369, 371 |
 | REQ-F-29 | The import shall copy only name, email, student number when present, membership details, Authorization Number, order reference, status, payment date, term (from the payment date) and last synchronization time. It shall not copy billing or address data. | MVP | High | Clear | Proposal:204, 371 |
 | REQ-F-30 | Processing the same order more than once shall update or confirm the same record, without duplicates. | MVP | High | Clear | Proposal:371, 456 |
-| REQ-F-31 | The Administrator shall be able to re-import a corrected file (reconciliation) and to undo any import at any time. Undo deletes the membership records that import brought and the authorizations that depend on them. Proposed: accounts and photos stay, and people claim again when the corrected file is imported. | MVP | High | Clear (effect on accounts Proposed) | Proposal:371; Team decision |
+| REQ-F-31 | The Administrator shall be able to re-import a corrected file (reconciliation) and to undo any import at any time. Undo deletes the membership records that import brought, the authorizations that depend on them, and the term photos of those authorizations. Accounts stay, and people claim again, with a new photo, when the corrected file is imported. | MVP | High | Clear | Proposal:371; Team decision (E-57) |
 | REQ-F-32 | The system shall be able to synchronize with WooCommerce through approved API or webhook access, updating the same local records. | Stretch | Low | Pending: CTI, M-12 | Proposal:307, 371 |
 
 ### 3.6 Check In and Facility Session
@@ -282,7 +285,7 @@ Staff supervise use and handle exceptions (Proposal:210-212, 218). Acceptance cr
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
 | REQ-F-44 | Staff shall be able to see active sessions with Check In time, authorization and Gym ID. | MVP | High | Clear | Proposal:218, 322 |
-| REQ-F-45 | Staff shall verify a Gym ID against backend data, not only the User's screen: they search the person by name in the active sessions list and compare the photo. For an athlete whose 60 minutes ended, Staff check the roster. | MVP | High | Clear | Proposal:210; Team decision |
+| REQ-F-45 | Staff shall verify a Gym ID against backend data, not only the User's screen: they search the person by name in the active sessions list and compare the photo. For an athlete whose 60 minutes ended, Staff check the current-term roster, which they can see read only (REQ-F-49). | MVP | High | Clear | Proposal:210; Team decision (E-59) |
 | REQ-F-46 | Staff shall be able to do a Staff-assisted Check In for an authorized User who is present without a phone. It creates the same 60-minute session and cannot bypass authorization, create a second active session, or be done for a paid member during an athletes-only period. To find a paid member, Staff search the person by name; no receipt or payment confirmation is needed. An athlete gives the student number. In both cases Staff compare the stored photo with the person. | N/A (in the Objective 2 test plan, Proposal:573) | High | Clear | Proposal:212, 573; Team decision (E-49, E-54) |
 | REQ-F-48 | Staff shall be able to end a session early and to void a session created by mistake. A void keeps the record, and the session stops counting in occupancy and analytics. Staff cannot extend a session or create one without authorization. | MVP | High | Clear | Proposal:210, 218; Team decision |
 
@@ -292,7 +295,7 @@ Change from the proposal: Administrators (PIN holders) digitize the department's
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-49 | Only Administrators shall be able to create, import and change the athlete roster for each term. If an athlete is removed mid-term, the athlete's Gym ID stops being valid at once, the athlete keeps counting in occupancy until the current session ends, and the athlete cannot do another Check In. | Secondary | High | Pending: format of the lists (gym, G-10) | Proposal:206, 218; Team decision |
+| REQ-F-49 | Only Administrators shall be able to create, import and change the athlete roster for each term. Staff shall be able to see the current-term roster, read only, and search it by name or student number. If an athlete is removed mid-term, the athlete's Gym ID stops being valid at once, the athlete keeps counting in occupancy until the current session ends, and the athlete cannot do another Check In. | Secondary | High | Pending: format of the lists (gym, G-10); Staff read access (gym, G-09) | Proposal:206, 218; Team decision (E-59) |
 | REQ-F-51 | Each roster record shall have at least student number, name, institutional email and term. A repeated student number in the same term is rejected. | Secondary | High | Pending: final list of fields (gym, G-10) | Proposal:206; Team decision |
 
 ### 3.10 Gym Account, PIN and Permissions
@@ -302,7 +305,8 @@ The roles and the PIN table are in the Overview. Acceptance criterion (Objective
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
 | REQ-F-52 | There shall be one shared gym account. The backend shall allow or deny each action as in the Overview role table, even if the interface shows the action. User accounts cannot perform any gym action, and each role has only the access it needs. | Secondary | High | Pending: gym confirms the table (G-09) | Proposal:175-177, 305, 509; Team decision |
-| REQ-F-88 | The team shall create the gym account, its password and the first PIN once, with an install command on the server, and give them to the Administrator. After that, the Administrator changes the password and the PIN from the app, using the current PIN. Changing the password is how access is withdrawn when an employee leaves. | N/A | High | Clear | Team decision (E-40) |
+| REQ-F-88 | The team shall create the gym account, its password, the first PIN and the first recovery code (REQ-F-89) once, with an install command on the server, and give them to the Administrator. After that, the Administrator changes the password and the PIN from the app, using the current PIN. Changing the password is how access is withdrawn when an employee leaves. | N/A | High | Clear | Team decision (E-40, E-60) |
+| REQ-F-89 | The system shall keep one recovery code for the gym account, shown only once when it is created and stored hashed. With it, a person can set a new gym account password and a new PIN from the gym sign-in screen. The code is then used up and a new one is shown once. Attempts are limited and each use is logged (REQ-NF-39). If the code is lost, only the install command on the server remains. | N/A | Medium | Clear. Attempt limit: design. Gym to confirm (G-09) | Team decision (E-60); Review gap |
 
 ### 3.11 Facility Information, Schedules and Notices
 
@@ -430,7 +434,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-71 (Authorization Number lookups), REQ
 | REQ-NF-23 | Developers shall be outside the gym roles and shall not have routine access to safety or emergency data in production. | N/A | High | Pending: who manages the VM and looks after the system (CTI and gym, M-16, G-01) | Proposal:437, 509 |
 | REQ-NF-24 | Uploaded photos shall be JPEG, PNG or HEIC, up to 10 MB. The server converts them to JPEG and strips location metadata. | N/A | High | Clear | Review gap; Team decision |
 | REQ-NF-25 | The system shall show a privacy notice in Spanish and English before collecting personal data. The team drafts it. | N/A | High | Pending: gym approves the text (G-24) | Team decision |
-| REQ-NF-48 | The PIN shall be stored hashed, PIN attempts shall be limited, and only PIN holders can change it. An entered PIN is active only in the browser where it was typed. It closes after 15 minutes without a tap or key press by a person (automatic polling does not count), with a warning after 10 minutes that it closes in 5 minutes. The warning has a "Keep going" button that resets the full 15 minutes; the button takes keyboard focus and is read by screen readers (WCAG 2.2.1). | N/A | High | Clear. Attempt limit and wait: design | Proposal:177, 218; Team decision (E-51) |
+| REQ-NF-48 | The PIN shall be stored hashed, PIN attempts shall be limited, and only PIN holders can change it. An entered PIN is active only in the browser where it was typed. Changing the PIN closes it in every browser. It closes after 15 minutes without a tap or key press by a person (automatic polling does not count), with a warning after 10 minutes that it closes in 5 minutes. The warning has a "Keep going" button that resets the full 15 minutes; the button takes keyboard focus and is read by screen readers (WCAG 2.2.1). | N/A | High | Clear. Attempt limit and wait: design | Proposal:177, 218; Team decision (E-51, E-56) |
 
 ### 6.4 Other Quality Attributes
 
@@ -459,7 +463,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-71 (Authorization Number lookups), REQ
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-39 | The system shall record in the audit log each: Staff correction, Staff-assisted Check In (as an exception), in-person athlete registration, roster change, term or schedule change, import and import undo, release of a claimed Authorization Number, manual grant or revoke of an authorization (with its reason), PIN change, gym account password change, and each alert from the global lookup limit (REQ-F-71). Each entry has the account, time, IP address, device and browser, and the values before and after. Only Administrators can see the log. The shared account means the log cannot name the person; the gym checks the shift schedule. Retention: REQ-NF-05. | N/A | High | Clear | Proposal:212, 513; Team decision |
+| REQ-NF-39 | The system shall record in the audit log each: Staff correction, Staff-assisted Check In (as an exception), in-person athlete registration, roster change, term or schedule change, import and import undo, release of a claimed Authorization Number, manual grant or revoke of an authorization (with its reason), PIN change, gym account password change, each use of the recovery code (REQ-F-89), and each alert from the global lookup limit (REQ-F-71). Each entry has the account, time, IP address, device and browser, and the values before and after. Only Administrators can see the log. The shared account means the log cannot name the person; the gym checks the shift schedule. Retention: REQ-NF-05. | N/A | High | Clear | Proposal:212, 513; Team decision |
 
 ### 8.2 Testing
 
@@ -578,7 +582,7 @@ IDs that are no longer rows. Old references resolve here.
 
 | Open item | Who answers | Question | Blocks |
 |---|---|---|---|
-| Outgoing mail (critical) | CTI | M-07 | REQ-F-06, F-15, F-75, F-77, NF-35 |
+| Outgoing mail (critical) | CTI | M-07 | REQ-F-06, F-15, F-75, F-77, F-80, NF-35 |
 | PostgreSQL accepted | CTI | M-09 | REQ-F-17, F-36 |
 | VM: public IP, containers, subdomain, HTTPS, approval, early access | CTI | M-01 to M-05 | 2.3, 2.4, REQ-NF-12 |
 | WooCommerce API | CTI | M-12 | REQ-F-32 |
@@ -594,7 +598,7 @@ IDs that are no longer rows. Old references resolve here.
 | Store sells only during terms; summer | Gym | G-26 | REQ-F-21, F-22 |
 | Athletes-only periods | Gym | G-28 | REQ-F-55, F-82 |
 | Who holds the PIN | Gym | G-29 | None (operations) |
-| Role and PIN table | Gym | G-09 | REQ-F-52 |
+| Role and PIN table, including Staff reading the roster and the recovery code | Gym | G-09 | REQ-F-49, F-52, F-89 |
 | Roster lists | Gym | G-10 | REQ-F-49, F-51 |
 | Roster change report | Gym | G-30 | 4.2 |
 | Safety records | Gym | G-21 | REQ-F-60 |

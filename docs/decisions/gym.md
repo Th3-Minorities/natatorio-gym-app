@@ -230,7 +230,7 @@ Also asked in cti.md, if CTI manages the store.
 
 | Field | Value |
 |---|---|
-| Question | The team will send a one-page table with the access and renewal rules and with what the shared gym account can do without the PIN (front desk) and with the PIN (administration), including who sees the audit log. Does it match how the gym works? Mark any change. |
+| Question | The team will send a one-page table with the access and renewal rules and with what the shared gym account can do without the PIN (front desk) and with the PIN (administration), including who sees the audit log. Does it match how the gym works? Mark any change. Two points need an explicit yes or no: (1) the front desk, students included, sees the current-term athlete roster (name, student number, institutional email) without the PIN, read only (team.md, E-59); (2) the administration keeps a one-time recovery code on paper to reset the gym password and PIN (team.md, E-60). |
 | Affects | REQ-F-22 to REQ-F-26 Expiry and renewal rules; REQ-F-52 Gym account actions allowed by PIN; REQ-NF-48 Only PIN holders change the PIN (was REQ-F-53); REQ-NF-39 Audit log of gym actions |
 | Feature | 3.4 Authorization, Academic Terms and Renewal, 3.10 Gym Account, PIN and Permissions, 8.1 Audit |
 | Why we ask | The proposal says the gym validates these rules. The team replaced per-person roles with one gym account and a PIN (SRS Overview, role table). The gym must confirm it fits how they work. |
