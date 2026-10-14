@@ -1,10 +1,14 @@
 # Architecture and Deployment
 
-This document shows how the system is built and where it runs. It replaces the Supabase and Vercel picture of the proposal (`docs/capstone_proposal/diagrams/01_architecture.png`) with the current stack: a React PWA, a Laravel backend and PostgreSQL, all in `docker-compose` (`docs/context.md` section 2). It covers the outside systems, the containers, development versus production, the demo environment, and the path of one Check In from the phone to the database. Items that still wait for CTI answers are marked with their question ID (`docs/decisions/cti.md`). Dashed lines and dashed boxes mean pending or proposed.
+This document shows how the system is built and where it runs. It replaces the Supabase and Vercel picture of the proposal (`docs/capstone_proposal/diagrams/01_architecture.png`) with the current stack: a React PWA, a Laravel backend and PostgreSQL, all in `docker-compose` (`docs/context.md` section 2). It covers the outside systems, the containers, development versus production, the demo environment, and the path of one Check In from the phone to the database. Inside the diagrams, items that still wait for CTI say "pending CTI answer" in words. The table "Pending CTI items" after diagram 4 maps them to their question IDs (`docs/decisions/cti.md`). Dashed lines and dashed boxes mean pending or proposed.
 
-## 1. System context
+## Diagrams
 
-Who and what talks to the system. Only the Administrator brings in WooCommerce data, by uploading an Export Orders file. There is no API link in the MVP.
+### 1. System context
+
+**Type:** Context diagram. **Use it to:** agree on which outside systems the team must connect to, and which of them wait on CTI.
+
+Only the Administrator brings in WooCommerce data, by uploading an Export Orders file. There is no API link in the MVP.
 
 ```mermaid
 flowchart LR
@@ -15,8 +19,8 @@ flowchart LR
   WOO["UPRM WooCommerce store"]
   FILE["Export Orders file"]
   LISTS["Department athlete lists"]
-  MAIL["CTI outgoing mail<br/>SMTP or relay<br/>Pending M-07"]
-  NAME["UPRM subdomain and HTTPS certificate<br/>Pending M-03"]
+  MAIL["CTI outgoing mail<br/>SMTP or relay<br/>pending CTI answer about mail"]
+  NAME["UPRM subdomain and HTTPS certificate<br/>pending CTI answer about the name"]
 
   U -->|"register, Check In, Gym ID"| SYS
   U -->|"gives location permission"| GEO
@@ -24,9 +28,9 @@ flowchart LR
   G -->|"verify, correct, manage"| SYS
   WOO -->|"Administrator runs Export Orders"| FILE
   FILE -->|"uploaded by the Administrator"| SYS
-  WOO -.->|"API or webhooks: Stretch REQ-F-32, M-12"| SYS
+  WOO -.->|"API or webhooks, Stretch only"| SYS
   LISTS -->|"entered by the Administrator each term"| SYS
-  SYS -->|"athlete link, password reset"| MAIL
+  SYS -->|"athlete links, password reset"| MAIL
   MAIL -->|"email"| U
   NAME -.-|"how users reach it"| SYS
 
@@ -34,35 +38,40 @@ flowchart LR
   class MAIL,NAME pending
 ```
 
+**About this diagram:** the mail box waits on M-07 and the name box on M-03. The dashed WooCommerce link is REQ-F-32 (Stretch, M-12).
+
 Notes:
 
 - Location goes from the Geolocation API to the PWA, which sends it to the backend with the Check In. Coordinates are not stored, only the result of the check (REQ-NF-03, REQ-NF-11).
-- If CTI has no outgoing mail (M-07 answer C), the mail box disappears: athletes are registered in person by Staff (REQ-F-77) and there is no password reset (REQ-F-06, REQ-F-75).
+- Mail carries two kinds of athlete links: the athlete registration link and, since E-58, the "I am an athlete" link that a signed-in User gets at the institutional email of the roster record. Both use the same single-use link mechanism.
+- If CTI has no outgoing mail (M-07 answer C), the mail box disappears: athletes are registered in person by Staff (REQ-F-77) and there is no password reset (REQ-F-06, REQ-F-75). The "I am an athlete" link (E-58) cannot be sent either; E-58 does not say what replaces it without mail.
 - Payments stay in WooCommerce. The system never talks to the payment side (REQ-F-28, REQ-F-29).
 
-## 2. Container view
+### 2. Containers on one host
+
+**Type:** Container diagram. **Use it to:** write the `docker-compose` file, the proxy rules and the volume setup.
 
 The same `docker-compose` file runs on a member's PC and on the CTI VM. Only the proxy publishes a port. Every other container is on the internal compose network.
 
 ```mermaid
 flowchart TD
   PH["User phone<br/>browser or installed PWA"]
-  FD["Front desk computer<br/>browser with the gym account<br/>device: gym G-06"]
+  FD["Front desk computer<br/>browser with the gym account<br/>device still to confirm with the gym"]
 
-  subgraph HOST["docker-compose on one host: member PC or CTI VM (containers allowed? M-02)"]
-    subgraph PXC["proxy container: nginx or Caddy (not decided, D1)"]
-      PX["HTTPS end and routing<br/>single origin: Proposed, M-03"]
+  subgraph HOST["docker-compose on one host: member PC or CTI VM, containers allowed is pending CTI answer"]
+    subgraph PXC["proxy container: nginx or Caddy, not decided"]
+      PX["HTTPS end and routing<br/>one name for app and API, proposed<br/>pending CTI answer about the name"]
       ST["PWA static files<br/>React, TypeScript, Vite build<br/>served at /"]
     end
     APP["app container<br/>Laravel on PHP-FPM<br/>API at /api"]
     SCH["scheduler container<br/>same image as app<br/>scheduled tasks"]
-    DB[("db container<br/>PostgreSQL<br/>accepted by CTI? M-09")]
-    DV[("database volume<br/>disk encrypted? M-13")]
-    PV[("private photos volume<br/>disk encrypted? M-13")]
+    DB[("db container<br/>PostgreSQL<br/>pending CTI answer about PostgreSQL")]
+    DV[("database volume<br/>disk encryption pending CTI answer")]
+    PV[("private photos volume<br/>disk encryption pending CTI answer")]
   end
 
-  MAIL["Mail<br/>development: fake mail server container<br/>production: CTI SMTP or relay, M-07"]
-  BK["Backups outside the host<br/>place and retention: M-06"]
+  MAIL["Mail<br/>development: fake mail server container<br/>production: CTI SMTP or relay, pending CTI answer"]
+  BK["Backups outside the host<br/>place and retention pending CTI answer"]
 
   PH -->|"HTTPS"| PX
   FD -->|"HTTPS"| PX
@@ -72,14 +81,16 @@ flowchart TD
   DB --- DV
   APP -->|"save and stream photos, role checked"| PV
   SCH -->|"SQL"| DB
-  SCH -.->|"discard old term photos, REQ-NF-04 pending"| PV
+  SCH -.->|"discard old term photos, retention not set"| PV
   APP -->|"SMTP"| MAIL
-  DV -.->|"pending M-06"| BK
-  PV -.->|"pending M-06"| BK
+  DV -.->|"pending CTI answer about backups"| BK
+  PV -.->|"pending CTI answer about backups"| BK
 
   classDef pending stroke-dasharray: 5 5
   class MAIL,BK pending
 ```
+
+**About this diagram:** pending items are M-02 (containers), M-03 (name), M-09 (PostgreSQL), M-13 (disk encryption), M-07 (mail) and M-06 (backups). The proxy choice is D1. The front desk device is gym question G-06. Photo retention is REQ-NF-04.
 
 Notes:
 
@@ -87,7 +98,9 @@ Notes:
 - The service worker in the PWA does not cache `/api` responses, so stale data is never shown as current (`design-notes.md`, REQ-NF-26). Screens poll `/api` every 20 to 30 seconds (REQ-F-43).
 - The scheduler only does cleanup and retention. Session expiry is computed by the backend at query time, from backend time (REQ-NF-01, REQ-F-38).
 
-## 3. Development: each member's PC
+### 3. Development on each member's PC
+
+**Type:** Deployment diagram. **Use it to:** set up the stack on each member's PC and test location on a real phone.
 
 Each member runs the full stack with Docker Desktop. The desktop browser uses `localhost`. Phones reach the PC through an HTTPS tunnel, because the Geolocation API needs HTTPS (REQ-NF-12).
 
@@ -97,12 +110,12 @@ flowchart LR
     BR["Desktop browser<br/>localhost"]
     subgraph DEV["docker-compose, development settings"]
       PX1["proxy"]
-      APP1["app<br/>boundary: any test place<br/>REQ-NF-29"]
+      APP1["app<br/>boundary: any test place"]
       SCH1["scheduler"]
       DB1[("PostgreSQL<br/>fake data only")]
       FM["fake mail server<br/>web inbox"]
     end
-    TC["tunnel client<br/>cloudflared or ngrok agent<br/>(D7)"]
+    TC["tunnel client<br/>cloudflared or ngrok agent<br/>each member chooses"]
   end
   EDGE["Tunnel provider<br/>public HTTPS URL<br/>Cloudflare Quick Tunnel or ngrok"]
   PHONE["Test phone<br/>iPhone or Android"]
@@ -119,40 +132,44 @@ flowchart LR
   BR -.->|"read test emails"| FM
 ```
 
+**About this diagram:** the free test boundary comes from REQ-NF-29. The tunnel choice is D7.
+
 Notes:
 
 - Tested on Windows 11 with a Samsung phone: Quick Tunnel gives HTTPS, location works, WebSocket works, SSE does not (`context.md` section 5). ngrok was not tested with the app.
 - The tunnel provider ends HTTPS and can see the traffic. Only fake data goes through it (REQ-NF-07, REQ-NF-09).
 - Do not publish ports 5000 or 7000 (`context.md` section 3).
 
-## 4. Production and demo
+### 4. Production and demo
+
+**Type:** Deployment diagram. **Use it to:** plan the CTI VM setup, the image build and the separate demo environment.
 
 Production runs on a CTI VM with a UPRM subdomain and HTTPS. The December demo runs in a separate environment with the classroom boundary, so the classroom boundary never reaches production (REQ-NF-29, team decision E-42). Where the demo runs is not decided (D5).
 
 ```mermaid
 flowchart LR
   PHN["User phones<br/>campus Wi-Fi or mobile data"]
-  DESK["Front desk computer<br/>gym G-06"]
-  BUILD["Image build in one place<br/>pinned versions, linux/amd64<br/>(D8)"]
+  DESK["Front desk computer<br/>device still to confirm with the gym"]
+  BUILD["Image build in one place<br/>pinned versions, linux/amd64<br/>place not decided"]
 
-  subgraph VM["CTI VM: Ubuntu 26 or Rocky 10. Approval M-04, early access M-05"]
-    subgraph PROD["docker-compose, production. Docker or Podman? M-02"]
-      PX2["proxy<br/>HTTPS for the UPRM subdomain<br/>who gives name and certificate? M-03"]
+  subgraph VM["CTI VM: Ubuntu 26 or Rocky 10. Approval and early access pending CTI answer"]
+    subgraph PROD["docker-compose, production. Docker or Podman pending CTI answer"]
+      PX2["proxy<br/>HTTPS for the UPRM subdomain<br/>name and certificate pending CTI answer"]
       APP2["app<br/>gym boundary<br/>refuses to start if over 50 m from the gym"]
       SCH2["scheduler"]
-      DB2[("PostgreSQL<br/>M-09")]
-      PV2[("photos volume<br/>M-13")]
+      DB2[("PostgreSQL<br/>pending CTI answer")]
+      PV2[("photos volume<br/>disk encryption pending CTI answer")]
     end
   end
 
-  subgraph DEMO["Demo environment, December. Host: D5"]
+  subgraph DEMO["Demo environment, December. Host not decided"]
     DEMOAPP["Same images, own database and volumes<br/>classroom boundary<br/>never production settings"]
   end
 
-  SMTP["CTI SMTP or relay<br/>sender, SPF, DKIM<br/>M-07"]
-  BK2["Backup copies outside the VM<br/>M-06"]
+  SMTP["CTI SMTP or relay<br/>sender, SPF, DKIM<br/>pending CTI answer about mail"]
+  BK2["Backup copies outside the VM<br/>pending CTI answer about backups"]
 
-  PHN -->|"HTTPS, from the internet? M-01"| PX2
+  PHN -->|"HTTPS, reach from the internet pending CTI answer"| PX2
   DESK -->|"HTTPS"| PX2
   PX2 --> APP2
   APP2 --> DB2
@@ -168,29 +185,34 @@ flowchart LR
   class SMTP,BK2,BUILD,DEMO pending
 ```
 
+**About this diagram:** pending CTI items are M-01 (reach from the internet), M-02, M-03, M-04, M-05, M-06, M-07, M-09 and M-13; see the table below. The demo host is D5 and the build place is D8.
+
 Notes:
 
 - The 50 m startup check is how REQ-NF-29 is enforced (`design-notes.md`, team decision E-16). How the app knows it is production is D6.
 - Server credentials live in protected configuration outside the repository. Development and production settings are separate (`context.md` section 3).
 - Whoever has administrator access to the VM can read the database and the photos volume. That conflicts with REQ-NF-23 if team members run the server (M-16, gym G-01).
+- If the gym account password and PIN are lost, the paper recovery code from the install command sets new ones from the gym account sign-in screen (E-60, REQ-F-89). If the paper is lost too, only running the install command on the server remains, so it needs someone with server access (M-16).
 
 ### Pending CTI items on these diagrams
 
 | ID | Question | Where it shows | If the answer is bad |
 |---|---|---|---|
-| M-01 | Can phones on mobile data reach the VM? | Section 4, phone to proxy | Campus only: no Check In on mobile data. Hosting plan changes. Automatic certificates (D1, Caddy) would not work either |
-| M-02 | Containers on the VM: Docker, Podman or none | Sections 2 and 4, host box | No containers: deployment redesigned on CTI services |
-| M-03 | Who makes the subdomain and certificate; app and API on one name | Sections 1, 2 and 4, proxy | Two names: cookie login design changes (cross-site cookies, CORS) |
-| M-04 | What CTI needs to approve the VM, and how long | Section 4, VM box | Late approval: no production in December. CTI conditions become new requirements |
-| M-05 | Early access to the VM | Section 4, VM box | First real deployment happens close to the demo. Demo option D5 A is at risk |
-| M-06 | Where backups go and for how long | Sections 2 and 4, backup box | REQ-NF-06 stays Pending. A copy kept only on the VM is lost with the VM |
-| M-07 | Outgoing mail: CTI relay, external provider or none | Sections 1, 2 and 4, mail box | None: REQ-F-77 is built, no password reset. External provider: needs approval (M-11) |
-| M-09 | PostgreSQL accepted | Sections 2 and 4, database | MySQL required: REQ-F-17 and REQ-F-36 need a new design |
-| M-13 | Data on the VM disk, disk encryption | Sections 2 and 4, volumes | Disk not encrypted: team decides whether to encrypt files itself |
+| M-01 | Can phones on mobile data reach the VM? | Diagram 4, phone to proxy | Campus only: no Check In on mobile data. Hosting plan changes. Automatic certificates (D1, Caddy) would not work either |
+| M-02 | Containers on the VM: Docker, Podman or none | Diagrams 2 and 4, host box | No containers: deployment redesigned on CTI services |
+| M-03 | Who makes the subdomain and certificate; app and API on one name | Diagrams 1, 2 and 4, proxy | Two names: cookie login design changes (cross-site cookies, CORS) |
+| M-04 | What CTI needs to approve the VM, and how long | Diagram 4, VM box | Late approval: no production in December. CTI conditions become new requirements |
+| M-05 | Early access to the VM | Diagram 4, VM box | First real deployment happens close to the demo. Demo option D5 A is at risk |
+| M-06 | Where backups go and for how long | Diagrams 2 and 4, backup box | REQ-NF-06 stays Pending. A copy kept only on the VM is lost with the VM |
+| M-07 | Outgoing mail: CTI relay, external provider or none | Diagrams 1, 2 and 4, mail box | None: REQ-F-77 is built, no password reset, no "I am an athlete" link (E-58). External provider: needs approval (M-11) |
+| M-09 | PostgreSQL accepted | Diagrams 2 and 4, database | MySQL required: REQ-F-17 and REQ-F-36 need a new design |
+| M-13 | Data on the VM disk, disk encryption | Diagrams 2 and 4, volumes | Disk not encrypted: team decides whether to encrypt files itself |
 
 Also relevant, not in the list asked for this issue: M-11 (external services approval, affects the tunnel and an external mail provider), M-12 (WooCommerce API, Stretch only) and M-16 (who administers the server).
 
-## 5. Request path: one Check In
+### 5. Request path: one Check In
+
+**Type:** Sequence diagram. **Use it to:** write the Check In endpoint, its tests, and the PWA calls.
 
 From the phone to the database. Endpoint paths are examples only; the API contract is separate work (OpenAPI, `context.md` section 2). Responses go back through the proxy; the diagram skips that hop.
 
@@ -208,7 +230,7 @@ sequenceDiagram
   PWA->>PX: GET /api/facility-session/current over HTTPS with session cookie
   PX->>API: Forward
   API->>DB: Find the active facility session of this User
-  alt Active session exists (REQ-F-37)
+  alt Active session exists
     API-->>PWA: Current session and Gym ID, no location asked
   else No active session
     PWA->>GEO: Ask for position
@@ -216,11 +238,11 @@ sequenceDiagram
     GEO-->>PWA: Position and accuracy, or an error
     PWA->>PX: POST /api/check-in with position and accuracy
     PX->>API: Forward with the client IP header
-    API->>API: Is this the User's current device (REQ-F-03)
+    API->>API: Is this the User's current device
     API->>DB: Read authorizations, academic_terms, schedule_slots
-    API->>API: Check boundary and accuracy against server settings (REQ-NF-29)
+    API->>API: Check boundary and accuracy against server settings
     alt A check fails
-      API-->>PWA: No session, with the cause (REQ-F-33)
+      API-->>PWA: No session, with the cause
     else All checks pass
       API->>DB: Insert into facility_sessions in one transaction
       alt Exclusion constraint finds another active session
@@ -234,8 +256,10 @@ sequenceDiagram
     end
   end
   PWA->>U: Show the Gym ID
-  Note over API,DB: Coordinates are not saved, only the result (REQ-NF-03)
+  Note over API,DB: Coordinates are not saved, only the result
 ```
+
+**About this diagram:** the first branch is REQ-F-37, the device check REQ-F-03, the boundary check REQ-NF-29, the cause on failure REQ-F-33, and not saving coordinates REQ-NF-03.
 
 Notes:
 
@@ -277,7 +301,7 @@ Recommendation: A. It is what `context.md` already lists as a container, and it 
 - **A. During the request.** No extra container. If SMTP fails, the user sees an error at once and can try again. The request takes a bit longer.
 - **B. Queue in the database plus a worker container.** Fast response and retries. One more container, and failed jobs must be watched by someone.
 
-Recommendation: A. Email is only for athlete links and password resets, a small volume. Switch to B if the CTI relay turns out slow (M-07).
+Recommendation: A. Email is only for athlete registration links, "I am an athlete" links (E-58) and password resets, a small volume. Switch to B if the CTI relay turns out slow (M-07).
 
 ### D5: Where the demo environment runs
 
@@ -325,27 +349,31 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 
 | Requirement | Where it appears |
 |---|---|
-| REQ-NF-10 | 2. Container view (one PWA build served at `/` to phone and desktop) |
-| REQ-NF-12 | 2. Container view, 3. Development (tunnel), 4. Production (proxy HTTPS), Gaps 1 |
-| REQ-NF-20 | 2. Container view (private photos volume, reached only through the app) |
-| REQ-NF-29 | 3. Development, 4. Production and demo, 5. Request path, D5, D6 |
-| REQ-NF-01 | 2. Container view notes, Gaps 4 |
-| REQ-NF-03 | 1. System context notes, 5. Request path |
-| REQ-NF-04 | 2. Container view (scheduler to photos, pending) |
-| REQ-NF-06 | 2. Container view and 4. Production (backup box, M-06), Gaps 6 |
-| REQ-NF-07 | 3. Development (fake data), Gaps 2 and 3 |
-| REQ-NF-09 | 3. Development notes, Gaps 2 |
-| REQ-NF-11 | 1. System context, 5. Request path |
-| REQ-NF-23 | 4. Production notes |
-| REQ-NF-24 | 2. Container view notes |
-| REQ-NF-26 | 2. Container view notes |
-| REQ-NF-39 | 5. Request path (client IP header), Gaps 5 |
-| REQ-NF-42 | 5. Request path notes |
-| REQ-F-03 | 5. Request path |
+| REQ-NF-10 | 2. Containers on one host (one PWA build served at `/` to phone and desktop) |
+| REQ-NF-12 | 2. Containers on one host, 3. Development on each member's PC (tunnel), 4. Production and demo (proxy HTTPS), Gaps 1 |
+| REQ-NF-20 | 2. Containers on one host (private photos volume, reached only through the app) |
+| REQ-NF-29 | 3. Development on each member's PC, 4. Production and demo, 5. Request path: one Check In, D5, D6 |
+| REQ-NF-01 | 2. Containers on one host notes, Gaps 4 |
+| REQ-NF-03 | 1. System context notes, 5. Request path: one Check In |
+| REQ-NF-04 | 2. Containers on one host (scheduler to photos, pending) |
+| REQ-NF-06 | 2. Containers on one host and 4. Production and demo (backup box, M-06), Gaps 6 |
+| REQ-NF-07 | 3. Development on each member's PC (fake data), Gaps 2 and 3 |
+| REQ-NF-09 | 3. Development on each member's PC notes, Gaps 2 |
+| REQ-NF-11 | 1. System context, 5. Request path: one Check In |
+| REQ-NF-23 | 4. Production and demo notes |
+| REQ-NF-24 | 2. Containers on one host notes |
+| REQ-NF-26 | 2. Containers on one host notes |
+| REQ-NF-39 | 5. Request path: one Check In (client IP header), Gaps 5 |
+| REQ-NF-42 | 5. Request path: one Check In notes |
+| REQ-F-03 | 5. Request path: one Check In |
 | REQ-F-06, REQ-F-15, REQ-F-75, REQ-F-77 | 1. System context (mail, M-07) |
 | REQ-F-28, REQ-F-29 | 1. System context (Export Orders file) |
 | REQ-F-32 | 1. System context (dashed API link, Stretch) |
-| REQ-F-33, REQ-F-82, REQ-F-83 | 5. Request path |
-| REQ-F-36, REQ-F-37 | 5. Request path |
-| REQ-F-38 | 2. Container view notes |
-| REQ-F-43 | 2. Container view notes |
+| REQ-F-33, REQ-F-82, REQ-F-83 | 5. Request path: one Check In |
+| REQ-F-36, REQ-F-37 | 5. Request path: one Check In |
+| REQ-F-38 | 2. Containers on one host notes |
+| REQ-F-43 | 2. Containers on one host notes |
+| REQ-F-89 (E-60 recovery code) | 4. Production and demo notes |
+| E-58 ("I am an athlete" link by mail) | 1. System context (mail), M-07 row, D4 |
+
+E-56 (PIN state in the browser session), E-57 (photos on import undo) and E-59 (Staff see the roster) change no diagram in this file.
