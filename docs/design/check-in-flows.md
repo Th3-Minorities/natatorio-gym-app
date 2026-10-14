@@ -2,27 +2,29 @@
 
 This document draws how Check In decides, how a facility session lives and ends, how Staff do an assisted Check In and verify a Gym ID, what the Gym ID shows in each state, and how occupancy is counted. It covers SRS sections 3.6, 3.7 and 3.8 (GitHub issue #6). The backend is Laravel and the database is PostgreSQL (`docs/context.md` section 2). The single active session rule depends on a PostgreSQL exclusion constraint, so it depends on CTI accepting PostgreSQL (M-09). Values the SRS leaves to design are in "Design decisions to confirm".
 
-Legend used in the flowcharts: blue nodes run on the phone (PWA), yellow nodes run on the backend, red nodes are rejections, green nodes are outcomes that show a session.
+## Diagrams
 
-## 1. Check In decision flow, part 1: checks before location
+Legend used in the flowcharts: blue nodes run on the phone (PWA) or are Staff actions, yellow nodes run on the backend, red nodes are rejections, green nodes are outcomes that show a session.
 
-The phone asks the backend first. Location is asked only when a new session must be created (REQ-F-37), so every check that does not need location runs before the location prompt. The order and its reasons are in decision D1.
+### 1. Check In checks before location
+
+**Type:** System flow. **Use it to:** write the backend eligibility check, its order, and one test per rejection.
 
 ```mermaid
 flowchart TD
   A["User taps Check In"] --> B{"Request reaches the backend?"}
-  B -- "No" --> R1["Reject: no connection<br/>key check_in.offline<br/>no stored Gym ID shown as current"]
+  B -- "No" --> R1["Reject: no connection<br/>no stored Gym ID shown as current"]
   B -- "Yes" --> C{"User has an active session?<br/>status active and backend time before its end"}
   C -- "Yes" --> S0["Return the current session and Gym ID<br/>no location asked, no new session"]
   C -- "No" --> D{"Current authorization?<br/>paid, athlete or manual, term not ended"}
-  D -- "No" --> R2["Reject: no authorization<br/>key check_in.no_authorization<br/>status expired or not on the roster"]
+  D -- "No" --> R2["Reject: no authorization<br/>status expired or not on the roster"]
   D -- "Yes" --> E{"Photo saved for this term?"}
-  E -- "No" --> R3["Reject: new term photo needed<br/>key check_in.photo_required<br/>opens the photo upload"]
+  E -- "No" --> R3["Reject: new term photo needed<br/>opens the photo upload"]
   E -- "Yes" --> F{"Gym open now?<br/>schedule slots minus closures"}
-  F -- "No" --> R4["Reject: gym closed<br/>key check_in.gym_closed"]
+  F -- "No" --> R4["Reject: gym closed"]
   F -- "Yes" --> G{"Athletes-only period now<br/>and the User is a paid member?"}
-  G -- "Yes" --> R5["Reject: athletes-only period<br/>key check_in.athletes_only<br/>with a notice"]
-  G -- "No" --> L["Eligible: continue to part 2<br/>location checks"]
+  G -- "Yes" --> R5["Reject: athletes-only period<br/>with a notice"]
+  G -- "No" --> L["Eligible: continue to<br/>the location checks"]
 
   classDef client fill:#d1ecf1,stroke:#0c5460,color:#000
   classDef back fill:#fff3cd,stroke:#b8860b,color:#000
@@ -34,27 +36,31 @@ flowchart TD
   class S0 ok
 ```
 
+**About this diagram:** Location is asked only when a new session must be created (REQ-F-37), so every check that does not need location runs first; the order and its reasons are in D1. Each rejection maps to one message key: `check_in.offline`, `check_in.no_authorization`, `check_in.photo_required`, `check_in.gym_closed`, `check_in.athletes_only` (full list in D5).
+
 - "No connection" is detected on the phone: the request fails or times out. There is no offline Check In (REQ-NF-26, SRS 2.4).
-- The athlete photo check comes from REQ-F-26. A paid member uploads the photo at registration and renewal, so in practice only athletes reach R3.
+- The athlete photo check comes from REQ-F-26. A paid member uploads the photo at registration and renewal, so in practice only athletes get the "new term photo needed" rejection.
 - The athletes-only check applies only to paid members (REQ-F-82). Manual authorizations: see Gaps.
 
-## 2. Check In decision flow, part 2: location and session creation
+### 2. Check In location checks and session creation
+
+**Type:** System flow. **Use it to:** build the location step on the phone and the backend Check In operation, with its error messages.
 
 ```mermaid
 flowchart TD
-  L["Eligible from part 1"] --> P{"Location permission state"}
-  P -- "denied" --> R6["Reject: permission denied<br/>key check_in.location_denied<br/>how to turn it on"]
+  L["Eligible from the checks<br/>before location"] --> P{"Location permission state"}
+  P -- "denied" --> R6["Reject: permission denied<br/>how to turn it on"]
   P -- "granted or not asked yet" --> Q["Ask the browser for one position<br/>high accuracy, no cached position"]
   Q -- "User denies the prompt" --> R6
-  Q -- "unavailable or timeout" --> R7["Reject: location unavailable<br/>key check_in.location_unavailable"]
+  Q -- "unavailable or timeout" --> R7["Reject: location unavailable"]
   Q -- "position and accuracy" --> AC{"Accuracy at or below<br/>the threshold?"}
-  AC -- "No" --> R8["Reject: low accuracy<br/>key check_in.low_accuracy<br/>try again"]
+  AC -- "No" --> R8["Reject: low accuracy<br/>try again"]
   AC -- "Yes" --> BD{"Inside the gym boundary?"}
-  BD -- "No" --> R9["Reject: outside the boundary<br/>key check_in.outside_boundary"]
+  BD -- "No" --> R9["Reject: outside the boundary"]
   BD -- "Yes" --> POST["Send coordinates and accuracy once<br/>to the Check In operation"]
   POST -- "connection lost" --> R1["Reject: no connection<br/>a retry returns the session if it was created"]
-  POST --> RE{"Backend repeats part 1 checks<br/>plus accuracy and boundary"}
-  RE -- "a check fails" --> RX["Reject with that check's key<br/>no session"]
+  POST --> RE{"Backend repeats the checks before location<br/>plus accuracy and boundary"}
+  RE -- "a check fails" --> RX["Reject with that check's message<br/>no session"]
   RE -- "active session found<br/>or exclusion constraint hit" --> S0["Return the existing session and Gym ID"]
   RE -- "all checks pass" --> OK["Create one 60-minute session<br/>return the Gym ID<br/>plus athletes-only notice if one starts inside it"]
 
@@ -68,11 +74,15 @@ flowchart TD
   class S0,OK ok
 ```
 
+**About this diagram:** The rejections map to the keys `check_in.location_denied`, `check_in.location_unavailable`, `check_in.low_accuracy` and `check_in.outside_boundary` (D5). Accuracy and boundary follow D2.
+
 - Location comes from the browser Geolocation API (REQ-NF-11). The permission state is read before asking where the browser allows it; otherwise the error of the position request tells denied, unavailable or timeout apart.
 - The phone checks accuracy and boundary only to answer fast. The backend repeats every check and is the only one that decides. The client is never trusted for authorization. Location is a condition, not proof of presence (SRS 3.6).
 - Coordinates travel once in the Check In request and are not stored. Only the result of the location check may be stored on the session (REQ-NF-03). The boundary, accuracy threshold and gym coordinates come from environment configuration (REQ-NF-28, REQ-NF-29).
 
-## 3. Successful Check In: phone, backend, database
+### 3. Successful Check In
+
+**Type:** Sequence diagram. **Use it to:** write the Check In endpoint, its transaction, and the test for two simultaneous requests.
 
 ```mermaid
 sequenceDiagram
@@ -85,7 +95,7 @@ sequenceDiagram
 
   U->>PWA: Tap Check In
   PWA->>API: GET current session and eligibility (sign-in cookie)
-  API->>API: Check the one-device rule (REQ-F-03)
+  API->>API: Check the one-device rule
   API->>DB: Read active facility_sessions row for this User
   DB-->>API: None
   API->>DB: Read authorization, term photo, schedule_slots
@@ -101,7 +111,7 @@ sequenceDiagram
   API->>DB: Read active session for this User
   DB-->>API: None
   API->>DB: INSERT facility_sessions, period from now() to now() plus 60 min, status active
-  Note over DB: Exclusion constraint, no two overlapping non-void periods for one User. Final guard (REQ-F-36). Needs PostgreSQL, CTI M-09
+  Note over DB: Exclusion constraint, no two overlapping non-void periods for one User. Final guard. Needs CTI to accept PostgreSQL
   alt No other session for this User
     DB-->>API: Row created
     API->>DB: COMMIT
@@ -109,15 +119,19 @@ sequenceDiagram
   else A simultaneous request created one first
     DB-->>API: exclusion_violation (SQLSTATE 23P01)
     API->>DB: ROLLBACK, then read the session that won
-    API-->>PWA: 200 with the existing session and Gym ID, same as REQ-F-37
+    API-->>PWA: 200 with the existing session and Gym ID, as for an active session
   end
   PWA-->>U: Show the Gym ID
 ```
 
+**About this diagram:** Step 3 is the one-device rule (REQ-F-03). The exclusion constraint is the final guard of REQ-F-36 and depends on CTI accepting PostgreSQL (M-09). The 200 answer follows REQ-F-37.
+
 - Steps 13 to 24 are the single protected operation: re-check, look for an active session and create one, in one transaction. The read in step 16 gives a clean answer in the normal case. Under simultaneous requests both reads can see nothing, so the constraint decides (REQ-NF-42 tests this).
 - Backend time is the database clock `now()` (REQ-NF-01). The response carries server time so the phone can count minutes left without trusting its own clock.
 
-## 4. Facility session states
+### 4. Facility session states
+
+**Type:** State diagram. **Use it to:** write the session status column, the Staff corrections, and the rule for what counts in occupancy and analytics.
 
 ```mermaid
 stateDiagram-v2
@@ -143,13 +157,15 @@ stateDiagram-v2
 - Only Staff and Administrators can end early or void (REQ-F-48). Each correction is an audit log entry (REQ-NF-39). Staff cannot extend a session or create one without authorization.
 - Whether an expired or ended_early session can still be voided is open (see Gaps).
 
-## 5. Staff-assisted Check In
+### 5. Staff-assisted Check In
+
+**Type:** User flow. **Use it to:** build the Staff assisted Check In screens and write its test cases.
 
 ```mermaid
 flowchart TD
   A["User at the desk without a phone"] --> T{"Paid member or athlete?"}
   T -- "Paid member" --> N["Staff search by name<br/>no receipt needed"]
-  T -- "Athlete" --> SN["Staff enter the student number"]
+  T -- "Athlete" --> SN["Staff search the current-term roster<br/>by student number, read-only"]
   N --> F{"Account with a current<br/>authorization found?"}
   SN --> F
   F -- "No" --> X1["Reject: no authorization<br/>no session"]
@@ -158,7 +174,7 @@ flowchart TD
   M -- "No" --> X2["Staff stop, no session"]
   M -- "Yes" --> C["Staff confirm"]
   C --> RC{"Backend checks: authorization, term photo,<br/>gym open, athletes-only for paid members"}
-  RC -- "a check fails" --> X3["Reject with that check's key<br/>same rules as part 1"]
+  RC -- "a check fails" --> X3["Reject with that check's message<br/>same rules as the User Check In"]
   RC -- "pass" --> AS{"User already has an active session?"}
   AS -- "Yes" --> X4["No second session<br/>show the existing one"]
   AS -- "No" --> OK["Create the same 60-minute session<br/>marked assisted, same exclusion constraint<br/>audit log entry as an exception, same transaction"]
@@ -173,10 +189,15 @@ flowchart TD
   class OK ok
 ```
 
-- Location is not checked: Staff are at the desk, so the person is in the gym. Every other rule of the User Check In applies (REQ-F-46), including the athletes-only rejection for paid members (REQ-F-82).
-- The assisted session goes through the same protected operation as section 3, so the exclusion constraint also guards it. A connection is required (REQ-NF-26). The audit log entry follows REQ-NF-39.
+**About this diagram:** Covers REQ-F-46. The athlete search uses the read-only current-term roster that Staff see (E-59, still to be confirmed by the gym).
 
-## 6. Gym ID states: paid member
+- Location is not checked: Staff are at the desk, so the person is in the gym. Every other rule of the User Check In applies (REQ-F-46), including the athletes-only rejection for paid members (REQ-F-82).
+- Staff can only read the roster here; adding, editing, removing or importing roster records stays with the Administrator (E-59).
+- The assisted session goes through the same protected operation as diagram 3, so the exclusion constraint also guards it. A connection is required (REQ-NF-26). The audit log entry follows REQ-NF-39.
+
+### 6. Gym ID states: paid member
+
+**Type:** State diagram. **Use it to:** build the paid member Gym ID screen and what it shows in each state.
 
 ```mermaid
 stateDiagram-v2
@@ -199,7 +220,9 @@ stateDiagram-v2
 - Without a connection the app does not show a stored Gym ID as current (REQ-NF-26). The same applies to the athlete Gym ID below.
 - If an athletes-only period starts inside the active session, the Gym ID shows a notice with its start time while the session is active. The session is never cut (REQ-F-83).
 
-## 7. Gym ID states: athlete
+### 7. Gym ID states: athlete
+
+**Type:** State diagram. **Use it to:** build the athlete Gym ID screen and what it shows in each state.
 
 ```mermaid
 stateDiagram-v2
@@ -218,11 +241,13 @@ stateDiagram-v2
   a_invalid --> [*]
 ```
 
-- The athlete Gym ID stays valid while the term authorization is active; the 60 minutes are only a counting rule (REQ-F-38, REQ-F-40). Staff check the roster for an athlete in a_valid (REQ-F-45).
+- The athlete Gym ID stays valid while the term authorization is active; the 60 minutes are only a counting rule (REQ-F-38, REQ-F-40). Staff check the read-only current-term roster for an athlete in a_valid (REQ-F-45, E-59).
 - Removed from the roster mid-term: the Gym ID is invalid at once, the current session keeps counting until it ends, and no new Check In is allowed (REQ-F-49).
 - Text for a_valid is not set by the SRS. Proposed: "Authorized athlete, session ended" plus an icon (REQ-NF-14).
 
-## 8. Athletes-only period during an active session
+### 8. Athletes-only notice during a session
+
+**Type:** System flow. **Use it to:** write the backend rule that adds the notice to the Check In and Gym ID answers, and its tests.
 
 ```mermaid
 flowchart TD
@@ -241,7 +266,9 @@ flowchart TD
 
 - Covers REQ-F-83 and the rejection side of REQ-F-82. Times shown as ISO date plus 12-hour time in `America/Puerto_Rico` (REQ-NF-37, REQ-NF-38).
 
-## 9. Occupancy counting
+### 9. Occupancy counting
+
+**Type:** System flow. **Use it to:** write the occupancy query and endpoint, and the polling on the User, Staff and Administrator screens.
 
 ```mermaid
 flowchart LR
@@ -267,7 +294,9 @@ flowchart LR
 - Every screen polls the same endpoint every 20 to 30 seconds (REQ-F-43, interval in D6), so all three show the same value after each one updates (REQ-F-42). A failed poll marks the value as not current (REQ-NF-26).
 - An athlete removed mid-term keeps counting until the session ends (REQ-F-49). Voided sessions never count. Athletes who stay past 60 minutes are not counted.
 
-## 10. Staff verification of a Gym ID
+### 10. Staff verification of a Gym ID
+
+**Type:** User flow. **Use it to:** build the Staff verification screens (active sessions list and roster search) and write test cases.
 
 ```mermaid
 flowchart TD
@@ -279,23 +308,26 @@ flowchart TD
   E -- "Yes" --> OK["Verified"]
   E -- "No" --> X2["Not verified"]
   D -- "No" --> F{"Athlete whose 60 minutes ended?"}
-  F -- "Yes" --> G{"On the current-term roster<br/>and photo matches?"}
-  G -- "Yes" --> OK2["Verified: authorized athlete"]
-  G -- "No" --> X3["Not verified"]
+  F -- "Yes" --> G["Staff search the current-term roster<br/>read-only, by name or student number"]
+  G --> H{"On the roster and<br/>stored photo matches?"}
+  H -- "Yes" --> OK2["Verified: authorized athlete"]
+  H -- "No" --> X3["Not verified"]
   F -- "No" --> X4["Not verified as checked in<br/>the User can do a new Check In"]
 
   classDef staff fill:#d1ecf1,stroke:#0c5460,color:#000
   classDef back fill:#fff3cd,stroke:#b8860b,color:#000
   classDef reject fill:#f8d7da,stroke:#842029,color:#000
   classDef ok fill:#d4edda,stroke:#2e7d32,color:#000
-  class A,B staff
-  class C,D,E,F,G back
+  class A,B,C,G staff
+  class D,E,F,H back
   class X1,X2,X3,X4 reject
   class OK,OK2 ok
 ```
 
+**About this diagram:** Covers REQ-F-44 and REQ-F-45. The roster search is the read-only current-term roster Staff see under E-59 (still to be confirmed by the gym).
+
 - Staff verify against backend data, not only the User's screen (REQ-F-45). The active sessions list shows Check In time, authorization and Gym ID (REQ-F-44). A search is a fresh request, so verification never waits for the next poll.
-- Staff see only photo, authorization, waiver and emergency contact (REQ-NF-19). The roster lookup needs a read access the role table does not list (see Gaps).
+- Staff see only photo, authorization, waiver and emergency contact (REQ-NF-19). The roster list they see is read-only and limited to the current term (E-59).
 
 ## Design decisions to confirm
 
@@ -364,7 +396,7 @@ Recommendation: B, one setting, polling only while the page is visible. Minutes 
 3. REQ-F-82 rejects "paid members" during athletes-only periods. It does not say what happens to a User with a manual authorization (REQ-F-87). Proposed: treat manual as paid member, since it fixes order errors.
 4. REQ-F-83 says "a User's active session". For an athlete the notice has no effect. Show it to athletes too, or only to paid members?
 5. REQ-F-48 does not say if an expired or ended_early session can be voided. Voiding it would change analytics after the fact. Allow it, or only for active sessions?
-6. REQ-F-45 and REQ-F-46 need Staff to search Users by name and student number and to check the roster. The Overview role table gives roster access only to Administrators. Proposed: a read-only lookup for Staff (name, photo, authorization status), in line with REQ-NF-19. The role table should say so.
+6. Resolved by E-59 (still to be confirmed by the gym): Staff see the current-term roster read-only and search it by name or student number, for athlete verification and assisted Check In.
 7. Athletes-only slots and regular hours: if an athletes-only slot falls outside regular hours, is the gym open for athletes? Depends on the slot list (G-28).
 8. No rule for a closure published, or a term ending, during an active session. Proposed: the session is not cut, like REQ-F-83.
 9. Staff-assisted Check In for an athlete on the roster with no account: no session is possible because sessions belong to a User. Only REQ-F-77 (in-person registration, if no mail) would cover it.
@@ -372,32 +404,35 @@ Recommendation: B, one setting, polling only while the page is visible. Minutes 
 
 ## Traceability
 
-| Requirement ID | Where it appears |
+| Requirement or decision | Where it appears |
 |---|---|
-| REQ-F-26 | 1. Check In decision flow, part 1; 5. Staff-assisted Check In |
-| REQ-F-33 | 1. Check In decision flow, part 1; 2. part 2; D1; D5 |
-| REQ-F-36 | 2. part 2; 3. Successful Check In; 5. Staff-assisted Check In; D4 |
-| REQ-F-37 | 1. part 1 (active session first); 2. part 2; 3. Successful Check In (alt block) |
-| REQ-F-38 | 4. Facility session states; 6. Gym ID: paid member; 7. Gym ID: athlete; D3 |
-| REQ-F-40 | 6. Gym ID: paid member; 7. Gym ID: athlete |
+| REQ-F-26 | 1. Check In checks before location; 5. Staff-assisted Check In |
+| REQ-F-33 | 1. Check In checks before location; 2. Check In location checks and session creation; D1; D5 |
+| REQ-F-36 | 2. Check In location checks and session creation; 3. Successful Check In; 5. Staff-assisted Check In; D4 |
+| REQ-F-37 | 1. Check In checks before location (active session first); 2. Check In location checks and session creation; 3. Successful Check In (alt block) |
+| REQ-F-38 | 4. Facility session states; 6. Gym ID states: paid member; 7. Gym ID states: athlete; D3 |
+| REQ-F-40 | 6. Gym ID states: paid member; 7. Gym ID states: athlete |
 | REQ-F-41 | 9. Occupancy counting |
 | REQ-F-42 | 9. Occupancy counting |
 | REQ-F-43 | 9. Occupancy counting; D6 |
 | REQ-F-44 | 10. Staff verification of a Gym ID |
-| REQ-F-45 | 10. Staff verification of a Gym ID; 7. Gym ID: athlete |
+| REQ-F-45 | 10. Staff verification of a Gym ID; 7. Gym ID states: athlete |
 | REQ-F-46 | 5. Staff-assisted Check In |
-| REQ-F-48 | 4. Facility session states; 6. Gym ID: paid member |
-| REQ-F-49 | 7. Gym ID: athlete; 9. Occupancy counting |
-| REQ-F-82 | 1. part 1; 5. Staff-assisted Check In; 8. Athletes-only period |
-| REQ-F-83 | 2. part 2 (notice on success); 6. Gym ID: paid member; 8. Athletes-only period |
+| REQ-F-48 | 4. Facility session states; 6. Gym ID states: paid member |
+| REQ-F-49 | 7. Gym ID states: athlete; 9. Occupancy counting |
+| REQ-F-82 | 1. Check In checks before location; 5. Staff-assisted Check In; 8. Athletes-only notice during a session |
+| REQ-F-83 | 2. Check In location checks and session creation (notice on success); 6. Gym ID states: paid member; 8. Athletes-only notice during a session |
 | REQ-NF-01 | 3. Successful Check In; 4. Facility session states; 9. Occupancy counting |
-| REQ-NF-03 | 2. part 2; 3. Successful Check In |
-| REQ-NF-11 | 2. part 2 |
-| REQ-NF-14 | 6. Gym ID: paid member; 7. Gym ID: athlete; 10. Staff verification |
+| REQ-NF-03 | 2. Check In location checks and session creation; 3. Successful Check In |
+| REQ-NF-11 | 2. Check In location checks and session creation |
+| REQ-NF-14 | 6. Gym ID states: paid member; 7. Gym ID states: athlete; 10. Staff verification of a Gym ID |
 | REQ-NF-19 | 10. Staff verification of a Gym ID |
-| REQ-NF-26 | 1. part 1; 2. part 2; 5. Staff-assisted Check In; 6. Gym ID: paid member; 9. Occupancy counting |
-| REQ-NF-28 | 2. part 2; D2 |
-| REQ-NF-29 | 2. part 2 |
-| REQ-NF-37 | 8. Athletes-only period |
+| REQ-NF-26 | 1. Check In checks before location; 2. Check In location checks and session creation; 5. Staff-assisted Check In; 6. Gym ID states: paid member; 9. Occupancy counting |
+| REQ-NF-28 | 2. Check In location checks and session creation; D2 |
+| REQ-NF-29 | 2. Check In location checks and session creation |
+| REQ-NF-37 | 8. Athletes-only notice during a session |
 | REQ-NF-39 | 4. Facility session states; 5. Staff-assisted Check In |
 | REQ-NF-42 | 3. Successful Check In (alt block) |
+| E-59 (Staff see the roster) | 5. Staff-assisted Check In; 7. Gym ID states: athlete; 10. Staff verification of a Gym ID; Gap 6 |
+
+E-56 (PIN state), E-57 (photos on import undo), E-58 ("I am an athlete") and E-60 (recovery code) do not change any flow in this document.
