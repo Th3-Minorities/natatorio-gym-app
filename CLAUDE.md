@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Status
 
-Only a README and an empty `docs/` folder exist. No code, build, lint, or test commands yet. When the stack is chosen, add the commands (including single-test) and the architecture here.
+Requirements and design phase. No code yet. The stack is chosen: React, TypeScript and Vite PWA; Laravel (PHP 8.3 or higher); PostgreSQL; everything in `docker-compose`, on a CTI VM in production. Requirements are in `docs/requirements/`, decisions in `docs/context.md` and `docs/decisions/`, design in `docs/design/`. When the project skeleton exists, add the build, lint and test commands (including single-test) here.
 
 ## Mandatory skills
 
