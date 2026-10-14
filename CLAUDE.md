@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Status
+
+Requirements and design phase. No code yet. The stack is chosen: React, TypeScript and Vite PWA; Laravel (PHP 8.3 or higher); PostgreSQL; everything in `docker-compose`, on a CTI VM in production. Requirements are in `docs/requirements/`, decisions in `docs/context.md` and `docs/decisions/`, design in `docs/design/`. When the project skeleton exists, add the build, lint and test commands (including single-test) here.
+
 ## Mandatory skills
 
 Every developer must have these installed. Using them in every session is required, not optional:
@@ -38,6 +42,15 @@ Whenever possible, all work follows this path:
 - Each issue gets its own development branch. Do not work on `main` directly.
 - Changes go in through a pull request that links the issue. At least one team member besides the author must review it before merge.
 - Document everything: the issue says what and why, the PR says what changed, and docs go in `docs/`.
+
+## Issues
+
+- Use the templates in `.github/ISSUE_TEMPLATE/`: `feature` for full-stack work (backend to screen), `task` for design, docs, setup and testing.
+- Size: one person, about one week. Split anything bigger. Merge anything under a day into a related issue.
+- Every issue has a clear "Done when" that someone else can check.
+- Plain language. No file paths or internal document names in the issue body. Requirement IDs go in one line at the end (`Requirements: REQ-F-33, REQ-NF-11`) so work traces back to the SRS.
+- One label for the feature area. Add `blocked` when the issue waits on CTI, the gym or the professor, and say who and what in the issue.
+- Members pick the issues they want, except the setup issues that every feature depends on: those go first.
 
 ## Frozen files
 
