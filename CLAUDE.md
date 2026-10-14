@@ -43,6 +43,15 @@ Whenever possible, all work follows this path:
 - Changes go in through a pull request that links the issue. At least one team member besides the author must review it before merge.
 - Document everything: the issue says what and why, the PR says what changed, and docs go in `docs/`.
 
+## Issues
+
+- Use the templates in `.github/ISSUE_TEMPLATE/`: `feature` for full-stack work (backend to screen), `task` for design, docs, setup and testing.
+- Size: one person, about one week. Split anything bigger. Merge anything under a day into a related issue.
+- Every issue has a clear "Done when" that someone else can check.
+- Plain language. No file paths or internal document names in the issue body. Requirement IDs go in one line at the end (`Requirements: REQ-F-33, REQ-NF-11`) so work traces back to the SRS.
+- One label for the feature area. Add `blocked` when the issue waits on CTI, the gym or the professor, and say who and what in the issue.
+- Members pick the issues they want, except the setup issues that every feature depends on: those go first.
+
 ## Frozen files
 
 `docs/capstone_proposal/v0/` is the submitted proposal. It is legacy and must stay untouched: never edit, rename, move, or delete anything in it. To improve it, create a new version (`v1`, `v2`, ...) as separate files.
