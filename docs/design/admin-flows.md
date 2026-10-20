@@ -1,6 +1,6 @@
 # Gym account and administration flows
 
-This document draws what the shared gym account does: signing in as Staff, unlocking Administrator actions with the PIN, recovery with the recovery code, and each Administrator task (WooCommerce import and undo, academic terms, athlete roster, manual authorizations, release of a claimed Authorization Number, account deletion, and PIN, password and recovery code changes). It marks every action that writes an audit log entry. Staff session screens are out of scope (Check In flows). Requirements come from `docs/requirements/SRS.md` v0.7 and the team decisions E-56 to E-99 in `docs/decisions/team.md`. Entity names follow the logical data model in `docs/design/design-notes.md`.
+This document draws what the shared gym account does: signing in as Staff, unlocking Administrator actions with the PIN, recovery with the recovery code, and each Administrator task (WooCommerce import and undo, academic terms, athlete roster, manual authorizations, release of a claimed Authorization Number, account deletion, and PIN, password and recovery code changes). It marks every action that writes an audit log entry. Staff session screens are out of scope (Check In flows). Requirements come from `docs/requirements/SRS.md` v0.7 and the team decisions E-56 to E-107 in `docs/decisions/team.md`. Entity names follow the logical data model in `docs/design/design-notes.md`.
 
 Legend: nodes in red with the word **AUDIT** write one audit log entry (REQ-NF-39). "Proposed" marks a rule this design suggests and the team must confirm (see "Design decisions to confirm"). "Decided" marks a rule the team already chose. "To confirm" or "pending" marks an open item that nobody has decided yet.
 
@@ -8,14 +8,14 @@ Legend: nodes in red with the word **AUDIT** write one audit log entry (REQ-NF-3
 
 ### 1. Gym account and PIN states
 
-**Type:** State diagram. **Use it to:** build the padlocked items, the PIN dialog and the 5-minute warning, and write test cases for each move between states. The Lock button is still to confirm.
+**Type:** State diagram. **Use it to:** build the padlocked items, the PIN dialog and the 5-minute warning, and write test cases for each move between states. The Lock button returns to Staff mode at once (E-101).
 
 ```mermaid
 stateDiagram-v2
   state "Signed out" as Out
   state "Staff (no PIN)" as Staff
   state "PIN dialog" as PinEntry
-  state "Administrator (PIN open in this browser only)" as Admin
+  state "Administrator (PIN open in this browser only, menu unlocked on the dashboard)" as Admin
   state "Warning: PIN closes in 5 minutes" as Warn
   state "Staff, PIN blocked for a wait" as PinWait
 
@@ -23,7 +23,7 @@ stateDiagram-v2
   Out --> Staff: correct gym account password
   Out --> Out: wrong password, sign-in limits apply
   Staff --> PinEntry: tap a padlocked Administrator item
-  PinEntry --> Admin: correct PIN, all items unlock on the same screen, this browser stores the current PIN version
+  PinEntry --> Admin: correct PIN, stays on the dashboard, all items unlock, this browser stores the current PIN version
   PinEntry --> Staff: wrong PIN with attempts left, or Cancel
   PinEntry --> PinWait: wrong PIN reaches the attempt limit
   PinWait --> Staff: wait ends
@@ -31,7 +31,7 @@ stateDiagram-v2
   Admin --> Warn: 10 minutes without a person tap or key press
   Warn --> Admin: Keep going button restarts the full 15 minutes
   Warn --> Staff: 15 minutes reached, PIN closes
-  Admin --> Staff: Lock button (to confirm)
+  Admin --> Staff: Lock button, back to Staff mode at once
   Admin --> Staff: PIN changed in another browser
   Staff --> Out: sign out, password changed or recovery code used elsewhere
   Admin --> Out: sign out, password changed or recovery code used elsewhere
@@ -46,11 +46,12 @@ Notes:
 - A PIN change raises the PIN version of the gym account. Every other browser holds the old version, so its PIN closes at its next request (E-56, D4).
 - Automatic polling (REQ-F-43) never counts as activity. The "Keep going" button takes keyboard focus and is read by screen readers (WCAG 2.2.1, REQ-NF-48).
 - The PIN attempt limit and wait are a design decision (D2). Staff work stays available during the PIN wait.
-- Staff and Administrator share one dashboard on its own route. Administrator items show grayed out with a padlock for Staff. Tapping one opens the PIN dialog, and after the correct PIN every item unlocks on the same screen (E-65).
-- Still to confirm: whether a Lock button returns the dashboard to Staff mode, and whether the separate Administrator menu screen (A-03) disappears (E-65).
+- Staff and Administrator share one dashboard on its own route. Administrator items show grayed out with a padlock for Staff. Tapping one opens the PIN dialog, and after the correct PIN every item unlocks on the same screen (E-65). The Administrator stays on the dashboard, under an Administrator mode bar that holds the Lock button (E-101, E-102).
+- Decided (E-101): while the dashboard is unlocked, an Administrator mode bar shows a Lock button. One tap returns to Staff mode at once. The automatic close after inactivity stays, with the warning at 10 minutes. Proposed: the Lock button also removes the stored PIN version of this browser, so the backend closes the PIN too and not only the screen.
+- Decided (E-102): the separate Administrator menu screen (A-03) is removed. After the PIN the Administrator stays on the dashboard with the menu unlocked. The IDs A-04 to A-14 do not change, and A-03 stays in the list marked as removed.
 - The gym account signs in on its own route (N-11). The User sign-in has no link to it, so Staff reach it by typing the dashboard address (E-65).
 - The PIN is 4 digits entered on a numeric keypad (E-83, D1).
-- The gym account has one language, stored on the account, so it is the same on every computer (E-64). Pending: where Staff or the Administrator change it, and whether that needs the PIN.
+- The gym account has one language, stored on the account, so it is the same on every computer (E-64). Decided (E-104): changing it needs no PIN. The control is C-06 on the dashboard, and it may also be a button in the dashboard top bar; the wireframe picks the placement. The rule of no language button in the top bar (E-64) applies to the User app, not to the gym dashboard.
 
 ### 2. Backend check on every Administrator request
 
@@ -279,7 +280,7 @@ flowchart TD
   class T9 audit
 ```
 
-**About this diagram:** an edit is never blocked because orders or roster records fall outside the new dates (E-88). The store sells only while a term runs (assumption G-26, still to confirm with the gym), so this case is rare. Whether a term can be deleted is not decided; the database blocks it for terms with data. Gaps between terms are allowed (REQ-F-21). The overlap rule can use a PostgreSQL exclusion constraint on the date range, the same tool as the one-session rule (`context.md` section 2; depends on M-09).
+**About this diagram:** an edit is never blocked because orders or roster records fall outside the new dates (E-88). The store sells only while a term runs (assumption G-26, still to confirm with the gym), so this case is rare. Terms are never deleted (E-107): a term created by mistake is fixed by editing its dates, and A-04 has no delete button and no delete states. Gaps between terms are allowed (REQ-F-21). The overlap rule can use a PostgreSQL exclusion constraint on the date range, the same tool as the one-session rule (`context.md` section 2; depends on M-09).
 
 ### 9. No term for the current date
 
@@ -394,22 +395,20 @@ Notes:
 flowchart TD
   L0["Administrator types the Authorization Number"] --> L1{"Claimed?"}
   L1 -->|"No"| L2["Nothing to release"]
-  L1 -->|"Yes"| L3["Show the account, masked email, claim time"]
-  L3 --> L4{"Did this claim create the account?"}
-  L4 -->|"No, added to an existing account"| L5["Delete only that authorization<br/>and its term photo, record and file. Account stays"]
-  L4 -->|"Yes"| L6{"Account has other authorizations?"}
-  L6 -->|"Yes"| L5
-  L6 -->|"No"| L7["Pending: delete the account and its photo,<br/>waiver and sign-in sessions"]
-  L7 --> L8["Keep anonymous Check In counts"]
-  L5 --> L9["Clear the claim: the number can be claimed again"]
-  L8 --> L9
-  L9 --> L10["AUDIT: release of a claimed Authorization Number"]
+  L1 -->|"Yes"| L3["Show the account, masked email, claim time<br/>say that the account stays"]
+  L3 --> L4{"Administrator confirms?"}
+  L4 -->|"No"| L5["Nothing changes"]
+  L4 -->|"Yes"| L6["Delete only that authorization<br/>and its term photo, record and file"]
+  L6 --> L7["The account always stays<br/>also when it was the only authorization"]
+  L7 --> L8["Clear the claim: the number can be claimed again"]
+  L8 --> L9["AUDIT: release of a claimed Authorization Number"]
+  L9 --> L10["The person signs in, sees U-07 with no authorization<br/>and can claim the correct number"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
-  class L10 audit
+  class L9 audit
 ```
 
-**About this diagram:** deleting the photo of an added authorization is Decided (E-57); keeping an account that has other authorizations is Decided (E-87, D12). Pending: what happens when the released authorization was the account's only one and the account has no other data (the L7 branch); the owner has not been asked. "Did this claim create the account" needs a flag on the authorization saved at claim time (REQ-F-13 saves account and claim together, so the flag is known then).
+**About this diagram:** a release never deletes the account (E-106). That holds when the claim created the account, when the account has other authorizations (E-87, D12), and when the released authorization was its only one. The photo of the released authorization is deleted with it (E-57). Account deletion stays a separate action (section 14). With no authorization left, the person sees U-07 after sign-in and can claim the correct number. The confirm screen (A-09) says that the account stays. No rule reads the `created_account` flag any more; whether to keep it is to confirm in the data model.
 
 ### 14. Account deletion when a User asks
 
@@ -513,7 +512,7 @@ erDiagram
   authorizations {
     text type "paid, athlete, manual"
     text status "revoked with reason removed from roster on a roster removal"
-    boolean created_account "set at claim, used by release"
+    boolean created_account "set at claim, no rule reads it now (E-106)"
   }
 ```
 
@@ -525,7 +524,8 @@ Corrections made to match the data model (E-93):
 - The audit log has no `pin_active` column.
 - `imports` has no uploaded-by or uploaded-at. The audit log records the import with the account and time (REQ-NF-39). It keeps `result` (E-84).
 - Removing an athlete from the roster sets the authorization to `revoked` with the reason "removed from roster". There is no cascade delete.
-- `gym_accounts.locale` matches the data model (E-64).
+- `gym_accounts.locale` matches the data model (E-64). The gym account changes it without the PIN (E-104).
+- `authorizations.created_account` no longer drives the release (E-106). Whether to keep the column is to confirm.
 
 Actions that write an audit log entry (REQ-NF-39):
 
@@ -554,7 +554,7 @@ Each entry holds the gym account, time, IP address, device and browser, and valu
 
 ## Design decisions to confirm
 
-Marked Decided when the owner chose in the design review (October 2026) or the team chose earlier. D2, D3, D5, D10 and D13 are still Proposed and stay open for the PR review.
+Marked Decided when the owner chose in the design review (October 2026) or the team chose earlier. D14 to D16 and the extension of D12 were decided on 2026-10-20 (E-101 to E-107). D2, D3, D5, D10 and D13 are still Proposed and stay open for the PR review.
 
 **D1. PIN format.** Decided (E-83): option A.
 - A: 4 digits. Fast to type. NIST SP 800-63B-4 section 3.2.10 (activation secrets) sets 4 as the minimum it SHALL accept. Easier to guess or see over a shoulder.
@@ -619,11 +619,23 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 - A: remove only the released authorization; keep the account.
 - B: delete the account anyway, as REQ-F-74 reads literally, losing the other authorizations.
 - Decided: A. Release deletes only that authorization and its term photo; the account, other authorizations and history stay. Why: it follows the rule that nobody loses their history (E-69). REQ-F-74 says so in SRS v0.7.
+- Extended, decided (E-106): the account is kept in every release case, also when the released authorization was its only one. The person signs in, sees U-07 and can claim the correct number. REQ-F-74 and the A-09 confirm text must say so.
 
 **D13. One alert per window for the global lookup limit.**
 - A: one audit entry when the limit is first reached in a window, with the count.
 - B: one entry per slowed lookup. Can flood the log during an attack.
 - Recommendation: A.
+
+**D14. Lock button and the Administrator menu screen.** Decided (E-101, E-102), owner, 2026-10-20.
+- Lock button: yes. An Administrator mode bar with a visible Lock button shows while the dashboard is unlocked, and one tap returns to Staff mode at once. The automatic close after inactivity stays (warning at 10 minutes).
+- Menu screen: A-03 is removed. After the PIN the Administrator stays on the dashboard with the menu unlocked. A-04 to A-14 keep their IDs, and A-03 stays in the list marked as removed, so the IDs in issues and docs do not shift.
+
+**D15. Where the gym account changes its language.** Decided (E-104), owner, 2026-10-20: no PIN.
+- The control is C-06 on the dashboard and may also be a button in the dashboard top bar. The wireframe picks the placement.
+- The rule of no language button in the top bar (E-64) applies to the User app, not to the gym dashboard.
+
+**D16. Deleting a term.** Decided (E-107), owner, 2026-10-20: terms are never deleted.
+- A term created by mistake is fixed by editing its dates (E-88). A-04 has no delete button and no delete states.
 
 ## Gaps and questions
 
@@ -631,7 +643,7 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 2. **Audit list misses two actions.** REQ-NF-39 does not list account deletion by the Administrator (REQ-F-09) or PIN blocks after too many attempts (REQ-NF-48). Both look like they belong. Drawn as Proposed.
 3. **Photos after undo.** Resolved by E-57: undo and the release of an added authorization delete the authorization with its term photo, record and file.
 4. **Corrected order that changes email or Authorization Number of a claimed membership.** REQ-F-30 updates the record and REQ-F-11 says the account email is the payment email. Not said: does the account email change, and does the old number stay claimed? Suggest: update the membership, keep the account email, flag the row in the import result.
-5. **Editing a term after records exist.** Resolved (E-88): the edit is allowed. Records keep their term and authorization, and only the authorization end date follows the new term end. REQ-F-22 now says that a record belongs to the term it was assigned, even if dates change later (SRS v0.7). Still open: the SRS has no term deletion, and the database blocks it for terms with data.
+5. **Editing a term after records exist.** Resolved (E-88): the edit is allowed. Records keep their term and authorization, and only the authorization end date follows the new term end. REQ-F-22 now says that a record belongs to the term it was assigned, even if dates change later (SRS v0.7). Terms are never deleted (E-107, D16), so the missing term deletion in the SRS is settled.
 6. **Photo for a manual grant.** Resolved (E-69): the athlete rule. The User gives the term photo on U-02 before Check In.
 7. **Account deletion during an active facility session.** REQ-F-09 and REQ-F-74 do not say what happens to an active session of a deleted account. Suggest: void is wrong (it changes counts); keep the session anonymous and let it expire.
 8. **Checking that the User asked.** Resolved (E-89): the request is confirmed in person with identification at the gym.
@@ -639,9 +651,10 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 10. **Duplicate Authorization Number across orders.** Decided (E-71): the number is unique per term. The import rejects the second order with the same number in the same term, and a lookup that matches two orders is denied with the gym contact number. Still pending: open the sample Export Orders file and check its columns, how the term comes from the payment date, and whether two orders in one file share a number (E-30, E-55, G-19).
 11. **Gym ID "at once".** REQ-F-49 says the Gym ID stops being valid at once. The backend does; the phone shows it at its next refresh. The Check In flows should set how often the Gym ID screen refreshes.
 12. **Retention of the saved import rows.** Pending (E-84). The saved import result holds the names and emails of the orders it lists (REQ-NF-05, G-03).
-13. **Lock button and the A-03 menu screen.** To confirm (E-65). Section 1 shows the Lock button as to confirm. Whether the separate Administrator menu screen disappears also changes the screen count and issue #45.
-14. **Gym account language.** Pending (E-64): where Staff or the Administrator change the language of the gym account, and whether that needs the PIN.
+13. **Lock button and the A-03 menu screen.** Resolved by E-101 and E-102 (D14). The Lock button returns to Staff mode at once, and A-03 is removed. Issue #45 has 8 screens.
+14. **Gym account language.** Resolved by E-104 (D15): no PIN, a control on the dashboard and/or a top bar button. The wireframe picks the placement.
 15. **Roster record after a removal.** Pending: a removal sets the authorization to `revoked` with the reason "removed from roster" and forbids a cascade delete (E-93). The revoked authorization keeps the roster record claimed, so the athlete cannot claim it again; Reinstate on A-05 is the way back (E-95). Still open: how the roster record itself is kept or hidden (the data model has no column to mark it); what happens to pending email links and in-person codes for a removed record, which must stop working; and the exact wording of the message shown when Reinstate is refused. Decided: Reinstate is refused when the person already has an active authorization in that term, and the database rejects it too (E-94); the reason is required, 10 characters or more, as in E-86.
+16. **Release when the released authorization was the account's only one.** Resolved by E-106 (D12): the account is kept without an authorization. The person signs in, sees U-07 and can claim the correct number.
 
 ## Traceability
 
@@ -655,7 +668,7 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 | REQ-F-31 | 6. WooCommerce import and re-import; 7. Undo of an import; D7, D8 |
 | REQ-F-49 | 10. Athlete roster; 11. Removing and reinstating an athlete mid-term |
 | REQ-F-52 | 1. Gym account and PIN states; 2. Backend check on every Administrator request |
-| REQ-F-74 | 13. Release of a claimed Authorization Number; D12 |
+| REQ-F-74 | 13. Release of a claimed Authorization Number; D12 (E-106) |
 | REQ-F-87 | 12. Manual grant and revoke; 9. No term for the current date; D11 |
 | REQ-F-88 | 3. First setup of the gym account; 4. Change of gym account password, PIN and recovery code |
 | REQ-F-89 | 3. First setup of the gym account; 4. Change of gym account password, PIN and recovery code (Generate new code); 5. Recovery with the recovery code |
@@ -668,8 +681,8 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 | E-61 | Audit action table (in-person registration is no longer "only if no mail") |
 | E-62 | Audit action table (in-person registration code) |
 | E-63 | 4. Change of gym account password, PIN and recovery code (notes) |
-| E-64 | 1. Gym account and PIN states (notes); 17. Audit log entry and supporting data; gap 14 |
-| E-65 | 1. Gym account and PIN states (padlocked items, notes, Lock button and A-03 screen to confirm); gap 13 |
+| E-64 | 1. Gym account and PIN states (notes); 17. Audit log entry and supporting data; gap 14 (resolved by E-104) |
+| E-65 | 1. Gym account and PIN states (padlocked items, notes); gap 13 (Lock button and A-03 decided by E-101 and E-102) |
 | E-66 | 16. Schedules, closures, notices and facility information |
 | E-68 | 12. Manual grant and revoke |
 | E-69 | 12. Manual grant and revoke (notes); D12; gap 6 |
@@ -687,4 +700,9 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 | E-93 | D2; 6. WooCommerce import and re-import (notes); 11. Removing and reinstating an athlete mid-term; 17. Audit log entry and supporting data; gap 15 |
 | E-94 | 12. Manual grant and revoke; gap 15 |
 | E-95 | 11. Removing and reinstating an athlete mid-term; Audit action table; gap 15 |
+| E-101 | 1. Gym account and PIN states (diagram and notes); D14; gap 13 |
+| E-102 | 1. Gym account and PIN states (notes); D14; gap 13 |
+| E-104 | 1. Gym account and PIN states (notes); 17. Audit log entry and supporting data; D15; gap 14 |
+| E-106 | 13. Release of a claimed Authorization Number; 17. Audit log entry and supporting data; D12; gap 16 |
+| E-107 | 8. Academic terms; D16; gap 5 |
 | Also used: REQ-F-03, F-07, F-22, F-51, F-55, F-58, F-71, F-76 | Sections 1, 6, 9, 10, 15, 16 |

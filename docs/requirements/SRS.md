@@ -2,13 +2,13 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.7 draft, not approved
+**Version:** 0.8 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
 **Organization:** Department of Computer Science and Engineering, University of Puerto Rico at Mayagüez (UPRM)
 
-**Date:** 2026-10-19
+**Date:** 2026-10-20
 
 ## Contents
 
@@ -56,7 +56,7 @@
 | See the audit log; change the PIN and the gym account password; generate a new recovery code (REQ-F-89) | No | No | Yes |
 | Set a new gym account password and PIN with the recovery code (REQ-F-89) | No | Only with the code | Only with the code |
 
-**Still open.** Pending requirements: REQ-F-10, F-28, F-32, F-49, F-51, F-52, F-58, F-67, F-68, F-69, F-73, F-82, F-91, REQ-NF-04, NF-05, NF-06, NF-07, NF-09, NF-23, NF-25, NF-28, NF-31, NF-46, NF-47. Details: Summary of Open Items.
+**Still open.** Pending requirements: REQ-F-10, F-28, F-32, F-49, F-51, F-52, F-58, F-67, F-68, F-69, F-73, F-82, F-91, F-92, REQ-NF-04, NF-05, NF-06, NF-07, NF-09, NF-23, NF-25, NF-28, NF-31, NF-46, NF-47. Details: Summary of Open Items.
 
 ## Revision History
 
@@ -69,6 +69,7 @@
 | Carlos J. Pepin Delgado | 2026-10-14 | Shortened: merged duplicate requirements (Appendix B), moved design details to `docs/design/design-notes.md` and team rules to `context.md`, added the Overview, plain Source labels | 0.5 |
 | Carlos J. Pepin Delgado | 2026-10-14 | Design review decisions E-56 to E-60 (`team.md`): PIN state per browser with a PIN version, photos deleted on import undo, email link for "I am an athlete", Staff see the roster read only, gym account recovery code (new REQ-F-89) | 0.6 |
 | Carlos J. Pepin Delgado | 2026-10-19 | Design review decisions E-61 to E-92 (`team.md`): mail assumed available, password rules (new REQ-NF-51), 4-digit PIN, one language per account, gym dashboard on its own address, public schedules and notices, banners for Users with no active authorization, one authorization per term, Authorization Number unique per term, Gym ID for athletes, athletes-only colors (new REQ-F-90), registration needs a payment or the roster (new REQ-F-91), recovery code format and "Generate new code", saved import results. Data model rules for the migration (E-93). Review answers E-94 to E-100: only active authorizations count per term, Reinstate after a roster removal by mistake, no store option for athletes, Authorization Number field under both banners, the compromised-password check sends no student data, no minutes left for athletes in the Staff active sessions list, "I am an athlete" under both banners, Reinstate needs a reason and is refused when the person has an active authorization | 0.7 |
+| Carlos J. Pepin Delgado | 2026-10-20 | Wireframe decisions E-101 to E-107 (`team.md`): a Lock button returns the Administrator to Staff mode, no separate administration menu screen, welcome and sign-in screens in Spanish before an account exists, the gym account changes its language on the dashboard without the PIN, a "My visits" list of the User's own Check Ins (new REQ-F-92), releasing a number never deletes the account, terms are never deleted | 0.8 |
 
 ## 1. Introduction
 
@@ -207,7 +208,7 @@ The paid member registers with the Authorization Number, the 6-digit value in th
 | REQ-F-71 | The system shall limit failed Authorization Number lookups per IP address: when that limit is hit, lookups from that IP address pause for a time. A global limit on failed lookups never blocks registrations: it only slows each lookup and writes an alert entry in the audit log for the Administrator. | N/A | High | Clear. Values: design | Team decision (E-53) |
 | REQ-F-72 | The system shall show the same message when an Authorization Number is invalid, already claimed or from an ended term, with the contact number of REQ-F-73. | N/A | High | Clear | Team decision (E-71) |
 | REQ-F-73 | When an Authorization Number or a student number does not match a valid record, the system shall show the contact number of someone who can help. | N/A | High | Pending: the number (gym, G-25) | Team decision |
-| REQ-F-74 | An Administrator shall be able to release an Authorization Number claimed by mistake. The release removes only that authorization and its term photo. The account, its other authorizations and its history stay, also when that claim created the account (except the open case of an account whose only authorization is released). The number can be claimed again. | N/A | Medium | Clear. Team to confirm: whether the account stays when the released authorization was its only one and the account has no other data | Team decision (E-52, E-57, E-87) |
+| REQ-F-74 | An Administrator shall be able to release an Authorization Number claimed by mistake. The release removes only that authorization and its term photo. The account, its other authorizations and its history stay, also when that claim created the account. A release never deletes the account. If the released authorization was the account's only one, the account stays with no authorization: the person signs in, sees the banner of REQ-F-23 and can claim the correct number. The released number can be claimed again. | N/A | Medium | Clear | Team decision (E-52, E-57, E-87, E-106) |
 | REQ-F-75 | If someone else claimed a member's Authorization Number, the real owner shall be able to take the account back with the password reset (REQ-F-06), because the account email is the payment email. If the number was added to an account with another email (REQ-F-78), the reset does not help: the real owner contacts the gym, and the Administrator releases the number (REQ-F-74). | N/A | High | Clear. Mail assumed available (2.5, E-61) | Team decision (E-70) |
 | REQ-F-91 | The welcome screen and the registration screens (paid member and athlete) shall say, before the person starts, that registering needs a paid membership or a place on the athlete roster, and shall show the contact number of REQ-F-73. The welcome screen and the paid member registration screen shall also offer a way to the WooCommerce store, where paid members buy the membership. The athlete registration screen has no store option, because athletes do not buy (REQ-F-25). Proposed: the store option appears only while a term runs (G-26). | N/A | Medium | Pending: the store address, and whether it is a button that opens the store or an automatic redirect (team, gym) | Team decision (E-92, E-96) |
 
@@ -235,7 +236,7 @@ The authorization says whether the person has access in the current term. A User
 | REQ-F-18 | If a WooCommerce or roster record cannot be verified, the system shall deny the registration, renewal or Check In that depends on it. | MVP | High | Clear | Proposal:513 |
 | REQ-F-19 | The authorization shall be stored separately from the account, and a User can have several authorizations over time, but at most one active authorization per term. A revoked authorization does not block a new grant or claim in the same term. | MVP | High | Clear | Proposal:350, 356; Team decision (E-68, E-94) |
 | REQ-F-20 | The User shall be able to move between paid-member and athlete authorization without losing the account or the Check In history, by adding the new authorization from inside the existing account (REQ-F-23, REQ-F-80). The account email does not change, no new account is created, and staff do not merge accounts. | MVP | High | Clear | Proposal:202, 356, 406; Team decision |
-| REQ-F-21 | The Administrator shall be able to create and edit academic terms with a start date and an end date from the UPRM academic calendar. Terms never overlap: on save, the system rejects dates that overlap another term. Gaps between terms are allowed. | N/A | High | Clear | Proposal:350, 361; Team decision (E-48) |
+| REQ-F-21 | The Administrator shall be able to create and edit academic terms with a start date and an end date from the UPRM academic calendar. Terms never overlap: on save, the system rejects dates that overlap another term. Gaps between terms are allowed. Terms are never deleted. The Administrator fixes a term created by mistake by editing its dates. | N/A | High | Clear | Proposal:350, 361; Team decision (E-48, E-107) |
 | REQ-F-22 | Each authorization shall expire at the end of its term, whatever the purchase date. An order belongs to the term that contains its payment date. An order dated outside every term gives no authorization and is listed in the import result. An athlete authorization also ends when the athlete is removed from the roster (REQ-F-49). A record belongs to the term it was given, even if the term dates change later. The Administrator can edit a term even when its orders or athletes fall outside the new dates. If the end date changes, the authorizations of that term end on the new date. | MVP | High | Clear. Gym to confirm the store sells only while a term runs (G-26) | Proposal:361; Team decision (E-88) |
 | REQ-F-23 | When the authorization expires, the system shall keep the account and disable Check In. A User with no active authorization sees a banner at the top and the Check In button grayed out. If the authorization expired, the banner says so and asks the User to renew. For any other cause (revoked, import undone, number released, no current term), the banner says the User has no active authorization and shows the contact number of REQ-F-73. Under both banners the screen shows "I am an athlete" (REQ-F-80) and the Authorization Number field, used to renew, to become a paid member, or to claim a number again after an import undo or a release (REQ-F-31, REQ-F-74). If the number cannot be claimed, the User gets the message of REQ-F-72. The User still sees the schedules, notices, facility information and analytics. | MVP | High | Clear. Banner texts: wireframes | Proposal:204; Team decision (E-50, E-67, E-97, E-100) |
 | REQ-F-25 | The athlete shall renew through the roster for the new term, with no purchase or Authorization Number. | MVP | High | Clear | Proposal:206, 218, 321 |
@@ -271,6 +272,7 @@ The User does Check In from the phone. Location is a Check In condition, not pro
 | REQ-F-82 | During an athletes-only period, the system shall reject Check In by paid members, including Staff-assisted Check In, with a notice. Athletes can do Check In. | N/A | Medium | Pending: list of periods (gym, G-28) | Team decision (E-49) |
 | REQ-F-83 | If an athletes-only period starts during a User's active session, the system shall show a notice with the start time of the period, at Check In and while the session is active. Every User sees it, athletes and paid members. The session is never cut. | N/A | Medium | Clear | Team decision (E-76) |
 | REQ-F-90 | During an athletes-only period, the whole User app shall change to a different color theme, so every User sees at a glance that the period is on. The app also shows the period with text and an icon (REQ-NF-14). The gym dashboard keeps its colors. Without a connection, the app shows its normal colors (REQ-NF-26). | N/A | Medium | Clear. Colors: Carlos picks them, and no color means two things (see REQ-F-40) | Team decision (E-76) |
+| REQ-F-92 | The User shall be able to open a "My visits" list of their own past Check Ins from the account screen. Proposed: each row shows the date and time of the Check In. The list never shows the location (REQ-NF-03). | N/A | Medium | Pending: how far back the list goes, all history or the current term (team, E-105); how long Check Ins are kept (REQ-NF-05, G-03) | Team decision (E-105) |
 
 ### 3.7 Gym ID and Occupancy
 
@@ -390,7 +392,7 @@ Screens by role follow the Overview table. Detailed screen design: design phase.
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-10 | The interface shall be a mobile-first PWA with one codebase for phone and desktop. Staff and the Administrator use a gym dashboard on its own address, with its own sign-in page; the User sign-in page has no link to it. Staff land on the dashboard. Administrator items appear to Staff grayed out with a padlock; tapping one asks for the PIN and unlocks the item on the same screen. | N/A | High | Clear. Team to confirm: the dashboard is a route of this same codebase, not a separate app; whether a Lock button returns to Staff mode | Proposal:198, 348; Team decision (E-65) |
+| REQ-NF-10 | The interface shall be a mobile-first PWA with one codebase for phone and desktop. Staff and the Administrator use a gym dashboard on its own address, with its own sign-in page; the User sign-in page has no link to it. Staff land on the dashboard. Administrator items appear to Staff grayed out with a padlock; tapping one asks for the PIN. After the PIN, the Administrator stays on the dashboard with the menu unlocked. There is no separate administration menu screen. While the PIN is open, an "Administrator mode" bar shows a Lock button, and one tap on it returns the dashboard to Staff mode (REQ-NF-48). | N/A | High | Clear. Team to confirm: the dashboard is a route of this same codebase, not a separate app | Proposal:198, 348; Team decision (E-65, E-101, E-102) |
 
 ### 5.2 Software Interfaces
 
@@ -439,7 +441,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 | REQ-NF-23 | Developers shall be outside the gym roles and shall not have routine access to safety or emergency data in production. | N/A | High | Pending: who manages the VM and looks after the system (CTI and gym, M-16, G-01) | Proposal:437, 509 |
 | REQ-NF-24 | Uploaded photos shall be JPEG, PNG or HEIC, up to 10 MB. The server converts them to JPEG and strips location metadata. | N/A | High | Clear | Review gap; Team decision |
 | REQ-NF-25 | The system shall show a privacy notice in Spanish and English before collecting personal data. The team drafts it. | N/A | High | Pending: gym approves the text (G-24) | Team decision |
-| REQ-NF-48 | The PIN shall be 4 digits, typed on a numeric keypad. It shall be stored hashed, PIN attempts shall be limited, and only PIN holders can change it. An entered PIN is active only in the browser where it was typed. Changing the PIN closes it in every browser. It closes after 15 minutes without a tap or key press by a person (automatic polling does not count), with a warning after 10 minutes that it closes in 5 minutes. The warning has a "Keep going" button that resets the full 15 minutes; the button takes keyboard focus and is read by screen readers (WCAG 2.2.1). | N/A | High | Clear. Attempt limit and wait: design | Proposal:177, 218; Team decision (E-51, E-56, E-83) |
+| REQ-NF-48 | The PIN shall be 4 digits, typed on a numeric keypad. It shall be stored hashed, PIN attempts shall be limited, and only PIN holders can change it. An entered PIN is active only in the browser where it was typed. Changing the PIN closes it in every browser. The Administrator can close it at once with the Lock button on the dashboard, which returns to Staff mode (REQ-NF-10). Otherwise it closes after 15 minutes without a tap or key press by a person (automatic polling does not count), with a warning after 10 minutes that it closes in 5 minutes. The warning has a "Keep going" button that resets the full 15 minutes; the button takes keyboard focus and is read by screen readers (WCAG 2.2.1). | N/A | High | Clear. Attempt limit and wait: design | Proposal:177, 218; Team decision (E-51, E-56, E-83, E-101) |
 | REQ-NF-51 | Passwords of User accounts shall have at least 10 characters, and the system shall accept at least 64. There are no composition rules (no required mix of letters, numbers or symbols). When a password is set or changed, the system checks it against known compromised passwords with an external service (haveibeenpwned.com, through Laravel's `uncompromised` rule, which uses the k-anonymity model; see 1.4) and rejects a compromised one. The check sends only the first 5 characters of a hash of the password. No student data leaves the VM, so the check is not submitted to M-11 (2.4). Deviation: NIST SP 800-63B-4, section 3.1.1.2, asks for at least 15 characters for passwords used as a single factor; the team chose 10 because people type the password on a phone. | N/A | High | Clear. Gym account assumed to follow the same rule (team to confirm). A test covers the case when the external service does not answer | Team decision (E-63, E-98) |
 
 ### 6.4 Other Quality Attributes
@@ -456,7 +458,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it when creating the account and can change it later in the profile preferences. The gym account has one language for every computer where it is used. There is no language button in the top bar. | N/A | High | Clear. Team to confirm: the language of the screens before sign in, and where the gym account changes its language and whether that needs the PIN | Team decision (E-64) |
+| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it when creating the account and can change it later in the profile preferences. Before an account exists, the welcome and User sign-in screens are in Spanish. A User whose account is in English also sees these two screens in Spanish while signed out; the account language applies after sign in. The gym account has one language for every computer where it is used. It is changed on the gym dashboard without the PIN, with a dashboard setting, a button in the dashboard top bar, or both; the wireframes pick the place. The User app has no language button in the top bar. | N/A | High | Clear | Team decision (E-64, E-103, E-104) |
 | REQ-NF-34 | All frontend and backend texts, including emails and API error messages, shall be in translation files from the start. | N/A | High | Clear | Team decision |
 | REQ-NF-35 | Emails shall be sent in the language chosen by the User. | N/A | High | Clear | Team decision |
 | REQ-NF-36 | The page language attribute shall change together with the texts (WCAG 3.1.1). | N/A | High | Clear | Review gap |
@@ -601,13 +603,10 @@ IDs that are no longer rows. Old references resolve here.
 | Server administrator access | CTI | M-16 | REQ-NF-23 |
 | Export Orders example: columns, how the term is read, whether two orders in one file share an Authorization Number (unique per term is decided, E-71) | Team (Carlos) | E-55 | REQ-F-10, F-28, F-29 |
 | Store address and how the store option works | Team, gym | E-92 | REQ-F-91 |
-| Language of screens before sign in; where the gym account changes its language and whether that needs the PIN | Team | E-64 | REQ-NF-33 |
-| Dashboard: same codebase or separate app; Lock button back to Staff mode | Team | E-65 | REQ-NF-10 |
-| Released number that was the account's only authorization: does the account stay | Team | E-87 | REQ-F-74 |
-| Can a term be deleted | Team | E-88 | REQ-F-21 |
+| Dashboard: same codebase or separate app | Team | E-65 | REQ-NF-10 |
 | Who fixes a session mistake found after the session ended | Team | E-80 | REQ-F-48 |
 | Gym account password follows REQ-NF-51 (assumed) | Team | E-63 | REQ-NF-51 |
-| Does a User see their own visit history | Team (Carlos) | None | None (design) |
+| How far back "My visits" goes: all history or the current term | Team | E-105 | REQ-F-92 |
 | Contact number | Gym | G-25 | REQ-F-72, F-73, F-76 |
 | Store sells only during terms; summer | Gym | G-26 | REQ-F-21, F-22 |
 | Athletes-only periods | Gym | G-28 | REQ-F-55, F-82 |
@@ -618,7 +617,7 @@ IDs that are no longer rows. Old references resolve here.
 | Safety records | Gym | G-21 | REQ-F-60 |
 | English for later notices | Gym | G-27 | REQ-F-58 |
 | Privacy notice approval | Gym | G-24 | REQ-NF-25 |
-| Retention periods | Gym, UPRM | G-03 | REQ-NF-04, NF-05 |
+| Retention periods | Gym, UPRM | G-03 | REQ-NF-04, NF-05, REQ-F-92 |
 | Front desk devices | Gym | G-06 | 2.3 |
 | Busiest hour | Gym | G-05 | REQ-NF-15 |
 | Availability | Gym | G-07 | REQ-NF-31 |

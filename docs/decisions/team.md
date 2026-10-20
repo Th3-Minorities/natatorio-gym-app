@@ -9,9 +9,10 @@
 | Requirement questions | 17 | 15 | 2 |
 | Decisions from the design-readiness review | 24 | 24 | 0 |
 | Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
+| Decisions from the wireframe stage (2026-10-20) | 7 | 7 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 92 | 82 | 10 |
+| Total | 99 | 89 | 10 |
 
 ## Scope and priorities
 
@@ -295,6 +296,18 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-98 | Compromised-password check | The check is an external call that sends no student data: only the first 5 characters of a hash of the password, with no name, email, photo or full password. The SRS describes it, and the team does not submit it for approval (cti.md, M-11). SRS 2.4, REQ-NF-51. | Carlos Pepin | 2026-10-19 |
 | E-99 | Staff active sessions list | For an athlete the list shows "athlete" and the Check In time, with no minutes left. Paid members keep the minutes left. Extends E-75 to Staff screens. SRS REQ-F-44. | Carlos Pepin | 2026-10-19 |
 | E-100 | "I am an athlete" under both banners | A User with no active authorization sees "I am an athlete" under both banners, expired or any other cause, as in E-68. Changes E-67. SRS REQ-F-23, REQ-F-80. | Carlos Pepin | 2026-10-19 |
+
+## Decisions from the wireframe stage (2026-10-20)
+
+| ID | Topic | Answer | Answered by | Date |
+|---|---|---|---|---|
+| E-101 | Lock button | While the PIN is open, the dashboard shows an "Administrator mode" bar with a Lock button. One tap returns to Staff mode. The PIN still closes after inactivity, with the warning at 10 minutes. Answers the Lock part of E-65. SRS REQ-NF-10, REQ-NF-48. | Carlos Pepin | 2026-10-20 |
+| E-102 | Administration menu screen | Removed. After the PIN, the Administrator stays on the dashboard with the menu unlocked and the "Administrator mode" bar. The other screen IDs keep their numbers, and the removed screen is marked "removed" so references in issues and docs stay valid. SRS REQ-NF-10. | Carlos Pepin | 2026-10-20 |
+| E-103 | Language before an account exists | The welcome and User sign-in screens are always in Spanish until the person picks a language when creating the account. A User whose account is in English sees these two screens in Spanish while signed out; the account language applies after sign in. Answers part of E-64. SRS REQ-NF-33. | Carlos Pepin | 2026-10-20 |
+| E-104 | Gym account language | Changed on the dashboard without the PIN. The control can be a dashboard setting, a button in the dashboard top bar, or both; the wireframe picks the place. The E-64 rule of no language button in the top bar covers the User app only. Answers the rest of E-64. SRS REQ-NF-33. | Carlos Pepin | 2026-10-20 |
+| E-105 | "My visits" | The User sees a list of their own past Check Ins on a new "My visits" screen, opened from the account screen. Proposed: each row shows the date and time. The list never shows location (REQ-NF-03). To confirm: how far back it goes (all history or the current term) and retention (REQ-NF-05, G-03). Carlos chose this over the recommendation to leave it for later. SRS REQ-F-92 (new). | Carlos Pepin | 2026-10-20 |
+| E-106 | Release of an account's only authorization | The account always stays, with no authorization. Only the authorization and its term photo go. The person signs in, sees the no-authorization banner and can claim the correct number. Carlos chose this over the recommendation to delete the account when it never had a Check In. Answers the open case of E-87. SRS REQ-F-74. | Carlos Pepin | 2026-10-20 |
+| E-107 | Deleting a term | Terms are never deleted. The Administrator fixes a term created by mistake by editing its dates. The term screen has no delete button. Answers the open case of E-88. SRS REQ-F-21. | Carlos Pepin | 2026-10-20 |
 
 ## WooCommerce import
 
