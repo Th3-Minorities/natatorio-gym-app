@@ -26,9 +26,9 @@ Based on Proposal:350, 354-359, 426 and the team decisions. Diagrams and constra
 | Entity | Contains | Related to |
 |---|---|---|
 | User | Persistent identity, email, password, chosen language | Authorizations, sign-in sessions, facility sessions, waiver acceptance |
-| Gym account | One shared account, password hash, PIN hash, PIN version, recovery code hash | Audit log entries, sign-in sessions |
+| Gym account | One shared account, password hash, PIN hash, PIN version, recovery code hash, language for every computer (team.md, E-64) | Audit log entries, sign-in sessions |
 | Academic term | Name, start date, end date (a summer term is possible) | Authorizations, roster records, memberships |
-| Authorization | Type (paid, athlete or manual), term, status, photo for the term, reason (manual only) | User, term, membership, roster record or none (manual) |
+| Authorization | Type (paid, athlete or manual), term, status, photo for the term, reason (manual, or "removed from roster", team.md, E-93) | User, term, membership, roster record or none (manual) |
 | Imported membership | Fields of REQ-F-29, claim status, import it came from | WooCommerce order, import, authorization |
 | Roster record | Fields of REQ-F-51, claim status | Term, authorization |
 | Sign-in session | Device with an open sign-in session; for the gym account, the session data holds whether the PIN is active in that browser, its PIN version and the last person activity | User (one at a time, REQ-F-03) or gym account (no limit) |
