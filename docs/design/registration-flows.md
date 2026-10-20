@@ -11,6 +11,8 @@ Two answers are still pending and touch almost every diagram:
 
 Mail is assumed available (E-61). The first choice is CTI outgoing mail (M-07). If CTI cannot provide it, the fallback is an external provider, which needs approval (M-11). Every email link depends on it: athlete registration (diagram 4), "I am an athlete" (diagram 7, E-58) and password reset.
 
+The welcome screen (N-01) and the sign-in screen (N-02) are always in Spanish, because no account exists yet. The person chooses the language when the account is created (E-103, E-64). After sign in, the account language applies, so a User with an English account sees these two screens in Spanish while signed out.
+
 ## Diagrams
 
 ### 1. Paid member registration
@@ -40,9 +42,9 @@ flowchart TD
   M1 -.->|"real owner whose number was taken"| RO["Owner takes the account back with password reset<br/>by email to the payment email.<br/>Or an Administrator releases the number"]
 ```
 
-**About this diagram:** The person is not signed in; the privacy notice (REQ-NF-25, text pending G-24) comes before any field, and password, photo, waiver and emergency contact stay in the page until the final step sends them in one request (REQ-F-13, F-17, F-60, NF-24, F-26). Messages follow REQ-F-72, F-73, F-18 (invalid or claimed), REQ-F-22 with REG-9 (an ended-term number gets the same message), REQ-F-71 (pause), REQ-F-70 with REG-3 (masking), REQ-F-78 with REG-4 (email already has an account) and REG-8 (photo failure). The first line is E-92 and the store button (Proposed) is E-96; the photo step is E-69; the password rules are E-63; the language step is E-64. The dotted path is REQ-F-75 (needs mail) and REQ-F-74.
+**About this diagram:** The person is not signed in; the privacy notice (REQ-NF-25, text pending G-24) comes before any field, and password, photo, waiver and emergency contact stay in the page until the final step sends them in one request (REQ-F-13, F-17, F-60, NF-24, F-26). Messages follow REQ-F-72, F-73, F-18 (invalid or claimed), REQ-F-22 with REG-9 (an ended-term number gets the same message), REQ-F-71 (pause), REQ-F-70 with REG-3 (masking), REQ-F-78 with REG-4 (email already has an account) and REG-8 (photo failure). The first line is E-92 and the store button (Proposed) is E-96; the photo step is E-69; the password rules are E-63; the language step is E-64, and the screens before it are in Spanish (E-103). The dotted path is REQ-F-75 (needs mail) and REQ-F-74.
 
-Notes: the term comes from the payment date of the order (REQ-F-22). The member never types or changes the account email (REQ-F-11). The store button (Proposed) appears only while a term runs, because the store sells only then (G-26, assumed, the gym still confirms). The password rule has no mixing rules and allows at least 64 characters. NIST SP 800-63B-4 asks for at least 15 characters for single-factor passwords; the team chose 10 as a documented deviation for phone use. The compromised-password check is an external call that sends only part of a hash. SRS 2.4 and REQ-NF-51 say so (E-98), and a test must cover the case where that service does not answer (#30).
+Notes: the term comes from the payment date of the order (REQ-F-22). The member never types or changes the account email (REQ-F-11). The welcome screen and the screens up to the language step are in Spanish, because the account language does not exist yet (E-103). The store button (Proposed) appears only while a term runs, because the store sells only then (G-26, assumed, the gym still confirms). The password rule has no mixing rules and allows at least 64 characters. NIST SP 800-63B-4 asks for at least 15 characters for single-factor passwords; the team chose 10 as a documented deviation for phone use. The compromised-password check is an external call that sends only part of a hash. SRS 2.4 and REQ-NF-51 say so (E-98), and a test must cover the case where that service does not answer (#30).
 
 ### 2. Authorization Number lookup with limits
 
@@ -154,7 +156,7 @@ flowchart TD
   X4 --> SN
 ```
 
-**About this diagram:** Drawn with the decided option of REG-5 (E-69): only the student number is asked before the link; password, photo and waiver come after the link is opened and are saved together, so there is never an authorization without a photo (E-69; REQ-F-15, NF-25, NF-24, F-26, F-60). The language step is E-64. The request limit is REG-7 (E-73) and the link rules are REG-6 (pending); messages follow REQ-F-76, F-73, F-18, SRS 3.3 errors and REG-4 (E-70). The first line is E-92. The link needs mail (assumed available, E-61).
+**About this diagram:** Drawn with the decided option of REG-5 (E-69): only the student number is asked before the link; password, photo and waiver come after the link is opened and are saved together, so there is never an authorization without a photo (E-69; REQ-F-15, NF-25, NF-24, F-26, F-60). The language step is E-64, and the screens before it are in Spanish (E-103). The request limit is REG-7 (E-73) and the link rules are REG-6 (pending); messages follow REQ-F-76, F-73, F-18, SRS 3.3 errors and REG-4 (E-70). The first line is E-92. The link needs mail (assumed available, E-61).
 
 Notes: the account exists only after the final step that follows opening the link (REQ-F-15). The final step checks the link again, so a link that expires while the form is open creates no account. Athletes do not buy a membership (REQ-F-25), so this screen has no store button (E-96). A paid member who opens it by mistake goes back to the welcome screen, which has one (E-96).
 
@@ -181,7 +183,7 @@ flowchart TD
   end
 ```
 
-**About this diagram:** A Staff tool that stays even when mail exists (E-62, E-61). Staff do not enter any data for the person; they only generate the code and check identification. Staff see the current-term roster as a read-only list and can search it by student number, but adding, editing, removing and importing records stay Administrator only (E-59, still to be confirmed by the gym). The code is stored like the email links, in the email_links table, as a new type with hash, expiry and single use (data-model D9, decided by the owner 2026-10-19). Drawn with the decided option of REG-11 (E-62); the not-on-roster message is REQ-F-76, the audit entry is REQ-NF-39, and the final step covers REQ-F-13, F-17 and F-60. The language step is E-64. The "only if there is no mail" condition of REQ-F-77 and E-41 no longer applies.
+**About this diagram:** A Staff tool that stays even when mail exists (E-62, E-61). Staff do not enter any data for the person; they only generate the code and check identification. Staff see the current-term roster as a read-only list and can search it by student number, but adding, editing, removing and importing records stay Administrator only (E-59, still to be confirmed by the gym). The code is stored like the email links, in the email_links table, as a new type with hash, expiry and single use (data-model D9, decided by the owner 2026-10-19). Drawn with the decided option of REG-11 (E-62); the not-on-roster message is REQ-F-76, the audit entry is REQ-NF-39, and the final step covers REQ-F-13, F-17 and F-60. The language step is E-64, and the screens before it are in Spanish (E-103). The "only if there is no mail" condition of REQ-F-77 and E-41 no longer applies.
 
 ### 6. Renewal and type change with a new Authorization Number
 
@@ -213,7 +215,7 @@ flowchart TD
 
 **About this diagram:** The User is signed in and has no active authorization (REQ-F-23). A person has at most one active authorization per term, and a revoked one does not block a new grant or claim in the same term (E-68, E-94). So "I am an athlete" and the Authorization Number field show only in this state. The two banners (E-67) cover expired, and every other cause: revoked, import undone, number released or no current term. Both banners show the Authorization Number field (E-97), so a person whose authorization an import undo or a release removed can claim a number again (REQ-F-31); "I am an athlete" shows under both banners (E-100). A paid member renews this way (REQ-F-78), and an athlete who becomes a paid member uses the same field (REQ-F-20); the lookup is REQ-F-70, F-71, F-72 and the final step is REQ-F-13, F-17, F-26, NF-24.
 
-Notes: the photo cannot be replaced while an authorization is active (REQ-F-26). The waiver is not asked again (REQ-F-60). The banner texts are drafts; the final wording is written in the wireframes (REQ-F-23, E-67). Under the other-cause banner, a number that cannot be claimed gets the same message with the contact number (E-97). A signed-in User who types a number whose payment email belongs to another account is accepted (E-70): the number reached an email the person gave, so having it is the proof. The risk is that this holds only if numbers cannot be guessed (E-30), so the lookup limits of diagram 2 still apply. A real owner who finds the number already claimed contacts the gym, and an Administrator can release it (REQ-F-74).
+Notes: the photo cannot be replaced while an authorization is active (REQ-F-26). The waiver is not asked again (REQ-F-60). The banner texts are drafts; the final wording is written in the wireframes (REQ-F-23, E-67). Under the other-cause banner, a number that cannot be claimed gets the same message with the contact number (E-97). A signed-in User who types a number whose payment email belongs to another account is accepted (E-70): the number reached an email the person gave, so having it is the proof. The risk is that this holds only if numbers cannot be guessed (E-30), so the lookup limits of diagram 2 still apply. A real owner who finds the number already claimed contacts the gym, and an Administrator can release it (REQ-F-74). A release never deletes the account, even when the number was its only authorization: the person signs in, lands on this screen under the "no active authorization" banner, and can claim the correct number (E-106).
 
 ### 7. "I am an athlete" inside the account
 
@@ -281,13 +283,14 @@ stateDiagram-v2
   revoked --> [*]
   deleted --> [*]
   note right of deleted
-    Account stays when it has other
-    authorizations, see the release row.
+    The account always stays.
+    After a release the person lands
+    on U-07 and can claim the right number.
     A new claim needs a new photo.
   end note
 ```
 
-**About this diagram:** One row in authorizations; types are paid, athlete and manual. A person has at most one active authorization per term (E-68, E-94). Transitions marked "audit" write an audit_log_entries row (REQ-NF-39); claims made by the User are not gym actions and write no audit entry. Release (REQ-F-74) and import undo (REQ-F-31) delete the authorization together with its term photo, row and file (E-57). Removing an athlete from the roster does not delete anything: the authorization becomes revoked with the reason "removed from roster" (E-93). An Administrator can undo a mistaken removal with Reinstate (E-95).
+**About this diagram:** One row in authorizations; types are paid, athlete and manual. A person has at most one active authorization per term (E-68, E-94). Transitions marked "audit" write an audit_log_entries row (REQ-NF-39); claims made by the User are not gym actions and write no audit entry. Release (REQ-F-74) and import undo (REQ-F-31) delete the authorization together with its term photo, row and file (E-57). The account always stays, also when the deleted authorization was its only one (E-106). Removing an athlete from the roster does not delete anything: the authorization becomes revoked with the reason "removed from roster" (E-93). An Administrator can undo a mistaken removal with Reinstate (E-95).
 
 | Transition | Rule |
 |---|---|
@@ -296,14 +299,14 @@ stateDiagram-v2
 | active to revoked | Administrator revokes by hand (REQ-F-87). Audit, reason required (E-86) |
 | active to revoked, removed from roster | Administrator removes the athlete from the roster (REQ-F-49, F-22). The reason is "removed from roster" (E-93). Gym ID stops being valid at once; the current facility session keeps counting until it ends, and there is no new Check In. Audit (roster change) |
 | revoked to active, reinstate | Administrator uses Reinstate on A-05 for an athlete removed from the roster by mistake (E-95). The revoked authorization goes back to active. Audit entry. The reason is required, free text of 10 characters or more, the same rule as a manual grant (E-86, E-95). Reinstate is refused with a message when the person already has an active authorization in that term (E-94). The athlete does not claim the record again |
-| to deleted, release | REQ-F-74. If the claim was added to an existing account, or the account has other authorizations, only that authorization and its term photo (row and file) are deleted and the account and history stay (E-87, E-57). If it was the only authorization and the account has no other data, whether the account stays is pending. The number can be claimed again, with a new photo. Audit |
+| to deleted, release | REQ-F-74. Only that authorization and its term photo (row and file) are deleted. The account and history always stay (E-87, E-57), also when the claim created the account and it was the account's only authorization (E-106). The person signs in, lands on U-07 and can claim the correct number (diagram 6). The number can be claimed again, with a new photo. Audit |
 | to deleted, import undone | REQ-F-31, E-57. Always allowed, even after Check Ins used the authorizations; active sessions keep counting until they end (E-84). Undo deletes the import's imported_memberships rows and the authorizations that came from them, together with their term photo (row and file). It does not revert changes made to older records (E-84). Accounts stay. When the person claims again with the corrected file, they upload a new photo, as in any renewal. Audit |
 
 Notes: the data model does not store expired: it is computed from the term end date (data-model section 2). Manual and athlete authorizations have no imported membership, so release and import undo do not apply to them.
 
 ## Design decisions to confirm
 
-REG-1, REG-2 and REG-6 are still **Proposed**; they wait on the owner. REG-3, REG-4, REG-5, REG-7, REG-8, REG-9, REG-10, REG-11 and REG-12 are **Decided**. Each decided item keeps its options for the record and says which option was chosen and why. No standard was cited for the pending values because none was checked for this document.
+REG-1, REG-2 and REG-6 are still **Proposed**; they wait on the owner. REG-3, REG-4, REG-5, REG-7, REG-8, REG-9, REG-10, REG-11, REG-12 and REG-13 are **Decided**. Each decided item keeps its options for the record and says which option was chosen and why. No standard was cited for the pending values because none was checked for this document.
 
 ### REG-1: Per-IP limit on failed Authorization Number lookups (REQ-F-71)
 
@@ -428,6 +431,10 @@ Drawn in diagram 8. See the Gaps note about Staff-assisted Check In.
 
 **Decided (E-58):** the system sends a link to the institutional email in the roster record and links the record only when the link is opened, with the same link mechanism as athlete registration; it needs outgoing mail, which is assumed available (E-61). Drawn in diagram 7.
 
+### REG-13: Language of the welcome and sign-in screens
+
+**Decided (E-103).** The welcome screen (N-01) and the sign-in screen (N-02) are always in Spanish. The person chooses the language in the language step when the account is created (E-64). After sign in, the account language applies. Why: no account, and so no language, exists before that step. A User with an English account sees these two screens in Spanish while signed out. Drawn in diagrams 1, 4 and 5.
+
 ## Gaps and questions
 
 1. **REQ-F-80 lets anyone take an athlete's record.** Resolved by E-58: the record is linked only after the link sent to its institutional email is opened.
@@ -443,6 +450,7 @@ Drawn in diagram 8. See the Gaps note about Staff-assisted Check In.
 11. **Athlete removed from the roster by mistake** (REQ-F-49): the authorization becomes revoked with the reason "removed from roster" (E-93). Resolved (E-95): an Administrator uses a Reinstate action on A-05, which returns the revoked authorization to active, writes an audit entry and requires a reason of 10 characters or more, as in E-86 (decided). It is refused with the message "this person already has an active authorization this term" when the person already has an active authorization in that term, for example a paid number claimed after the removal (E-94, E-95); the Administrator revokes the other one by hand if needed. The athlete does not claim the record again.
 12. **Link tokens and one-time codes have no entity** in the logical data model (design-notes.md). Resolved (data-model D9, decided by the owner 2026-10-19): an email_links table stores the athlete link, the "I am an athlete" link and the in-person code (a new type), each with hash, expiry and single use.
 13. **A manual authorization is created without a photo** (E-69, diagram 9), while registration never creates an authorization without one (E-69, E-70). The User gives the term photo before Check In. Check In stays off for it until the photo is saved.
+14. **Release of a number that was the account's only authorization** (REQ-F-74). Resolved (E-106): the account always stays, without an authorization. The person signs in, sees U-07 and can claim the correct number. Only the authorization and its term photo are deleted.
 
 ## Traceability
 
@@ -464,7 +472,7 @@ Drawn in diagram 8. See the Gaps note about Staff-assisted Check In.
 | REQ-F-71 | 2. Authorization Number lookup with limits; 1 and 6 (pause message) |
 | REQ-F-72 | 1. Paid member registration; 2. Authorization Number lookup with limits; 3. Final step |
 | REQ-F-73 | 1, 2, 4, 6, 7, 8 (contact number, pending G-25) |
-| REQ-F-74 | 1. Paid member registration (dotted path); 9. Authorization states |
+| REQ-F-74 | 1. Paid member registration (dotted path); 6 (notes); 9. Authorization states |
 | REQ-F-75 | 1. Paid member registration (dotted path, needs mail) |
 | REQ-F-76 | 4. Athlete registration by email link; 5. In-person athlete registration by Staff; 7. "I am an athlete" inside the account; 8. Athlete in a new term |
 | REQ-F-77 | 5. In-person athlete registration by Staff |
@@ -485,6 +493,8 @@ Drawn in diagram 8. See the Gaps note about Staff-assisted Check In.
 | E-63 (password rules) | 1, 4 |
 | E-64 (language chosen at account creation) | 1, 4, 5 |
 | E-67 (banners for a User with no active authorization) | 6 |
+| E-103 (N-01 and N-02 in Spanish before an account exists) | intro; 1, 4, 5; REG-13 |
+| E-106 (account kept when a release removes the only authorization) | 6 (notes); 9. Authorization states; Gap 14 |
 | E-68, E-94 (one active authorization per User per term) | 6, 7, 9; Gaps 8, 11 |
 | E-69 (photo with the registration, athlete data after the link, new term, manual grant photo) | 1, 4, 7, 8, 9; REG-5; REG-10; Gaps 2, 13 |
 | E-70 (email already has an account; number accepted for another account's email) | 1, 4, 6; REG-4; Gaps 3, 4 |

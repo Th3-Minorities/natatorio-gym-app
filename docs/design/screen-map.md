@@ -1,6 +1,6 @@
 # Screen map by role
 
-This document lists every screen of the PWA, groups them by role, and draws how a person moves between them. Each screen has a short stable id (N for not signed in, U for User, C for shared, S for Staff, A for Administrator) so wireframe and feature issues can refer to it. Public screens use N, not P, so they do not look like the professor question codes P-01 to P-05 in `team.md`. It covers GitHub issue #8. Flows, state names and rules come from the finished design files: `architecture.md`, `data-model.md`, `registration-flows.md` (REG-N decisions), `check-in-flows.md` (D-N decisions) and `admin-flows.md` (D-N decisions, here written "admin D-N"). Requirements come from `docs/requirements/SRS.md` v0.7, with the team decisions up to E-99. Wireframes and visual design are out of scope. Where a diagram follows a choice from [Design decisions to confirm](#design-decisions-to-confirm), the diagram draws the chosen option and the note under it names the choice (SM-N). The owner decided SM-1 to SM-6 and the gaps in a design review between 2026-10-17 and 2026-10-19 (issue #52). Parts still open say "to confirm".
+This document lists every screen of the PWA, groups them by role, and draws how a person moves between them. Each screen has a short stable id (N for not signed in, U for User, C for shared, S for Staff, A for Administrator) so wireframe and feature issues can refer to it. Public screens use N, not P, so they do not look like the professor question codes P-01 to P-05 in `team.md`. It covers GitHub issue #8. Flows, state names and rules come from the finished design files: `architecture.md`, `data-model.md`, `registration-flows.md` (REG-N decisions), `check-in-flows.md` (D-N decisions) and `admin-flows.md` (D-N decisions, here written "admin D-N"). Requirements come from `docs/requirements/SRS.md` v0.7, with the team decisions up to E-99. Wireframes and visual design are out of scope. Where a diagram follows a choice from [Design decisions to confirm](#design-decisions-to-confirm), the diagram draws the chosen option and the note under it names the choice (SM-N). The owner decided SM-1 to SM-6 and the gaps in a design review between 2026-10-17 and 2026-10-19 (issue #52), and the wireframe questions on 2026-10-20 (E-101 to E-107). Parts still open say "to confirm".
 
 Pending answers touch several screens:
 
@@ -50,7 +50,7 @@ flowchart TD
 - N-01 shows the schedules (C-02) and notices (C-03) before sign in. Occupancy and analytics need a sign in (SM Gap 5).
 - A signed-in person who opens N-01 goes straight to the home of diagram 2, 3 or 4.
 - N-12 ends on N-11, where the person signs in with the new password (E-78). It does not sign anyone in by itself. Done stays off until the person retypes the new recovery code.
-- Which language N-01 and N-02 use before an account exists: to confirm.
+- N-01 and N-02 are always in Spanish, because no account exists yet. The person chooses the language when the account is created, on N-03, N-05 and N-10 (E-103).
 
 ### 2. User with an active authorization
 
@@ -70,6 +70,7 @@ flowchart TD
   MORE --> N09["N-09 Install help"]
   MORE --> N08["N-08 Privacy notice"]
   U03 --> U04["U-04 Emergency contact"]
+  U03 --> U09["U-09 My visits<br/>own past Check Ins"]
   U03 -->|"only without an active authorization"| U06["U-06 I am an athlete<br/>flow in diagram 3"]
   U03 --> U05["U-05 Delete account<br/>refused while authorized"]
   U03 -->|"Sign out"| N01["N-01 Landing"]
@@ -80,7 +81,8 @@ flowchart TD
 **About this diagram:** Tabs follow SM-1. U-06 appears only when the User has no active authorization, because a User holds one active authorization per term (Gaps 2). The sign-out on another device is REQ-F-03.
 
 - U-01 holds the Check In button and the Gym ID in the states of `check-in-flows.md` sections 6 and 7. Check In rejections are states of U-01, not separate screens, except "new term photo needed", which opens U-02. The server sends a fixed cause code for each rejection and the app writes the text in the account's language (E-74).
-- The language is chosen when the account is created and changed in the preferences of U-03 (C-06, SM-2). There is no language button in the top bar.
+- The language is chosen when the account is created and changed in the preferences of U-03 (C-06, SM-2). There is no language button in the top bar of the User app (E-64, E-104).
+- U-09 lists the User's own past Check Ins, newest first, each with date and time. It opens from U-03 (E-105, REQ-F-92) and never shows location (REQ-NF-03). How far back it reaches and how long the data is kept: to confirm (REQ-NF-05, G-03).
 - During the athletes-only period the whole theme of the User app changes color, so every User sees the period at a glance. A text notice with the start time and an icon stay on U-01 for every User, athletes and paid members (E-76).
 
 ### 3. User with no active authorization
@@ -160,31 +162,31 @@ flowchart TD
   AD01 -->|"wrong PIN with attempts left, or Cancel"| S01
   AD01 -->|"attempt limit reached"| W["A-01 wait state<br/>try again at TIME"]
   W --> S01
-  AD01 -->|"correct PIN"| AD03["A-03 Administration menu<br/>Administrator mode bar, Lock to confirm"]
-  AD03 --> AD04["A-04 Academic terms"]
-  AD03 --> AD05["A-05 Athlete roster"]
-  AD03 --> AD06["A-06 WooCommerce import"]
-  AD03 --> AD07["A-07 Import history and undo"]
-  AD03 --> AD08["A-08 Accounts: grant, revoke, delete"]
-  AD03 --> AD09["A-09 Release Authorization Number"]
-  AD03 --> AD10["A-10 Schedules editor"]
-  AD03 --> AD11["A-11 Notices editor"]
-  AD03 --> AD12["A-12 Facility information<br/>and contact number editor"]
-  AD03 --> AD13["A-13 Audit log"]
-  AD03 --> AD14["A-14 Security: PIN, password,<br/>new recovery code"]
+  AD01 -->|"correct PIN"| UNL["S-01 unlocked<br/>Administrator mode bar with Lock,<br/>Administrator items unlocked"]
+  UNL --> AD04["A-04 Academic terms"]
+  UNL --> AD05["A-05 Athlete roster"]
+  UNL --> AD06["A-06 WooCommerce import"]
+  UNL --> AD07["A-07 Import history and undo"]
+  UNL --> AD08["A-08 Accounts: grant, revoke, delete"]
+  UNL --> AD09["A-09 Release Authorization Number"]
+  UNL --> AD10["A-10 Schedules editor"]
+  UNL --> AD11["A-11 Notices editor"]
+  UNL --> AD12["A-12 Facility information<br/>and contact number editor"]
+  UNL --> AD13["A-13 Audit log"]
+  UNL --> AD14["A-14 Security: PIN, password,<br/>new recovery code"]
   AD06 -->|"result saved"| AD07
-  AD14 -->|"PIN changed: stays open here,<br/>closes in every other browser"| AD03
+  AD14 -->|"PIN changed: stays open here,<br/>closes in every other browser"| UNL
   ANY["Any screen while the PIN is active"] -->|"10 min without a person tap or key"| AD02["A-02 PIN closing warning<br/>focus on Keep going"]
   AD02 -->|"Keep going, 15 min restart"| ANY
   AD02 -->|"15 min reached"| S01
-  AD03 -->|"Lock (to confirm), or backend answers PIN needed"| S01
+  UNL -->|"Lock, one tap, or backend answers PIN needed"| S01
 ```
 
 **About this diagram:** The wait state is admin D2. After a PIN change the PIN closes in every other browser because of the PIN version of E-56 (REQ-NF-48); the browser that made the change stores the new version and stays open, as in `admin-flows.md`. The PIN has 4 digits and uses a numeric keypad (E-83).
 
 - While the PIN is active, the Staff screens (S-01 to S-05) and shared screens stay in the same menu (SM-3). The Administrator unlocks the items in place, on the same screen.
-- To confirm: whether the separate A-03 menu screen disappears, since the dashboard menu already lists the Administrator items. A-03 stays in this map until then.
-- To confirm: whether a Lock button returns the dashboard to Staff mode. The padlocked menu is decided; the Lock button is not.
+- After the correct PIN the Administrator stays on the dashboard. There is no Administration menu screen: A-03 is removed and the IDs A-04 to A-14 do not change (E-102).
+- While the PIN is active, an Administrator mode bar with a Lock button shows on the dashboard. One tap on Lock returns to Staff mode (E-101). The automatic close after inactivity stays: A-02 warns first.
 - Every Administrator screen shows a notice when no term covers today, and every error names that reason (E-85).
 - The PIN state and the last person activity are kept in the session data of that browser (E-56, REQ-NF-48). Each Administrator request compares the PIN version kept there with the gym account's version. Changing the PIN in A-14 closes the PIN in every other browser; this browser stores the new version and stays open.
 - Unsaved input on an Administrator form is lost when the PIN closes (`admin-flows.md` section 2). A-02 gives 5 minutes of warning.
@@ -195,7 +197,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-  FRAME["App frame on every screen<br/>top bar: persistent no-connection banner,<br/>no language button"]
+  FRAME["App frame on every screen<br/>top bar: persistent no-connection banner,<br/>no language button in the User app"]
   FRAME --> HU["User home<br/>U-01 or U-07"]
   FRAME --> HS["Gym dashboard home<br/>S-01, own route"]
   FRAME --> HP["Public: N-01 to N-12"]
@@ -214,8 +216,8 @@ flowchart TD
 **About this diagram:** The navigation component is SM-1; the language choice is SM-2; the banner is SM-6.
 
 - Every signed-in role sees C-01 to C-05 with the same data (REQ-F-42, F-55, F-61). C-02 and C-03 are also public on N-01. Analytics need no PIN (REQ-F-61).
-- C-06 is a setting, not a screen, and the top bar has no language button (SM-2). The language question is asked when the account is created, and the User is told it can be changed later in the preferences of U-03. The choice is saved on the account (`users.locale`), so emails use it (REQ-NF-35).
-- The gym account has one language stored on the account, the same on every computer (E-64). Where Staff or the Administrator change it on the dashboard, and whether that needs the PIN: to confirm. It is stored in `gym_accounts.locale` (data model).
+- C-06 is a setting, not a screen, and the top bar of the User app has no language button (SM-2, E-104). The language question is asked when the account is created, and the User is told it can be changed later in the preferences of U-03. The choice is saved on the account (`users.locale`), so emails use it (REQ-NF-35).
+- The gym account has one language stored on the account, the same on every computer (E-64). On the gym dashboard the change needs no PIN. The control may be a setting, a button in the dashboard top bar, or both, and the wireframe picks the placement (E-104). It is stored in `gym_accounts.locale` (data model).
 - The top bar banner stays on screen while there is no connection. Each section also shows "updated at TIME" (E-77, SM-6).
 - During the athletes-only period the whole User app changes theme color. Without a connection the app returns to the normal color, and the banner says the data is not current. The app does not claim an athletes-only period from cached schedules (E-76, REQ-NF-26). The color is the owner's choice and the text notice with an icon stays, because color cannot be the only signal (WCAG 1.4.1).
 
@@ -252,14 +254,14 @@ stateDiagram-v2
 
 ## 8. Screen inventory
 
-Device: "Phone" means designed for a phone first. "Desk" means the gym mostly uses it on the front desk desktop computer, which the gym still has to confirm (G-06). Every screen works on both sizes (REQ-NF-10, one codebase).
+Device: "Phone" means designed for a phone first. "Desk" means the gym mostly uses it on the front desk desktop computer, which the gym still has to confirm (G-06). Every screen works on both sizes (REQ-NF-10, one codebase). The map has 45 screens: A-03 was removed (E-102) and U-09 was added (E-105).
 
 ### Public
 
 | ID | Screen | Roles | Purpose | Key states | Device | Requirements |
 |---|---|---|---|---|---|---|
-| N-01 | Landing | Not signed in | Choose sign in or register; Install button; links to N-08 and N-09; public schedules (C-02) and notices (C-03); one line that registering needs a paid membership or a roster entry, with the contact number, and a button to the store while a term runs (Proposed; store link, address pending from the gym) | Loading: app shell. No connection: banner, sign in and register disabled. Install button hidden where the browser has no install event. Signed in: redirect to home. Language before sign in: to confirm | Phone | REQ-NF-10, NF-33, F-66, F-91 |
-| N-02 | Sign in | User | Email and password. No link to N-11 (SM-5) | Loading: button busy. Error: wrong credentials, without saying if the email exists (SRS 3.1). Wait: "try again at TIME" (REQ-F-07). No connection: form kept, submit disabled. Special: "you signed in on another device" (REQ-F-03) | Phone | REQ-F-02, F-03, F-07 |
+| N-01 | Landing | Not signed in | Choose sign in or register; Install button; links to N-08 and N-09; public schedules (C-02) and notices (C-03); one line that registering needs a paid membership or a roster entry, with the contact number, and a button to the store while a term runs (Proposed; store link, address pending from the gym) | Loading: app shell. No connection: banner, sign in and register disabled. Install button hidden where the browser has no install event. Signed in: redirect to home. Language: always Spanish before an account exists (E-103) | Phone | REQ-NF-10, NF-33, F-66, F-91 |
+| N-02 | Sign in | User | Email and password. No link to N-11 (SM-5) | Loading: button busy. Error: wrong credentials, without saying if the email exists (SRS 3.1). Wait: "try again at TIME" (REQ-F-07). No connection: form kept, submit disabled. Special: "you signed in on another device" (REQ-F-03). Language: Spanish while signed out; the account language applies after sign in (E-103) | Phone | REQ-F-02, F-03, F-07 |
 | N-03 | Register as paid member | Not signed in | Steps: privacy notice, Authorization Number, masked email, password, photo (take it now or upload it; the screen says it cannot be changed), waiver and emergency contact, choose language (Spanish or English; it can be changed later in the account preferences), final save. A line says a paid membership is needed first, with the contact number and a button to the store while a term runs (Proposed; store link, address pending from the gym) | Loading: lookup after 6 digits; slow mode waits (REG-2). Error: one message for an invalid number, a claimed number and a number from an ended term, with contact number (lookup covers the current term only, REG-9); per-IP pause "try again at TIME"; photo rejected, stays on photo step with data kept in the page, lost if the page closes (REG-8). No connection: data kept in page, submit disabled. Special: "you already have an account, sign in to add it" with the masked email, for example `m***z@upr.edu`; nothing is claimed (REG-4, REG-3) | Phone | REQ-F-10, F-11, F-13, F-18, F-60, F-70, F-71, F-72, F-73, F-91, NF-24, NF-25 |
 | N-04 | Register as athlete | Not signed in | Privacy notice, student number, link sent. The language is chosen at N-05, where the account is created. A line says the athlete must be on the roster, with the contact number. No store button, because athletes do not buy (E-96); a paid member who lands here goes back to N-01 | Loading: lookup. Error: not on the roster with contact number (REQ-F-76); record claimed; link request limit (1 link every 5 minutes and 5 per day for each student number, REG-7). No connection: submit disabled. Special: "link sent to m***z@upr.edu", first and last letter before the @ (REG-3); "you already have an account, sign in to add it" with the masked email; nothing is claimed | Phone | REQ-F-15, F-73, F-76, F-91, NF-25 |
 | N-05 | Athlete link landing | Not signed in, or a User | Two modes. From an N-04 link: password, photo (take it now or upload it; the screen says it cannot be changed), waiver, choose language (Spanish or English; it can be changed later in the account preferences), one final save. No authorization exists without the photo (E-69). From a U-06 link: the photo step, then the roster record is linked to the account that asked and a confirmation (E-58) | Loading: link check. Error: link expired, already used or replaced, record claimed since (REG-6); photo rejected, back to the photo step with data kept. No connection: data kept, submit disabled. Special (U-06 mode): "record linked to the account m***z@..." with Continue when that account is signed in here, Sign in otherwise | Phone | REQ-F-13, F-15, F-60, F-80, NF-24 |
@@ -277,12 +279,13 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 |---|---|---|---|---|---|---|
 | U-01 | Check In and Gym ID | User with active authorization | Home. Check In button; Gym ID after a valid Check In; C-01 card | Empty: no session yet, Check In button. Loading: checking eligibility, waiting for location, sending. Error: one state per cause code of check-in D5, with the text written by the app in the account's language (no authorization, gym closed, athletes-only, location denied with how to turn it on, location unavailable, low accuracy, outside boundary, new term photo needed). No connection: Check In refused; Gym ID shows "not valid now" and the clock stops (SM-6). Special: paid member active with minutes left and moving clock; paid expired with text and icon; athlete shown as "Authorized athlete, Fall 2026" (the term) with the moving clock, never minutes left, never "expired" or "session ended"; tag "Athlete" or "Member" with an icon and a different color for each (colors to pick); invalid after roster removal; athletes-only notice with start time for every User, and the theme color of the app changes during that period (E-76) | Phone | REQ-F-33, F-36, F-37, F-38, F-40, F-49, F-82, F-83, F-90, NF-11, NF-14, NF-16, NF-26 |
 | U-02 | New term photo | Athlete in a new term; manual grant without photo | Upload the term photo before Check In. Opens at the first app open in the new term, after the roster is found by the student number of the account's last claim (REG-10) | Loading: upload. Error: type or size (REQ-NF-24); record claimed by another account, contact number. No connection: upload disabled | Phone | REQ-F-25, F-26, F-13, NF-24 |
-| U-03 | Account | User | Name, account email (read only), current authorization and term, language choice (C-06), links to U-04, U-05, U-06 (only without an active authorization), sign out | Loading. Error. No connection: data marked not current | Phone | REQ-F-01, F-11, F-19 |
+| U-03 | Account | User | Name, account email (read only), current authorization and term, language choice (C-06), links to U-04, U-09, U-05, U-06 (only without an active authorization), sign out | Loading. Error. No connection: data marked not current | Phone | REQ-F-01, F-11, F-19 |
 | U-04 | Emergency contact | User | See and edit the emergency contact at any time; Staff always see the current value (E-79, REQ-F-60) | Loading. Error: name or phone invalid. No connection: save disabled | Phone | REQ-F-60 |
 | U-05 | Delete account | User | Explain what is deleted and kept, confirm | Error: refused with the reason while an authorization is active. No connection: disabled. Special: after deletion, back to N-01 | Phone | REQ-F-09 |
 | U-06 | I am an athlete | User with no active authorization | Student number, then "check your institutional email". Nothing is linked yet: the record is linked only when the email link is opened at N-05, where the photo is also saved (E-58) | Loading. Error: not on the roster with contact number (REQ-F-76); record claimed; link request limit (1 link every 5 minutes and 5 per day for each student number, REG-7). No connection: submit disabled. Special (end state): "check your institutional email m***z@upr.edu" | Phone | REQ-F-20, F-26, F-76, F-80 |
 | U-07 | No-authorization home | User with no active authorization | Banner on top, Check In shown but grayed out, Authorization Number field, I am an athlete, contact number, C-01 card | Loading. Error. No connection: field disabled. Special: two banners (E-67, REQ-F-23). Expired: "Your authorization has expired. Renew to use Check In." with the Authorization Number field (U-08) and I am an athlete. Any other cause (revoked, import undone, number released, athlete removed from the roster, no current term): "You have no active authorization. Contact the gym." with the contact number and the Authorization Number field, so a person whose authorization an import undo or a release removed can claim the number again (E-97, REQ-F-31). A number that cannot be claimed gets the same message with the contact number. The texts are drafts; the final wording is written in the wireframes. I am an athlete shows under both banners (E-100). Contact number pending G-25 | Phone | REQ-F-23, F-73 |
 | U-08 | Renew with Authorization Number | User with no active authorization | After a valid number: masked email, renewal or type change, photo, confirm | Loading: lookup, save. Error: same messages as N-03. A number whose payment email belongs to another account is accepted: having the number is the proof (E-70). No connection: data kept, submit disabled | Phone | REQ-F-20, F-26, F-70, F-71, F-72, F-78 |
+| U-09 | My visits | User | The User's own past Check Ins, newest first, each with date and time. Opens from U-03 (E-105). Location is never shown (REQ-NF-03). How far back it reaches and how long the data is kept: to confirm (REQ-NF-05, G-03) | Loading. Empty: no Check Ins yet. Error: message with Retry. No connection: loaded list stays with "not current, updated at TIME"; with nothing loaded, the no-connection message (SM-6) | Phone | REQ-F-92 (new), NF-03 |
 
 ### Shared (C-02 and C-03 are also public)
 
@@ -293,13 +296,13 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 | C-03 | Notices | Everyone, also before sign in (shown on N-01) | Current maintenance notices and updates | Loading. Empty: "no notices". Error. No connection: loaded content stays with "not current, updated at TIME" (SM-6) | Both | REQ-F-55, F-58 |
 | C-04 | Facility information | User, Staff, Administrator | Rules, towel, footwear, machines, equipment instructions | Loading. Empty per topic. Error. No connection: loaded content stays with "not current, updated at TIME" (SM-6). Stretch: a QR code opens one topic (REQ-F-59) | Both | REQ-F-55, F-58, F-59 |
 | C-05 | Analytics | User, Staff, Administrator, no PIN | Period picker and metrics (a) to (f); manual authorizations count as a third category next to paid members and athletes (E-82) | Loading. Empty: zeros, not an error. Error. No connection: charts already loaded stay with "not current, updated at TIME" (SM-6) | Both | REQ-F-61, NF-37, NF-38 |
-| C-06 | Language setting | Users and the gym account | Spanish or English for every text. Asked when the account is created, with a notice that it can change later; changed in the preferences of U-03. No button in the top bar (E-64) | Special: one language per account, saved on the account for Users and for the gym account, so a change applies on every computer (E-64); page `lang` changes with the texts. Where Staff or the Administrator change it, and whether it needs the PIN: to confirm. Language of N-01 and N-02 before an account exists: to confirm | Both | REQ-NF-33, NF-34, NF-35, NF-36 |
+| C-06 | Language setting | Users and the gym account | Spanish or English for every text. Asked when the account is created, with a notice that it can change later; changed in the preferences of U-03. No button in the top bar of the User app (E-64). The gym dashboard may have one (E-104) | Special: one language per account, saved on the account for Users and for the gym account, so a change applies on every computer (E-64); page `lang` changes with the texts. On the gym dashboard the change needs no PIN, and the control may be a setting and/or a button in the dashboard top bar; the wireframe picks the placement (E-104). N-01 and N-02 are always in Spanish before an account exists; the language is chosen when the account is created, on N-03, N-05 and N-10 (E-103) | Both | REQ-NF-33, NF-34, NF-35, NF-36 |
 
 ### Staff (also reachable by the Administrator)
 
 | ID | Screen | Roles | Purpose | Key states | Device | Requirements |
 |---|---|---|---|---|---|---|
-| S-01 | Active sessions | Staff, Administrator | Home of the dashboard route. C-01 card, list of active sessions with name, Check In time, authorization, and minutes left for paid members (for an athlete the list shows "athlete" and the Check In time instead, E-99); search by name; menu with the Administrator items grayed out and a padlock (SM-3) | Loading. Empty: "no active sessions". Error. No connection: list marked not current, actions disabled. Search is a fresh request, never cached | Desk | REQ-F-42, F-43, F-44, F-45, NF-26 |
+| S-01 | Active sessions | Staff, Administrator | Home of the dashboard route. C-01 card, list of active sessions with name, Check In time, authorization, and minutes left for paid members (for an athlete the list shows "athlete" and the Check In time instead, E-99); search by name; menu with the Administrator items grayed out and a padlock (SM-3). While the PIN is active the items unlock in place and an Administrator mode bar with a Lock button shows; one tap on Lock returns to Staff (E-101, E-102) | Loading. Empty: "no active sessions". Error. No connection: list marked not current, actions disabled. Search is a fresh request, never cached | Desk | REQ-F-42, F-43, F-44, F-45, NF-26 |
 | S-02 | Person and session detail | Staff, Administrator | Photo from the backend, authorization, waiver acceptance, emergency contact, session; End early and Void with confirm | Loading: photo. Error: session already ended or changed by another browser. No connection: actions disabled. Special: only active sessions can be voided; no list of past sessions, and past statistics do not change (E-80) | Desk | REQ-F-45, F-48, NF-19, NF-20, NF-39 |
 | S-03 | Person lookup and Staff-assisted Check In | Staff, Administrator | Search by name (paid member) or student number (athlete); compare the photo; confirm Check In; link to S-05 to check the roster | Loading. Empty: no match. Error: cause keys (no authorization, photo required, gym closed, athletes-only for paid members). No connection: disabled. Special: person already has an active session, shown instead of a new one; opens with the student number filled in after "Check In this athlete" on S-05; the student number is shown in full (E-81) | Desk | REQ-F-36, F-45, F-46, F-82, NF-39 |
 | S-04 | In-person athlete registration | Staff, Administrator, no PIN | Student number, roster check, ID check, one-time code valid for 15 minutes. Staff do not fill in data for the person: the athlete does it on their own phone at N-10 (E-62) | Loading. Error: not on the roster, Staff cannot add records (REQ-F-76, F-77); record claimed. No connection. Special: code with its expiry time | Desk | REQ-F-77, NF-39 |
@@ -311,13 +314,13 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 |---|---|---|---|---|---|---|
 | A-01 | PIN dialog | Staff | Type the 4-digit PIN on a numeric keypad (E-83). Opens when Staff tap a padlocked item (E-65) | Loading. Error: wrong PIN, attempts left. Wait: "try again at TIME", Staff work continues (admin D2). No connection | Desk | REQ-F-52, NF-48 |
 | A-02 | PIN closing warning | Administrator | After 10 minutes without a person tap or key press: "PIN closes in 5 minutes" and Keep going | Special: Keep going restarts 15 minutes; at 15 minutes back to S-01 and unsaved input lost | Desk | REQ-NF-48, NF-13 |
-| A-03 | Administration menu | Administrator | Entry to A-04 to A-14; Administrator mode bar. Lock button: to confirm. Whether this screen disappears because the dashboard menu already lists these items: to confirm | Special: notice when no term covers today (E-85, admin D9) | Desk | REQ-F-21, F-52 |
-| A-04 | Academic terms | Administrator | List, create and edit terms | Loading. Empty: no terms, notice. Error: dates in wrong order; overlap names the other term. Special: an edit is never blocked when records fall outside the new dates; records keep their term and only the end date of their authorization follows the new term end (E-88). No connection: save disabled | Desk | REQ-F-21 |
+| A-03 | Removed | None | A-03: removed (E-102). The ID stays in this table so A-04 to A-14 keep their numbers. After the correct PIN the Administrator stays on the dashboard (S-01) with the menu unlocked and an Administrator mode bar with a Lock button (E-101) | Not a screen. The notice when no term covers today shows on every Administrator screen (E-85, admin D9) | Desk | REQ-F-21, F-52 |
+| A-04 | Academic terms | Administrator | List, create and edit terms. No delete button: terms are never deleted, and a term created by mistake is fixed by editing it (E-107) | Loading. Empty: no terms, notice. Error: dates in wrong order; overlap names the other term. Special: no delete states; an edit is never blocked when records fall outside the new dates; records keep their term and only the end date of their authorization follows the new term end (E-88). No connection: save disabled | Desk | REQ-F-21 |
 | A-05 | Athlete roster | Administrator | Pick a term; list, add, edit, remove records; Reinstate an athlete removed by mistake; import a list | Loading. Empty: no records in this term. Error: unexpected format imports nothing; repeated student number. Error: Reinstate refused when the person already has an active authorization in that term (E-94). Special: list result (added, rejected rows); the student number is shown in full (E-81); removal confirm says the Gym ID stops being valid at once. Reinstate returns the revoked authorization to active; it needs a reason of at least 10 characters (the same rule as a manual grant, E-86) and writes an audit log entry (E-95). Format pending G-10 | Desk | REQ-F-49, F-51, NF-39 |
 | A-06 | WooCommerce import | Administrator | Upload an Export Orders file and see the result | Loading: processing. Error: unexpected format imports nothing; a second order with the same Authorization Number in the same term is rejected (E-71). Special: result with counts and the created, updated and rejected rows, saved so it can be reopened from A-07 (E-84). Columns pending E-55 | Desk | REQ-F-22, F-28, F-29, F-30 |
 | A-07 | Import history and undo | Administrator | List imports; reopen the saved result of one (E-84); undo one. Undo is always allowed, even after Check Ins used its authorizations; the confirm shows counts of authorizations, sessions and photos as information and does not block, and active sessions keep counting until they end (E-84) | Loading. Empty: no imports. Error. Special: undone imports marked, kept in the list | Desk | REQ-F-31, NF-39 |
 | A-08 | Accounts | Administrator | Find an account by name or email; see authorizations; grant manual, revoke (each with a reason); delete on the User's request after the Administrator confirmed in person, with identification, at the gym (E-89) | Loading. Empty: no match. Error: grant refused (term ended, or the person already has an active authorization in that term, E-94); reason missing or shorter than 10 characters, free text written to the audit log (E-86); delete refused with an active authorization. Special: a manual authorization counts as `manual` in C-05 (E-82); the User is asked for the term photo on U-02 before Check In (E-69) | Desk | REQ-F-09, F-87, NF-39 |
-| A-09 | Release Authorization Number | Administrator | Type the number; see account, masked email, claim time; confirm | Loading. Empty: number not claimed. Special: the release deletes only that authorization and its term photo; the account, its other authorizations and its history stay, also when the claim created the account (E-87, admin D12) | Desk | REQ-F-74, NF-39 |
+| A-09 | Release Authorization Number | Administrator | Type the number; see account, masked email, claim time; confirm. The confirmation text says that releasing a number never deletes the account: only that authorization and its term photo go (E-106) | Loading. Empty: number not claimed. Special: the release deletes only that authorization and its term photo; the account, its other authorizations and its history stay, also when the claim created the account and it was the account's only authorization. The person signs in, sees U-07 and can claim the correct number (E-87, E-106, admin D12) | Desk | REQ-F-74, NF-39 |
 | A-10 | Schedules editor | Administrator | Regular hours, special hours, closures, athletes-only slots, Spanish and English text. Each slot repeats weekly or has a concrete date: the regular schedule is written once and exceptions are separate entries (E-90) | Loading. Empty. Error: Spanish text missing. Slot list pending G-28 | Desk | REQ-F-55, F-58, F-82, NF-39 |
 | A-11 | Notices editor | Administrator | Create, edit, delete notices in Spanish and English. A help text says notices are public, so they must hold no sensitive data (E-66) | Loading. Empty. Error: Spanish text missing | Desk | REQ-F-55, F-58 |
 | A-12 | Facility information editor | Administrator | Edit rules, towel, footwear, machines, equipment instructions; edit the gym contact number (E-66) | Loading. Error: Spanish text missing; contact number empty or invalid | Desk | REQ-F-55, F-58 |
@@ -340,7 +343,7 @@ Each action of the SRS Overview role table and the screen where it happens.
 | See schedules and notices, also before sign in | C-02, C-03 (public on N-01) |
 | See occupancy and facility information, signed in | C-01, C-04 |
 | See facility analytics, signed in | C-05 |
-| Choose the language | U-03 (Users); gym account: place to confirm (C-06) |
+| Choose the language | U-03 (Users); gym account: C-06 on the dashboard, no PIN, placement set in the wireframe (E-104) |
 | See active sessions and verify a Gym ID | S-01, S-02, S-03, S-05 |
 | Staff-assisted Check In | S-03 |
 | End a session early or void it | S-02 |
@@ -362,12 +365,12 @@ Each action of the SRS Overview role table and the screen where it happens.
 | Generate a new recovery code, with the PIN | A-14 |
 | Set a new gym account password and PIN with the recovery code (only with the code) | N-11, then N-12 |
 
-Not in the role table but needed: N-06 and N-07 (REQ-F-06), N-08 (REQ-NF-25), N-09 (REQ-F-66), U-04 (REQ-F-60), C-06 (REQ-NF-33). The SRS role table splits the row of schedules, notices, occupancy and facility information in two (E-66), and gains the contact number action for A-12 (E-66) and the Reinstate action for A-05 (E-95).
+Not in the role table but needed: N-06 and N-07 (REQ-F-06), N-08 (REQ-NF-25), N-09 (REQ-F-66), U-04 (REQ-F-60), U-09 (REQ-F-92, E-105), C-06 (REQ-NF-33), and the Lock button of the Administrator mode bar on S-01 (E-101). The SRS role table splits the row of schedules, notices, occupancy and facility information in two (E-66), and gains the contact number action for A-12 (E-66) and the Reinstate action for A-05 (E-95).
 
 ## 10. Phone and front desk
 
 - Phone first (REQ-NF-10): every N screen except N-11 and N-12, every U and C screen. These are the screens about 150 people a day use (REQ-NF-15). Check In must be usable in under 3 seconds (REQ-NF-16), so U-01 is the first screen after sign in and loads nothing it does not need.
-- Front desk desktop, pending G-06: S-01 to S-05, A-01 to A-14, N-11, N-12. S-01, S-05 and A-13 are tables that need a wide layout. A-05 and A-06 upload files that usually live on a computer.
+- Front desk desktop, pending G-06: S-01 to S-05, A-01, A-02, A-04 to A-14, N-11, N-12. S-01, S-05 and A-13 are tables that need a wide layout. A-05 and A-06 upload files that usually live on a computer.
 - If the gym says Staff also use phones (G-06), S-01 to S-03 and S-05 need the phone layout too. One codebase keeps this possible (REQ-NF-10; that the dashboard shares the PWA codebase is to confirm, E-65). A-screens stay desktop-first.
 - C screens are used on both.
 
@@ -388,7 +391,7 @@ All screens target WCAG 2.2 level AA (REQ-NF-13). Notes only where a screen has 
 
 ## Design decisions to confirm
 
-All six are decided. Carlos Pepin, the owner, answered them in the design review of 2026-10-17. The option tables stay as the record of what was compared.
+All six are decided. Carlos Pepin, the owner, answered them in the design review of 2026-10-17. The option tables stay as the record of what was compared. The wireframe answers of 2026-10-20 closed the notes that SM-2, SM-3 and SM-4 left open (E-101 to E-104).
 
 ### SM-1: Navigation for Users on the phone
 
@@ -407,9 +410,9 @@ Decided (owner, 2026-10-17): A. Check In and the Gym ID stay one tap away from a
 | A | A small "English" or "Español" button in the top bar of every screen, public screens included | Always visible, also to a person who cannot read the current language well enough to find a menu. Takes top bar space |
 | B | Only in More (Users) and in the menu (gym account) | Clean top bar. Hard to find for someone who does not read Spanish, and absent before sign in |
 | C | Top bar on public screens, More after sign in | Visible when it matters most. Two places to build and test |
-| Decided | None of A, B or C. The language is asked when the account is created, and the User is told it can change later in profile preferences or settings. No language button in the top bar | One language per account, so the app and the emails agree. The language of N-01 and N-02, before an account exists, is not decided: to confirm |
+| Decided | None of A, B or C. The language is asked when the account is created, and the User is told it can change later in profile preferences or settings. No language button in the top bar of the User app (E-104) | One language per account, so the app and the emails agree. N-01 and N-02 are always in Spanish before an account exists (E-103) |
 
-Decided (owner, 2026-10-17): the own option above (E-64). The language belongs to the account, so one setting covers every device and every email.
+Decided (owner, 2026-10-17): the own option above (E-64). The language belongs to the account, so one setting covers every device and every email. On the gym dashboard the control needs no PIN and may also be a button in the dashboard top bar (E-104).
 
 ### SM-3: Staff and Administrator layout
 
@@ -418,7 +421,7 @@ Decided (owner, 2026-10-17): the own option above (E-64). The language belongs t
 | A | One layout; Administrator items always shown with a lock icon; tapping one opens A-01 | The Administrator finds every item in one place. Front desk students see the full Administrator menu and may tap it by mistake |
 | B | One layout; without the PIN the menu shows only "Unlock administration"; with the PIN the Administrator items appear in the same menu, plus a bar "Administrator mode" with Lock | Staff see only their work. Matches `admin-flows.md` section 2 ("the interface hides Administrator screens without the PIN"). The Administrator keeps Staff screens without switching areas |
 | C | Separate area with its own menu, entered with the PIN; leaving it returns to Staff | Clear separation. Moving between session work and administration needs a switch; two layouts to build |
-| Decided | Option A with a change: one menu with everything, and the Administrator items shown grayed out with a padlock for Staff. Tapping a grayed item opens the PIN dialog | Staff see what the Administrator can do. The Lock button that returns to Staff mode is not decided: to confirm |
+| Decided | Option A with a change: one menu with everything, and the Administrator items shown grayed out with a padlock for Staff. Tapping a grayed item opens the PIN dialog | Staff see what the Administrator can do. A Lock button in an Administrator mode bar returns to Staff with one tap (E-101) |
 
 Decided (owner, 2026-10-17): A with the padlock (E-65). The Administrator finds every item in one place and the padlock tells Staff the item needs the PIN. In every option the backend decides each action (REQ-F-52), so the padlock is for clarity, not security.
 
@@ -429,7 +432,7 @@ Decided (owner, 2026-10-17): A with the padlock (E-65). The Administrator finds 
 | A | User with active authorization: U-01. User without: U-07. Gym account: S-01. After the PIN: A-03 | Each role starts where its most common task is. After the PIN, the Administrator goes to the menu of what the PIN unlocks |
 | B | As A, but after the PIN the Administrator stays on the screen where Unlock was tapped | Fewer jumps when the PIN is asked in the middle of a task. Needs the Unlock button to remember where it came from |
 | C | One dashboard for every role with role-specific cards | One screen to design. Check In moves below other cards, which works against REQ-NF-16 |
-| Decided | Users use the PWA (U-01 or U-07). Staff and Administrator use a dashboard on a different route and do not touch the PWA. Staff land on S-01. The Administrator taps a padlocked item, types the PIN, and the item unlocks on the same screen | Two services on separate routes, in the same codebase (REQ-NF-10, a reading to confirm). Whether the A-03 menu screen disappears: to confirm |
+| Decided | Users use the PWA (U-01 or U-07). Staff and Administrator use a dashboard on a different route and do not touch the PWA. Staff land on S-01. The Administrator taps a padlocked item, types the PIN, and the item unlocks on the same screen | Two services on separate routes, in the same codebase (REQ-NF-10, a reading to confirm). The A-03 menu screen is removed (E-102) |
 
 Decided (owner, 2026-10-17): the own option above (E-65). The Administrator does not change screens after the PIN.
 
@@ -460,21 +463,21 @@ Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whol
 4. **Staff lookup is not in the role table.** Resolved by E-59: Staff see the current-term roster read only (S-05); the gym still has to confirm (G-09).
 5. **Public schedules and notices.** Decided (E-66). N-01 shows C-02 and C-03 before sign in. Occupancy and analytics stay behind sign in. A-11 shows a help text that notices hold no sensitive data.
 6. **Password reset answer.** Decided (E-63). N-06 gives the same answer whether the email exists or not.
-7. **Gym account language.** Decided (E-64). One language stored on the gym account, not on each device, as for Users. Open: where Staff or the Administrator change it, and whether it needs the PIN.
+7. **Gym account language.** Decided (E-64, E-104). One language stored on the gym account, not on each device, as for Users. The change needs no PIN. The control is C-06 on the dashboard and may also be a button in the dashboard top bar; the wireframe picks the placement.
 8. **Front desk devices (G-06).** Open, waits for the gym. The Desk column assumes a desktop computer. If Staff also use phones, S-01 to S-03 and S-05 need a phone layout.
-9. **Lock button.** Open. The padlocked menu is decided (E-65). Whether a Lock button returns the dashboard to Staff mode is to confirm.
-10. **A-03 menu screen.** Open. With the Administrator items unlocked in place (E-65), the separate A-03 screen may disappear. A-03 stays in this map until the owner confirms.
+9. **Lock button.** Decided (E-101). The padlocked menu is decided (E-65). An Administrator mode bar with a Lock button shows while the PIN is active, and one tap returns to Staff. The automatic close after inactivity stays.
+10. **A-03 menu screen.** Decided (E-102). The Administrator items unlock in place (E-65), so A-03 is removed. A-04 to A-14 keep their IDs and the inventory marks A-03 as removed.
 11. **Same codebase for the dashboard.** Open. The dashboard runs on its own route (E-65). That it shares the codebase of the PWA (REQ-NF-10) is a reading to confirm.
-12. **Language before an account exists.** Open. N-01 and N-02 have no account language yet (E-64).
+12. **Language before an account exists.** Decided (E-103). N-01 and N-02 are always in Spanish. The person chooses the language when the account is created, on N-03, N-05 and N-10.
 13. **Store address.** Open. N-01 and N-03 link to the store while a term runs (Proposed), and the gym has not given the address (E-92).
-14. **A visit history screen for Users.** Open and not applied. No screen shows a User their past visits.
+14. **A visit history screen for Users.** Decided (E-105). U-09 My visits shows a User their own past Check Ins, reached from U-03. Open: how far back it reaches and how long the data is kept (REQ-NF-05, G-03), to confirm.
 
 ## Traceability
 
 | Requirement or decision | Where it appears |
 |---|---|
 | REQ-F-23 | Diagram 3. User with no active authorization; 8. Inventory U-07, U-08; Gaps 1 |
-| REQ-F-52 | Diagram 4. Staff; diagram 5. Administrator; 8. Inventory N-11, A-01, A-03; 9. Coverage; SM-3 |
+| REQ-F-52 | Diagram 4. Staff; diagram 5. Administrator; 8. Inventory N-11, S-01, A-01, A-03 (removed); 9. Coverage; SM-3 |
 | REQ-F-55 | Diagram 6. Shared screens and the app frame; 8. Inventory C-02, C-03, C-04, A-10, A-11, A-12; 9. Coverage |
 | REQ-F-61 | Diagram 6. Shared screens and the app frame; diagram 7. Standard data states; 8. Inventory C-05; 9. Coverage |
 | REQ-F-66 | Diagram 1. Public screens (N-01, N-09); 8. Inventory N-01, N-09 |
@@ -499,7 +502,7 @@ Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whol
 | E-63, E-64, E-66, E-67, E-68 | Diagram 3 (U-07); diagram 1 (N-01, N-06); 8. Inventory U-07, N-01, N-06, A-11, A-12, C-02, C-03, C-06; 9. Coverage; Gaps 1 to 7 |
 | E-61, E-62, E-69 to E-73, REG-8 | Diagram 1. Public screens; diagram 3. User with no active authorization; diagram 4. Staff (S-04); 8. Inventory N-03, N-04, N-05, N-10, U-02, U-06, U-08, S-04 |
 | E-74 to E-76, E-78 to E-81 | Diagram 2. User with an active authorization; diagram 4. Staff; 8. Inventory U-01, U-04, S-02, S-03, S-05, N-12; 11. Accessibility notes |
-| E-82 to E-90 | Diagram 5. Administrator; 8. Inventory C-05, A-03 to A-10 |
+| E-82 to E-90 | Diagram 5. Administrator; 8. Inventory C-05, A-04 to A-10 |
 | E-75, E-76, E-78, E-92 | Diagrams 1, 2 and 6; 8. Inventory N-01, N-03, N-04, U-01, A-13, A-14; 11. Accessibility notes; Gaps 13 |
 | E-94 | 8. Inventory A-08; Gaps 2 |
 | E-95 | 8. Inventory A-05; 9. Coverage |
@@ -507,3 +510,10 @@ Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whol
 | E-97 | Diagram 3. User with no active authorization; 8. Inventory U-07; Gaps 1 |
 | E-99 | 8. Inventory S-01 |
 | E-100 | Diagram 3. User with no active authorization; 8. Inventory U-07; Gaps 1 |
+| REQ-F-92, E-105 | Diagram 2. User with an active authorization; 8. Inventory U-03, U-09; 9. Coverage; Gaps 14 |
+| E-101 | Diagram 5. Administrator; 8. Inventory S-01, A-03; 9. Coverage; SM-3; Gaps 9 |
+| E-102 | Diagram 5. Administrator; 8. Inventory A-03; SM-4; Gaps 10 |
+| E-103 | Diagram 1. Public screens; 8. Inventory N-01, N-02, C-06; SM-2; Gaps 12 |
+| E-104 | Diagram 6. Shared screens and the app frame; 8. Inventory C-06; 9. Coverage; SM-2; Gaps 7 |
+| E-106 | 8. Inventory A-09 |
+| E-107 | 8. Inventory A-04 |

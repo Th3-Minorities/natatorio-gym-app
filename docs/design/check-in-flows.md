@@ -156,7 +156,8 @@ stateDiagram-v2
 
 - expired is computed from backend time with no checkout (REQ-F-38). It counts in analytics as a visit, not in occupancy. ended_early counts the same way, with its real end time.
 - Only Staff and Administrators can end early or void (REQ-F-48). Each correction is an audit log entry (REQ-NF-39). Staff cannot extend a session or create one without authorization.
-- Staff can void only active sessions (E-80). Staff already list active sessions, so there is no list of past sessions, and past statistics do not change. Who fixes a mistake found the next day is still open (see Gaps).
+- Staff can void only active sessions (E-80). Staff already list active sessions, so there is no Staff list of past sessions, and past statistics do not change. Who fixes a mistake found the next day is still open (see Gaps).
+- The User's own past Check Ins are the visit history (E-105). The new My visits screen (U-09), reached from the account (U-03), reads them from these session records. Each row shows the date and time, newest first. Location is never shown (REQ-NF-03). How far back it goes and how long the records are kept are still to confirm (REQ-NF-05, G-03).
 
 ### 5. Staff-assisted Check In
 
@@ -424,6 +425,15 @@ Status: Proposed. REQ-F-43 allows 20 to 30 seconds.
 
 Recommendation: B, one setting, polling only while the page is visible. Minutes left (paid members only) and the clock run on the phone from the server end time, so they do not depend on the interval, and Staff searches are fresh requests.
 
+### D7. Can the User see their own past Check Ins
+
+Status: Decided (owner, 2026-10-20), option A (E-105). The open parts (how far back, retention) are still to confirm.
+
+- A. Yes. A My visits screen (U-09), reached from the account (U-03), lists the User's own past Check Ins from the session records: date and time, newest first. Location is never shown (REQ-NF-03). Pro: a returning User can see their own history. Con: one more screen and a new requirement.
+- B. Not now. History stays in the database for statistics only. Pro: less to build. Con: the User cannot see their own visits.
+
+Decision: A. The earlier recommendation was B. Still to confirm: how far back the list goes (all history or the current term) and the retention period (REQ-NF-05, G-03, pending from UPRM and the gym). A new requirement for the screen is needed.
+
 ## Gaps and questions
 
 1. Decided (E-74): REQ-F-33 adds "location unavailable or timeout", which the Geolocation API can return, with its own key `check_in.location_unavailable`. REQ-F-33 now lists it (SRS v0.7).
@@ -436,6 +446,7 @@ Recommendation: B, one setting, polling only while the page is visible. Minutes 
 8. No rule for a closure published, or a term ending, during an active session. Proposed: the session is not cut, like REQ-F-83.
 9. Staff-assisted Check In for an athlete on the roster with no account: no session is possible because sessions belong to a User. In-person registration (REQ-F-77) covers the missing account: Staff generate a one-time code that lasts 15 minutes, and the athlete fills in the rest on their own phone (E-62). The Staff tool stays even when mail works. Whether the gym accepts that Staff cannot do the assisted Check In in this case is still pending.
 10. REQ-NF-03: coordinates must also stay out of request logs and error reports. Not stated in the SRS; noted for implementation.
+11. Decided (E-105): the User sees their own past Check Ins on My visits (U-09), from the session records, with date and time, newest first, and no location. Open: how far back the list goes and the retention period (REQ-NF-05, G-03). The SRS has no requirement for the screen yet.
 
 ## Traceability
 
@@ -459,7 +470,8 @@ Recommendation: B, one setting, polling only while the page is visible. Minutes 
 | REQ-F-83 | 2. Check In location checks and session creation (notice on success); 6. Gym ID states: paid member; 8. Athletes-only notice during a session |
 | REQ-F-90 | 8. Athletes-only notice during a session (theme color) |
 | REQ-NF-01 | 3. Successful Check In; 4. Facility session states; 9. Occupancy counting |
-| REQ-NF-03 | 2. Check In location checks and session creation; 3. Successful Check In |
+| REQ-NF-03 | 2. Check In location checks and session creation; 3. Successful Check In; 4. Facility session states (My visits shows no location) |
+| REQ-NF-05 (retention, pending) | 4. Facility session states (how long visits are kept); D7; Gap 11 |
 | REQ-NF-11 | 2. Check In location checks and session creation |
 | REQ-NF-14 | 6. Gym ID states: paid member; 7. Gym ID states: athlete; 10. Staff verification of a Gym ID |
 | REQ-NF-19 | 10. Staff verification of a Gym ID |
@@ -476,6 +488,7 @@ Recommendation: B, one setting, polling only while the page is visible. Minutes 
 | E-76 (everyone sees the athletes-only notice; theme color in the athletes-only period) | 8. Athletes-only notice during a session; Gap 4 |
 | E-80 (Staff void only active sessions) | 4. Facility session states; Gap 5 |
 | E-81 (student number filled and never masked) | 5. Staff-assisted Check In; 10. Staff verification of a Gym ID |
+| E-105 (My visits screen U-09, own past Check Ins from session records) | 4. Facility session states; D7; Gap 11 |
 | E-99 (no minutes left for athletes on the Staff active sessions list) | 7. Gym ID states: athlete; 10. Staff verification of a Gym ID |
 | D4 (exclusion constraint) | D4 |
 | D3 (expiry at query time plus scheduled task) | 9. Occupancy counting; D3 |
@@ -483,4 +496,4 @@ Recommendation: B, one setting, polling only while the page is visible. Minutes 
 | E-62 (Staff-generated code for in-person registration) | Gap 9 |
 | Architecture D6 (50 m check always runs at startup) | 2. Check In location checks and session creation; D2 |
 
-E-56 (PIN state), E-57 (photos on import undo), E-58 ("I am an athlete") and E-60 (recovery code) do not change any flow in this document.
+E-56 (PIN state), E-57 (photos on import undo), E-58 ("I am an athlete"), E-60 (recovery code), E-101 to E-104, E-106 and E-107 do not change any flow in this document.
