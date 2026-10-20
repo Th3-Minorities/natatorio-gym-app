@@ -1,6 +1,6 @@
 # Project Context
 
-Last updated: 2026-10-14
+Last updated: 2026-10-19
 
 The proposal (`docs/capstone_proposal/main.tex`) is the current baseline until further notice. This document says what changes it and why. The requirements are in `docs/requirements/SRS.md` and the open questions in `docs/decisions/` (`cti.md`, `gym.md`, `team.md`). `docs/capstone_proposal/v0/` is frozen: changes to the proposal go in a new version.
 
@@ -16,9 +16,9 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 | Real time | Optional real-time updates (Proposal:350) | Polling every 20 to 30 s first. Live updates (SSE or WebSockets) later, only if CTI allows them and time remains. The Objective 3 test compares values after each screen updates (Decided, Q&A 2026-10-13) | Occupancy only changes with a Check In or an expiration. SSE did not work through the tunnel and was not tested on the CTI VM |
 | Login | Supabase Auth with JWT; "institutional login" (Proposal:120, 350) | Own accounts with Sanctum and Fortify (Proposed). No SAML | Some paid members have no institutional email |
 | Hosting | Vercel and Supabase on free plans, only for the demo (Proposal:348, 468) | `docker-compose` on each member's PC in development and on a CTI VM in production; UPRM subdomain | What is tested is what runs in December |
-| Language | Not stated | Spanish by default, button to switch everything to English; texts in translation files from the start | Requested after the proposal |
-| Paid member registration | Authorization Number; "email" without saying which one (Proposal:204) | Authorization Number only. The system shows the payment email masked and creates the account at that moment. The account email is always the WooCommerce payment email. No email verification. Protections: a lookup limit per IP and a global limit that only slows lookups and alerts the Administrator, never blocks (E-53), the same message for invalid and claimed numbers with a contact number, release of a mistaken claim by PIN holders, recovery by the owner with the password reset | Some members have no institutional email. The Authorization Number reaches the payer by email, which serves as the check. A 6-digit number can be guessed, so lookups need limits. Whether it is unique across orders is not verified |
-| Athlete registration | Student number in the roster and confirm the institutional email (Proposal:206) | Same, and the account is created after opening a link sent to the roster email. An athlete not in the roster gets a clear message and a contact number. If CTI has no outgoing mail, Staff (no PIN needed) register in person athletes already in the roster; a person not in the roster waits until a PIN holder adds them | The student number is not secret: someone could claim another athlete's number first. An earlier idea of setting the password right away was dropped for this reason. A clear message helps athletes who were left off the list |
+| Language | Not stated | Spanish by default and English for all texts. One language per account: the User picks it when creating the account and changes it in the profile preferences; the gym account has one language for every computer. No language button in the top bar (E-64). Texts in translation files from the start | Requested after the proposal |
+| Paid member registration | Authorization Number; "email" without saying which one (Proposal:204) | Authorization Number only. The system shows the payment email masked and creates the account at that moment. The account email is always the WooCommerce payment email. No email verification. Protections: a lookup limit per IP and a global limit that only slows lookups and alerts the Administrator, never blocks (E-53), the same message for invalid, claimed and ended-term numbers with a contact number, release of a mistaken claim by PIN holders, recovery by the owner with the password reset. The number is unique per term and lookups use only the current term's orders (E-71) | Some members have no institutional email. The Authorization Number reaches the payer by email, which serves as the check. A 6-digit number can be guessed, so lookups need limits. Whether two orders in one file share a number is checked with the sample file (E-55) |
+| Athlete registration | Student number in the roster and confirm the institutional email (Proposal:206) | Same, and the account is created after opening a link sent to the roster email. An athlete not in the roster gets a clear message and a contact number. The team assumes the app has mail (E-61). Staff (no PIN needed) can also give an athlete already in the roster a one-time code, valid for 15 minutes; the athlete enters it and sets the password, photo and waiver on their own phone. This tool exists even with mail (E-62). A person not in the roster waits until a PIN holder adds them | The student number is not secret: someone could claim another athlete's number first. An earlier idea of setting the password right away was dropped for this reason. A clear message helps athletes who were left off the list |
 | Gym roles and roster | Separate User, Staff and Administrator roles; the Administrator maintains the roster (Proposal:175-177, 206, 218) | One shared gym account. Without the PIN (Staff) it sees sessions, verifies Gym IDs, does assisted Check In and corrections. With the PIN (Administrator) it manages the roster, terms, imports, schedules, notices, information, the audit log and the PIN. Staff see the current-term roster read only (E-59, gym to confirm). Analytics are open to every role, not behind the PIN. No designated roster Staff and no review step. A one-time recovery code on paper resets the gym password and PIN (E-60) | Team decision (Q&A 2026-10-13). One PIN known only to the administration protects sensitive actions. The audit log replaces a review of roster entries |
 | Demo and real data | Final integrated prototype; free plans for the demo | Demo in December before professors. "Complete" means all 5 objectives, without Stretch: roster, permissions, schedules, closures and analytics are committed; the roster tool and the Install button move to the MVP. Real WooCommerce data only to test the integration; fake data in development | Objectives 4 and 5 test items the scope table called Secondary; the team chose to meet every objective. Less student data on the team's PCs |
 | Refunds | Re-import handles corrected, refunded or cancelled orders (Proposal:371); risk criterion names them (Proposal:456) | No refunds or cancellations. Memberships only expire at the end of the term. The import only handles new and corrected orders. REQ-F-27 removed | The gym does not refund memberships. v1 of the proposal must drop refunds and cancellations from Proposal:371 and from the criterion in Proposal:456 |
@@ -30,13 +30,13 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 | Account deletion | Not stated | The user requests it from the app, only without an active authorization. Personal data and photos are deleted; anonymous Check In counts stay | Less personal data kept, and analytics keep working |
 | Audit log | Records Staff actor and time (Proposal:212, 513) | Records account, time, IP address, device and browser, and values before and after, for corrections, assisted Check In, roster, terms, schedules, imports and PIN changes. Each entry is kept until the end of the term in which it happened, also when it mentions a deleted user (Decided, 2026-10-14). Only PIN holders see it | With one shared account the log cannot name a person; time and IP let the gym cross-check the shift schedule if someone misused the account |
 | Analytics | The Administrator reviews utilization analytics (Proposal:220, Objective 5 in Proposal:184-190) | Facility statistics (peak hours, use by day and hour, occupancy over time, average and maximum occupancy, paid members versus athletes, distinct people) open to every signed-in role, with aggregated counts only and no names. Not behind the PIN. Other metrics set in design | Team decision (Q&A 2026-10-14). The counts hold no personal data, and users can plan when to go. v1 of the proposal must change who sees analytics |
-| Manual authorization | Access comes only from a paid WooCommerce order or the roster (Proposal:204-206, 371) | PIN holders can grant an authorization by hand to an existing account, until the end of a chosen term, and revoke one. Proposed: a reason is required and the action is logged with time, IP and reason | Team decision (Q&A 2026-10-14). Fixes order errors. It gives access without a WooCommerce payment record, so it must be logged |
+| Manual authorization | Access comes only from a paid WooCommerce order or the roster (Proposal:204-206, 371) | PIN holders can grant an authorization by hand to an existing account, until the end of a chosen term, and revoke one. A reason of at least 10 characters is required, and the action is logged with time, IP and reason (E-86) | Team decision (Q&A 2026-10-14). Fixes order errors. It gives access without a WooCommerce payment record, so it must be logged |
 | Order to term | Not stated | An order belongs to the term that contains its payment date. Orders dated outside every term are rejected and listed in the import result. Assumed: the store only sells memberships while a term runs | Team decision (Q&A 2026-10-14). Gym to confirm |
 | Import undo | Not stated | Any import can be undone; its membership records, dependent authorizations and their term photos are deleted; accounts stay, and people upload a new photo when they claim again (E-57) | Team decision (Q&A 2026-10-14, design review 2026-10-14). A wrong file must not leave wrong access. The photo belongs to the authorization, so it goes with it |
 | PIN session | Not stated | The PIN is active only in the browser where it was typed, and stays active until 15 minutes without a tap or key press (polling does not count); a warning appears after 10 minutes; the warning says the PIN closes in 5 minutes. The PIN state lives in that browser's session; a PIN version on the gym account closes the PIN in every browser when it changes (E-56) | Team decision (Q&A 2026-10-14) |
 | Session corrections | "Permitted corrections" not defined (Proposal:210) | End early and void. A void keeps the record but stops counting | Fixes mistakes without losing the trail |
 | Staff-assisted Check In | Staff use "an approved identification method" (Proposal:212) | Paid member: Staff search by name and compare the stored photo, no receipt needed. Athlete: student number. Rejected for paid members during athletes-only periods | Team decision (E-49, E-54) |
-| Follow-up rules | Not stated | Terms never overlap (E-48). A User with no active authorization sees status, Authorization Number field, contact number, schedules, notices, information and analytics, but cannot Check In (E-50). The PIN warning has a "Keep going" button (E-51). Releasing a wrong claim deletes the account it created and its photo (E-52) | Team decision (2026-10-14) |
+| Follow-up rules | Not stated | Terms never overlap (E-48). A User with no active authorization sees a banner and Check In grayed out. The "expired" banner asks to renew; any other cause shows the contact number. Both show "I am an athlete" and the Authorization Number field, and the User still sees schedules, notices, information and analytics (E-67, E-97, E-100, which replace E-50). The PIN warning has a "Keep going" button (E-51). Releasing a wrong claim deletes only that authorization and its photo, and the account stays; an account whose only authorization is released is still open (E-87, which replaces E-52) | Team decision (2026-10-14, 2026-10-17, 2026-10-19) |
 
 ## 2. Stack decisions and why
 
@@ -44,7 +44,7 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 |---|---|---|
 | Frontend | PWA with React, TypeScript and Vite (as in the proposal) | Decided |
 | Frontend hosting | Static files served by nginx inside `docker-compose`, on the same origin as the API. Vercel out of the plan | Decided |
-| Interface language | Spanish by default and a button to switch all texts to English. Texts in translation files from the start, in React and in Laravel | Decided |
+| Interface language | Spanish by default and English for all texts, one language per account, no language button (E-64). Texts in translation files from the start, in React and in Laravel | Decided |
 | Backend | Laravel (PHP 8.3 or higher) | Decided |
 | Database | PostgreSQL in a container | Decided |
 | Single active session per user | PostgreSQL exclusion constraint on the session time range (`btree_gist` extension), written in SQL inside the migrations. Authorization Number and roster claims use UNIQUE constraints | Decided |
@@ -62,7 +62,7 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 | Domain | Provided by UPRM | Decided |
 | Development | On each member's PC with Docker Desktop. Phone tests through a tunnel | Decided |
 | Production | CTI VM, to be requested now | Decided |
-| Mail in production | CTI SMTP or relay. Needed for athlete registration and password reset. Only the email-link flow is built. If CTI confirms it has none, the in-person flow is built: Staff (no PIN needed) register athletes already in the roster, and there is no password reset. An external provider was not chosen. In development: fake mail server | Pending (CTI) |
+| Mail in production | Needed for athlete registration and password reset. The team assumes the app has mail, so the email-link flows are built (E-61). CTI SMTP or relay first. If CTI cannot give it, an external provider, which needs approval because account emails leave the CTI VM (M-11). No provider is chosen. The Staff one-time code for athletes exists either way (E-62). In development: fake mail server | Pending (CTI) |
 | Where data is stored | Section 7 | Pending |
 | API contract | Documented with OpenAPI, and API tests that do not depend on the framework | Proposed |
 | Who looks after the system | Asked to the gym (gym.md, G-01) | Pending |
@@ -89,7 +89,7 @@ Migrating between Laravel and Node (reasoned estimate, not measured): the fronte
 - Do not use ports 5000 or 7000 (AirPlay on macOS).
 - Consistent upper and lower case in file names: Linux tells them apart and Windows and macOS do not.
 - Real data outside git and synced folders (OneDrive). Original lists and WooCommerce exports in a protected folder outside the repository.
-- Protection of `main` (not yet turned on): first require a PR and block direct push; when the other two members have write access, require 1 approved review.
+- Protection of `main` is on: a PR and 1 approved review from another member are required (team.md, E-28).
 - Changes enter `main` through branches and pull requests reviewed by at least one member who is not the author (Proposal:515; was SRS REQ-NF-45).
 - Development uses fake data (was SRS REQ-NF-08; also in SRS REQ-NF-07).
 - Server credentials live in protected configuration, outside the repository (Proposal:509; was SRS REQ-NF-18).
@@ -183,7 +183,7 @@ Already in the design: Staff see only the essentials, there is an audit log and 
 
 Missing: confirm with the Registrar's Office or with CTI whether the gym is covered; a privacy notice in Spanish and English; retention rules; do not send student data to external services without approval.
 
-Options by data type. **Not decided.** The current design stores everything on the CTI VM, with no external services.
+Options by data type. **Not decided.** The current design stores everything on the CTI VM. The only outside call today is the compromised-password check, which sends no student data (E-98). An external mail provider would be a second one, only if CTI has no mail and with approval (E-61, M-11).
 
 | Data | Options | What to ask |
 |---|---|---|
@@ -191,14 +191,14 @@ Options by data type. **Not decided.** The current design stores everything on t
 | Photos and documents | Private volume on the VM. CTI or UPRM storage if it exists. An external service only with approval | Does CTI offer storage? Can student photos be stored in an external service? |
 | Backups | Copy outside the VM: CTI storage, another UPRM server or an approved external service | Where can backups go? How long are they kept? |
 | Original lists and WooCommerce exports | Protected folder outside the repository. Not in OneDrive or git | Where does the department keep them today and who has access? |
-| Athlete registration and password reset emails | CTI SMTP. An external provider was not chosen | Is there SMTP and with what sender address? |
+| Athlete registration and password reset emails | CTI SMTP first. An external provider only with approval; none is chosen (E-61) | Is there SMTP and with what sender address? |
 
 ## 8. Not verified
 
 - That Rocky 10 uses Podman.
 - The nginx configuration for SSE.
 - Cookie behavior inside the installed PWA on iPhone.
-- Whether the Authorization Number is unique across orders. It may be a card approval code that can repeat (team.md, E-30).
+- Whether two orders in one Export Orders file can share an Authorization Number (team.md, E-55). The team decided the number is unique per term (E-71).
 - Whether WebSockets and SSE work on ngrok.
 - Costs of a rented server.
 - Whether CTI developers maintain Laravel applications. Inferred from CTI's email.

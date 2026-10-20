@@ -8,9 +8,10 @@
 |---|---|---|---|
 | Requirement questions | 17 | 15 | 2 |
 | Decisions from the design-readiness review | 24 | 24 | 0 |
+| Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
-| Team process (not requirements) | 6 | 0 | 6 |
-| Total | 52 | 39 | 13 |
+| Team process (not requirements) | 6 | 3 | 3 |
+| Total | 92 | 82 | 10 |
 
 ## Scope and priorities
 
@@ -250,6 +251,51 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-59 | Staff see the roster | Staff (no PIN) see the current-term athlete roster, read only, and search it by name or student number. Changing the roster stays with Administrators. Used to verify athletes and for Staff-assisted Check In. The gym must confirm (gym.md, G-09). SRS role table, REQ-F-45, REQ-F-49. | Carlos Pepin | 2026-10-14 |
 | E-60 | Gym account recovery | The install command also creates a one-time recovery code, shown once, that the administration keeps on paper. With it, a person sets a new gym password and PIN from the gym sign-in screen; the code is used up and a new one is shown once. Attempts are limited and each use is logged. If the paper is lost, only the server command remains. SRS REQ-F-88, REQ-F-89, REQ-NF-39. | Carlos Pepin | 2026-10-14 |
 
+## Decisions from the design review (2026-10-17 and 2026-10-19)
+
+| ID | Topic | Answer | Answered by | Date |
+|---|---|---|---|---|
+| E-61 | Outgoing mail | From now on the team assumes the app has outgoing mail. CTI mail comes first. If CTI cannot give it, the app uses an external provider, as the proposal allows for a prototype; that sends account emails outside the CTI VM and needs approval (cti.md, M-11). The email-link flows are built. Changes E-41: the in-person flow no longer depends on missing mail (see E-62). SRS 2.1, 2.4, 2.5, 5.3, REQ-F-06, REQ-F-15, REQ-F-75, REQ-F-80. | Carlos Pepin | 2026-10-17 |
+| E-62 | In-person athlete registration | Staff (no PIN) give a one-time code valid for 15 minutes. The athlete fills in the password, photo and waiver on their own phone; Staff do not enter data for the person. The tool stays even with mail. SRS REQ-F-77, role table. | Carlos Pepin | 2026-10-17 |
+| E-63 | Password rules and reset | At least 10 characters, at least 64 allowed, no composition rules, and a check against compromised passwords with an external service (Laravel `uncompromised`, haveibeenpwned.com). NIST SP 800-63B-4 asks 15 for single-factor passwords; Carlos chose 10 for phone use, a recorded deviation. A local list was rejected as more work. The gym account is assumed to follow the same rule. Passwords stay on Laravel's built-in handling. The reset request gives the same answer whether or not the email has an account. SRS REQ-NF-51 (new), REQ-F-06. | Carlos Pepin | 2026-10-17 |
+| E-64 | Language | One language per account, not per device. The User picks it when creating the account and changes it in the profile preferences. The gym account has one language for every computer. No language button in the top bar. Still open: the language before sign in, and where the gym account changes it and whether that needs the PIN. SRS REQ-NF-33. | Carlos Pepin | 2026-10-17 |
+| E-65 | Gym dashboard | Staff and the Administrator work on a dashboard on its own address, not in the User app. The gym sign-in page lives there, with no link from the User sign-in page. Staff land on the dashboard. Administrator items show to Staff grayed out with a padlock; tapping one asks for the PIN and unlocks it on the same screen. To confirm: the dashboard is a route of the same codebase, and whether a Lock button returns to Staff mode. SRS REQ-NF-10. | Carlos Pepin | 2026-10-17 |
+| E-66 | Public schedules and notices; contact number | Schedules and notices are public, also before sign in. Occupancy and analytics stay behind sign in. The notice editor warns against sensitive data. The Administrator edits the gym contact number in the facility information editor. SRS role table, REQ-F-55. | Carlos Pepin | 2026-10-17 |
+| E-67 | User with no active authorization | A banner on top and Check In grayed out. Expired: the banner asks to renew and shows the Authorization Number field and "I am an athlete". Any other cause (revoked, import undone, number released, no current term): "no active authorization" and the contact number. Final texts go in the wireframes. Changes E-50. SRS REQ-F-23. | Carlos Pepin | 2026-10-17 |
+| E-68 | One authorization per term | A User holds at most one active authorization per term. "I am an athlete" shows only to a User with no active authorization, and a manual grant to an account that already has an active one for that term is rejected. A revoked authorization does not count (E-94). SRS REQ-F-19, REQ-F-80, REQ-F-87. | Carlos Pepin | 2026-10-17 |
+| E-69 | Photo at registration and in a new term | The photo is taken at that moment or uploaded, and the screen says it cannot be changed. The athlete sets password, photo and waiver on the link page, saved together; with "I am an athlete" the photo is saved on the link page, so there is never an authorization without a photo. A new term starts at the first app open: the roster is looked up by the student number of the last claim, the account and history stay, and the new photo is asked before Check In. A User with a manual authorization gives the photo the same way. Changes E-38. SRS REQ-F-13, REQ-F-15, REQ-F-26, REQ-F-80, REQ-F-87. | Carlos Pepin | 2026-10-17 |
+| E-70 | Number for an existing account | Not signed in and the email already has an account: show the email masked and "sign in to add it"; nothing is claimed; same for athletes. Signed in: the number is accepted for that account even if the payment email is different, because having the number is the proof. A real owner who finds the number claimed contacts the gym and the Administrator releases it. SRS REQ-F-78, REQ-F-75. | Carlos Pepin | 2026-10-17 |
+| E-71 | Authorization Number per term | Answers part of E-30. The number is unique per term and the same number can appear in another term. Lookups use only the current term's orders. A number from an ended term gets the same message as an invalid or claimed one. Two current-term orders with one number: the lookup is denied with the contact number, and the import rejects the second order. Still open in E-55: the sample file review. SRS REQ-F-10, REQ-F-28, REQ-F-72, 4.1. | Carlos Pepin | 2026-10-19 |
+| E-72 | Email mask | First and last letter before the @, for example `m***z@upr.edu`, also for the institutional email. SRS REQ-F-70. | Carlos Pepin | 2026-10-17 |
+| E-73 | Athlete link limit | Per student number: 1 link every 5 minutes and 5 per day. SRS REQ-F-15, REQ-F-80. | Carlos Pepin | 2026-10-17 |
+| E-74 | Check In rejection causes | The backend returns a fixed code per cause, and the app writes the text in the account's language. Two new causes: location unavailable and new term photo needed. SRS REQ-F-33. | Carlos Pepin | 2026-10-17 |
+| E-75 | Gym ID | A tag with text and icon ("Athlete" or "Member") plus a different color for each; Carlos picks the colors. The clock shows the time with seconds as text, changes at most once per second and never flashes. Athletes never see minutes left; they see "Authorized athlete" and the term. Changes the minutes part of E-06 for athletes. SRS REQ-F-40. | Carlos Pepin | 2026-10-17 |
+| E-76 | Athletes-only period | Every User sees the notice, athletes and paid members. The whole User app changes color during the period; the dashboard does not. Without a connection the app shows its normal colors. Colors are Carlos's choice and must not clash with the Gym ID tag colors. SRS REQ-F-83, REQ-F-90 (new). | Carlos Pepin | 2026-10-17 |
+| E-77 | No connection | A banner on top. Loaded content stays, each section with "updated at". Occupancy shows no number. The Gym ID says "not valid now" and the clock stops. SRS REQ-NF-26. | Carlos Pepin | 2026-10-17 |
+| E-78 | Recovery code | 12 characters in 3 groups of 4, letters and numbers without look-alike characters, accepted with or without hyphens and in any case. After a use, the person retypes the new code to continue, then signs in again. A "Generate new code" action, for the Administrator with the PIN, voids the old code, shows the new one once and logs only that the code changed. SRS REQ-F-89, REQ-NF-39, role table. | Carlos Pepin | 2026-10-17 |
+| E-79 | Emergency contact | The User sees and edits it any time; Staff see the current value. Makes the Proposed part of E-37 final. SRS REQ-F-60. | Carlos Pepin | 2026-10-17 |
+| E-80 | Void | Staff end or void only active sessions; past statistics do not change. For later: who fixes a mistake found the next day. SRS REQ-F-48. | Carlos Pepin | 2026-10-17 |
+| E-81 | Student number | Shown in full to Staff and the Administrator on every screen they use. Only emails are masked. SRS REQ-NF-19. | Carlos Pepin | 2026-10-17 |
+| E-82 | Manual authorizations in statistics | Their own group, next to paid members and athletes. SRS REQ-F-61 (e). | Carlos Pepin | 2026-10-17 |
+| E-83 | PIN format | 4 digits on a numeric keypad. Carlos knows the tradeoff: 10,000 combinations; attempt limits protect the screen, but a stored hash of a 4-digit PIN falls at once if the database leaks. SRS REQ-NF-48. | Carlos Pepin | 2026-10-19 |
+| E-84 | Import result and undo | The result (counts plus accepted and rejected orders) is saved with the import and can be opened again later, so rejected names and emails are stored; their retention is pending (REQ-NF-05). Undo is always allowed, also after Check Ins; active sessions count until they end; the confirmation shows counts without blocking. Undo deletes what that import created and does not revert its changes to older records. SRS REQ-F-28, REQ-F-31, REQ-NF-05, 4.2. | Carlos Pepin | 2026-10-19 |
+| E-85 | No current term | A notice on every Administrator screen, and the reason in each error. SRS 3.4. | Carlos Pepin | 2026-10-19 |
+| E-86 | Reason for a manual grant or revoke | Required, free text of at least 10 characters, written to the audit log. Makes the Proposed part of E-35 final. SRS REQ-F-87. | Carlos Pepin | 2026-10-19 |
+| E-87 | Release of a claimed number | Only that authorization and its term photo are deleted, also when the claim created the account and the account has other authorizations. The account and its history stay. Not asked yet: an account whose only authorization is released. Changes E-52. SRS REQ-F-74. | Carlos Pepin | 2026-10-19 |
+| E-88 | Editing a term | Allowed even when orders or athletes fall outside the new dates. Records keep their term; the authorizations of the term end on the new end date. Not asked: whether a term can be deleted. SRS REQ-F-22. | Carlos Pepin | 2026-10-19 |
+| E-89 | Deletion asked through the Administrator | The person confirms in person at the gym with identification. SRS REQ-F-09. | Carlos Pepin | 2026-10-19 |
+| E-90 | Regular schedules | One table: each slot repeats weekly or has a date. The regular schedule is written once, and exceptions are separate rows. SRS REQ-F-55. | Carlos Pepin | 2026-10-19 |
+| E-91 | Sign-in data and attempt counters | Sign-in sessions do not keep the IP address or browser. Attempt counters keyed by IP address and email are temporary and are discarded when the wait ends. SRS REQ-NF-21. | Carlos Pepin | 2026-10-19 |
+| E-92 | Registration needs a payment or the roster | The welcome and registration screens say up front that registering needs a paid membership or a place on the roster, with the contact number, and offer a way to the WooCommerce store. Athletes do not buy, so the store is for paid members. Open: the store address, and a button or an automatic redirect. SRS REQ-F-91 (new). | Carlos Pepin | 2026-10-17 |
+| E-93 | Data model rules for the migration | Where the data model and the admin flows differ, the data model rules. PIN attempt counters live in the `cache` table. The audit log has no `pin_active` field. Imports have no uploaded-by field, because the audit log already records each import with the account and time. Removing an athlete from the roster revokes the authorization with the reason "removed from roster" instead of deleting it, so REQ-F-49 holds. SRS REQ-F-49, REQ-NF-39. | Carlos Pepin | 2026-10-19 |
+| E-94 | Revoked authorization and one per term | Only active authorizations count. A revoked one does not block a new grant or claim in the same term, as in the data model unique index. Changes E-68. SRS REQ-F-19, REQ-F-87. | Carlos Pepin | 2026-10-19 |
+| E-95 | Athlete removed from the roster by mistake | A "Reinstate" action on the athlete roster screen (A-05) makes the revoked authorization active again and writes an audit log entry. The action needs a reason, free text of at least 10 characters, as in E-86. It is refused with a message when the person already has an active authorization in that term, because the database allows one active authorization per term. SRS REQ-F-49, REQ-NF-39. | Carlos Pepin | 2026-10-19 |
+| E-96 | Store option on athlete registration | The athlete registration screen has no store option, because athletes do not buy. A paid member who opens it by mistake goes back to the welcome screen, which has the option. The welcome screen and the paid member registration screen offer the store; showing it only while a term runs stays Proposed (G-26). Changes E-92. SRS REQ-F-91. | Carlos Pepin | 2026-10-19 |
+| E-97 | Authorization Number field with no active authorization | The field shows under both banners. A person whose authorization went away with an import undo or a release can claim the number again. A number that cannot be claimed gets the same message with the contact number. Changes E-67. SRS REQ-F-23. | Carlos Pepin | 2026-10-19 |
+| E-98 | Compromised-password check | The check is an external call that sends no student data: only the first 5 characters of a hash of the password, with no name, email, photo or full password. The SRS describes it, and the team does not submit it for approval (cti.md, M-11). SRS 2.4, REQ-NF-51. | Carlos Pepin | 2026-10-19 |
+| E-99 | Staff active sessions list | For an athlete the list shows "athlete" and the Check In time, with no minutes left. Paid members keep the minutes left. Extends E-75 to Staff screens. SRS REQ-F-44. | Carlos Pepin | 2026-10-19 |
+| E-100 | "I am an athlete" under both banners | A User with no active authorization sees "I am an athlete" under both banners, expired or any other cause, as in E-68. Changes E-67. SRS REQ-F-23, REQ-F-80. | Carlos Pepin | 2026-10-19 |
+
 ## WooCommerce import
 
 ### E-55: Review the Export Orders example
@@ -366,24 +412,24 @@ These items are about how the team works in the repository. They do not change a
 | Field | Value |
 |---|---|
 | Question | Do we add `.env.*`, `!.env.example`, `/data/real/` and `*.sql` to `.gitignore`? (`.env` is already there.) |
-| Answer | |
-| Answered by | |
-| Date | |
+| Answer | Yes, all four. The repository is public, so secrets and real data must never be committed. Not applied yet: the change goes in through a pull request, with the skeleton work (#46, #47) or the SRS update branch. |
+| Answered by | Carlos Pepin |
+| Date | 2026-10-19 |
 
 ### E-28: Protection of `main`
 
 | Field | Value |
 |---|---|
 | Question | When do we turn on protection of `main`: first a required PR with no direct push, then 1 approved review? |
-| Answer | |
-| Answered by | |
-| Date | |
+| Answer | Now. `main` requires a pull request and 1 approval from another member, as announcement #51 says. Turned on 2026-10-19. The rule is not enforced for administrators, so Carlos keeps an emergency bypass. |
+| Answered by | Carlos Pepin |
+| Date | 2026-10-19 |
 
 ### E-29: Write access
 
 | Field | Value |
 |---|---|
 | Question | When do the other two members get write access to the repository? |
-| Answer | |
-| Answered by | |
-| Date | |
+| Answer | Now, so they can push branches for #46 to #48 and review pull requests. Both have write access on this repository since 2026-10-19. |
+| Answered by | Carlos Pepin |
+| Date | 2026-10-19 |
