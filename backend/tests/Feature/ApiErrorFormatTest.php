@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Exceptions\ApiException;
+use Illuminate\Auth\AuthenticationException;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -20,7 +22,23 @@ class ApiErrorFormatTest extends TestCase
             Route::get('/crash', fn () => throw new \LogicException('secret internal detail'));
             Route::get('/forbidden', fn () => abort(403, 'secret internal detail'));
             Route::get('/throttled', fn () => 'ok')->middleware('throttle:1,1');
+            Route::get('/unauthenticated', fn () => throw new AuthenticationException);
+            Route::get('/own-response', fn () => throw new HttpResponseException(response()->json(['custom' => true], 418)));
         });
+    }
+
+    public function test_unauthenticated_uses_the_error_format(): void
+    {
+        $this->getJson('/api/test/unauthenticated')
+            ->assertUnauthorized()
+            ->assertExactJson(['error' => ['code' => 'unauthenticated', 'message' => __('errors.unauthenticated')]]);
+    }
+
+    public function test_a_response_built_on_purpose_is_sent_as_it_is(): void
+    {
+        $this->getJson('/api/test/own-response')
+            ->assertStatus(418)
+            ->assertExactJson(['custom' => true]);
     }
 
     public function test_unknown_route_uses_the_error_format(): void
