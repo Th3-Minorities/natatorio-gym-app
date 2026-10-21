@@ -24,6 +24,7 @@ services:
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
+      - private_photos:/var/www/html/storage/app/private
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: db
@@ -53,6 +54,7 @@ services:
     command: ["sh", "-c", "until [ -f artisan ]; do sleep 2; done; exec php artisan schedule:work"]
     volumes:
       - ./backend:/var/www/html
+      - private_photos:/var/www/html/storage/app/private
     environment:
       DB_CONNECTION: pgsql
       DB_HOST: db
@@ -101,3 +103,4 @@ services:
 
 volumes:
   postgres_data:
+  private_photos:
