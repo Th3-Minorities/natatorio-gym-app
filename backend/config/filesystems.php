@@ -32,7 +32,8 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
+            // The private_photos volume (docker-compose.yml), outside the code folder.
+            'root' => '/var/www/private',
             'serve' => true,
             'throw' => false,
             'report' => false,
