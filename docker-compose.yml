@@ -1,0 +1,106 @@
+name: natatorio-gym-app
+
+services:
+  proxy:
+    image: nginx:1.27.5-alpine
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/health || exit 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  app:
+    image: natatorio-gym-app-php:local
+    build: ./docker/php
+    working_dir: /var/www/html
+    volumes:
+      - ./backend:/var/www/html
+      - private_photos:/var/www/private
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-natatorio_gym}
+      DB_USERNAME: ${POSTGRES_USER:-natatorio}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+      MAIL_MAILER: smtp
+      MAIL_HOST: ${MAIL_HOST:-mailpit}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SCHEME: ${MAIL_SCHEME:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r '$$socket = @fsockopen(\"127.0.0.1\", 9000); exit($$socket ? 0 : 1);'"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  scheduler:
+    image: natatorio-gym-app-php:local
+    working_dir: /var/www/html
+    command: ["sh", "-c", "until [ -f artisan ]; do sleep 2; done; exec php artisan schedule:work"]
+    volumes:
+      - ./backend:/var/www/html
+      - private_photos:/var/www/private
+    environment:
+      DB_CONNECTION: pgsql
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-natatorio_gym}
+      DB_USERNAME: ${POSTGRES_USER:-natatorio}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+    depends_on:
+      app:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+  db:
+    image: postgres:17.4-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-natatorio_gym}
+      POSTGRES_USER: ${POSTGRES_USER:-natatorio}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/01-btree-gist.sql:/docker-entrypoint-initdb.d/01-btree-gist.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  mailpit:
+    image: axllent/mailpit:v1.27.8
+    profiles: ["development"]
+    command: ["--webroot", "/mailpit/"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8025/mailpit/"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  postgres_data:
+  private_photos:
