@@ -9,3 +9,6 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+# Private photos live outside the code folder, in a volume PHP-FPM can write to.
+RUN mkdir -p /var/www/private && chown www-data:www-data /var/www/private
