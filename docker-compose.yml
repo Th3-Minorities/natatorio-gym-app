@@ -56,7 +56,8 @@ services:
     # Same user as app (see above).
     user: www-data
     working_dir: /var/www/html
-    command: ["sh", "-c", "until [ -f artisan ]; do sleep 2; done; exec php artisan schedule:work"]
+    # Waits for the packages (README "First run", step 2), so the stack also starts on a fresh clone.
+    command: ["sh", "-c", "until [ -f vendor/autoload.php ]; do sleep 2; done; exec php artisan schedule:work"]
     volumes:
       - ./backend:/var/www/html
       - private_photos:/var/www/private

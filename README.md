@@ -66,6 +66,8 @@ Do this once on your computer. After that, step 1 is all you need each day.
    docker compose exec app composer install
    ```
 
+   The scheduler waits for these packages and starts by itself when they are in. Until step 4 creates the tables, its log shows a `relation "cache" does not exist` error once a minute. That is expected and stops after step 4.
+
 3. Create `backend/.env` (not in git) and give it a secret key:
 
    ```powershell
@@ -78,25 +80,19 @@ Do this once on your computer. After that, step 1 is all you need each day.
    docker compose exec app php artisan migrate
    ```
 
-5. Restart the scheduler. It was waiting for the packages from step 2:
-
-   ```powershell
-   docker compose restart scheduler
-   ```
-
-6. Only if your database volume is older than issue #47: create the test database. A new volume creates it by itself. In Git Bash, run `export MSYS_NO_PATHCONV=1` first, or Git Bash rewrites the path:
+5. Only if your database volume is older than issue #47: create the test database. A new volume creates it by itself. In Git Bash, run `export MSYS_NO_PATHCONV=1` first, or Git Bash rewrites the path:
 
    ```powershell
    docker compose exec db sh /docker-entrypoint-initdb.d/02-test-database.sh
    ```
 
-7. Check that the API answers through the proxy. You should see `{"status":"ok"}`. You can also open <http://localhost:8080/api/health> in the browser:
+6. Check that the API answers through the proxy. You should see `{"status":"ok"}`. You can also open <http://localhost:8080/api/health> in the browser:
 
    ```powershell
    curl.exe http://localhost:8080/api/health
    ```
 
-8. Run the tests. They should all pass:
+7. Run the tests. They should all pass:
 
    ```powershell
    docker compose exec app php artisan test
