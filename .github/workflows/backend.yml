@@ -23,6 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7.0.1
 
+      # The containers run as www-data, and on Linux the checked-out folder belongs to another user.
+      # www-data must write vendor/, .env, logs and caches.
+      - name: Let the containers write to the backend folder
+        run: chmod -R a+rwX backend
+
       - name: Start the containers
         run: docker compose up -d --build --wait proxy
 
@@ -30,8 +35,6 @@ jobs:
         run: |
           docker compose exec -T app composer install --no-interaction --no-progress
           docker compose exec -T app sh -c 'cp .env.example .env && php artisan key:generate'
-          # PHP-FPM runs as www-data and must write logs and caches.
-          docker compose exec -T app chmod -R a+rwX storage bootstrap/cache
 
       - name: Lint
         run: docker compose exec -T app composer lint

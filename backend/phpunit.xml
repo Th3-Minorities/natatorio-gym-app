@@ -29,6 +29,8 @@
         <server name="DB_DATABASE" value="natatorio_gym_test" force="true"/>
         <env name="DB_URL" value=""/>
         <server name="MAIL_MAILER" value="array" force="true"/>
+        <!-- Tests never write to the development log. -->
+        <server name="LOG_CHANNEL" value="null" force="true"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="PULSE_ENABLED" value="false"/>

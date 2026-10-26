@@ -10,5 +10,8 @@ RUN apt-get update \
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
+# The containers run as www-data, which cannot write to its home folder. Composer keeps its cache here.
+ENV COMPOSER_HOME=/tmp/composer
+
 # Private photos live outside the code folder, in a volume PHP-FPM can write to.
 RUN mkdir -p /var/www/private && chown www-data:www-data /var/www/private

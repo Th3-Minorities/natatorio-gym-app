@@ -21,6 +21,9 @@ services:
   app:
     image: natatorio-gym-app-php:local
     build: ./docker/php
+    # Same user as the web requests, so no command run with "docker compose exec" creates files as root.
+    # For the rare command that needs root: docker compose exec -u root app ...
+    user: www-data
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
@@ -50,6 +53,8 @@ services:
 
   scheduler:
     image: natatorio-gym-app-php:local
+    # Same user as app (see above).
+    user: www-data
     working_dir: /var/www/html
     command: ["sh", "-c", "until [ -f artisan ]; do sleep 2; done; exec php artisan schedule:work"]
     volumes:

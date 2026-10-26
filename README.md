@@ -34,6 +34,22 @@ docker compose --profile development down --volumes
 
 The API is in `backend/`. You do not install PHP or Composer on your computer: they run inside the `app` container. Run every command below from the repository root while the stack is up.
 
+Commands in the `app` container run as the `www-data` user, the same user that answers web requests. That way no command creates a file the API cannot write, such as a log file. If a command ever needs root, add `-u root`: `docker compose exec -u root app ...`.
+
+- **Your setup is older than this rule** (you ran the commands below before as root): give the files back to `www-data` once, with the stack up:
+
+  ```powershell
+  docker compose exec -u root app chown -R www-data:www-data vendor storage bootstrap/cache .env
+  ```
+
+- **Docker installed directly on Linux** (not Docker Desktop): the repository folder belongs to your user, so `www-data` cannot write to it. Run this once, from the repository root, before step 1:
+
+  ```bash
+  chmod -R a+rwX backend
+  ```
+
+  This opens the folder to every user, which is fine on a development computer and in CI. The CTI production server needs more care: there, give the folder to the right owner instead of opening it to everyone. That belongs to the deployment issue.
+
 ### First run, step by step
 
 Do this once on your computer. After that, step 1 is all you need each day.
