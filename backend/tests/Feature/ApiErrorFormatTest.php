@@ -58,9 +58,10 @@ class ApiErrorFormatTest extends TestCase
     public function test_protected_route_without_json_header_answers_401(): void
     {
         // A browser link or curl sends no Accept header. There is no login page to redirect to.
+        app()->setLocale('es');
         $this->get('/api/test/protected')
             ->assertUnauthorized()
-            ->assertExactJson(['error' => ['code' => 'unauthenticated', 'message' => __('errors.unauthenticated')]]);
+            ->assertExactJson(['error' => ['code' => 'unauthenticated', 'message' => 'Inicia sesión para continuar.']]);
     }
 
     public function test_unauthenticated_uses_the_error_format(): void
