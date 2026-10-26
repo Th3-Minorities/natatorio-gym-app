@@ -8,6 +8,7 @@ Rules every backend route follows, so errors and routes look the same across fea
 - Laravel packages that add their own paths (Sanctum, Fortify) must be moved under `/api` with their prefix setting (D2).
 - Paths use lowercase nouns with hyphens: `/api/check-ins`, `/api/schedule-slots/{id}`.
 - Requests and responses are JSON. The PWA sends `Accept: application/json`.
+- Dates and times in JSON are ISO 8601 in UTC, ending in `Z`, which is Laravel's default (`2026-10-27T01:00:00.000000Z`). The PWA converts them to Puerto Rico time before showing them, in the format of REQ-NF-38 (`2026-10-13 3:05 PM`).
 - `/api` responses are never cached by the service worker (REQ-NF-26).
 
 ### Health check

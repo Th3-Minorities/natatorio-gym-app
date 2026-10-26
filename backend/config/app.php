@@ -66,7 +66,7 @@ return [
     */
 
     // Dates and times follow the gym (REQ-NF-37). Puerto Rico has no daylight saving time.
-    // The database still stores moments as timestamptz (docs/design/api-conventions.md).
+    // New tables store moments as timestamptz (docs/design/api-conventions.md, "Time zones").
     'timezone' => 'America/Puerto_Rico',
 
     /*

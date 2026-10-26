@@ -39,7 +39,7 @@ Commands in the `app` container run as the `www-data` user, the same user that a
 - **Your setup is older than this rule** (you ran the commands below before as root): give the files back to `www-data` once, with the stack up:
 
   ```powershell
-  docker compose exec -u root app chown -R www-data:www-data vendor storage bootstrap/cache .env
+  docker compose exec -u root app chown -R www-data:www-data .
   ```
 
 - **Docker installed directly on Linux** (not Docker Desktop): the repository folder belongs to your user, so `www-data` cannot write to it. Run this once, from the repository root, before step 1:
@@ -49,6 +49,8 @@ Commands in the `app` container run as the `www-data` user, the same user that a
   ```
 
   This opens the folder to every user, which is fine on a development computer and in CI. The CTI production server needs more care: there, give the folder to the right owner instead of opening it to everyone. That belongs to the deployment issue.
+
+  Local development directly on Linux is not tested yet: this setup was tested with Docker Desktop on Windows and in CI on Linux. Two things to expect. Files you add later (new files from your editor or `git pull`) are not writable by `www-data` until you run the `chmod` again. And files the containers create, such as `vendor/` or files from `php artisan make:...`, belong to `www-data`, so you may need `sudo` to edit or delete them on your computer.
 
 ### First run, step by step
 

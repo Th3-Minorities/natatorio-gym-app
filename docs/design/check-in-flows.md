@@ -408,7 +408,7 @@ Decision: A, because the stored period is the real visit, which analytics need a
 
 ### D5. Error message keys and response shape
 
-Status: Decided (owner, 2026-10-17), option A (E-74).
+Status: Decided (owner, 2026-10-17), option A (E-74). On 2026-10-26 the codes were renamed from `check_in.reason` to `check_in_reason` to match the snake_case rule in `api-conventions.md` (issue #47 review). The decision itself did not change.
 
 - A. The backend returns a stable code per reason (`check_in_offline` is phone only; `check_in_no_authorization`, `check_in_photo_required`, `check_in_gym_closed`, `check_in_athletes_only`, `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy`, `check_in_outside_boundary`) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
 - B. The backend returns translated text only. Pro: one place. Con: the phone cannot react per reason (open photo upload, show how to turn on location), and tests depend on wording.
