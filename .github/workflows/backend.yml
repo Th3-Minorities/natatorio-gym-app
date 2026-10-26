@@ -28,8 +28,10 @@ jobs:
       - name: Let the containers write to the backend folder
         run: chmod -R a+rwX backend
 
+      # Every container, like README "First run" step 1 on a fresh clone (no vendor/ yet).
+      # The scheduler is included, so CI fails if it stops while waiting for the packages.
       - name: Start the containers
-        run: docker compose up -d --build --wait proxy
+        run: docker compose up -d --build --wait
 
       - name: Install packages
         run: |
@@ -47,12 +49,31 @@ jobs:
       - name: Tests
         run: docker compose exec -T app php artisan test
 
+      # The scheduler starts by itself once vendor/autoload.php exists (no restart step in the README).
+      - name: Scheduler started by itself
+        run: |
+          for attempt in $(seq 1 15); do
+            if docker compose top scheduler | grep -q "schedule:work"; then exit 0; fi
+            sleep 2
+          done
+          docker compose top scheduler
+          exit 1
+
       # Compares the whole answer: a broken app can still answer 200 with an error page.
+      # No -f, so a failing answer is printed before the comparison fails.
       - name: Health check through the proxy
         run: |
-          body="$(curl -fsS http://127.0.0.1:8080/api/health)"
+          body="$(curl -sS http://127.0.0.1:8080/api/health)"
           echo "$body"
           test "$body" = '{"status":"ok"}'
+
+      # api-conventions.md: no versions or internals in answers (expose_php = Off in docker/php/app.ini).
+      - name: No PHP version in the headers
+        run: |
+          if curl -sSI http://127.0.0.1:8080/api/health | grep -qi '^x-powered-by'; then
+            echo "The answer shows X-Powered-By (the PHP version)."
+            exit 1
+          fi
 
       - name: Container logs
         if: failure()

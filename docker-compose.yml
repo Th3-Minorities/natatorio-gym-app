@@ -57,6 +57,8 @@ services:
     user: www-data
     working_dir: /var/www/html
     # Waits for the packages (README "First run", step 2), so the stack also starts on a fresh clone.
+    # Started again if it ever stops, for example if it starts in the moment Composer is still writing.
+    restart: unless-stopped
     command: ["sh", "-c", "until [ -f vendor/autoload.php ]; do sleep 2; done; exec php artisan schedule:work"]
     volumes:
       - ./backend:/var/www/html
