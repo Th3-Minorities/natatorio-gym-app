@@ -47,8 +47,12 @@ jobs:
       - name: Tests
         run: docker compose exec -T app php artisan test
 
+      # Compares the whole answer: a broken app can still answer 200 with an error page.
       - name: Health check through the proxy
-        run: curl -fsS http://127.0.0.1:8080/api/health
+        run: |
+          body="$(curl -fsS http://127.0.0.1:8080/api/health)"
+          echo "$body"
+          test "$body" = '{"status":"ok"}'
 
       - name: Container logs
         if: failure()
