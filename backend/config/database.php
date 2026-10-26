@@ -97,6 +97,9 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // Same zone as PHP (config/app.php). Laravel sends dates without a zone, so PostgreSQL
+            // must read them in Puerto Rico time, or every timestamptz is saved 4 hours off.
+            'timezone' => 'America/Puerto_Rico',
         ],
 
         'sqlsrv' => [
