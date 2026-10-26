@@ -25,7 +25,34 @@ class ApiErrorFormatTest extends TestCase
             Route::get('/unauthenticated', fn () => throw new AuthenticationException);
             Route::get('/own-response', fn () => throw new HttpResponseException(response()->json(['custom' => true], 418)));
             Route::get('/protected', fn () => 'ok')->middleware('auth');
+            // A code nobody wrote a text for (the reviewer's example, dotted on purpose).
+            Route::get('/code-without-text', fn () => throw new ApiException('check_in.location_denied', 422));
+            Route::get('/server-code-without-text', fn () => throw new ApiException('printer_on_fire', 503));
         });
+    }
+
+    public function test_code_without_text_gets_a_readable_message_in_both_languages(): void
+    {
+        app()->setLocale('es');
+        $this->getJson('/api/test/code-without-text')
+            ->assertUnprocessable()
+            ->assertExactJson(['error' => ['code' => 'check_in.location_denied', 'message' => 'No se pudo procesar la solicitud.']]);
+
+        app()->setLocale('en');
+        $this->getJson('/api/test/code-without-text')
+            ->assertExactJson(['error' => ['code' => 'check_in.location_denied', 'message' => 'The request could not be processed.']]);
+    }
+
+    public function test_server_code_without_text_gets_the_server_error_message(): void
+    {
+        app()->setLocale('es');
+        $this->getJson('/api/test/server-code-without-text')
+            ->assertStatus(503)
+            ->assertExactJson(['error' => ['code' => 'printer_on_fire', 'message' => 'Algo salió mal de nuestro lado. Intenta más tarde.']]);
+
+        app()->setLocale('en');
+        $this->getJson('/api/test/server-code-without-text')
+            ->assertExactJson(['error' => ['code' => 'printer_on_fire', 'message' => 'Something went wrong on our side. Try again later.']]);
     }
 
     public function test_protected_route_without_json_header_answers_401(): void

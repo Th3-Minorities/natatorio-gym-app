@@ -275,7 +275,7 @@ sequenceDiagram
 Notes:
 
 - The check order is: connection, active session, authorization, photo, open, athletes-only, permission, accuracy, boundary. The eligibility query runs the checks that need no location. The final POST repeats every check (check-in D1). Location permission is checked only on the phone; the backend requires a position and checks accuracy and boundary.
-- The server rejects with a fixed code per cause, for example `check_in.location_denied`. The app writes the text in the account's language (E-74). REQ-F-33 gains two causes: location unavailable and new term photo needed.
+- The server rejects with a fixed code per cause, for example `check_in_location_denied`. The app writes the text in the account's language (E-74). REQ-F-33 gains two causes: location unavailable and new term photo needed.
 - One sign-in session per User: the valid session is stored in `users.current_session_id`, and a middleware compares it on every request. Old rows are deleted (data-model D3).
 - The `sign_in_sessions` table keeps no IP and no browser: both columns are NULL (E-91). Gym actions stay traceable through the audit log, which records IP, device and browser (REQ-NF-39).
 - Attempt counters live in the `cache` table, keyed by IP and email for sign in, and the PIN counters sit there too (E-91, E-93). They are temporary and are discarded when the wait ends. The "discarded" part is a default the owner did not object to.

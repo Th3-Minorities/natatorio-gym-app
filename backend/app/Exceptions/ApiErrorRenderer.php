@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
@@ -60,7 +61,7 @@ class ApiErrorRenderer
         array $headers = [],
         ?array $debug = null,
     ): JsonResponse {
-        $error = ['code' => $code, 'message' => $message ?? __('errors.'.$code)];
+        $error = ['code' => $code, 'message' => $message ?? self::message($code, $status)];
 
         if ($details !== []) {
             $error['details'] = $details;
@@ -71,6 +72,19 @@ class ApiErrorRenderer
         }
 
         return new JsonResponse(['error' => $error], $status, $headers);
+    }
+
+    /**
+     * The text for a code, from lang/<locale>/errors.php. A code with no text gets a general
+     * one instead of the raw key "errors.<code>": the server error text for 5xx, else bad_request.
+     */
+    public static function message(string $code, int $status): string
+    {
+        if (Lang::has('errors.'.$code)) {
+            return __('errors.'.$code);
+        }
+
+        return __($status >= 500 ? 'errors.server_error' : 'errors.bad_request');
     }
 
     /** Only with APP_DEBUG on, so production never shows internals. */

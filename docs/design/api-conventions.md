@@ -34,7 +34,7 @@ Every error from an `/api` route has this shape, whatever caused it:
 
 | Field | Always there | Meaning |
 |---|---|---|
-| `code` | Yes | Stable, snake_case. The PWA decides what to do based on this, never on `message`. Once released, a code never changes meaning or name |
+| `code` | Yes | Stable, snake_case, no dots. Start with the feature when it helps: `check_in_location_denied`. The PWA decides what to do based on this, never on `message`. Once released, a code never changes meaning or name |
 | `message` | Yes | Short text for the person. For now it uses the app language (`APP_LOCALE`, Spanish by default). The language of each account comes with the language feature. Field messages in `details` are still in English until someone adds Spanish validation texts |
 | `details` | No | Extra data. For `validation_failed`, the list of messages for each field |
 | `debug` | Only with `APP_DEBUG=true` | Exception class, message and file, for developers. Never on in production |
@@ -69,7 +69,8 @@ throw new ApiException('authorization_number_invalid', 422, __('registration.num
 ```
 
 - Pick a code that names the case, not the screen: `authorization_number_invalid`, not `registration_error`.
-- Put the message in both `backend/lang/es/` and `backend/lang/en/`. With no message, the text comes from `errors.<code>`.
+- Add the code with its text to both `backend/lang/es/errors.php` and `backend/lang/en/errors.php`. With no message in the `ApiException`, the text comes from there. Pass the code as a plain string, as the first argument. A test reads `backend/app`, `backend/routes` and `backend/bootstrap` and fails if a code is not snake_case, has no text in both files, or is not a plain string.
+- If a text is missing anyway, the person never sees the raw key `errors.<code>`: the message falls back to the general `bad_request` text (or `server_error` for a 5xx status).
 - `ApiException` errors are expected, so they are not written to the error log.
 - List the new code in the OpenAPI contract for that route.
 - Do not use `abort(404, 'text')` to send text to the person: the text is hidden on purpose. Use `ApiException`.

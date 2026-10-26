@@ -36,7 +36,7 @@ flowchart TD
   class S0 ok
 ```
 
-**About this diagram:** Location is asked only when a new session must be created (REQ-F-37), so every check that does not need location runs first; the order and its reasons are in D1. Each rejection maps to one message key: `check_in.offline`, `check_in.no_authorization`, `check_in.photo_required`, `check_in.gym_closed`, `check_in.athletes_only` (full list in D5).
+**About this diagram:** Location is asked only when a new session must be created (REQ-F-37), so every check that does not need location runs first; the order and its reasons are in D1. Each rejection maps to one message key: `check_in_offline`, `check_in_no_authorization`, `check_in_photo_required`, `check_in_gym_closed`, `check_in_athletes_only` (full list in D5).
 
 - "No connection" is detected on the phone: the request fails or times out. There is no offline Check In (REQ-NF-26, SRS 2.4).
 - The athlete photo check comes from REQ-F-26. A paid member uploads the photo at registration and renewal, so in practice only athletes get the "new term photo needed" rejection.
@@ -74,7 +74,7 @@ flowchart TD
   class S0,OK ok
 ```
 
-**About this diagram:** The rejections map to the keys `check_in.location_denied`, `check_in.location_unavailable`, `check_in.low_accuracy` and `check_in.outside_boundary` (D5). Accuracy and boundary follow D2. The final submit repeats every check in the order set in D1, except the location permission: only the phone knows it. The backend requires a position and checks accuracy and boundary.
+**About this diagram:** The rejections map to the keys `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy` and `check_in_outside_boundary` (D5). Accuracy and boundary follow D2. The final submit repeats every check in the order set in D1, except the location permission: only the phone knows it. The backend requires a position and checks accuracy and boundary.
 
 - Location comes from the browser Geolocation API (REQ-NF-11). The permission state is read before asking where the browser allows it; otherwise the error of the position request tells denied, unavailable or timeout apart.
 - The phone checks accuracy and boundary only to answer fast. The backend repeats every check except the location permission and is the only one that decides. The client is never trusted for authorization. Location is a condition, not proof of presence (SRS 3.6).
@@ -410,7 +410,7 @@ Decision: A, because the stored period is the real visit, which analytics need a
 
 Status: Decided (owner, 2026-10-17), option A (E-74).
 
-- A. The backend returns a stable code per reason (`check_in.offline` is phone only; `check_in.no_authorization`, `check_in.photo_required`, `check_in.gym_closed`, `check_in.athletes_only`, `check_in.location_denied`, `check_in.location_unavailable`, `check_in.low_accuracy`, `check_in.outside_boundary`) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
+- A. The backend returns a stable code per reason (`check_in_offline` is phone only; `check_in_no_authorization`, `check_in_photo_required`, `check_in_gym_closed`, `check_in_athletes_only`, `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy`, `check_in_outside_boundary`) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
 - B. The backend returns translated text only. Pro: one place. Con: the phone cannot react per reason (open photo upload, show how to turn on location), and tests depend on wording.
 
 Decision: A, because the app can react to each cause (open the photo upload, show how to turn on location). Two causes are added to REQ-F-33: location unavailable and new term photo needed. The texts are written later (REQ-F-33 "Texts: design").
@@ -436,7 +436,7 @@ Decision: A. The earlier recommendation was B. Still to confirm: how far back th
 
 ## Gaps and questions
 
-1. Decided (E-74): REQ-F-33 adds "location unavailable or timeout", which the Geolocation API can return, with its own key `check_in.location_unavailable`. REQ-F-33 now lists it (SRS v0.7).
+1. Decided (E-74): REQ-F-33 adds "location unavailable or timeout", which the Geolocation API can return, with its own key `check_in_location_unavailable`. REQ-F-33 now lists it (SRS v0.7).
 2. Decided (E-74): REQ-F-33 adds "new term photo needed", because REQ-F-26 blocks Check In without it. REQ-F-33 now lists it (SRS v0.7).
 3. REQ-F-82 rejects "paid members" during athletes-only periods. It does not say what happens to a User with a manual authorization (REQ-F-87). Proposed: treat manual as paid member, since it fixes order errors.
 4. Decided (E-76): every User sees the athletes-only notice, athletes and paid members.
