@@ -155,6 +155,7 @@ stateDiagram-v2
 ```
 
 - expired is computed from backend time with no checkout (REQ-F-38). It counts in analytics as a visit, not in occupancy. ended_early counts the same way, with its real end time.
+- Open for the gym (G-32): CTI says a check-out is needed to know how many people are inside at each moment, and suggested Staff do it at the desk. If the gym wants it, a check-out sets the real end time. With today's states that is ended_early, which REQ-NF-39 writes to the audit log as a Staff correction; a routine tap per person without one audit entry each needs a separate state. A check-out after 60 minutes cannot be stored (`ended_at` cannot pass `ends_at`), so people who stay longer still leave the count at 60 minutes. Until the gym answers, sessions end by expiry or End early.
 - Only Staff and Administrators can end early or void (REQ-F-48). Each correction is an audit log entry (REQ-NF-39). Staff cannot extend a session or create one without authorization.
 - Staff can void only active sessions (E-80). Staff already list active sessions, so there is no Staff list of past sessions, and past statistics do not change. Who fixes a mistake found the next day is still open (see Gaps).
 - The User's own past Check Ins are the visit history (E-105). The new My visits screen (U-09), reached from the account (U-03), reads them from these session records. Each row shows the date and time, newest first. Location is never shown (REQ-NF-03). How far back it goes and how long the records are kept are still to confirm (REQ-NF-05, G-03).
@@ -197,6 +198,7 @@ flowchart TD
 - Staff can only read the roster here; adding, editing, removing or importing roster records stays with the Administrator (E-59).
 - "Check In this athlete" on the roster screen (S-05) opens the assisted Check In screen (S-03) with the student number already filled in (E-81). Staff and Administrators always see the student number in full, on every screen they use.
 - The assisted session goes through the same protected operation as diagram 3, so the exclusion constraint also guards it. A connection is required (REQ-NF-26). The audit log entry follows REQ-NF-39.
+- Open (G-34): CTI suggested that Staff flag a person whose photo does not match. How the flag works is not defined; today Staff stop and nothing is recorded.
 
 ### 6. Gym ID states: paid member
 
@@ -326,7 +328,7 @@ flowchart LR
 
 - Occupancy is the count of active sessions (REQ-F-41). Because the count is done at query time with backend time, every request already reflects the last Check In, expiration or Staff correction. Expiry is never late.
 - Every screen polls the same endpoint every 20 to 30 seconds (REQ-F-43, interval in D6), so all three show the same value after each one updates (REQ-F-42). A failed poll marks the value as not current (REQ-NF-26): the screen keeps the loaded content with "updated at TIME", the persistent offline banner shows, and occupancy shows no number (E-77).
-- An athlete removed mid-term keeps counting until the session ends (REQ-F-49). Voided sessions never count. Athletes who stay past 60 minutes are not counted.
+- An athlete removed mid-term keeps counting until the session ends (REQ-F-49). Voided sessions never count. Athletes who stay past 60 minutes are not counted. CTI's view: without a check-out, occupancy is an estimate from Check Ins and expiry, and occupancy over time (REQ-F-61 c, d) is too. Open for the gym (G-32).
 
 ### 10. Staff verification of a Gym ID
 
@@ -447,6 +449,7 @@ Decision: A. The earlier recommendation was B. Still to confirm: how far back th
 9. Staff-assisted Check In for an athlete on the roster with no account: no session is possible because sessions belong to a User. In-person registration (REQ-F-77) covers the missing account: Staff generate a one-time code that lasts 15 minutes, and the athlete fills in the rest on their own phone (E-62). The Staff tool stays even when mail works. Whether the gym accepts that Staff cannot do the assisted Check In in this case is still pending.
 10. REQ-NF-03: coordinates must also stay out of request logs and error reports. Not stated in the SRS; noted for implementation.
 11. Decided (E-105): the User sees their own past Check Ins on My visits (U-09), from the session records, with date and time, newest first, and no location. Open: how far back the list goes and the retention period (REQ-NF-05, G-03). The SRS has no requirement for the screen yet.
+12. Open for the gym (G-32): what happens when a person comes back after the 60 minutes: (a) let them in and record every entry; (b) warn at the door 'already used 60 minutes today' and do not let them in; (c) give another 60 minutes. Today a new valid Check In after expiry creates a new session (REQ-F-38), which is (c). Nobody is asked to leave after 60 minutes. Whether the 60 minutes is per visit or per day is also for the gym.
 
 ## Traceability
 

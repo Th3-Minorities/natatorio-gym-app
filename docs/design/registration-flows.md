@@ -9,7 +9,7 @@ Two answers are still pending and touch almost every diagram:
 - The contact number (REQ-F-73) is pending from the gym (G-25).
 - The address of the store page where members pay is pending from the gym. The welcome screen and the paid member registration screen offer a button to it while a term runs (Proposed, E-92, E-96). The athlete registration screen has none.
 
-Mail is assumed available (E-61). The first choice is CTI outgoing mail (M-07). If CTI cannot provide it, the fallback is an external provider, which needs approval (M-11). Every email link depends on it: athlete registration (diagram 4), "I am an athlete" (diagram 7, E-58) and password reset.
+Mail is assumed available (E-61). CTI described a path: the server runs a mail service (CTI suggests Postfix) and sends through CTI's mail gateway once CTI authorizes the VM (M-07, answered in principle). The authorization is still to be requested, and SPF and DKIM were not discussed. If CTI does not authorize the VM, the fallback is an external provider, which needs approval (M-11). Every email link depends on it: athlete registration (diagram 4), "I am an athlete" (diagram 7, E-58) and password reset.
 
 The welcome screen (N-01) and the sign-in screen (N-02) are always in Spanish, because no account exists yet. The person chooses the language when the account is created (E-103, E-64). After sign in, the account language applies, so a User with an English account sees these two screens in Spanish while signed out.
 
@@ -45,6 +45,8 @@ flowchart TD
 **About this diagram:** The person is not signed in; the privacy notice (REQ-NF-25, text pending G-24) comes before any field, and password, photo, waiver and emergency contact stay in the page until the final step sends them in one request (REQ-F-13, F-17, F-60, NF-24, F-26). Messages follow REQ-F-72, F-73, F-18 (invalid or claimed), REQ-F-22 with REG-9 (an ended-term number gets the same message), REQ-F-71 (pause), REQ-F-70 with REG-3 (masking), REQ-F-78 with REG-4 (email already has an account) and REG-8 (photo failure). The first line is E-92 and the store button (Proposed) is E-96; the photo step is E-69; the password rules are E-63; the language step is E-64, and the screens before it are in Spanish (E-103). The dotted path is REQ-F-75 (needs mail) and REQ-F-74.
 
 Notes: the term comes from the payment date of the order (REQ-F-22). The member never types or changes the account email (REQ-F-11). The welcome screen and the screens up to the language step are in Spanish, because the account language does not exist yet (E-103). The store button (Proposed) appears only while a term runs, because the store sells only then (G-26, assumed, the gym still confirms). The password rule has no mixing rules and allows at least 64 characters. NIST SP 800-63B-4 asks for at least 15 characters for single-factor passwords; the team chose 10 as a documented deviation for phone use. The compromised-password check is an external call that sends only part of a hash. SRS 2.4 and REQ-NF-51 say so (E-98), and a test must cover the case where that service does not answer (#30).
+
+Note on message M1: When a person paid but the receipt never arrived, the message also gives the procedure (call, visit, bring the receipt) in words the gym writes, with the contact number (G-25). Whether Staff may add the person by hand after seeing the receipt is the gym's decision (G-09); today only the Administrator can (E-35, REQ-F-87).
 
 ### 2. Authorization Number lookup with limits
 
@@ -160,6 +162,10 @@ flowchart TD
 
 Notes: the account exists only after the final step that follows opening the link (REQ-F-15). The final step checks the link again, so a link that expires while the form is open creates no account. Athletes do not buy a membership (REQ-F-25), so this screen has no store button (E-96). A paid member who opens it by mistake goes back to the welcome screen, which has one (E-96).
 
+Note on message X1: Proposed: the roster exists only after the gym loads the term list, so an athlete who registers earlier gets this message. If the gym gives the date lists are ready (G-33), N-04 can say so.
+
+Proposed: emails usually come from a no-reply address (CTI's common practice); the exact sender is open (M-07). Team proposal: each email carries the gym contact number (G-25).
+
 ### 5. In-person athlete registration by Staff
 
 **Type:** User flow. **Use it to:** build the front desk screen and the one-time code step.
@@ -245,6 +251,8 @@ flowchart TD
 
 **About this diagram:** Decided in E-58 (REG-12): typing the student number links nothing; the roster record is linked only when the link sent to its institutional email is opened (REQ-F-80, REQ-F-15). The link works like the athlete registration link (single use, expires, stored hashed, requests limited; REG-7 is decided, REG-6 is pending) and needs mail (assumed available, E-61). The photo is saved together with the claim on the link page, so there is never an authorization without a photo (E-69). The account already has its password and waiver, so the link page asks only for the photo. Messages follow REQ-F-76 and F-73; the account email does not change (REQ-F-20).
 
+Proposed: emails usually come from a no-reply address (CTI's common practice); the exact sender is open (M-07). Team proposal: each email carries the gym contact number (G-25).
+
 ### 8. Athlete in a new term
 
 **Type:** User flow. **Use it to:** build the new-term photo prompt and the check that matches the new roster record.
@@ -306,7 +314,7 @@ Notes: the data model does not store expired: it is computed from the term end d
 
 ## Design decisions to confirm
 
-REG-1, REG-2 and REG-6 are still **Proposed**; they wait on the owner. REG-3, REG-4, REG-5, REG-7, REG-8, REG-9, REG-10, REG-11, REG-12 and REG-13 are **Decided**. Each decided item keeps its options for the record and says which option was chosen and why. No standard was cited for the pending values because none was checked for this document.
+REG-1, REG-2, REG-6 and REG-14 are still **Proposed**; they wait on the owner. REG-3, REG-4, REG-5, REG-7, REG-8, REG-9, REG-10, REG-11, REG-12 and REG-13 are **Decided**. Each decided item keeps its options for the record and says which option was chosen and why. No standard was cited for the pending values because none was checked for this document.
 
 ### REG-1: Per-IP limit on failed Authorization Number lookups (REQ-F-71)
 
@@ -435,6 +443,10 @@ Drawn in diagram 8. See the Gaps note about Staff-assisted Check In.
 
 **Decided (E-103).** The welcome screen (N-01) and the sign-in screen (N-02) are always in Spanish. The person chooses the language in the language step when the account is created (E-64). After sign in, the account language applies. Why: no account, and so no language, exists before that step. A User with an English account sees these two screens in Spanish while signed out. Drawn in diagrams 1, 4 and 5.
 
+### REG-14: One registration number field (E-112)
+
+**Proposed (E-112).** A: keep two paths (today). B: one field; paid members type the receipt number, athletes the student number; the system looks in the current-term roster first, then in the imported orders (CTI suggestion; a remark that most likely came from the CTI side said the current choice is fine). Tradeoffs: one screen and fewer choices; depends on number formats nobody has confirmed; a 6-digit receipt number could collide with a student number; the 'not on the roster' message (REQ-F-76) and the lookup limits would have to cover one field.
+
 ## Gaps and questions
 
 1. **REQ-F-80 lets anyone take an athlete's record.** Resolved by E-58: the record is linked only after the link sent to its institutional email is opened.
@@ -451,6 +463,7 @@ Drawn in diagram 8. See the Gaps note about Staff-assisted Check In.
 12. **Link tokens and one-time codes have no entity** in the logical data model (design-notes.md). Resolved (data-model D9, decided by the owner 2026-10-19): an email_links table stores the athlete link, the "I am an athlete" link and the in-person code (a new type), each with hash, expiry and single use.
 13. **A manual authorization is created without a photo** (E-69, diagram 9), while registration never creates an authorization without one (E-69, E-70). The User gives the term photo before Check In. Check In stays off for it until the photo is saved.
 14. **Release of a number that was the account's only authorization** (REQ-F-74). Resolved (E-106): the account always stays, without an authorization. The person signs in, sees U-07 and can claim the correct number. Only the authorization and its term photo are deleted.
+15. **Waiver.** Open for the gym (G-21): (a) read and accept on screen (drawn); (b) read, tick and sign with a finger on the phone, stored as an image of fixed size (CTI was unsure it works in a web page; the team says it has done it before); (c) a hand-signed paper that someone scans or photographs, which needs document upload, size limits, a validity check and more backup space. Draw (a). Also open for the team: the data that proves who accepted and when (time, account, text version).
 
 ## Traceability
 

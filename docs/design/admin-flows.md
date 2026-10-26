@@ -43,6 +43,7 @@ stateDiagram-v2
 Notes:
 
 - The one-device rule does not apply to the gym account (REQ-F-03): many browsers can be signed in as Staff at once.
+- Open for the gym (G-09): CTI suggested that each Staff member and each Administrator sign in as themselves, so the audit log names the person. The shared account was a team decision; nobody said the gym asked for it, and the gym has not confirmed it. Diagrams 1 to 5 keep the shared account until the gym answers.
 - A PIN change raises the PIN version of the gym account. Every other browser holds the old version, so its PIN closes at its next request (E-56, D4).
 - Automatic polling (REQ-F-43) never counts as activity. The "Keep going" button takes keyboard focus and is read by screen readers (WCAG 2.2.1, REQ-NF-48).
 - The PIN attempt limit and wait are a design decision (D2). Staff work stays available during the PIN wait.
@@ -110,7 +111,7 @@ flowchart TD
   I8 --> I9["Administration keeps the code on paper<br/>in a safe place"]
 ```
 
-**About this diagram:** this runs once (REQ-F-88), for example as `php artisan gym:install`. There is only one gym account (REQ-F-52), so the command never creates a second one. The recovery code comes from E-60 and REQ-F-89; no audit entry is written because no gym action has happened yet. The code has 12 characters in 3 groups of 4, without look-alike characters (no 0 and O, no 1 and l), and the system generates it (E-78). The password rules and the PIN format are in section 4.
+**About this diagram:** this runs once (REQ-F-88), for example as `php artisan gym:install`. Proposed (E-110): if the team builds the install script CTI asks groups for (a plain Linux machine to a running app with the first account created), this command is its last step. There is only one gym account (REQ-F-52), so the command never creates a second one. The recovery code comes from E-60 and REQ-F-89; no audit entry is written because no gym action has happened yet. The code has 12 characters in 3 groups of 4, without look-alike characters (no 0 and O, no 1 and l), and the system generates it (E-78). The password rules and the PIN format are in section 4.
 
 ### 4. Change of gym account password, PIN and recovery code
 
@@ -307,7 +308,7 @@ flowchart TD
 flowchart TD
   A0["Administrator picks a term"] --> A1{"What to do?"}
   A1 -->|"Add one"| A2["Type student number, name, institutional email"]
-  A1 -->|"Import a list"| A3["Upload the list<br/>format still to confirm with the gym"]
+  A1 -->|"Import a list"| A3["Upload the list<br/>Proposed: the file the gym receives<br/>format still to confirm with the gym"]
   A1 -->|"Edit"| A4["Change fields of a record"]
   A1 -->|"Remove"| A9["Removal flow, section 11"]
   A3 --> A5{"Format as expected?"}
@@ -326,6 +327,8 @@ flowchart TD
 ```
 
 **About this diagram:** minimum fields are student number, name, institutional email and term (REQ-F-51; final list pending G-10). Adding, editing, removing and importing stay Administrator only (REQ-F-49, REQ-F-52); one audit entry per record is D10. Staff now have a read-only view of the current-term roster with search by name or student number (E-59, still to be confirmed by the gym).
+
+Proposed (CTI recommendation): accept the Excel or CSV file the gym receives, so nobody retypes it; the system keeps the columns it needs and ignores the rest. Open for the gym (G-33): a second upload of the same list could skip people already in the roster instead of rejecting them. Today REQ-F-51 rejects a repeated student number in the same term; nodes V1, V2 and RL stay as drawn.
 
 ### 11. Removing and reinstating an athlete mid-term
 
@@ -549,8 +552,9 @@ Actions that write an audit log entry (REQ-NF-39):
 | Global lookup limit alert | System | Section 15 |
 | Account deletion on User request (Proposed, not in the list) | Administrator | Section 14 |
 | PIN block after too many attempts (Proposed, not in the list) | Staff | Section 1 |
+| Proposed (E-108): sign in and sign out of the gym account | Person at the sign-in screen | Section 1 |
 
-Each entry holds the gym account, time, IP address, device and browser, and values before and after (REQ-NF-39). Only Administrators can read the log. Secrets are never written: a password, PIN or recovery code change records only that it changed. Retention: until the end of the term in which the entry happened (REQ-NF-05).
+Each entry holds the gym account, time, IP address, device and browser, and values before and after (REQ-NF-39). Only Administrators can read the log. Proposed (E-108, CTI's request to student projects): no screen or request edits or deletes an entry, for anyone. The Administrator can search by account and date range and export to CSV or Excel. Secrets are never written: a password, PIN or recovery code change records only that it changed. Retention: until the end of the term in which the entry happened (REQ-NF-05).
 
 ## Design decisions to confirm
 
@@ -655,6 +659,7 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 14. **Gym account language.** Resolved by E-104 (D15): no PIN, a control on the dashboard and/or a top bar button. The wireframe picks the placement.
 15. **Roster record after a removal.** Pending: a removal sets the authorization to `revoked` with the reason "removed from roster" and forbids a cascade delete (E-93). The revoked authorization keeps the roster record claimed, so the athlete cannot claim it again; Reinstate on A-05 is the way back (E-95). Still open: how the roster record itself is kept or hidden (the data model has no column to mark it); what happens to pending email links and in-person codes for a removed record, which must stop working; and the exact wording of the message shown when Reinstate is refused. Decided: Reinstate is refused when the person already has an active authorization in that term, and the database rejects it too (E-94); the reason is required, 10 characters or more, as in E-86.
 16. **Release when the released authorization was the account's only one.** Resolved by E-106 (D12): the account is kept without an authorization. The person signs in, sees U-07 and can claim the correct number.
+17. **People missing from a new roster list.** Open for the gym (G-33): (a) the list is final, so missing people lose athlete status; (b) they stay and are removed by hand, for example a graduate the gym still treats as an athlete. Today's design: within a term, (b), removal is a manual Administrator action; across terms each term has its own roster, so a person missing from the new term's list is not an athlete in that term.
 
 ## Traceability
 
