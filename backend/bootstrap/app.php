@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // The API has no login page, so guests get a 401 instead of a redirect to route('login').
+        $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Expected errors with a stable code are part of the API, not bugs.

@@ -24,7 +24,16 @@ class ApiErrorFormatTest extends TestCase
             Route::get('/throttled', fn () => 'ok')->middleware('throttle:1,1');
             Route::get('/unauthenticated', fn () => throw new AuthenticationException);
             Route::get('/own-response', fn () => throw new HttpResponseException(response()->json(['custom' => true], 418)));
+            Route::get('/protected', fn () => 'ok')->middleware('auth');
         });
+    }
+
+    public function test_protected_route_without_json_header_answers_401(): void
+    {
+        // A browser link or curl sends no Accept header. There is no login page to redirect to.
+        $this->get('/api/test/protected')
+            ->assertUnauthorized()
+            ->assertExactJson(['error' => ['code' => 'unauthenticated', 'message' => __('errors.unauthenticated')]]);
     }
 
     public function test_unauthenticated_uses_the_error_format(): void
