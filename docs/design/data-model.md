@@ -9,7 +9,7 @@ This document turns the logical data model in `design-notes.md` into PostgreSQL 
 - Times are `timestamptz`. Term dates are `date` in the `America/Puerto_Rico` time zone (REQ-NF-37).
 - `PK` primary key, `FK` foreign key, `UK` unique. A composite unique key is written in the field comment.
 - Solid lines are foreign keys in SQL. Dotted lines are links with no foreign key column.
-- Laravel framework tables are not drawn: `migrations`, `cache` (also holds the attempt limit counters of REQ-F-07, REQ-F-71, REQ-F-89 and REQ-NF-48, including the PIN attempt counters, and the request limit for emailed links; sign-in counters are keyed by IP and email, link requests by student number, PIN attempts by gym account; all are discarded when the wait ends; E-91, E-93), `jobs`, `failed_jobs` and `password_reset_tokens` (REQ-F-06). Outgoing mail is assumed (E-61): CTI mail first, an external provider if CTI cannot provide it.
+- Laravel framework tables are not drawn: `migrations`, `cache` (also holds the attempt limit counters of REQ-F-07, REQ-F-71, REQ-F-89 and REQ-NF-48, including the PIN attempt counters, and the request limit for emailed links; sign-in counters are keyed by IP and email, link requests by student number, PIN attempts by gym account; all are discarded when the wait ends; E-91, E-93), `jobs`, `failed_jobs` and `password_reset_tokens` (REQ-F-06). Outgoing mail is assumed (E-61): the CTI mail gateway after CTI authorizes the VM; an external provider only if it does not.
 
 ## 1. Overview: tables and links
 
@@ -301,6 +301,9 @@ Notes:
 - The audit log has no `pin_active` column (E-93). Regenerating the recovery code writes an entry that says only that the code changed, with no before or after values (E-78).
 - The affected record is `subject_table` plus `subject_id`, with no foreign key. Deleting a User or undoing an import never removes or changes an audit entry, which must stay until the end of its term (REQ-NF-05, REQ-NF-39, REQ-F-09).
 - The audit log names the gym account, not a person (REQ-NF-39). `ip_address` comes from the proxy header, not the proxy's own address (design-notes).
+- Open (G-09): CTI suggested that each Staff member and Administrator sign in as themselves, so the log names who did what. The shared account was a team decision; the gym has not confirmed it.
+- Proposed (E-108): nobody can edit or delete an entry through the app, not even the Administrator; no screen and no route for it. Optional enforcement, a team idea: a trigger that rejects UPDATE, and DELETE only by the scheduled task at term end (REQ-NF-05).
+- Proposed (E-108): new `action` values for gym account sign in and sign out, and, as a team idea, PIN unlock and Lock. User sign-ins are not logged (D4, REQ-NF-21).
 - The location boundary is not a setting: it is configured per environment (REQ-NF-29).
 
 ## 5. Database rules
@@ -427,7 +430,7 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20. The
 
 1. **Resolved by E-57.** Undo and release delete the photo (row and file) with the authorization; accounts stay.
 2. **Resolved by E-84.** Undo deletes only what that import created and does not revert changes made to older records. Undoing import 1 deletes its orders, including those import 2 corrected.
-3. **REQ-NF-05, audit entries between terms.** Entries are kept "until the end of the term in which it happened", but REQ-F-21 allows gaps between terms. An entry in a gap has no term. What happens after the term ends is pending (G-03).
+3. **REQ-NF-05, audit entries between terms.** Entries are kept "until the end of the term in which it happened", but REQ-F-21 allows gaps between terms. An entry in a gap has no term. What happens after the term ends is pending (G-03). CTI said no screen or button may edit or delete an entry, and that the log is wanted after an incident; CTI did not speak about retention. The end-of-term rule stays decided (REQ-NF-05, G-03).
 4. **Resolved by E-91 for the session table.** IP and user agent are NULL. The `cache` counters keyed by IP and email stay for a short time; REQ-NF-21 now says so (SRS v0.7, E-91).
 5. **REQ-F-09 and revoked numbers.** Deleting an account deletes its authorizations, so a revoked current-term Authorization Number becomes claimable again. The SRS does not say if that is wanted.
 6. **Resolved by E-69.** A User with a manual authorization gives the term photo on U-02 before Check In, like an athlete.
@@ -437,9 +440,10 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20. The
 10. **REQ-F-01 cannot be fully enforced by the database.** Uniqueness is per email. A person whose payment email differs from the account email, and who registers while signed out, gets a second account. REQ-F-20 assumes they add the number from inside the account. When the payment email already has an account, registration shows the masked email and asks the person to sign in (E-70).
 11. **Resolved by E-69.** At the first app open in a new term, the roster is looked up by the student number of the account's last claim, and the athlete gives the new photo.
 12. **Active sessions after release.** E-84 settles undo: active sessions keep counting. For a release, the design keeps the session counting too, but nobody has confirmed it.
-13. **Removed athletes: roster search and pending links.** Removing an athlete revokes the authorization and nothing is cascaded (E-93). The record stays claimed by that authorization, so a second record with the same student number in the term is rejected. A mistaken removal is undone with Reinstate on A-05 (E-95). How the roster row is hidden from Staff search is not decided. Links and codes sent for the record before the removal may still create a claim, because the record is no longer deleted. They must stop working; the rule depends on how the record is kept (to confirm).
-14. **Retention of rejected import rows.** They are stored with the import result (E-84). How long they are kept is pending (REQ-NF-05, G-03).
+13. **Removed athletes: roster search and pending links.** Removing an athlete revokes the authorization and nothing is cascaded (E-93). The record stays claimed by that authorization, so a second record with the same student number in the term is rejected. A mistaken removal is undone with Reinstate on A-05 (E-95). How the roster row is hidden from Staff search is not decided. Open for the gym (G-33): when a new term's list leaves someone out, either the list is final and they lose athlete status, or they stay until removed by hand. Manual add during the term already exists. Links and codes sent for the record before the removal may still create a claim, because the record is no longer deleted. They must stop working; the rule depends on how the record is kept (to confirm).
+14. **Retention of rejected import rows.** They are stored with the import result (E-84). How long they are kept is pending (REQ-NF-05, G-03). CTI: the reports the gym wants decide which data is kept and for how long. Proposed (E-111): a growth estimate and cleanup options per term or per year.
 15. **Visit history for the User.** Resolved by E-105 (D10): the My visits screen (U-09) reads `facility_sessions`. Still open: how far back the list goes, and retention of `facility_sessions` (REQ-NF-05, G-03).
+16. **Per-person sign-in for Staff and Administrators.** Open for the gym (G-09). If chosen: a role column on `users`, or a separate staff table; either adds an actor column to `audit_log_entries` and changes the PIN model (E-56), the recovery code (REQ-F-89) and REQ-F-52. No table change before the gym answers.
 
 ## Traceability
 

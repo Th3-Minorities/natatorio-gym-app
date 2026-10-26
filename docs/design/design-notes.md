@@ -26,15 +26,15 @@ Based on Proposal:350, 354-359, 426 and the team decisions. Diagrams and constra
 | Entity | Contains | Related to |
 |---|---|---|
 | User | Persistent identity, email, password, chosen language | Authorizations, sign-in sessions, facility sessions, waiver acceptance |
-| Gym account | One shared account, password hash, PIN hash, PIN version, recovery code hash, language for every computer (team.md, E-64) | Audit log entries, sign-in sessions |
+| Gym account | One shared account, password hash, PIN hash, PIN version, recovery code hash, language for every computer (team.md, E-64). Open: may become one sign-in per person (gym.md, G-09) | Audit log entries, sign-in sessions |
 | Academic term | Name, start date, end date (a summer term is possible) | Authorizations, roster records, memberships |
 | Authorization | Type (paid, athlete or manual), term, status, photo for the term, reason (manual, or "removed from roster", team.md, E-93) | User, term, membership, roster record or none (manual) |
 | Imported membership | Fields of REQ-F-29, claim status, import it came from | WooCommerce order, import, authorization |
-| Roster record | Fields of REQ-F-51, claim status | Term, authorization |
+| Roster record | Fields of REQ-F-51, claim status. Open: may need a group mark (gym.md, G-33) | Term, authorization |
 | Sign-in session | Device with an open sign-in session; for the gym account, the session data holds whether the PIN is active in that browser, its PIN version and the last person activity | User (one at a time, REQ-F-03) or gym account (no limit) |
 | Facility session | Start, end (start plus 60 minutes), status (active, expired, ended early, void), whether it was assisted | User |
 | Schedule slot | Type (regular hours, special hours, closure, athletes only), start, end, text in Spanish and English | None |
 | Notice, facility information | Text in Spanish and English, dates | None |
-| Waiver acceptance | Full name, email, emergency contact name and phone, acceptance time | User |
+| Waiver acceptance | Full name, email, emergency contact name and phone, acceptance time. Open: the data that proves acceptance (team), and a signature if the gym needs one (gym.md, G-21) | User |
 | Audit log entry | Gym account, time, IP address, device and browser, action, affected record, values before and after | Gym account |
-| Setting | Contact number for people who cannot register | None |
+| Setting | Contact number for people who cannot register. Open: may add allowed networks (gym.md, G-31) | None |

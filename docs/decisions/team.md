@@ -6,13 +6,13 @@
 
 | Section | Total | Answered | Open |
 |---|---|---|---|
-| Requirement questions | 17 | 15 | 2 |
+| Requirement questions | 23 | 15 | 8 |
 | Decisions from the design-readiness review | 24 | 24 | 0 |
 | Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
 | Decisions from the wireframe stage (2026-10-20) | 7 | 7 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 99 | 89 | 10 |
+| Total | 105 | 89 | 16 |
 
 ## Scope and priorities
 
@@ -256,7 +256,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 
 | ID | Topic | Answer | Answered by | Date |
 |---|---|---|---|---|
-| E-61 | Outgoing mail | From now on the team assumes the app has outgoing mail. CTI mail comes first. If CTI cannot give it, the app uses an external provider, as the proposal allows for a prototype; that sends account emails outside the CTI VM and needs approval (cti.md, M-11). The email-link flows are built. Changes E-41: the in-person flow no longer depends on missing mail (see E-62). SRS 2.1, 2.4, 2.5, 5.3, REQ-F-06, REQ-F-15, REQ-F-75, REQ-F-80. | Carlos Pepin | 2026-10-17 |
+| E-61 | Outgoing mail | From now on the team assumes the app has outgoing mail. CTI mail comes first. If CTI cannot give it, the app uses an external provider, as the proposal allows for a prototype; that sends account emails outside the CTI VM and needs approval (cti.md, M-11). The email-link flows are built. Changes E-41: the in-person flow no longer depends on missing mail (see E-62). SRS 2.1, 2.4, 2.5, 5.3, REQ-F-06, REQ-F-15, REQ-F-75, REQ-F-80. CTI meeting (2026-10-22): CTI described a relay through its mail gateway once it authorizes the VM (cti.md, M-07). The external provider branch applies only if CTI does not authorize it. | Carlos Pepin | 2026-10-17 |
 | E-62 | In-person athlete registration | Staff (no PIN) give a one-time code valid for 15 minutes. The athlete fills in the password, photo and waiver on their own phone; Staff do not enter data for the person. The tool stays even with mail. SRS REQ-F-77, role table. | Carlos Pepin | 2026-10-17 |
 | E-63 | Password rules and reset | At least 10 characters, at least 64 allowed, no composition rules, and a check against compromised passwords with an external service (Laravel `uncompromised`, haveibeenpwned.com). NIST SP 800-63B-4 asks 15 for single-factor passwords; Carlos chose 10 for phone use, a recorded deviation. A local list was rejected as more work. The gym account is assumed to follow the same rule. Passwords stay on Laravel's built-in handling. The reset request gives the same answer whether or not the email has an account. SRS REQ-NF-51 (new), REQ-F-06. | Carlos Pepin | 2026-10-17 |
 | E-64 | Language | One language per account, not per device. The User picks it when creating the account and changes it in the profile preferences. The gym account has one language for every computer. No language button in the top bar. Still open: the language before sign in, and where the gym account changes it and whether that needs the PIN. SRS REQ-NF-33. | Carlos Pepin | 2026-10-17 |
@@ -308,6 +308,86 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-105 | "My visits" | The User sees a list of their own past Check Ins on a new "My visits" screen, opened from the account screen. Proposed: each row shows the date and time. The list never shows location (REQ-NF-03). To confirm: how far back it goes (all history or the current term) and retention (REQ-NF-05, G-03). Carlos chose this over the recommendation to leave it for later. SRS REQ-F-92 (new). | Carlos Pepin | 2026-10-20 |
 | E-106 | Release of an account's only authorization | The account always stays, with no authorization. Only the authorization and its term photo go. The person signs in, sees the no-authorization banner and can claim the correct number. Carlos chose this over the recommendation to delete the account when it never had a Check In. Answers the open case of E-87. SRS REQ-F-74. | Carlos Pepin | 2026-10-20 |
 | E-107 | Deleting a term | Terms are never deleted. The Administrator fixes a term created by mistake by editing its dates. The term screen has no delete button. Answers the open case of E-88. SRS REQ-F-21. | Carlos Pepin | 2026-10-20 |
+
+## Questions after the CTI meeting
+
+### E-108: CTI's audit log requests
+
+| Field | Value |
+|---|---|
+| Question | CTI asks every student project for an audit log with these rules. Do we adopt them? (a) No screen, route or command edits or deletes an entry, not even for the Administrator; entries leave only by the retention rule (REQ-NF-05). (b) The Administrator searches the log by account and by date range (by person only if per-person sign-in is adopted, gym.md G-09) and exports the result to CSV or Excel. (c) The gym account's sign in and sign out are logged. User sign-ins stay out, because E-91 and REQ-NF-21 keep no IP per sign-in. |
+| Affects | REQ-NF-39; new REQ-F-93 (Proposed) |
+| Feature | 8.1 Audit |
+| Why we ask | CTI said it always asks every project for such a log. CTI did not say whether it is a condition for the VM. CTI minutes, section 3.15 (`docs/meetings/2026-10-22-cti-minuta.md`). |
+| Status | Open |
+| Answer | |
+| Answered by | |
+| Date | |
+
+### E-109: Backup method
+
+| Field | Value |
+|---|---|
+| Question | Which backup method do we propose to the owner? A: a second disk on the VM (agreed with whoever creates the VM, so probably in the VM request; it is not outside the VM as REQ-NF-06 asks). B: an Administrator button that downloads one file with the database and the photos (CTI's minimum, daily in the afternoon or on Fridays; the file holds all personal data and photos on a gym computer). C: a scheduled copy to a second server (needs a second server request and a stored remote password). Also: how often, who does it, the acceptable data loss, and how long copies are kept. Decide before the VM request is filed if A is chosen. |
+| Affects | REQ-NF-06 |
+| Feature | 4.3 |
+| Why we ask | CTI said where backups go is the team's decision and that the team must agree the backup and restore procedure with the owner. CTI minutes, section 3.16. |
+| Status | Open |
+| Answer | |
+| Answered by | |
+| Date | |
+
+### E-110: Hand-over package
+
+| Field | Value |
+|---|---|
+| Question | CTI asks the student groups it works with for an installer script (from a plain Linux machine to a running app with the first account created) and a written disaster recovery plan (what is backed up, how often, how to restore after a corrupted database, a hacked server or a hardware failure). Do we deliver both? Is restore an action inside the app or a step on the server? Do we remove the team's sudo and VPN access at delivery? |
+| Affects | REQ-F-88, REQ-NF-06, REQ-NF-23, REQ-NF-31; new REQ-NF-52 and REQ-NF-53 (Proposed) |
+| Feature | 2.5, 4.3, 6.3 |
+| Why we ask | CTI said it normally asks its groups for both. CTI did not say whether they are conditions for the VM. User and administrator manuals are asked of the director (gym.md, G-36). CTI minutes, sections 3.16 and 3.23. |
+| Status | Open |
+| Answer | |
+| Answered by | |
+| Date | |
+
+### E-111: Storage estimate and VM size
+
+| Field | Value |
+|---|---|
+| Question | Which VM size do we recommend to the owner, and with what storage estimate? CTI's usual size for web apps is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The estimate uses the size of the files per person, the number of people, and how often files are added. Which cleanup options do we offer the gym and UPRM (each term, each year, or by the User)? The team sets no retention period (gym.md, G-03). |
+| Affects | REQ-NF-04, REQ-NF-05 |
+| Feature | 2.3, 4.3 |
+| Why we ask | CTI said the team defines the size and asked for a growth estimate and a cleanup plan. CTI minutes, sections 3.3 and 3.7. |
+| Status | Open |
+| Answer | |
+| Answered by | |
+| Date | |
+
+### E-112: One registration number field
+
+| Field | Value |
+|---|---|
+| Question | CTI suggested one field, 'registration number': paid members type the receipt number, athletes the student number, and the system looks in the current-term roster first and then in the imported orders. A remark that most likely came from CTI said the current choice of athlete or paid member is fine. Do we adopt it? Check first that a 6-digit Authorization Number cannot be mistaken for a student number, and that the 'not on the roster' message (REQ-F-76) and the lookup limits still work. |
+| Affects | REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91 |
+| Feature | 3.2, 3.3 |
+| Why we ask | CTI minutes, section 3.21. |
+| Status | Open |
+| Answer | |
+| Answered by | |
+| Date | |
+
+### E-113: Address of the gym dashboard
+
+| Field | Value |
+|---|---|
+| Question | REQ-NF-10 puts the gym dashboard on its own address. Is that a second domain name, which needs its own domain request to CTI, or a path under the same name? |
+| Affects | REQ-NF-10 |
+| Feature | 5.1 |
+| Why we ask | CTI said each domain is a separate request filed by the owner. CTI minutes, section 3.6. |
+| Status | Open |
+| Answer | |
+| Answered by | |
+| Date | |
 
 ## WooCommerce import
 

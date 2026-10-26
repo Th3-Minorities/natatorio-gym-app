@@ -1,6 +1,6 @@
 # Project Context
 
-Last updated: 2026-10-19
+Last updated: 2026-10-25
 
 The proposal (`docs/capstone_proposal/main.tex`) is the current baseline until further notice. This document says what changes it and why. The requirements are in `docs/requirements/SRS.md` and the open questions in `docs/decisions/` (`cti.md`, `gym.md`, `team.md`). `docs/capstone_proposal/v0/` is frozen: changes to the proposal go in a new version.
 
@@ -13,9 +13,9 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 | Topic | Proposal | Now | Why |
 |---|---|---|---|
 | Stack | React, TypeScript and Vite on Vercel; Supabase for Auth, PostgreSQL, Edge Functions, Storage and Realtime (Proposal:348-350) | Same PWA; Laravel backend; PostgreSQL in a container; everything in `docker-compose` | Something CTI can host in December, with no external services holding student data and at the lowest cost (section 2) |
-| Real time | Optional real-time updates (Proposal:350) | Polling every 20 to 30 s first. Live updates (SSE or WebSockets) later, only if CTI allows them and time remains. The Objective 3 test compares values after each screen updates (Decided, Q&A 2026-10-13) | Occupancy only changes with a Check In or an expiration. SSE did not work through the tunnel and was not tested on the CTI VM |
+| Real time | Optional real-time updates (Proposal:350) | Polling every 20 to 30 s first. Live updates (SSE or WebSockets) later, only if CTI allows them and time remains. The Objective 3 test compares values after each screen updates (Decided, Q&A 2026-10-13) | Occupancy only changes with a Check In or an expiration. SSE did not work through the tunnel and was not tested on the CTI VM. Open: CTI's view is that an exact count at each moment, and occupancy over time, need a check-out; Check Ins alone give use by hour. The gym decides (gym.md, G-32) |
 | Login | Supabase Auth with JWT; "institutional login" (Proposal:120, 350) | Own accounts with Sanctum and Fortify (Proposed). No SAML | Some paid members have no institutional email |
-| Hosting | Vercel and Supabase on free plans, only for the demo (Proposal:348, 468) | `docker-compose` on each member's PC in development and on a CTI VM in production; UPRM subdomain | What is tested is what runs in December |
+| Hosting | Vercel and Supabase on free plans, only for the demo (Proposal:348, 468) | `docker-compose` on each member's PC in development and on a CTI VM in production; UPRM subdomain. The team's access to the production server from off campus needs a VPN, requested by the project owner. Whether Users need anything to reach the app from off campus is open (cti.md, M-01; gym.md, G-31) | What is tested is what runs in December |
 | Language | Not stated | Spanish by default and English for all texts. One language per account: the User picks it when creating the account and changes it in the profile preferences; the gym account has one language for every computer. No language button in the top bar (E-64). Texts in translation files from the start | Requested after the proposal |
 | Paid member registration | Authorization Number; "email" without saying which one (Proposal:204) | Authorization Number only. The system shows the payment email masked and creates the account at that moment. The account email is always the WooCommerce payment email. No email verification. Protections: a lookup limit per IP and a global limit that only slows lookups and alerts the Administrator, never blocks (E-53), the same message for invalid, claimed and ended-term numbers with a contact number, release of a mistaken claim by PIN holders, recovery by the owner with the password reset. The number is unique per term and lookups use only the current term's orders (E-71) | Some members have no institutional email. The Authorization Number reaches the payer by email, which serves as the check. A 6-digit number can be guessed, so lookups need limits. Whether two orders in one file share a number is checked with the sample file (E-55) |
 | Athlete registration | Student number in the roster and confirm the institutional email (Proposal:206) | Same, and the account is created after opening a link sent to the roster email. An athlete not in the roster gets a clear message and a contact number. The team assumes the app has mail (E-61). Staff (no PIN needed) can also give an athlete already in the roster a one-time code, valid for 15 minutes; the athlete enters it and sets the password, photo and waiver on their own phone. This tool exists even with mail (E-62). A person not in the roster waits until a PIN holder adds them | The student number is not secret: someone could claim another athlete's number first. An earlier idea of setting the password right away was dropped for this reason. A clear message helps athletes who were left off the list |
@@ -59,13 +59,13 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 | Athlete registration | Student number looked up in the roster, confirm the institutional email, password and photo. The account is created only after opening the link sent to the email in the record. Athletes not in the roster get a clear message | Decided |
 | Containers | `docker-compose`: proxy (nginx or Caddy), PHP, PostgreSQL, scheduled tasks, and in development a fake mail server | Decided |
 | Single origin | The PWA at `/` and the API at `/api` under the same domain name | Proposed |
-| Domain | Provided by UPRM | Decided |
+| Domain | Provided by UPRM. The project owner files a domain ticket with the name; CTI assigns the IP | Decided |
 | Development | On each member's PC with Docker Desktop. Phone tests through a tunnel | Decided |
-| Production | CTI VM, to be requested now | Decided |
-| Mail in production | Needed for athlete registration and password reset. The team assumes the app has mail, so the email-link flows are built (E-61). CTI SMTP or relay first. If CTI cannot give it, an external provider, which needs approval because account emails leave the CTI VM (M-11). No provider is chosen. The Staff one-time code for athletes exists either way (E-62). In development: fake mail server | Pending (CTI) |
+| Production | CTI VM. The project owner (the gym director) files the VM ticket, the domain ticket and the team's VPN request with CTI; the team cannot file them. The team gives him the size and the name | Decided |
+| Mail in production | Needed for athlete registration and password reset. The team assumes the app has mail, so the email-link flows are built (E-61). In production a mail service on the VM (CTI suggests Postfix) relays through the CTI mail gateway once CTI authorizes the VM (cti.md, M-07). If CTI does not authorize it, an external provider, which needs approval because account emails leave the CTI VM (M-11). No provider is chosen. The Staff one-time code for athletes exists either way (E-62). In development: fake mail server | Pending (CTI) |
 | Where data is stored | Section 7 | Pending |
 | API contract | Documented with OpenAPI, and API tests that do not depend on the framework | Proposed |
-| Who looks after the system | Asked to the gym (gym.md, G-01) | Pending |
+| Who looks after the system | Asked to the gym (gym.md, G-01). CTI says it is the owner's question and that CTI has no people to adopt the system | Pending |
 | Budget | Minimum cost for the gym. Rely on CTI where possible | Decided |
 
 Reasons:
@@ -73,12 +73,12 @@ Reasons:
 - **No SAML.** The design already creates its own accounts. Some paid members have no institutional email: they identify with the Authorization Number and their email is the payment email, which is already in the WooCommerce record. Athletes use their institutional email, and their lists already exist. SAML would leave out paid members who are not from UPR. CTI said it is not needed with internal authentication.
 - **PostgreSQL and not MySQL.** The single active session rule is expressed with an exclusion constraint on time ranges, which MySQL and MariaDB do not have (Proposal:511 asks for constraints that prevent overlapping active sessions and duplicate claims). MySQL can emulate partial unique indexes with functional indexes, but not exclusion constraints. A partial index does not work here because PostgreSQL does not allow `now()` in its condition. Laravel supports PostgreSQL.
 - **Containers from the start.** What is tested on the PC is what runs on the VM. December is a deployment, not a migration.
-- **Laravel.** CTI recommended it based on earlier projects; CTI can help in the VM evaluation, but CTI will not maintain it. It brings login, sessions, email verification and attempt limits as official, free packages (MIT license): less security code to write.
+- **Laravel.** CTI recommended it and uses it in its own migration. CTI will not maintain it: it has no people to adopt the project. It brings login, sessions, email verification and attempt limits as official, free packages (MIT license): less security code to write.
 - **Supabase out.** If the backend and PostgreSQL run in the containers, Supabase does not add what is needed. It adds an external dependency, student data outside UPRM, and the free plan pauses after a week without use. Auth, RLS, Storage, Realtime and Edge Functions have a direct replacement in Laravel.
 - **Vercel out.** With the PWA on Vercel and the API somewhere else, the browser sees two sites and cookie login stops being reliable. The free plan is only for personal non-commercial use. It is an external service with student data that CTI has not approved, and one more piece to look after when the PWA is static files that nginx serves just as well. Automatic previews per PR are lost; they are replaced with a tunnel. Reconsidered only if the VM is delayed and something public is needed.
 - **Cookies and a single origin.** No CORS and no cross-domain cookies. Sanctum advises against tokens for a first-party SPA. The cookie must not declare the domain of all of UPRM, so other `uprm.edu` applications cannot read it.
 - **Periodic polling.** Occupancy is an estimate that only changes with a Check In or an expiration. A delay of 20 to 30 seconds does not change any decision. It can be replaced later without touching the rest. The test that requires the same value on all interfaces (Proposal:166) is measured after each screen updates.
-- **One gym account with a PIN.** Per-person gym accounts add sign-ins and account management the gym does not do today. A PIN keeps sensitive actions away from the front desk. The cost: the audit log cannot name a person, so the gym checks the shift schedule using the time and IP address.
+- **One gym account with a PIN.** Per-person gym accounts add sign-ins and account management the gym does not do today. A PIN keeps sensitive actions away from the front desk. The cost: the audit log cannot name a person, so the gym checks the shift schedule using the time and IP address. Open: in the CTI meeting, CTI questioned the shared account and suggested, as ideas, that each person sign in so the log names who did what. The shared account was the team's choice; the gym has not confirmed it (gym.md, G-09).
 
 Migrating between Laravel and Node (reasoned estimate, not measured): the frontend does not change if the API contract stays the same; the database does not change if the critical rules are in SQL; the backend is rewritten (login, Check In, WooCommerce import, roles and scheduled tasks).
 
@@ -97,12 +97,19 @@ Migrating between Laravel and Node (reasoned estimate, not measured): the fronte
 
 ## 4. What CTI said
 
-- CTI can create a VM (Ubuntu 26 or Rocky 10), after an evaluation.
-- CTI does not manage or maintain the server or the application. The team must define the plan.
-- He recommends Laravel (PHP, MySQL) because he has used it in earlier projects. He does not require it.
+- CTI creates the VM when the project owner files a ticket on the CTI web page (menu Solicitudes): it clones a template, typically the same day to about a day depending on urgency, and gives the first account, with sudo, to the owner. In the meeting CTI described no evaluation or approval step (to confirm, cti.md M-04, M-05). The operating system was not stated; CTI is moving its own servers from Ubuntu to Rocky. Earlier contact named Ubuntu 26 or Rocky 10.
+- CTI does not manage or maintain the server or the application and has no people to adopt it. The owner must define the long-term plan. Part of the deployment work after December (install, configuration, accounts, user orientation) is the owner's, and CTI asked that he know it now.
+- CTI recommends Laravel. CTI adopted it in its own new migration, mainly for the learning curve, and has suggested it to other projects. CTI's general line for a new system is Linux, Apache and MySQL, but the framework, the database and containers are the team's choice.
 - SAML is only needed if authentication is external.
-- He asked to talk with the user (the gym) about implementation and continuity.
-- He did not answer whether development can use external services and migrate later.
+- CTI asked to talk with the user (the gym) about implementation and continuity.
+- CTI did not answer whether development can use external services and migrate later.
+- Meeting with the CTI contact on 2026-10-22: minutes in `docs/meetings/2026-10-22-cti-minuta.md`. Answers are in cti.md.
+- The VM and the domain are separate tickets. The team's access from off campus needs a VPN that the owner requests (a VPN ticket or an email listing the team's emails). The owner answers for every account he authorizes.
+- Mail: CTI relays through its gateway after it authorizes the VM (cti.md, M-07).
+- The data may stay on the VM disk. Where backups go is the team's decision (cti.md, M-13, M-06).
+- Users reaching the app from off campus, the 60 minutes, the roster updates, the waiver form and who takes the photo are the gym's decisions (gym.md, G-21, G-31 to G-34).
+- CTI is Centro de Tecnologías de Información. Requests: https://www.uprm.edu/cti/, menu Solicitudes (checked 2026-10-24). The gym director has the CTI contact's phone number.
+- Proposed, not adopted: CTI asks every student project for an audit log nobody can edit, with search and export, an installer script and a written disaster recovery plan. CTI did not say whether they are conditions for the VM (team.md, E-108, E-110).
 
 ## 5. Tested on a PC with Windows 11 Home and a Samsung
 
@@ -181,29 +188,27 @@ We do not know:
 
 Already in the design: Staff see only the essentials, there is an audit log and photos are private. No street address, documents or medical warnings are stored. IP addresses in the audit log are personal data.
 
-Missing: confirm with the Registrar's Office or with CTI whether the gym is covered; a privacy notice in Spanish and English; retention rules; do not send student data to external services without approval.
+Missing: confirm with the Registrar's Office or with CTI whether the gym is covered; a privacy notice in Spanish and English; retention rules; do not send student data to external services without approval. Open: if the backup download is chosen (team.md, E-109), a copy with photos and personal data sits on a gym computer the team does not control.
 
-Options by data type. **Not decided.** The current design stores everything on the CTI VM. The only outside call today is the compromised-password check, which sends no student data (E-98). An external mail provider would be a second one, only if CTI has no mail and with approval (E-61, M-11).
+Options by data type. **Not decided.** The current design stores everything on the CTI VM. The only outside call today is the compromised-password check, which sends no student data (E-98). An external mail provider would be a second one, only if CTI does not authorize the VM on its mail gateway, and with approval (E-61, M-11).
 
 | Data | Options | What to ask |
 |---|---|---|
-| Database (accounts, authorizations, sessions) | PostgreSQL volume on the CTI VM. An external database service only with approval | Is the VM disk encrypted? Who has access to the server? |
-| Photos and documents | Private volume on the VM. CTI or UPRM storage if it exists. An external service only with approval | Does CTI offer storage? Can student photos be stored in an external service? |
-| Backups | Copy outside the VM: CTI storage, another UPRM server or an approved external service | Where can backups go? How long are they kept? |
+| Database (accounts, authorizations, sessions) | PostgreSQL volume on the CTI VM. An external database service only with approval. CTI said the VM disk may hold the data; the team decides | Is the VM disk encrypted? Who has access to the server? |
+| Photos and documents | Private volume on the VM. CTI or UPRM storage if it exists. An external service only with approval. CTI said the VM disk may hold them | Does CTI offer storage? Can student photos be stored in an external service? |
+| Backups | Not decided (team.md, E-109). CTI left the place to the team and listed a second disk on the VM (not outside the VM), a download by the Administrator to a gym computer, or a scheduled copy to a second server | How long are copies kept? Does CTI offer snapshots or storage? |
 | Original lists and WooCommerce exports | Protected folder outside the repository. Not in OneDrive or git | Where does the department keep them today and who has access? |
-| Athlete registration and password reset emails | CTI SMTP first. An external provider only with approval; none is chosen (E-61) | Is there SMTP and with what sender address? |
+| Athlete registration and password reset emails | CTI relay through its mail gateway after CTI authorizes the VM (M-07). An external provider only if it does not, and with approval (E-61) | Who sets SPF and DKIM? Final sender (commonly a no-reply address at the server's domain; the owner may want another) |
 
 ## 8. Not verified
 
-- That Rocky 10 uses Podman.
+- That Rocky 10 uses Podman. The operating system of this VM was not stated in the CTI meeting (cti.md, M-04).
 - The nginx configuration for SSE.
 - Cookie behavior inside the installed PWA on iPhone.
 - Whether two orders in one Export Orders file can share an Authorization Number (team.md, E-55). The team decided the number is unique per term (E-71).
 - Whether WebSockets and SSE work on ngrok.
 - Costs of a rented server.
-- Whether CTI developers maintain Laravel applications. Inferred from CTI's email.
 - Whether the WooCommerce API is available to the team. There is authorized access to Orders and Export Orders (Proposal:369).
-- The meaning of the acronym CTI.
 
 ## 9. Sources
 

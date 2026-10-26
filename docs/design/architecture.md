@@ -1,6 +1,6 @@
 # Architecture and Deployment
 
-This document shows how the system is built and where it runs. It replaces the Supabase and Vercel picture of the proposal (`docs/capstone_proposal/diagrams/01_architecture.png`) with the current stack: a React PWA, a Laravel backend and PostgreSQL, all in `docker-compose` (`docs/context.md` section 2). It covers the outside systems, the containers, development versus production, the demo environment, and the path of one Check In from the phone to the database. Inside the diagrams, items that still wait for CTI say "pending CTI answer" in words. The table "Pending CTI items" after diagram 4 maps them to their question IDs (`docs/decisions/cti.md`). Dashed lines and dashed boxes mean pending or proposed. The mail box is dashed because nobody has said who provides mail. The app assumes mail exists (E-61).
+This document shows how the system is built and where it runs. It replaces the Supabase and Vercel picture of the proposal (`docs/capstone_proposal/diagrams/01_architecture.png`) with the current stack: a React PWA, a Laravel backend and PostgreSQL, all in `docker-compose` (`docs/context.md` section 2). It covers the outside systems, the containers, development versus production, the demo environment, and the path of one Check In from the phone to the database. Inside the diagrams, items that still wait for CTI say "pending CTI answer" in words. The table "Pending CTI items" after diagram 4 maps them to their question IDs (`docs/decisions/cti.md`). Dashed lines and dashed boxes mean pending or proposed. CTI described a path for mail: a mail service on the VM (CTI suggests Postfix) relays to the CTI mail gateway after CTI authorizes the VM. The mail box stays dashed until CTI authorizes the VM. The app assumes mail exists (E-61).
 
 ## Diagrams
 
@@ -8,7 +8,7 @@ This document shows how the system is built and where it runs. It replaces the S
 
 **Type:** Context diagram. **Use it to:** agree on which outside systems the team must connect to, and which of them wait on CTI.
 
-Only the Administrator brings in WooCommerce data, by uploading an Export Orders file. There is no API link in the MVP.
+Only the Administrator brings in WooCommerce data, by uploading an Export Orders file. There is no API link in the MVP. How the store and the app would talk later (WordPress sends the data, or the app asks for it) is not decided, and no technical contact is named (G-35).
 
 ```mermaid
 flowchart LR
@@ -16,11 +16,11 @@ flowchart LR
   G["Gym account<br/>Staff without PIN<br/>Administrator with PIN"]
   SYS["UPRM Weight Gym platform<br/>PWA and Laravel API"]
   GEO["Browser Geolocation API<br/>on the User's phone"]
-  WOO["UPRM WooCommerce store"]
+  WOO["Athletic department store<br/>WooCommerce on the department's WordPress"]
   FILE["Export Orders file"]
   LISTS["Department athlete lists"]
-  MAIL["Outgoing mail<br/>CTI mail first, external provider as fallback<br/>who provides it: pending CTI answer about mail"]
-  NAME["UPRM subdomain and HTTPS certificate<br/>pending CTI answer about the name"]
+  MAIL["Outgoing mail<br/>mail service on the VM, relay to the CTI mail gateway<br/>needs CTI to authorize the VM; SPF and DKIM not discussed"]
+  NAME["UPRM subdomain: domain ticket by the owner<br/>HTTPS certificate pending CTI answer"]
   PWN["Compromised-password check<br/>external call from the VM<br/>only a 5-character hash prefix leaves, no student data"]
 
   U -->|"register, Check In, Gym ID"| SYS
@@ -30,7 +30,7 @@ flowchart LR
   WOO -->|"Administrator runs Export Orders"| FILE
   FILE -->|"uploaded by the Administrator"| SYS
   WOO -.->|"API or webhooks, Stretch only"| SYS
-  LISTS -->|"entered by the Administrator each term"| SYS
+  LISTS -->|"entered by the Administrator each term<br/>Proposed: upload of the file the gym receives (G-10)"| SYS
   SYS -->|"athlete links, password reset"| MAIL
   MAIL -->|"email"| U
   SYS -->|"password check when a password is set"| PWN
@@ -40,12 +40,12 @@ flowchart LR
   class MAIL,NAME pending
 ```
 
-**About this diagram:** the mail box waits on M-07 (who provides mail, not whether there is mail) and the name box on M-03. The dashed WooCommerce link is REQ-F-32 (Stretch, M-12). The password check is E-63. It sends no student data, so it is not submitted to M-11 (E-98).
+**About this diagram:** the mail box waits on CTI authorizing the VM (M-07) and the name box on M-03. The dashed WooCommerce link is REQ-F-32 (Stretch, M-12). The password check is E-63. It sends no student data, so it is not submitted to M-11 (E-98).
 
 Notes:
 
 - Location goes from the Geolocation API to the PWA, which sends it to the backend with the Check In. Coordinates are not stored, only the result of the check (REQ-NF-03, REQ-NF-11).
-- Mail is assumed available (E-61). The first choice is CTI outgoing mail. If CTI cannot provide it, the team uses an external SMTP or transactional mail provider, because this is a prototype. An external provider sends student email addresses out of the CTI VM, so it needs approval (M-11).
+- Mail is assumed available (E-61). CTI described a relay through its mail gateway once it authorizes the VM, so an external provider is probably not needed. If CTI does not authorize the VM, the team uses an external SMTP or transactional mail provider, because this is a prototype (the team's own fallback, E-61). An external provider sends student email addresses out of the CTI VM, so it needs approval (M-11).
 - Mail carries two kinds of athlete links: the athlete registration link and, since E-58, the "I am an athlete" link that a signed-in User gets at the institutional email of the roster record. Both use the same single-use link mechanism: an `email_links` table with a hash, an expiry and single use (data-model D9). Password reset links use Laravel's `password_reset_tokens` table, not `email_links`.
 - Staff can still register an athlete in person. Staff generate a one-time code that lasts 15 minutes, and the athlete fills in the rest on their own phone (E-62). The code is another type in `email_links`, with the same method (data-model D9). The tool stays now that mail exists (REQ-F-77).
 - Passwords use Laravel's built-in handling. There is no external identity service (E-63). The rule is a minimum of 10 characters, no mixing rules, and a check against known compromised passwords with `Password::min(10)->uncompromised()` (E-63). That check is an external call, but only a 5-character hash prefix leaves the VM: no names, emails, photos or full password. It is not submitted to M-11 (E-98). The tests need a case where the service does not answer (#30). The same rule for the gym account is assumed, not confirmed.
@@ -63,20 +63,21 @@ flowchart TD
   PH["User phone<br/>browser or installed PWA"]
   FD["Front desk computer<br/>browser with the gym account<br/>dashboard routes<br/>device still to confirm with the gym"]
 
-  subgraph HOST["docker-compose on one host: member PC or CTI VM, containers allowed is pending CTI answer"]
+  subgraph HOST["docker-compose on one host: member PC or CTI VM. CTI delivers plain Linux; the team installs the container engine"]
     subgraph PXC["proxy container: nginx or Caddy, not decided"]
-      PX["HTTPS end and routing<br/>two rules: /api to Laravel, the rest to the PWA<br/>one name for app and API, proposed<br/>pending CTI answer about the name"]
+      PX["HTTPS end and routing<br/>two rules: /api to Laravel, the rest to the PWA<br/>one name for app and API, proposed<br/>certificate pending CTI answer"]
       ST["PWA static files<br/>React, TypeScript, Vite build<br/>served at /, user and dashboard routes"]
     end
     APP["app container<br/>Laravel on PHP-FPM<br/>API at /api"]
     SCH["scheduler container<br/>same image as app<br/>scheduled tasks"]
-    DB[("db container<br/>PostgreSQL<br/>pending CTI answer about PostgreSQL")]
+    RELAY["Proposed: mail relay on the VM<br/>Postfix suggested by CTI; container or VM service: team's choice"]
+    DB[("db container<br/>PostgreSQL<br/>team's choice (M-09)")]
     DV[("database volume<br/>disk encryption pending CTI answer")]
     PV[("private photos volume<br/>disk encryption pending CTI answer")]
   end
 
-  MAIL["Mail<br/>development: fake mail server container<br/>production: CTI mail first, external provider as fallback<br/>who provides it: pending CTI answer"]
-  BK["Backups outside the host<br/>place and retention pending CTI answer"]
+  MAIL["Mail<br/>development: fake mail server container<br/>production: CTI mail gateway, after CTI authorizes the VM<br/>external provider only if it does not"]
+  BK["Backups: method not chosen (E-109)<br/>CTI options: second disk on the VM (not outside it), Administrator download, copy to a second server<br/>retention not discussed"]
 
   PH -->|"HTTPS"| PX
   FD -->|"HTTPS"| PX
@@ -88,18 +89,21 @@ flowchart TD
   SCH -->|"SQL"| DB
   SCH -.->|"discard old term photos, retention not set"| PV
   APP -->|"SMTP, sent during the request"| MAIL
+  APP -.->|"production, proposed"| RELAY
+  RELAY -.-> MAIL
   DV -.->|"pending CTI answer about backups"| BK
   PV -.->|"pending CTI answer about backups"| BK
 
   classDef pending stroke-dasharray: 5 5
-  class MAIL,BK pending
+  class MAIL,BK,RELAY pending
 ```
 
-**About this diagram:** pending items are M-02 (containers), M-03 (name), M-09 (PostgreSQL), M-13 (disk encryption), M-07 (who provides mail) and M-06 (backups). The proxy choice is D1 and is still proposed. The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Photo retention is REQ-NF-04.
+**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-06 (backup method and retention). The proxy choice is D1 and is still proposed. The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Photo retention is REQ-NF-04.
 
 Notes:
 
 - The proxy has no route to the photos volume. A photo is read only through a Laravel route that checks the role (REQ-NF-20). Uploads are JPEG, PNG or HEIC up to 10 MB, saved as JPEG without location metadata (REQ-NF-24).
+- Proposed (E-111): a storage estimate (bytes per photo, people, uploads per term) and cleanup options for the gym and UPRM to choose. The scheduler does the automatic part (REQ-NF-04). No period is set by the team (G-03).
 - The service worker in the PWA does not cache `/api` responses, so stale data is never shown as current (`design-notes.md`, REQ-NF-26). Screens poll `/api` every 20 to 30 seconds (REQ-F-43).
 - The scheduler does cleanup and retention, and marks old sessions as expired. The backend still computes session expiry at query time, from backend time (REQ-NF-01, REQ-F-38, check-in D3).
 - Email goes out during the request. There is no queue and no worker container for now (D4).
@@ -152,20 +156,22 @@ Notes:
 
 **Type:** Deployment diagram. **Use it to:** plan the CTI VM setup, the image build and the separate demo environment.
 
-Production runs on a CTI VM with a UPRM subdomain and HTTPS. The December demo runs in a separate environment with the classroom boundary, so the classroom boundary never reaches production (REQ-NF-29, team decision E-42). Where the demo runs is not decided (D5).
+Production runs on a CTI VM with a UPRM subdomain and HTTPS. Who asks: the project owner. The VM and the domain are separate tickets on the CTI request page; the team's VPN is a VPN ticket or an email from him with the team's emails. CTI assigns the IP and acts only on the owner's request. The team gives the owner the size and the name. The December demo runs in a separate environment with the classroom boundary, so the classroom boundary never reaches production (REQ-NF-29, team decision E-42). Where the demo runs is not decided (D5).
 
 ```mermaid
 flowchart LR
   PHN["User phones<br/>campus Wi-Fi or mobile data"]
   DESK["Front desk computer<br/>device still to confirm with the gym"]
   BUILD["Image build in one place<br/>pinned versions, linux/amd64<br/>place not decided"]
+  LAP["Team laptops off campus<br/>through the CTI VPN"]
+  INST["Proposed: install script (E-110)<br/>plain Linux to a running app with the first account"]
 
-  subgraph VM["CTI VM: Ubuntu 26 or Rocky 10. Approval and early access pending CTI answer"]
-    subgraph PROD["docker-compose, production. Docker or Podman pending CTI answer"]
-      PX2["proxy<br/>HTTPS for the UPRM subdomain<br/>name and certificate pending CTI answer"]
+  subgraph VM["CTI VM: plain Linux, OS not stated. Typically ready the same day to about a day after the owner's ticket; first account with sudo to the owner. No approval step described; early access not asked"]
+    subgraph PROD["docker-compose, production. Docker or Podman: team's choice; check what the VM's OS provides"]
+      PX2["proxy<br/>HTTPS for the UPRM subdomain<br/>name: the owner files a domain ticket, CTI gives the IP<br/>certificate pending CTI answer"]
       APP2["app<br/>gym boundary, no flag set<br/>refuses to start if the boundary is over 50 m from the gym"]
       SCH2["scheduler"]
-      DB2[("PostgreSQL<br/>pending CTI answer")]
+      DB2[("PostgreSQL")]
       PV2[("photos volume<br/>disk encryption pending CTI answer")]
     end
   end
@@ -174,10 +180,10 @@ flowchart LR
     DEMOAPP["Same images, own database and volumes<br/>classroom boundary<br/>never production settings"]
   end
 
-  SMTP["Outgoing mail<br/>CTI mail first, external provider as fallback<br/>sender, SPF, DKIM<br/>who provides it: pending CTI answer"]
-  BK2["Backup copies outside the VM<br/>pending CTI answer about backups"]
+  SMTP["Outgoing mail: relay to the CTI mail gateway after CTI authorizes the VM<br/>sender: usually no-reply at the server's name, owner may want another<br/>SPF and DKIM not discussed"]
+  BK2["Backups: method not chosen (E-109)<br/>CTI options: second disk on the VM (not outside it), Administrator download, copy to a second server<br/>retention not discussed"]
 
-  PHN -->|"HTTPS, reach from the internet pending CTI answer"| PX2
+  PHN -->|"HTTPS, reach from the internet not answered (M-01)"| PX2
   DESK -->|"HTTPS"| PX2
   PX2 --> APP2
   APP2 --> DB2
@@ -188,34 +194,39 @@ flowchart LR
   PV2 -.->|"pending"| BK2
   BUILD -.-> PROD
   BUILD -.-> DEMOAPP
+  LAP -.-> VM
+  INST -.-> PROD
 
   classDef pending stroke-dasharray: 5 5
-  class SMTP,BK2,BUILD,DEMO pending
+  class SMTP,BK2,BUILD,DEMO,LAP,INST pending
 ```
 
-**About this diagram:** pending CTI items are M-01 (reach from the internet), M-02, M-03, M-04, M-05, M-06, M-07 (who provides mail), M-09 and M-13; see the table below. The demo host is D5 and the build place is D8. The 50 m rule is D6.
+**About this diagram:** pending CTI items are M-01 (reach from the internet), M-03, M-04, M-05, M-06, M-07 (authorization), M-13 and M-18 (ports); see the table below. The demo host is D5 and the build place is D8. The 50 m rule is D6.
 
 Notes:
 
 - The 50 m startup check is how REQ-NF-29 is enforced (`design-notes.md`, team decision E-16). The 50 m check always runs at startup. Only a flag allows another boundary, and development and the demo set it. Production does not set it. Without the flag, a boundary farther than 50 m stops the app from starting (D6).
 - Server credentials live in protected configuration outside the repository. Development and production settings are separate (`context.md` section 3).
-- Whoever has administrator access to the VM can read the database and the photos volume. That conflicts with REQ-NF-23 if team members run the server (M-16, gym G-01).
+- Whoever has administrator access to the VM can read the database and the photos volume. That conflicts with REQ-NF-23 if team members run the server (M-16, gym G-01). CTI usually creates an account with sudo for the owner, who passes it to the team or makes another; off campus the team needs a VPN the owner requests, and the owner answers for those accounts. CTI has no staff to take over the system, and part of the install and orientation after December is the owner's.
 - If the gym account password and PIN are lost, the paper recovery code from the install command sets new ones from the gym account sign-in screen (E-60, REQ-F-89). If the paper is lost too, only running the install command on the server remains, so it needs someone with server access (M-16).
 - If an external mail provider is used, the SMTP arrow leaves the VM, and student email addresses go with it (M-11).
+- Proposed VM request (E-111): CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team recommends the numbers, backed by a storage estimate. A second backup disk, if chosen, is agreed with whoever creates the VM, probably in the same request.
+- Restore is open (E-110): an 'upload backup' action in the app after a fresh install (CTI's picture) or a step on the server. An in-app restore would exceed the planned 10 MB upload limit and would replace audit log entries.
 
 ### Pending CTI items on these diagrams
 
 | ID | Question | Where it shows | If the answer is bad |
 |---|---|---|---|
-| M-01 | Can phones on mobile data reach the VM? | Diagram 4, phone to proxy | Campus only: no Check In on mobile data. Hosting plan changes. Automatic certificates (D1, Caddy) would not work either |
-| M-02 | Containers on the VM: Docker, Podman or none | Diagrams 2 and 4, host box | No containers: deployment redesigned on CTI services |
+| M-01 | Can phones on mobile data reach the VM? Not answered; off-campus use by Users is a gym question (G-31) | Diagram 4, phone to proxy | Campus only: no Check In on mobile data. Hosting plan changes. Automatic certificates (D1, Caddy) would not work either |
+| M-02 | Containers on the VM: Docker, Podman or none (answered: team's choice) | Diagrams 2 and 4, host box | No containers: deployment redesigned on CTI services |
 | M-03 | Who makes the subdomain and certificate; app and API on one name | Diagrams 1, 2 and 4, proxy | Two names: cookie login design changes (cross-site cookies, CORS) |
-| M-04 | What CTI needs to approve the VM, and how long | Diagram 4, VM box | Late approval: no production in December. CTI conditions become new requirements |
+| M-04 | What CTI needs to approve the VM, and how long | Diagram 4, VM box | Late VM: no production in December. CTI stated no conditions and described no approval step (to confirm). CTI did not say whether its usual requests (audit log, installer, disaster plan) are conditions; any condition becomes a new requirement |
 | M-05 | Early access to the VM | Diagram 4, VM box | First real deployment happens close to the demo. Demo option D5 A is at risk |
-| M-06 | Where backups go and for how long | Diagrams 2 and 4, backup box | REQ-NF-06 stays Pending. A copy kept only on the VM is lost with the VM |
-| M-07 | Who provides outgoing mail: CTI mail first, external provider as fallback | Diagrams 1, 2 and 4, mail box | CTI cannot provide it: the team uses an external SMTP or transactional provider (E-61), which needs approval (M-11) because email addresses leave the VM. "No mail" is no longer a plan |
-| M-09 | PostgreSQL accepted | Diagrams 2 and 4, database | MySQL required: REQ-F-17 and REQ-F-36 need a new design |
-| M-13 | Data on the VM disk, disk encryption | Diagrams 2 and 4, volumes | Disk not encrypted: team decides whether to encrypt files itself |
+| M-06 | Where backups go and for how long | Diagrams 2 and 4, backup box | Partly answered: the team decides among CTI's three options. The second disk is not outside the VM (REQ-NF-06). Retention and CTI snapshots still open |
+| M-07 | Outgoing mail: answered A in principle (CTI relay after CTI authorizes the VM). Open: the authorization, SPF and DKIM, the sender. External provider only if CTI declines | Diagrams 1, 2 and 4, mail box | CTI cannot provide it: the team uses an external SMTP or transactional provider (E-61), which needs approval (M-11) because email addresses leave the VM. "No mail" is no longer a plan |
+| M-09 | PostgreSQL accepted (answered: team's choice) | Diagrams 2 and 4, database | MySQL required: REQ-F-17 and REQ-F-36 need a new design |
+| M-13 | Data on the VM disk, disk encryption (data on the VM disk: answered; encryption still pending) | Diagrams 2 and 4, volumes | Disk not encrypted: team decides whether to encrypt files itself |
+| M-18 | Which ports are open to the VM (80 and 443), and whether a firewall request is needed | Diagram 4, proxy | Port closed: nobody reaches the app |
 
 Also relevant, not in the list asked for this issue: M-11 (external services approval, affects the tunnel and an external mail provider; the compromised-password check is not submitted, E-98), M-12 (WooCommerce API, Stretch only) and M-16 (who administers the server).
 
@@ -325,7 +336,7 @@ Decision: A. It is what `context.md` already lists as a container, and it behave
 - **A. During the request.** No extra container. If SMTP fails, the user sees an error at once and can try again. The request takes a bit longer.
 - **B. Queue in the database plus a worker container.** Fast response and retries. One more container, and failed jobs must be watched by someone.
 
-Decision: A. Email is only for athlete registration links, "I am an athlete" links (E-58) and password resets, a small volume. Move to B if the CTI relay turns out slow (M-07).
+Decision: A. Email is only for athlete registration links, "I am an athlete" links (E-58) and password resets, a small volume. Move to B if the CTI relay turns out slow (M-07). Proposed: with a local relay, a gateway failure queues mail instead of showing an error at once, so someone must watch the relay queue.
 
 ### D5: Where the demo environment runs
 
@@ -366,7 +377,7 @@ Decision: each member chooses, and the tunnel host lives in one `.env` value so 
 - **A. Build on the VM** from a tagged commit. No registry. The VM needs the build tools and internet access to download base images (M-04).
 - **B. Build in GitHub Actions** and push to a private registry; the VM pulls by tag. Repeatable and always `linux/amd64`. Needs a registry token on the VM and outbound access to the registry (M-04).
 
-Recommendation: A for December, because it has fewer parts. Move to B if the team wants automatic builds later.
+Recommendation: A for December, because it has fewer parts. Move to B if the team wants automatic builds later. If the install script is adopted, it must install the container engine and get the images: option A needs build tools in the script, option B a registry token.
 
 ## Gaps and questions
 
@@ -375,8 +386,8 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 3. **REQ-NF-29 does not say where the demo runs or what data it uses.** Real student data in a classroom demo would conflict with REQ-NF-07. Suggest "demo uses fake data" unless the gym says otherwise. See D5 and D6.
 4. **REQ-NF-01 depends on a correct clock.** Backend time decides expiry, so the VM clock must be synced. No CTI question asks about time sync. Suggest adding it to M-04.
 5. **Real client IP for the audit log (REQ-NF-39).** If CTI puts its own proxy in front of the VM (M-01 answer C), the real IP passes two proxies, and Laravel must trust both. The trusted proxy list depends on M-01. The attempt counters keyed by IP (E-91) depend on the same list.
-6. **REQ-NF-06 has no frequency or recovery target.** It says "backups" and "a tested restore", not how often or how much data may be lost. The database and the photos volume should be copied together so they match.
-7. **An external mail provider sends data out of the VM.** If CTI cannot provide mail, the fallback provider (E-61) receives student email addresses, which needs approval (M-11). M-11 asks who approves such services. The compromised-password check (E-63) is also an external call, but it sends no student data, only a 5-character hash prefix, so it is not submitted to M-11 (E-98).
+6. **REQ-NF-06 has no frequency or recovery target.** It says "backups" and "a tested restore", not how often or how much data may be lost. The database and the photos volume should be copied together so they match. CTI asks every project for a written disaster plan: how often, which data, the steps to recover. CTI's minimum advice is a daily backup in the afternoon, or Fridays. CTI's view is that losing about a week is not much when a backup exists, and CTI expects the team to agree the backup and restore procedure with the owner (E-109).
+7. **An external mail provider sends data out of the VM.** If CTI does not authorize the VM on its mail gateway, the fallback provider (E-61) receives student email addresses, which needs approval (M-11). M-11 asks who approves such services. The compromised-password check (E-63) is also an external call, but it sends no student data, only a 5-character hash prefix, so it is not submitted to M-11 (E-98).
 8. **The route paths of the gym dashboard are not set.** E-65 says the dashboard lives on its own routes in the same codebase. The path names, and whether the build is shared with the User app, are not written anywhere. The owner said "different routes" and the same-codebase part is a reading still to confirm.
 9. **The name of the flag in D6 is not set.** D6 does not name it.
 
