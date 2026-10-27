@@ -18,6 +18,7 @@ Every developer must have these installed. Using them in every session is requir
 - `engineering` (all `engineering:*` skills): architecture, system design, code review, debugging, testing strategy, deploy checklists, technical docs, tech debt.
 - `figma` (all `figma:*` skills): anything that touches a Figma file, including design to code, diagrams and component libraries. Figma tools need a sign-in through `/mcp`.
 - `unslop`, `humanizer`, `stop-slop`: any prose written for people (docs, issues, PR descriptions, commit messages, README). Run `humanizer` on the draft, then `stop-slop` to score it (revise below 35/50). `unslop` only runs when called with `/unslop`. Code, commands and paths stay unchanged.
+- `write-issue` (in the repo at `.claude/skills/write-issue/`, nothing to install): creating or editing any GitHub issue. Draft the issue in chat, run `humanizer` and `stop-slop` on it, and wait for a yes before it goes to GitHub.
 
 If one is missing, tell the user before doing anything else, and point to `docs/setup/skills.md` for the install steps. The plugins are also declared in `.claude/settings.json`, so Claude Code offers to install them when the folder is trusted.
 

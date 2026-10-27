@@ -45,6 +45,10 @@ graphify install
 
 No public source found. Ask Carlos Pepín for the folders and copy them to `~/.claude/skills/`.
 
+## Skills in the repo
+
+`write-issue` lives in `.claude/skills/write-issue/`. Claude Code loads it when you open the folder, so there is nothing to install. It runs before any issue is created or edited, and it follows the rules in `CLAUDE.md`.
+
 ## Check
 
 Run `/plugin` and confirm the six plugins show as enabled. Start a new session and check that `graphify`, `stop-slop`, `sdlc-process`, `unslop` and `write-issue` appear in the skill list.
