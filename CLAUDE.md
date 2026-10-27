@@ -14,14 +14,25 @@ Every developer must have these installed. Using them in every session is requir
 - `sdlc-process`: project phases.
 - `superpowers` (all `superpowers:*` skills): check for a matching one before any response or action.
 - `graphify`: questions about the codebase. `graphify-out/` is gitignored. Never commit, push, or upload it.
+- `design` (all `design:*` skills): screens, UI critique, accessibility review, UX copy, design systems, handoff to developers.
+- `engineering` (all `engineering:*` skills): architecture, system design, code review, debugging, testing strategy, deploy checklists, technical docs, tech debt.
+- `figma` (all `figma:*` skills): anything that touches a Figma file, including design to code, diagrams and component libraries. Figma tools need a sign-in through `/mcp`.
+- `unslop`, `humanizer`, `stop-slop`: any prose written for people (docs, issues, PR descriptions, commit messages, README). Run `humanizer` on the draft, then `stop-slop` to score it (revise below 35/50). `unslop` only runs when called with `/unslop`. Code, commands and paths stay unchanged.
+- `write-issue` (in the repo at `.claude/skills/write-issue/`, nothing to install): creating or editing any GitHub issue. Draft the issue in chat, run `humanizer` and `stop-slop` on it, and wait for a yes before it goes to GitHub.
 
-If one is missing, tell the user before doing anything else.
+If one is missing, tell the user before doing anything else, and point to `docs/setup/skills.md` for the install steps. The plugins are also declared in `.claude/settings.json`, so Claude Code offers to install them when the folder is trusted.
 
 ## Skills and agents guidance
 
-Assume the developers do not know how to use skills or agents. Speak up when:
+Assume the developers do not know how to use skills or agents. A skill that fits the task is never optional. As soon as you see that a skill would do the job better, do one of these, without waiting to be asked:
 
-- A skill or agent fits the current task: name it, say why, and say how to call it.
+- Run it yourself and say which one you used and why.
+- If it needs the user's input or has side effects the user did not ask for, tell the user right away: name the skill, say why, and say how to call it.
+
+Never finish a task by hand and mention afterwards that a skill existed.
+
+Also speak up when:
+
 - A task keeps repeating and could become a skill: suggest making one.
 
 Before starting any task, check if a skill would do it better. Delegate simpler tasks to smaller agents that can complete them, and keep the harder work for yourself.

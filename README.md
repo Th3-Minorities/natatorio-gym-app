@@ -8,7 +8,7 @@ Install Docker Desktop and start it. From the repository root, run:
 docker compose --profile development up -d --build --wait
 ```
 
-The proxy is at <http://localhost:8080>. Its published port is bound to this computer's localhost only, not to the local network or public internet. The Mailpit inbox is at <http://localhost:8080/mailpit/>. It only answers on `localhost` or `127.0.0.1`, so the phone tunnel cannot reach it. The PHP API and PWA files are supplied by issues #47 and #48; this infrastructure issue does not add their application code.
+The proxy is at <http://localhost:8080>. Its published port is bound to this computer's localhost only, not to the local network or public internet. The Mailpit inbox is at <http://localhost:8080/mailpit/>. It only answers on `localhost` or `127.0.0.1`, so the phone tunnel cannot reach it. The PWA files are supplied by issue #48.
 
 Mailpit is only for local development. Before production, disable the `development` profile and set `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_SCHEME` in protected environment configuration for the CTI SMTP server or relay. Do not commit production credentials. Use an external mail provider only after approval, since account email addresses would leave the CTI VM. The CTI mail settings are still pending.
 
@@ -29,6 +29,102 @@ Delete both data volumes too:
 ```powershell
 docker compose --profile development down --volumes
 ```
+
+## Backend (Laravel API)
+
+The API is in `backend/`. You do not install PHP or Composer on your computer: they run inside the `app` container. Run every command below from the repository root while the stack is up.
+
+Commands in the `app` container run as the `www-data` user, the same user that answers web requests. That way no command creates a file the API cannot write, such as a log file. If a command ever needs root, add `-u root`: `docker compose exec -u root app ...`.
+
+- **Your setup is older than this rule** (you ran the commands below before as root): give the files back to `www-data` once, with the stack up:
+
+  ```powershell
+  docker compose exec -u root app chown -R www-data:www-data .
+  ```
+
+- **Docker installed directly on Linux** (not Docker Desktop): the repository folder belongs to your user, so `www-data` cannot write to it. Run this once, from the repository root, before step 1:
+
+  ```bash
+  chmod -R a+rwX backend
+  ```
+
+  This opens the folder to every user, which is fine on a development computer and in CI. The CTI production server needs more care: there, give the folder to the right owner instead of opening it to everyone. That belongs to the deployment issue.
+
+  Local development directly on Linux is not tested yet: this setup was tested with Docker Desktop on Windows and in CI on Linux. Two things to expect. Files you add later (new files from your editor or `git pull`) are not writable by `www-data` until you run the `chmod` again. And files the containers create, such as `vendor/` or files from `php artisan make:...`, belong to `www-data`, so you may need `sudo` to edit or delete them on your computer.
+
+### First run, step by step
+
+Do this once on your computer. After that, step 1 is all you need each day.
+
+1. Start Docker Desktop. Then, from the repository root, start the containers:
+
+   ```powershell
+   docker compose --profile development up -d --build --wait
+   ```
+
+2. Install the PHP packages. They go in `backend/vendor/`, which is not in git:
+
+   ```powershell
+   docker compose exec app composer install
+   ```
+
+   The scheduler waits for these packages and starts by itself when they are in. Until step 4 creates the tables, its log shows a `relation "cache" does not exist` error once a minute. That is expected and stops after step 4.
+
+3. Create `backend/.env` (not in git) and give it a secret key:
+
+   ```powershell
+   docker compose exec app sh -c "cp -n .env.example .env && php artisan key:generate"
+   ```
+
+4. Create the tables:
+
+   ```powershell
+   docker compose exec app php artisan migrate
+   ```
+
+5. Only if your database volume is older than issue #47: create the test database. A new volume creates it by itself. In Git Bash, run `export MSYS_NO_PATHCONV=1` first, or Git Bash rewrites the path:
+
+   ```powershell
+   docker compose exec db sh /docker-entrypoint-initdb.d/02-test-database.sh
+   ```
+
+6. Check that the API answers through the proxy. You should see `{"status":"ok"}`. You can also open <http://localhost:8080/api/health> in the browser:
+
+   ```powershell
+   curl.exe http://localhost:8080/api/health
+   ```
+
+7. Run the tests. They should all pass:
+
+   ```powershell
+   docker compose exec app php artisan test
+   ```
+
+The tests use their own database, `natatorio_gym_test`, so they never wipe your development data.
+
+### Slow on Windows
+
+On Windows, each API request can take 7 to 20 seconds, and the tests about a minute. The cause is Docker Desktop reading the PHP files from a Windows folder; the code itself is fast (one measurement: Laravel started in 7.8 s from the Windows folder and in 0.17 s from inside the container). A repo inside OneDrive is likely slower still. CI runs on Linux and is not affected. Possible fixes for later: turn on OPcache in the PHP image, keep `backend/vendor/` in a Docker volume, or keep the repo in the WSL file system instead of a Windows folder.
+
+### Everyday commands
+
+| What | Command |
+|---|---|
+| Run all tests | `docker compose exec app php artisan test` |
+| Run one test | `docker compose exec app php artisan test --filter test_health_check_answers_ok_when_the_database_is_reachable` |
+| Check code style | `docker compose exec app composer lint` |
+| Fix code style | `docker compose exec app vendor/bin/pint` |
+| Run new migrations | `docker compose exec app php artisan migrate` |
+| Start the database over with fake data | `docker compose exec app php artisan migrate:fresh --seed` |
+| After someone changes `composer.json` | `docker compose exec app composer install` |
+
+Run the tests and the style check before you open a PR. CI runs the same ones.
+
+### CI
+
+GitHub runs `.github/workflows/backend.yml` on every pull request and on every push to `main`. Nothing to set up. It builds the same containers, then runs the style check, the migrations, the seeder and the tests, and calls `/api/health` through the proxy. The result shows as a check on the PR. Click "Details" to see which step failed.
+
+API rules, the error format and notes for database work are in `docs/design/api-conventions.md`. Read it before you add a route or a migration.
 
 ## Test on a phone
 

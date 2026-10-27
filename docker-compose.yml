@@ -21,6 +21,9 @@ services:
   app:
     image: natatorio-gym-app-php:local
     build: ./docker/php
+    # Same user as the web requests, so no command run with "docker compose exec" creates files as root.
+    # For the rare command that needs root: docker compose exec -u root app ...
+    user: www-data
     working_dir: /var/www/html
     volumes:
       - ./backend:/var/www/html
@@ -32,6 +35,8 @@ services:
       DB_DATABASE: ${POSTGRES_DB:-natatorio_gym}
       DB_USERNAME: ${POSTGRES_USER:-natatorio}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+      # Logs go to "docker compose logs", not to a file, so a file the user cannot write never breaks an answer.
+      LOG_CHANNEL: stderr
       MAIL_MAILER: smtp
       MAIL_HOST: ${MAIL_HOST:-mailpit}
       MAIL_PORT: ${MAIL_PORT:-1025}
@@ -50,8 +55,15 @@ services:
 
   scheduler:
     image: natatorio-gym-app-php:local
+    # Same user as app (see above).
+    user: www-data
     working_dir: /var/www/html
-    command: ["sh", "-c", "until [ -f artisan ]; do sleep 2; done; exec php artisan schedule:work"]
+    # Waits for the packages (README "First run", step 2), so the stack also starts on a fresh clone.
+    # Started again if it ever stops, for example if it starts in the moment Composer is still writing.
+    restart: unless-stopped
+    # Passes SIGTERM on, so "docker compose down" does not wait 10 seconds for the kill.
+    init: true
+    command: ["sh", "-c", "until [ -f vendor/autoload.php ]; do sleep 2; done; exec php artisan schedule:work"]
     volumes:
       - ./backend:/var/www/html
       - private_photos:/var/www/private
@@ -62,6 +74,7 @@ services:
       DB_DATABASE: ${POSTGRES_DB:-natatorio_gym}
       DB_USERNAME: ${POSTGRES_USER:-natatorio}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+      LOG_CHANNEL: stderr
     depends_on:
       app:
         condition: service_healthy
@@ -83,6 +96,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/01-btree-gist.sql:/docker-entrypoint-initdb.d/01-btree-gist.sql:ro
+      - ./docker/postgres/02-test-database.sh:/docker-entrypoint-initdb.d/02-test-database.sh:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
