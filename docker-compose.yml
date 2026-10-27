@@ -35,6 +35,8 @@ services:
       DB_DATABASE: ${POSTGRES_DB:-natatorio_gym}
       DB_USERNAME: ${POSTGRES_USER:-natatorio}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+      # Logs go to "docker compose logs", not to a file, so a file the user cannot write never breaks an answer.
+      LOG_CHANNEL: stderr
       MAIL_MAILER: smtp
       MAIL_HOST: ${MAIL_HOST:-mailpit}
       MAIL_PORT: ${MAIL_PORT:-1025}
@@ -59,6 +61,8 @@ services:
     # Waits for the packages (README "First run", step 2), so the stack also starts on a fresh clone.
     # Started again if it ever stops, for example if it starts in the moment Composer is still writing.
     restart: unless-stopped
+    # Passes SIGTERM on, so "docker compose down" does not wait 10 seconds for the kill.
+    init: true
     command: ["sh", "-c", "until [ -f vendor/autoload.php ]; do sleep 2; done; exec php artisan schedule:work"]
     volumes:
       - ./backend:/var/www/html
@@ -70,6 +74,7 @@ services:
       DB_DATABASE: ${POSTGRES_DB:-natatorio_gym}
       DB_USERNAME: ${POSTGRES_USER:-natatorio}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-local-only-change-me}
+      LOG_CHANNEL: stderr
     depends_on:
       app:
         condition: service_healthy

@@ -50,14 +50,28 @@ jobs:
         run: docker compose exec -T app php artisan test
 
       # The scheduler starts by itself once vendor/autoload.php exists (no restart step in the README).
-      - name: Scheduler started by itself
+      # It has a restart policy, so a crash loop looks alive. It must also stay up: no restart for 20 seconds.
+      - name: Scheduler started by itself and keeps running
         run: |
+          scheduler="$(docker compose ps -q scheduler)"
+          started=false
           for attempt in $(seq 1 15); do
-            if docker compose top scheduler | grep -q "schedule:work"; then exit 0; fi
+            if docker compose top scheduler | grep -q "schedule:work"; then started=true; break; fi
             sleep 2
           done
-          docker compose top scheduler
-          exit 1
+          if [ "$started" != true ]; then
+            docker compose top scheduler
+            exit 1
+          fi
+          before="$(docker inspect -f '{{.RestartCount}}' "$scheduler")"
+          sleep 20
+          after="$(docker inspect -f '{{.RestartCount}}' "$scheduler")"
+          docker compose top scheduler | grep -q "schedule:work"
+          if [ "$before" != "$after" ]; then
+            echo "The scheduler restarted $((after - before)) time(s) in 20 seconds."
+            docker compose logs scheduler
+            exit 1
+          fi
 
       # Compares the whole answer: a broken app can still answer 200 with an error page.
       # No -f, so a failing answer is printed before the comparison fails.
@@ -70,10 +84,21 @@ jobs:
       # api-conventions.md: no versions or internals in answers (expose_php = Off in docker/php/app.ini).
       - name: No PHP version in the headers
         run: |
-          if curl -sSI http://127.0.0.1:8080/api/health | grep -qi '^x-powered-by'; then
+          headers="$(curl -sSI http://127.0.0.1:8080/api/health)"
+          echo "$headers"
+          if echo "$headers" | grep -qi '^x-powered-by'; then
             echo "The answer shows X-Powered-By (the PHP version)."
             exit 1
           fi
+
+      # The tests run inside PHP, so only this step sees the real answer through the proxy.
+      - name: Health check answers 503 when the database is down
+        run: |
+          docker compose stop db
+          status="$(curl -sS -o /tmp/health-503.json -w '%{http_code}' http://127.0.0.1:8080/api/health)"
+          cat /tmp/health-503.json
+          test "$status" = 503
+          grep -q '"code":"database_unavailable"' /tmp/health-503.json
 
       - name: Container logs
         if: failure()
