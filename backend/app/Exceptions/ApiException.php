@@ -21,6 +21,6 @@ class ApiException extends RuntimeException
         ?string $message = null,
         public readonly array $details = [],
     ) {
-        parent::__construct($message ?? __('errors.'.$errorCode));
+        parent::__construct($message ?? ApiErrorRenderer::message($errorCode, $status));
     }
 }

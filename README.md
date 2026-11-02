@@ -34,6 +34,24 @@ docker compose --profile development down --volumes
 
 The API is in `backend/`. You do not install PHP or Composer on your computer: they run inside the `app` container. Run every command below from the repository root while the stack is up.
 
+Commands in the `app` container run as the `www-data` user, the same user that answers web requests. That way no command creates a file the API cannot write, such as a log file. If a command ever needs root, add `-u root`: `docker compose exec -u root app ...`.
+
+- **Your setup is older than this rule** (you ran the commands below before as root): give the files back to `www-data` once, with the stack up:
+
+  ```powershell
+  docker compose exec -u root app chown -R www-data:www-data .
+  ```
+
+- **Docker installed directly on Linux** (not Docker Desktop): the repository folder belongs to your user, so `www-data` cannot write to it. Run this once, from the repository root, before step 1:
+
+  ```bash
+  chmod -R a+rwX backend
+  ```
+
+  This opens the folder to every user, which is fine on a development computer and in CI. The CTI production server needs more care: there, give the folder to the right owner instead of opening it to everyone. That belongs to the deployment issue.
+
+  Local development directly on Linux is not tested yet: this setup was tested with Docker Desktop on Windows and in CI on Linux. Two things to expect. Files you add later (new files from your editor or `git pull`) are not writable by `www-data` until you run the `chmod` again. And files the containers create, such as `vendor/` or files from `php artisan make:...`, belong to `www-data`, so you may need `sudo` to edit or delete them on your computer.
+
 ### First run, step by step
 
 Do this once on your computer. After that, step 1 is all you need each day.
@@ -50,6 +68,8 @@ Do this once on your computer. After that, step 1 is all you need each day.
    docker compose exec app composer install
    ```
 
+   The scheduler waits for these packages and starts by itself when they are in. Until step 4 creates the tables, its log shows a `relation "cache" does not exist` error once a minute. That is expected and stops after step 4.
+
 3. Create `backend/.env` (not in git) and give it a secret key:
 
    ```powershell
@@ -62,25 +82,19 @@ Do this once on your computer. After that, step 1 is all you need each day.
    docker compose exec app php artisan migrate
    ```
 
-5. Restart the scheduler. It was waiting for the packages from step 2:
-
-   ```powershell
-   docker compose restart scheduler
-   ```
-
-6. Only if your database volume is older than issue #47: create the test database. A new volume creates it by itself. In Git Bash, run `export MSYS_NO_PATHCONV=1` first, or Git Bash rewrites the path:
+5. Only if your database volume is older than issue #47: create the test database. A new volume creates it by itself. In Git Bash, run `export MSYS_NO_PATHCONV=1` first, or Git Bash rewrites the path:
 
    ```powershell
    docker compose exec db sh /docker-entrypoint-initdb.d/02-test-database.sh
    ```
 
-7. Check that the API answers through the proxy. You should see `{"status":"ok"}`. You can also open <http://localhost:8080/api/health> in the browser:
+6. Check that the API answers through the proxy. You should see `{"status":"ok"}`. You can also open <http://localhost:8080/api/health> in the browser:
 
    ```powershell
    curl.exe http://localhost:8080/api/health
    ```
 
-8. Run the tests. They should all pass:
+7. Run the tests. They should all pass:
 
    ```powershell
    docker compose exec app php artisan test

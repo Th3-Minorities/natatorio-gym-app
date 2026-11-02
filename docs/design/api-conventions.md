@@ -8,6 +8,7 @@ Rules every backend route follows, so errors and routes look the same across fea
 - Laravel packages that add their own paths (Sanctum, Fortify) must be moved under `/api` with their prefix setting (D2).
 - Paths use lowercase nouns with hyphens: `/api/check-ins`, `/api/schedule-slots/{id}`.
 - Requests and responses are JSON. The PWA sends `Accept: application/json`.
+- Dates and times in JSON are ISO 8601 in UTC, ending in `Z`, which is Laravel's default (`2026-10-27T01:00:00.000000Z`). The PWA converts them to Puerto Rico time before showing them, in the format of REQ-NF-38 (`2026-10-13 3:05 PM`).
 - `/api` responses are never cached by the service worker (REQ-NF-26).
 
 ### Health check
@@ -34,7 +35,7 @@ Every error from an `/api` route has this shape, whatever caused it:
 
 | Field | Always there | Meaning |
 |---|---|---|
-| `code` | Yes | Stable, snake_case. The PWA decides what to do based on this, never on `message`. Once released, a code never changes meaning or name |
+| `code` | Yes | Stable, snake_case, no dots. Start with the feature when it helps: `check_in_location_denied`. The PWA decides what to do based on this, never on `message`. Once released, a code never changes meaning or name |
 | `message` | Yes | Short text for the person. For now it uses the app language (`APP_LOCALE`, Spanish by default). The language of each account comes with the language feature. Field messages in `details` are still in English until someone adds Spanish validation texts |
 | `details` | No | Extra data. For `validation_failed`, the list of messages for each field |
 | `debug` | Only with `APP_DEBUG=true` | Exception class, message and file, for developers. Never on in production |
@@ -69,7 +70,8 @@ throw new ApiException('authorization_number_invalid', 422, __('registration.num
 ```
 
 - Pick a code that names the case, not the screen: `authorization_number_invalid`, not `registration_error`.
-- Put the message in both `backend/lang/es/` and `backend/lang/en/`. With no message, the text comes from `errors.<code>`.
+- Add the code with its text to both `backend/lang/es/errors.php` and `backend/lang/en/errors.php`. With no message in the `ApiException`, the text comes from there. Pass the code as a plain string, as the first argument. A test reads `backend/app`, `backend/routes` and `backend/bootstrap` and fails if a code is not snake_case, has no text in both files, or is not a plain string.
+- If a text is missing anyway, the person never sees the raw key `errors.<code>`: the message falls back to the general `bad_request` text (or `server_error` for a 5xx status).
 - `ApiException` errors are expected, so they are not written to the error log.
 - List the new code in the OpenAPI contract for that route.
 - Do not use `abort(404, 'text')` to send text to the person: the text is hidden on purpose. Use `ApiException`.
@@ -84,7 +86,7 @@ Laravel ships its own tables and names. Some of them clash with `data-model.md`.
 - **Sessions table.** Laravel calls it `sessions`. Our model calls it `sign_in_sessions`, so it is never confused with `facility_sessions` (the 60-minute gym visits). Rename it in the migration **and** set `SESSION_TABLE=sign_in_sessions`, or sign in breaks. Never name a table plain `sessions`.
 - **Framework tables we keep.** `migrations`, `cache`, `cache_locks`, `jobs`, `job_batches`, `failed_jobs` and `password_reset_tokens`. `data-model.md` lists most of them. Laravel also creates `cache_locks` and `job_batches`. Do not reuse these names for our own tables.
 - **No `personal_access_tokens`.** That table is for Sanctum API tokens. We use Sanctum cookies (context.md), so do not publish that migration.
-- **Time zones.** `$table->timestamps()` makes `timestamp` columns without a time zone in PostgreSQL. The model says `timestamptz`, so use `timestampsTz()`, `timestampTz()` and `softDeletesTz()`.
+- **Time zones.** Laravel runs in `America/Puerto_Rico` (`config/app.php`, REQ-NF-37), so `today()`, `now()` and scheduled task times are Puerto Rico times. Puerto Rico has no daylight saving time. Do not change it back to UTC: from 8 PM to midnight, UTC is already the next day. The PostgreSQL connection uses the same zone (`config/database.php`), because Laravel sends dates without a zone: if the two ever differ, every `timestamptz` is saved hours off. `TimezoneTest` checks both. Laravel also writes a date in the zone of the Carbon it receives, without converting, so a UTC date from the API (`...Z`) would be saved 4 hours late. Every model uses the `SavesDatesInAppTimezone` trait to convert first (`ModelDatesTest` checks that each model has it). The trait does not cover a Carbon passed as a query value, as in `where('starts_at', '>', $carbon)`: convert it first with `->setTimezone(config('app.timezone'))`. In the database, `$table->timestamps()` makes `timestamp` columns without a time zone in PostgreSQL. The model says `timestamptz`, so use `timestampsTz()`, `timestampTz()` and `softDeletesTz()`.
 - **Model names.** Laravel guesses the table from the model class. Every model in the data model guesses right (checked: `FacilityInformation` becomes `facility_information`, `AuditLogEntry` becomes `audit_log_entries`). A new model with a different name may not, so set `$table` when in doubt.
 - **`settings`.** Its key is `name`, a string. The model needs `$primaryKey = 'name'`, `$incrementing = false` and `$keyType = 'string'`.
 - **`btree_gist`.** The Docker init scripts turn it on in a fresh local database. The CTI database will not run those scripts, so the first migration that needs it must also run `CREATE EXTENSION IF NOT EXISTS btree_gist`.

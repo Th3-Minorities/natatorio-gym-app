@@ -300,7 +300,7 @@ Every A screen also shows Loading, "No connection: actions disabled", the notice
 
 #### Open items for this issue
 
-- Roster list format (G-10): the gym has not said if its lists are on paper or in a spreadsheet. Draw both on A-05, as the issue asks: adding records one by one and importing a file.
+- Roster list format (G-10): draw adding records one by one and an upload of the file the gym receives (Proposed, CTI recommendation). One team member said the gym gets an Excel file; not confirmed with the gym.
 - WooCommerce export columns (E-55): not checked yet. Draw the A-06 result with placeholder columns.
 - How long the saved import result, with its rejected rows, is kept is pending (REQ-NF-05, E-84). It does not change the drawing.
 - S-01 to A-14 are Desk, pending G-06. A screens stay desktop first even if Staff use phones.
@@ -421,7 +421,7 @@ These diagrams describe the backend, the database or the servers. The issue name
 |---|---|---|
 | Gym contact number not given (G-25) | N-01, N-03, N-04, U-02, U-06, U-07, U-08 | Draw a labeled placeholder |
 | Store address not given; store button only while a term runs is Proposed (E-92, E-96, G-26) | N-01, N-03 | Draw the button with a placeholder address. N-04 has no store button |
-| Outgoing mail: assumed available (E-61); CTI has not answered (M-07); an external provider needs approval (M-11) | N-04, N-05, N-06, N-07, U-06; S-04 and N-10 | Draw the mail flows as the normal path. Draw S-04 and N-10 too; they stay as a Staff tool (E-62) |
+| Outgoing mail: assumed available (E-61). CTI described a relay through its mail gateway after it authorizes the VM (M-07); the authorization, SPF and DKIM are still open | N-04, N-05, N-06, N-07, U-06; S-04 and N-10 | Draw the mail flows as the normal path. Draw S-04 and N-10 too; they stay as a Staff tool (E-62) |
 | Front desk devices (G-06) | S-01 to S-05, A-01, A-02, A-04 to A-14, N-11, N-12 | Draw Desk first. If Staff also use phones, S-01 to S-03 and S-05 need a phone layout |
 | Staff see the roster: gym yes pending (G-09) | S-05, S-03 link to S-05 | Draw it as decided (E-59) |
 | Privacy notice text (G-24) | N-08; step 1 of N-03, N-04, N-10 | Placeholder text |
@@ -431,7 +431,15 @@ These diagrams describe the backend, the database or the servers. The issue name
 | Order of sign in and photo in N-05 U-06 mode (screen map diagram 3) | N-05 | You pick |
 | U-07 banner texts are drafts (E-67) | U-07 | Write the final wording in the wireframe |
 | Check In rejection texts written later (E-74) | U-01, S-03 | Draft texts that name each cause |
-| Roster list format: paper or spreadsheet (G-10) | A-05 | Draw both: one by one and import a file |
+| Roster list format (G-10); one team member said the gym gets an Excel file, not confirmed with the gym | A-05 | Draw adding records one by one and an upload of the file the gym receives (Proposed, CTI recommendation) |
 | WooCommerce export columns (E-55) | A-06, A-07 | Placeholder columns |
 | Athletes-only periods not given (G-28) | C-02, A-10, U-01 notice | Placeholder times |
 | Dashboard in the same codebase as the User app: to confirm (screen map Gaps 11) | S and A screens | No change to the drawings |
+| Re-entry after 60 minutes (G-32) | S-03, U-01 | Do not draw a daily limit |
+| Waiver form: on screen, signature or paper (G-21) | N-03, N-05, N-10 | Draw acceptance on screen |
+| People missing from a new roster list, date lists are ready (G-33) | A-05, S-05, N-04 | Draw as decided |
+| Users off campus (G-31) | none | Nothing to draw |
+| Shared gym account or one sign-in per person (open, G-09) | N-11, N-12, S-01, A-01, A-02, A-14 | Draw the shared account |
+| Check-out wanted (open, G-32) | S-01 | Do not draw a check-out button |
+| One registration number field (Proposed, E-112) | N-01, N-03, N-04 | Draw the two paths |
+| Backup download (one option in E-109) | none yet | Do not draw a backup screen |
