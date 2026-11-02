@@ -8,7 +8,7 @@ Install Docker Desktop and start it. From the repository root, run:
 docker compose --profile development up -d --build --wait
 ```
 
-The proxy is at <http://localhost:8080>. Its published port is bound to this computer's localhost only, not to the local network or public internet. The Mailpit inbox is at <http://localhost:8080/mailpit/>. It only answers on `localhost` or `127.0.0.1`, so the phone tunnel cannot reach it. The PWA files are supplied by issue #48.
+The proxy is at <http://localhost:8080>. Its published port is bound to this computer's localhost only, not to the local network or public internet. The Mailpit inbox is at <http://localhost:8080/mailpit/>. It only answers on `localhost` or `127.0.0.1`, so the phone tunnel cannot reach it. The proxy image builds the PWA from `frontend/`, so the page at `/` is the PWA. After you change the frontend, run the same command again to rebuild it, or use the dev server below.
 
 Mailpit is only for local development. Before production, disable the `development` profile and set `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_SCHEME` in protected environment configuration for the CTI SMTP server or relay. Do not commit production credentials. Use an external mail provider only after approval, since account email addresses would leave the CTI VM. The CTI mail settings are still pending.
 
@@ -125,6 +125,22 @@ Run the tests and the style check before you open a PR. CI runs the same ones.
 GitHub runs `.github/workflows/backend.yml` on every pull request and on every push to `main`. Nothing to set up. It builds the same containers, then runs the style check, the migrations, the seeder and the tests, and calls `/api/health` through the proxy. The result shows as a check on the PR. Click "Details" to see which step failed.
 
 API rules, the error format and notes for database work are in `docs/design/api-conventions.md`. Read it before you add a route or a migration.
+
+## Frontend (React PWA)
+
+The PWA is in `frontend/`. Install Node 22 (the version in `frontend/.nvmrc`; `nvm use` picks it). Other versions are refused on purpose, so everyone builds with the same one. Run these from `frontend/`:
+
+```powershell
+npm ci            # once, and after package-lock.json changes
+npm run dev       # dev server at http://localhost:5173, reloads on save
+npm run lint
+npm test          # page tests
+npm run test:e2e  # browser test through the proxy at http://localhost:8080
+```
+
+The dev server sends `/api` to the proxy, so the stack must be up. The browser only sees one origin, which keeps login cookies working. Before the first `test:e2e`, run `npx playwright install chromium` once.
+
+GitHub runs `.github/workflows/frontend.yml` on every pull request: lint, build, page tests, and the browser test against the full stack.
 
 ## Test on a phone
 

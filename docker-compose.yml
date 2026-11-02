@@ -2,12 +2,12 @@ name: natatorio-gym-app
 
 services:
   proxy:
-    image: nginx:1.27.5-alpine
+    image: natatorio-gym-app-proxy:local
+    build: ./frontend
     ports:
       - "127.0.0.1:${APP_PORT:-8080}:80"
     volumes:
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./frontend/dist:/usr/share/nginx/html:ro
     depends_on:
       app:
         condition: service_healthy
