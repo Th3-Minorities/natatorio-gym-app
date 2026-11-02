@@ -1,5 +1,7 @@
 # Natatorio Gym App
 
+To find a document or read an ID like `REQ-F-12`, `E-31` or `S-01`, start with [docs/README.md](docs/README.md).
+
 ## Local containers
 
 Install Docker Desktop and start it. From the repository root, run:
