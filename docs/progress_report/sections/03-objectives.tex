@@ -1,0 +1,87 @@
+\section{Project Objectives}
+%=====================================================================
+
+The five objectives and their metrics are unchanged. Three acceptance criteria changed after design decisions (Objectives 3, 4, and 5), and the deadlines now follow the six phases of the project plan (issue \#50; Midterm report on November 9, Final report on December 11). The status column is traced to the issue tracker on November 4, 2026.
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{2.6cm} L{3.3cm} L{4.6cm} L{2.0cm} L{2.2cm}}
+\toprule
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+1. Consolidate user identity and facility-access authorization into one correct access decision.
+&
+Percentage of authorization cases correctly approved or denied using a controlled dataset with valid and expired paid memberships, valid and invalid athlete authorizations, missing authorization, and unmatched user records.
+&
+Every defined authorization case must return the expected decision. Users with valid authorization must be approved, while users without valid authorization must be denied.
+&
+Nov 8 for the access decision on controlled data (Phase 3); Nov 22 for registration and import (Phase 4)
+&
+In progress. Rules, flows, and data model done; schema (\#13) assigned, not merged. \\
+\addlinespace
+\midrule
+\addlinespace
+
+2. Implement a user-initiated check-in process that creates and manages a valid facility session from check-in through automatic expiration.
+&
+Percentage of defined check-in and session scenarios that reach the expected state, including location validation, successful and rejected check-ins, session creation, Gym ID generation, duplicate attempts, and 60-minute expiration.
+&
+Every valid check-in must create exactly one active session and one current Gym ID. Invalid attempts must create no session, duplicate attempts must follow the defined session rule, and each active session must stop counting as active after its 60-minute expiration.
+&
+Nov 8 (Phase 3: Check In)
+&
+In progress. Design done; location boundary not yet measured at the gym (\#12); Check In code (\#17) not started. \\
+\addlinespace
+\midrule
+\addlinespace
+
+3. Maintain a consistent active-session state and use it to provide estimated facility occupancy across the platform.
+&
+Difference between the estimated occupancy reported by the system and the expected number of active sessions after check-ins, expirations, Staff corrections, and concurrent session events.
+&
+The reported estimated occupancy must match the number of active session records in every tested state. User, Staff, and Administrator screens must show the same value once each screen has refreshed; screens poll the server every 20 to 30 seconds, so the test compares values after each refresh.
+&
+Nov 8 (Phase 3: Check In)
+&
+In progress. Design done; occupancy code (\#18) not started. \\
+\addlinespace
+\midrule
+\addlinespace
+
+4. Provide Staff and Administrators with role-controlled tools to supervise facility use and maintain operational information.
+&
+Percentage of role-permission checks and administrative tasks that produce the expected result according to the final User, Staff, and Administrator permission matrix.
+&
+Every tested action must be allowed or denied according to the assigned role. Staff and Administrators sign in with individual accounts, and an Administrator invites each person by email and assigns the role. Staff must be able to perform the defined monitoring and session-correction tasks, while Administrators must be able to manage athlete authorizations, schedules, closures, and Staff accounts.
+&
+Nov 29 (Phase 5: Staff and administration)
+&
+Planned. Design done; build work not started. \\
+\addlinespace
+\midrule
+\addlinespace
+
+5. Transform recorded facility-use data into utilization metrics that support operational decision-making.
+&
+Percentage of finalized utilization metrics that match their known expected values when calculated from controlled historical check-in and session datasets.
+&
+Every finalized metric must match its expected value in the controlled datasets, including utilization by time period, periods of higher and lower use, estimated occupancy trends and approved summary values, and utilization by authorization type. Analytics are open to every signed-in role and show aggregated counts only, with no names.
+&
+Nov 29 (Phase 5: Staff and administration)
+&
+Planned. Design done; analytics (\#29) not started. \\
+\end{longtable}
+\end{center}
+
+No objective is Done: the repository holds the project skeleton and its continuous-integration tests, but no product behavior is implemented yet. \emph{In progress} means the requirements and design for the objective are complete and either its phase has started (Phase 3 began on November 2) or its first dependency, the database (\#13), is assigned. \emph{Planned} means its phase has not started. All objectives are verified together in the acceptance test with the gym (\#32) before the final report on December 11. The controlled datasets and test evidence for Objectives 1 to 3 are tracked in issue \#81.
+
+%=====================================================================

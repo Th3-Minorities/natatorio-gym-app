@@ -1,0 +1,121 @@
+\section{Project Plan}
+%=====================================================================
+
+\subsection{Activities and Process}
+
+The team replaced the proposal's one-week sprints with six phases of one to two weeks each (see the timetable). Each phase has a deliverable that someone can check at its end, and the plan lives in a GitHub issue that every member can read (issue \#50). Two milestones, Midterm report (Nov 9) and Final report (Dec 11), group the issues of the phases that end before each date.
+
+Every piece of work is one GitHub issue. The issue belongs to a milestone and to the Capstone project board, which holds its start and target dates. It follows one of two templates: \textit{feature} for work that crosses backend, database, and screen, and \textit{task} for design, documents, setup, and testing. An issue is sized for one person and about one week: larger work is split, and work under a day joins a related issue. Each issue ends with a ``Done when'' list that a second person can check, and one line of requirement IDs so the work traces back to the SRS. An issue that waits on CTI, the gym, or the professor carries the \textit{blocked} label and says who and what it waits for.
+
+Each issue gets its own branch, and nothing is committed to \texttt{main} directly. Changes enter through one pull request that links its issue. At least one member besides the author reviews the pull request before it merges. Continuous integration runs on every pull request and on every push to \texttt{main}. The backend workflow runs lint, migrations, seeding, the PHPUnit tests, a health check, and a check that the API answers 503 when the database is down. The frontend workflow runs lint, build, unit tests, and a browser test against the full stack. Documents follow the same path as code: the issue says what and why, the pull request says what changed, and the documents live in the repository.
+
+Members pick the issues they want, except setup issues that other work depends on, which go first. Standups and retrospectives: \pending{the team does not record these; confirm whether they take place and how they are logged before claiming them}.
+
+\subsection{Timetable, Milestones, and Deliverables}
+
+Status is as of Nov 4, 2026. Issues in bold are closed. The requirements and design documents were finished before Phase 1 (\textbf{\#1}, \textbf{\#3} to \textbf{\#9}, \textbf{\#52}, \textbf{\#54}).
+
+\begin{center}
+\small
+\begin{longtable}{L{0.9cm} L{1.9cm} L{5.6cm} L{5.2cm}}
+\toprule
+\textbf{Phase} & \textbf{Dates} & \textbf{Deliverable at the end of the phase} & \textbf{Issues} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Phase} & \textbf{Dates} & \textbf{Deliverable at the end of the phase} & \textbf{Issues} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1 & Oct 14 to Oct 25 & Decisions and screens: the team agreed on every open design decision and every screen has an approved wireframe. & \#49 design decisions; \#40 to \#45 wireframes; \textbf{\#60} CTI answers recorded; \#62 gym director meeting; \#63 and \#64 CTI questions and VM requests. \\
+\addlinespace
+2 & Oct 19 to Nov 1 & Foundation: one command starts everything, the PWA opens on a phone, the database exists, and a person can sign in in Spanish or English. & \#11 skeleton (\textbf{\#46}, \textbf{\#47}, \textbf{\#48}, \textbf{\#57}); \#12 location boundary; \#13 database; \#14 app base; \#15 sign in; \#16 accounts, roles, and audit log service; \textbf{\#61} documents updated. \\
+\addlinespace
+3 & Nov 2 to Nov 8 & Check In: a person with an authorization does Check In inside the gym, sees the Gym ID, and sees the estimated occupancy. An Administrator creates terms and the athlete roster. \textbf{Midterm report, Nov 9.} & \#17 Check In and session; \#18 Gym ID and occupancy; \#21 terms and roster. Midterm evidence: \#81 test data, \#82 accessibility check, \#83 first load test. \\
+\addlinespace
+4 & Nov 9 to Nov 22 & Registration and import: people register as paid members or athletes, renew, and become athletes inside their account, and the Administrator loads WooCommerce orders. & \#22 paid registration; \#23 athlete registration; \#24 status and renewal; \#25 WooCommerce import; \#70 roster file (waits on the gym). \\
+\addlinespace
+5 & Nov 16 to Nov 29 & Staff and administration: Staff see active sessions, verify Gym IDs, and do assisted Check In; Administrators manage access, schedules, and notices; everyone sees analytics. & \#26 Staff panel; \#27 access tools; \#28 schedules and notices; \#29 analytics; \#69 audit log screen. \\
+\addlinespace
+6 & Nov 30 to Dec 11 & Release: the app runs on the CTI server and the gym accepted it. \textbf{Final report, Dec 11.} & \#30 integration, concurrency, and load tests; \#31 production on the CTI VM; \#32 acceptance test; \#65 mail gateway; \#66 install script; \#67 restore from backup; \#68 disaster recovery plan; \#71 delete old data. \\
+\end{longtable}
+\end{center}
+
+The proposal grouped work by objective with deadlines on Oct 16, Oct 30, Nov 6, Nov 20, and Dec 4. Phases group it by what the team can demonstrate: objectives 1 to 3 now land in Phase 3 and objectives 4 and 5 in Phase 5. The objectives table now uses the phase dates: \pending{confirm with the professor that the phase dates replace the proposal deadlines}. Milestone status on Nov 4: Midterm report, 34 issues closed and 23 open; Final report, 0 closed and 18 open.
+
+\subsection{Team Responsibilities}
+
+Owners are the assignees recorded on each GitHub issue. Issues without an assignee have no owner yet.
+
+\begin{center}
+\small
+\begin{tabularx}{0.95\textwidth}{L{3.4cm} X}
+\toprule
+\textbf{Member} & \textbf{Assigned issues} \\
+\midrule
+Carlos J. Pepin Delgado & Requirements (SRS) and design documents (\#1, \#3 to \#8), issue templates and team rules (\#9), wireframe guide (\#54), document updates after design review (\#52), frontend skeleton and CI (\#48), container follow-ups (\#57), backend follow-ups (\#73), app base (\#14), shared skeleton issue (\#11). \\
+\addlinespace
+Pierre G Vales Torres & Containers and database (\#46), Laravel API and backend CI (\#47), database migrations and rules (\#13), shared skeleton issue (\#11). \\
+\addlinespace
+Viviana V Ramos Vivoni & Wireframes (\#40 to \#45), close the open design decisions (\#49). \\
+\addlinespace
+No assignee yet & Sign in (\#15), accounts and audit log service (\#16), Check In (\#17), Gym ID and occupancy (\#18), terms and roster (\#21), Phases 4 and 5 (\#22 to \#29, \#69, \#70), release work (\#30 to \#32, \#65 to \#68, \#71), location boundary (\#12), gym and CTI follow-up (\#62 to \#64), test data (\#81), accessibility check (\#82), first load test (\#83): \pending{owner} for each. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Testing Plan}
+
+Each test belongs to one objective and to one or more requirement IDs (REQ-NF-44), and every case uses a controlled dataset. One seed command loads the same fake data into a fresh local database, and the automated tests and the live demo both run on it, so the demo shows the cases the tests prove (issue \#81). All automated tests run in continuous integration on every pull request, which reruns the tests of earlier work.
+
+\textbf{Authorization (Phases 3 and 4):} a controlled dataset checks valid and expired paid memberships, valid and invalid athlete approvals, missing authorization, and unmatched users against expected approve and deny decisions. \textbf{Check In and sessions (Phase 3):} tests cover location inside and outside the boundary, denied permission, inadequate accuracy, successful, rejected, and duplicate Check Ins, automatic expiration, and concurrent requests that must create at most one session. Staff-assisted Check In tests (Phase 5) verify the authorized user without a smartphone, photo and authorization checks, actor and timestamp audit, and no overlapping session.
+
+\textbf{Occupancy (Phase 3):} expected active-session counts are compared after Check Ins, expirations, Staff corrections, and concurrent events; User, Staff, and Administrator views must agree. \textbf{Roles (Phase 5):} the permission matrix confirms allowed actions succeed and forbidden actions fail. \textbf{Analytics (Phase 5):} each finalized metric is compared with a known result from controlled historical data. \textbf{Integration (Phase 6):} one integrated dataset runs from sign in to session creation to analytics, and all five areas are checked together. Engineering-constraint pass conditions and timing appear in Engineering Constraints and Verification.
+
+\textbf{Concurrency test for one session (REQ-NF-42).} A parallel backend test fires simultaneous Check In requests for the same user, and repeated Authorization Number or roster claims, against the real database. The pass condition is one session or one claim, never two. The load tool has no built-in barrier that releases all requests together, so this check is a separate test and not only part of the load run.
+
+\textbf{Accessibility testing (issue \#82).} Three checks run together. An axe-core scan [13] runs on each screen inside the Playwright browser tests [12] with the WCAG 2.0, 2.1, and 2.2 level A and AA rules, saves its results, and fails the build on a violation. The code linter has its accessibility rules turned on. A manual checklist covers what a scan cannot: keyboard only, visible focus that the bottom bar never covers, NVDA on Windows, VoiceOver on iPhone, 200\% zoom, a 320 pixel wide screen, and status messages read aloud. Each pull request that adds a screen includes the filled checklist. Automatic tools find only part of the problems, so results are stated as no automatically detectable violations plus the manual checks done, not as full WCAG conformance.
+
+\textbf{Stress testing with k6.} k6 scripts [11] sign in many fake users before the timed part, so sign-in time stays out of the numbers, and then each user does Check In at almost the same moment. Round one is one Check In per user, and round two repeats it with the same users. Each run has limits that fail it: error rate and 95th percentile (p95) response time. After the run, the test counts sessions per user and reads the occupancy number. Two runs are planned. A preliminary local run (issue \#83) uses the local containers and records the computer used; the load tool and the app share that computer, so its numbers only compare runs with each other. The full test (issue \#30) runs above the peak hour on the CTI VM, and the peak number is \pending{G-05 peak hour from the gym}. It checks the error rate, the p95 latency, one session per user, and a correct occupancy number (REQ-NF-15, REQ-NF-42, REQ-NF-50). Separately, the Check In button must be usable in under 3 seconds on mobile data on a mid-range phone (REQ-NF-16); this needs a real phone, and the test phone and network are \pending{test phone and network}.
+
+\textbf{Acceptance testing (issue \#32).} After the release is on the CTI VM, gym staff and real users, both paid members and athletes, run the main flows on their own phones and computers: registration, Check In, Gym ID, Staff-assisted Check In, and import. Browsers: iPhone with Safari, Android with Chrome, and Windows with Chrome and Edge, with macOS and Firefox as a secondary check (REQ-NF-30, REQ-NF-43, REQ-NF-49). The gym records accepted or not accepted for each flow and the problems found, and each problem becomes an issue. Who takes part and when: \pending{participants and dates from the gym}.
+
+\begin{center}
+\small
+\begin{longtable}{L{2.4cm} L{4.2cm} L{1.7cm} L{2.9cm} L{2.0cm}}
+\toprule
+\textbf{Test type} & \textbf{What it checks} & \textbf{Objective} & \textbf{Requirements} & \textbf{When} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Test type} & \textbf{What it checks} & \textbf{Objective} & \textbf{Requirements} & \textbf{When} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Unit and database & Access decision cases and session rules & 1, 2 & REQ-NF-40, REQ-NF-44 & Phases 3, 4 \\
+\addlinespace
+Integration & Sign in to session creation to analytics & 1 to 5 & REQ-NF-41 & Phases 3, 6 \\
+\addlinespace
+Concurrency & At most one session or claim per burst of requests & 2, 3 & REQ-NF-42 & Phases 3, 6 \\
+\addlinespace
+Occupancy & Count equals active sessions in every view & 3 & REQ-NF-44 & Phase 3 \\
+\addlinespace
+Roles & Permission matrix allows and denies as defined & 4 & REQ-NF-44 & Phase 5 \\
+\addlinespace
+Analytics & Metrics match known historical results & 5 & REQ-NF-44 & Phase 5 \\
+\addlinespace
+Accessibility & axe scan, lint rules, and manual checklist on every screen & 1 to 5, on each screen & REQ-NF-13, REQ-NF-14, REQ-NF-36 & Midterm, then every new screen \\
+\addlinespace
+Stress, local & Error rate, p95 latency, one session per user, occupancy & 2, 3 & REQ-NF-15, REQ-NF-42, REQ-NF-50 & Midterm (\#83) \\
+\addlinespace
+Stress, full & Same checks above the peak hour on the CTI VM, plus the 3 second phone check & 2, 3 & REQ-NF-15, REQ-NF-16, REQ-NF-42, REQ-NF-50 & Phase 6 (\#30) \\
+\addlinespace
+Real phones and browsers & Location and PWA behavior on the device matrix & 2 & REQ-NF-30, REQ-NF-43 & Phases 3, 6 \\
+\addlinespace
+Acceptance & Main flows run by gym staff and real users & 1 to 5 & REQ-NF-30, REQ-NF-43, REQ-NF-49 & Phase 6 (\#32) \\
+\end{longtable}
+\end{center}
+
+%=====================================================================

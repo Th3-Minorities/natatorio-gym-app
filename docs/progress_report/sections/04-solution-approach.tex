@@ -1,0 +1,284 @@
+\section{Solution Approach}
+%=====================================================================
+
+The solution is a Progressive Web Application (PWA) for the UPRM Weight Gym located in the Natatorio Complex. The platform brings together user accounts, semester-based authorization, Check In, current Gym ID verification, estimated occupancy, athlete management, facility information, membership records, and utilization analytics. The PWA is intended primarily for use from a user's phone while remaining accessible through a web browser. The system supports three roles: User, Staff, and Administrator.
+
+\subsection{Changes since the Proposal}
+
+Design review, the CTI meeting, and team decisions changed the proposal in the ways below. Status follows the project's decision log: Decided means the team agreed, Proposed means it needs confirmation, Pending means information is missing.
+
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{longtable}{L{4.7cm} L{5.6cm} L{4.7cm}}
+\toprule
+\textbf{Change} & \textbf{Reason} & \textbf{Status} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Change} & \textbf{Reason} & \textbf{Status} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+Stack: Laravel and PostgreSQL in \texttt{docker-compose} replace Supabase and Vercel.
+&
+CTI can host it in December, no external service holds student data, and the cost stays lowest.
+&
+Decided. Skeleton merged (\#46 to \#48). \pending{professor approval of the stack change, P-03} \\
+\addlinespace
+
+Hosting: development on each member's PC; production on a CTI virtual machine with a UPRM subdomain; VPN for the team.
+&
+What is tested is what runs in December. CTI said the project owner files the requests.
+&
+Decided. Requests being prepared (\#64). \\
+\addlinespace
+
+Updates: the screen polls every 20 to 30 seconds instead of using real-time channels.
+&
+Occupancy changes only on a Check In or an expiration. Server-sent events failed through the test tunnel.
+&
+Decided. Live updates only if CTI allows them and time remains. \\
+\addlinespace
+
+Accounts: own accounts, no institutional login or SAML.
+&
+Some paid members have no UPRM email. CTI said SAML is only needed for external authentication.
+&
+Decided (no SAML). Proposed (Laravel Sanctum and Fortify). \\
+\addlinespace
+
+Staff and Administrators: individual accounts with roles, invited by email by an Administrator. The shared gym account, the PIN, and the paper recovery code are removed. An install command creates the first Administrator.
+&
+The audit log can name the person who acted, as CTI suggested. It also matches the proposal's original User, Staff, and Administrator roles.
+&
+Decided by the team on November 4. Documents being updated. \pending{gym director confirmation of individual accounts} \\
+\addlinespace
+
+Registration: paid members use the Authorization Number only; the account email is the WooCommerce payment email. Athletes open a link sent to their roster email.
+&
+Some members have no institutional email. A student number is not secret, so a link proves control of the roster email. Number lookups have rate limits.
+&
+Decided. Build in Phase 4. \\
+\addlinespace
+
+Renewal and type change happen inside the existing account. One 60-minute session rule counts everyone; athletes have no time limit in the gym.
+&
+One account and one history per person. Occupancy needs one counting rule.
+&
+Decided. \pending{60-minute rule details, athletes-only periods, gym director} \\
+\addlinespace
+
+Refunds and cancellations removed. Memberships only expire at the end of the term; the import handles new and corrected orders.
+&
+The gym does not refund memberships.
+&
+Decided. Requirement REQ-F-27 removed. \\
+\addlinespace
+
+Safety records reduced to waiver acceptance with an emergency contact. No address, documents, or medical warnings.
+&
+Least sensitive data that covers an emergency.
+&
+Decided. \pending{waiver form, gym director} \\
+\addlinespace
+
+Analytics open to every signed-in role, aggregated counts only.
+&
+Counts hold no personal data, and users can plan when to go.
+&
+Decided. \\
+\addlinespace
+
+Security rules: a growing wait after 10 failed sign-ins; no inactivity timeout; passwords of at least 10 characters checked against known breaches; account deletion without an active authorization; audit log with account, time, IP address, and before and after values.
+&
+A timeout could sign a user out between Check In and the front desk. Less personal data is kept, and analytics keep working.
+&
+Decided. The 10-character minimum is below the 15 that NIST SP 800-63B-4 asks for in some cases; the deviation is documented. \\
+\addlinespace
+
+Manual grant and import undo: Administrators can grant or revoke an authorization with a logged reason, and undo any import.
+&
+Fixes order errors, and a wrong file must not leave wrong access.
+&
+Decided. \\
+\addlinespace
+
+Check In location: in production the boundary is at most 50 meters from the gym.
+&
+Indoor accuracy varies; a phone test gave 19 m at home.
+&
+Set as a ceiling in the requirements. Boundary not yet measured at the gym (\#12). \\
+\addlinespace
+
+Scope: all five objectives are committed; the roster tool and the Install button move to the MVP. Real WooCommerce data is used only to test the integration.
+&
+Objectives 4 and 5 test items the proposal called Secondary. Less student data on team computers.
+&
+Decided. \\
+\addlinespace
+
+Operations CTI expects: mail through the CTI gateway, backups with a tested restore, a disaster plan, an install script, an audit log nobody can edit.
+&
+CTI asks every student project for these. CTI did not say they are conditions for the VM.
+&
+Proposed. Issues \#65 to \#69 planned for the Final report. \pending{CTI mail gateway authorization, backup method} \\
+\addlinespace
+
+Plan: six phases with dates replace the eleven sprints; final date December 11.
+&
+Issues of about one person-week each, grouped into phases with dates (issue \#50).
+&
+In use. Midterm milestone: 34 issues closed, 23 open. Final milestone: 0 closed, 18 open. \\
+\end{longtable}
+\end{center}
+
+\subsection{Accounts and Authorization}
+
+Users Create an Account or Sign In to one persistent account across semesters. Authorization is separate: a person can move between paid-member and athlete access without losing their account or Check In history. A current photograph is required at registration and each semester renewal; users cannot freely replace it during an active authorization period because it appears on the Gym ID. To reduce account sharing, a User can stay signed in on only one device; signing in on another device ends the previous session.
+
+\textbf{Paid members.} UPRM continues to process semester purchases through WooCommerce. The user enters an issued Authorization Number, which the system validates against the paid membership, then creates a password and supplies a photograph. Only identity and authorization fields (name, email, student number when applicable, and membership details) are copied; unrelated billing data is excluded. On expiration, the account remains, Check In is disabled, and the PWA shows an expired status and Renew option.
+
+\textbf{Athletes.} A preapproved athlete enters a student number matching the Administrator-maintained roster, confirms the associated institutional email, creates a password, and supplies a photograph. No purchase or Authorization Number is required. Each roster record can be claimed by only one account. The account is created only after the athlete opens a link sent to the roster email.
+
+\textbf{Staff and Administrators.} Each person has an individual account. An Administrator invites a person by email and assigns the Staff or Administrator role; an install command creates the first Administrator. There is no shared gym account and no PIN: Administrator actions need the Administrator role. Every sensitive action is written to an audit log that names the person, time, and IP address.
+
+\subsection{Check In, Gym ID, and Occupancy}
+
+Normal Check In verifies current authorization and device location against the Weight Gym boundary, then atomically prevents overlapping sessions and creates one 60-minute facility session. \pending{60-minute rule details (per visit or per day, return within the window), gym director} Location is a Check In condition, not proof of physical presence; users are not tracked continuously. The session expires without user checkout and may be corrected by authorized Staff. Its current Gym ID displays name, photograph, authorization and Check In status, and live active-session indicators; Staff verifies these against backend session data rather than the display alone.
+
+If an authorized user lacks a smartphone while physically present, Staff locates the account using an approved identification method, checks the current photograph and active authorization against backend records, and creates the same 60-minute session. This Staff-assisted Check In records the Staff actor and timestamp as an exception; it cannot bypass authorization or create a second active session.
+
+Estimated occupancy equals the active-session count and updates after Check Ins, expiration, or Staff corrections; each screen polls the server every 20 to 30 seconds. Users, Staff, and Administrators see the same estimate; early departures or stays beyond expiration mean it is not a physical headcount.
+
+\subsection{Operations and Facility Information}
+
+Staff view active sessions, Check In times, authorization, and Gym IDs, assist with approved Check In exceptions, and make permitted session corrections. Administrators create, import, and maintain semester athlete rosters and authorizations, Staff accounts, schedules, special hours, closures, and facility information. Utilization analytics are open to every signed-in role, as aggregated counts without names. Users see schedules and closures, gym rules, towel and footwear requirements (including Crocs and flip-flop restrictions), available machines, and approved equipment-use instructions now often communicated physically or verbally. Stakeholders also identified possible QR-based equipment instructions; these remain Stretch functionality.
+
+To reduce reliance on physical membership records, the system stores a liability-waiver acceptance with an emergency contact (name and phone), and nothing more. From Check In and session records, every signed-in role can review visits by hour, day, week, and month; high- and low-use periods; estimated occupancy over time; average and maximum occupancy summaries; and use by paid members versus athletes. These measures support staffing, scheduling, and facility planning.
+
+\subsection{Gap with Existing Solutions}
+
+UPRM Athletic Activities already maintains relevant information digitally, but the current Weight Gym workflow remains fragmented. Paid memberships are processed through WooCommerce, athlete authorization is maintained separately, and manual facility registration does not automatically produce active-session, estimated-occupancy, or utilization information.
+
+\begin{center}
+\small
+\begin{tabularx}{0.98\textwidth}{L{3.2cm} L{2.5cm} L{2.5cm} L{2.5cm} X}
+\toprule
+\textbf{Capability} &
+\textbf{Current UPRM} &
+\textbf{GymMaster [1]} &
+\textbf{TeamUp [2]} &
+\textbf{Proposed Platform} \\
+\midrule
+
+Member/mobile account
+&
+No integrated Weight Gym account workflow
+&
+Supported
+&
+Supported
+&
+Persistent account across semesters \\
+
+\addlinespace
+
+Digital Check In
+&
+Manual registration
+&
+Supported
+&
+Supported
+&
+Location-validated Check In linked to a facility session \\
+
+\addlinespace
+
+Existing WooCommerce process
+&
+Used for paid memberships but separate from Check In
+&
+Not UPRM-specific
+&
+Not UPRM-specific
+&
+Preserved and integrated as the paid-authorization source \\
+
+\addlinespace
+
+Paid-member and athlete authorization
+&
+Separate processes
+&
+Not UPRM-specific
+&
+Not UPRM-specific
+&
+Combined in one Weight Gym authorization workflow \\
+
+\bottomrule
+\end{tabularx}
+\end{center}
+
+Member applications and digital Check In are common features of commercial gym software. GymMaster provides member-app and access-control capabilities [1], while TeamUp provides membership-linked access control, customer Check In, and form and waiver capabilities [2]. The proposed platform does not claim these individual capabilities as new. Its specific contribution is integrating them around UPRM's existing WooCommerce payment process, Administrator-managed athlete authorization, facility sessions, estimated occupancy, and operational requirements. ``Not UPRM-specific'' does not mean that a commercial platform lacks a comparable feature; it means that the feature is not designed around the institutional workflow addressed by this project.
+
+\subsection{Value Proposition}
+
+The platform connects UPRM's existing WooCommerce process and athlete authorization to one facility workflow, keeps each person's identity across semesters, and turns Check Ins into current sessions, occupancy estimates, and utilization data. It also puts access status, Gym ID, schedules, rules, equipment information, and approved membership records in one PWA.
+
+\subsection{Scope Prioritization}
+
+The team committed to all five objectives. The MVP is built and validated first; Secondary features follow in the same semester and are also committed. Stretch features follow only if committed work is complete and tested, or remain future work.
+
+\begin{center}
+\small
+\begin{tabularx}{0.95\textwidth}{L{2.4cm} X}
+\toprule
+\textbf{Scope} & \textbf{Capabilities} \\
+\midrule
+MVP & Persistent accounts; paid-member and athlete authorization; WooCommerce Export Orders import and validation; Administrator roster tool; location-validated Check In; one active 60-minute session; current Gym ID; estimated occupancy; individual Staff and Administrator accounts with basic Staff verification and correction; Install button. \\
+\addlinespace
+Secondary (committed) & Full role permissions; schedules, closures, and notices; rules and equipment information; waiver acceptance and emergency contact; utilization analytics open to every signed-in role; audit log screen. \\
+\addlinespace
+Stretch / Future & Equipment QR shortcuts; automated WooCommerce API or webhook sync; capacity-based admission after UPRM sets an official policy; Natatorio or other facility expansion; predictive occupancy after enough history exists. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\subsection{Benefits and Limitations}
+
+\begin{center}
+\small
+\begin{tabularx}{0.95\textwidth}{L{3.2cm} X}
+\toprule
+\textbf{Audience} & \textbf{Benefit} \\
+\midrule
+Paid members & Keep one account, renew with a new Authorization Number, Check In and show a live Gym ID, and view occupancy, use statistics, and facility information. \\
+Athletes & Use the same account across authorization periods through the approved roster, without buying a membership. \\
+Staff & Verify current authorization, sessions, Check In times, and Gym IDs, and handle approved exceptions without comparing disconnected records. \\
+Administrators / UPRM Athletic Activities & Manage rosters, Staff accounts, schedules, closures, and facility information; use utilization data for staffing, scheduling, and planning. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\textbf{Limitations.} The 60-minute session count estimates occupancy, not physical presence; users may leave early or stay longer. Indoor device location is imprecise and does not prove presence, although the app does not track movement. Normal authorization and Check In depend on network access and accurate WooCommerce and athlete-roster records; incorrect or outdated source records can affect access until corrected. Lost or replaced devices need secure account recovery under the one-device rule. Email links (athlete registration, password reset, Staff invitations) need a mail route that CTI has not yet authorized \pending{CTI mail gateway authorization}. Photos, visits, emergency contacts, and waiver acceptances need restricted access and institutional retention rules \pending{retention periods, gym director}, and the platform is not a medical-record system. Capacity-based admission awaits an official UPRM capacity policy. The committed scope covers the Weight Gym, not other facilities or a complete commercial recreation-management platform.
+
+\subsection{Resources Required for Operation}
+
+The three-member team designs, builds, tests, and documents the platform. UPRM Athletic Activities must validate access and renewal rules, Staff permissions, Check In exceptions, schedules, privacy and retention, account recovery, and any future capacity policy. The team needs authorized WooCommerce membership exports, current athlete records, schedules and closures, gym rules, equipment information, and the approved waiver text. WooCommerce remains the payment system.
+
+\textbf{Production.} A CTI virtual machine with 2 vCPU, 4 GB of memory, and 60 GB of disk, the top of the 40 to 60 GB range CTI gave as usual for a web application. The team also needs a UPRM domain name and VPN access for working on the server from off campus. The gym director, as project owner, files the three requests with CTI because the team cannot; the team writes the request texts (\#64). Outgoing mail goes through the CTI mail gateway once CTI authorizes the machine \pending{CTI answers: mail gateway, HTTPS certificate, operating system, backups}. CTI has no staff to maintain the application after December, so the owner must name who does \pending{maintenance owner after December, gym director and professor}.
+
+\textbf{Development.} Each member runs the same \texttt{docker-compose} setup with Docker Desktop, fake data, and a tunnel for phone tests. Work is tracked in GitHub (issues, milestones, pull requests with one review from another member, and continuous-integration checks). Representative iPhone and Android phones are needed for location and accessibility tests, and Staff devices for the acceptance test.
+
+\subsection{Intellectual Property Used and Generated}
+
+\textbf{Existing materials.} The project uses UPRM's existing WordPress/WooCommerce environment, third-party and open-source software dependencies (for example Laravel and its official packages, which carry the MIT license), UPRM-approved facility rules, schedules, waiver language, equipment information, branding, and any properly licensed third-party media. These materials remain subject to their existing ownership, licensing, privacy, and attribution requirements. User and institutional operational data, including membership records, athlete records, photographs, emergency contacts, and Check In records, are not project-generated intellectual property.
+
+\textbf{Project-generated work.} Original work produced by the Capstone team includes application source code, user-interface design, original visual assets, project documentation, and original instructional material. Final ownership and license follow UPRM and Capstone policies before long-term institutional deployment: \pending{license and ownership, professor question P-05}.
+
+%=====================================================================

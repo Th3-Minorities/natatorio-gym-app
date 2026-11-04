@@ -1,0 +1,33 @@
+%=====================================================================
+\section*{Response to Proposal Reviews}
+\addcontentsline{toc}{section}{Response to Proposal Reviews}
+%=====================================================================
+
+The proposal received four comments. Each row below says what the team changed and where to find it in this report.
+
+\begin{center}
+\small
+\begin{longtable}{L{3.3cm} L{6.4cm} L{3.7cm}}
+\toprule
+\textbf{Comment} & \textbf{What we changed} & \textbf{Where in this report} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Comment} & \textbf{What we changed} & \textbf{Where in this report} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\textbf{5(b) Diagrams.} ``I would have also appreciated some UI sketches or wireframes.'' & Listed all 45 screens by role with their states and drew seven navigation maps. Wireframes are split into six issues. \pending{wireframe figures} & Technical Approach, User Interface Design \\
+\addlinespace
+\textbf{5(d) Constraints.} Missing requirements from the Capstone guidelines, such as accessibility. & Added accessibility (WCAG 2.2 level AA) as a constraint with its checks: axe-core in CI, lint rules, and a manual checklist. Added the CTI VM, polling, and mail dependency, and removed refund and cancellation text. & Technical Approach, Engineering Constraints and Verification \\
+\addlinespace
+\textbf{5(e) Standards.} Missing authentication standards. & Added NIST SP 800-63B-4 and OWASP ASVS 5.0.0 with the controls we apply: password rules, attempt limits, sessions, and role checks. Individual accounts with roles replace the shared gym account. & Technical Approach, Engineering Standards; Identity, Authorization, and Session Model \\
+\addlinespace
+\textbf{5(e) Architecture.} System Architecture was expected in this section or the next. & Added a System Architecture subsection with the components, the Check In request path, and the deployment on a CTI VM. & Technical Approach, System Architecture \\
+\addlinespace
+\textbf{6(d) Testing plan.} Missing acceptance and stress testing. & Added an acceptance test with gym staff and real users and a load test with k6 for simultaneous Check Ins. & Project Plan, Testing Plan; Preliminary Results, Testing Plan Execution \\
+\addlinespace
+\textbf{Changes since the proposal.} & Moved to Laravel, PostgreSQL, and docker-compose on a CTI VM, with polling instead of real-time updates, own accounts, no refunds, and a revised phase schedule. & Solution Approach, Changes since the Proposal \\
+\end{longtable}
+\end{center}
