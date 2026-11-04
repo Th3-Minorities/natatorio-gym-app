@@ -43,6 +43,7 @@ class ConcurrentInsertsTest extends TestCase
             'authorization_number' => 'A-777',
             'name' => 'Ana Rivera',
             'email' => 'ana@example.com',
+            'member_group' => 'student',
             'order_status' => 'completed',
             'paid_at' => '2026-09-01 10:00:00',
             'synced_at' => '2026-09-01 10:05:00',

@@ -25,6 +25,7 @@ class ImportedMembershipFactory extends Factory
             'email' => fake()->safeEmail(),
             'student_number' => fake()->optional()->numerify('8#########'),
             'membership_details' => 'Membresía semestral',
+            'member_group' => fake()->randomElement(['student', 'employee']),
             'order_status' => 'completed',
             'paid_at' => now(),
             'synced_at' => now(),

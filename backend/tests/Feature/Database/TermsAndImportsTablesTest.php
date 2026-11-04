@@ -66,6 +66,19 @@ class TermsAndImportsTablesTest extends TestCase
         $this->assertSame(2, DB::table('imported_memberships')->where('authorization_number', 'A-500')->count());
     }
 
+    public function test_an_order_says_if_the_buyer_is_a_student_or_an_employee(): void
+    {
+        DB::table('imported_memberships')->insert($this->membershipRow(['order_reference' => 'WC-S', 'authorization_number' => 'A-1', 'member_group' => 'student']));
+        DB::table('imported_memberships')->insert($this->membershipRow(['order_reference' => 'WC-E', 'authorization_number' => 'A-2', 'member_group' => 'employee']));
+
+        $this->assertRejected('23502', fn () => DB::table('imported_memberships')->insert(
+            $this->membershipRow(['order_reference' => 'WC-N', 'authorization_number' => 'A-3', 'member_group' => null]),
+        ));
+        $this->assertRejected('23514', fn () => DB::table('imported_memberships')->insert(
+            $this->membershipRow(['order_reference' => 'WC-X', 'authorization_number' => 'A-4', 'member_group' => 'faculty']),
+        ));
+    }
+
     public function test_an_order_needs_a_term(): void
     {
         $this->assertRejected('23502', fn () => DB::table('imported_memberships')->insert(
@@ -117,6 +130,7 @@ class TermsAndImportsTablesTest extends TestCase
             'authorization_number' => 'A-100',
             'name' => 'Ana Rivera',
             'email' => 'ana@example.com',
+            'member_group' => 'student',
             'order_status' => 'completed',
             'paid_at' => '2026-09-01 10:00:00',
             'synced_at' => '2026-09-01 10:05:00',

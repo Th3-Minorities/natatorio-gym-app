@@ -49,6 +49,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->comment('payment email');
             $table->string('student_number', 20)->nullable()->comment('NULL when absent');
+            $table->string('member_group', 10)->comment('student or employee, from the order (D15)');
             $table->text('membership_details')->nullable();
             $table->string('order_status', 30);
             $table->timestampTz('paid_at');
@@ -58,6 +59,10 @@ return new class extends Migration
             // The number is unique per term, not across terms (decision D1, E-71).
             $table->unique(['academic_term_id', 'authorization_number']);
         });
+
+        // Employees pay like students and only differ in the statistics (D15).
+        DB::statement("ALTER TABLE imported_memberships ADD CONSTRAINT imported_memberships_member_group_check
+            CHECK (member_group IN ('student', 'employee'))");
     }
 
     public function down(): void
