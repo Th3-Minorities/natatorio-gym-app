@@ -4,6 +4,7 @@ services:
   proxy:
     image: natatorio-gym-app-proxy:local
     build: ./frontend
+    restart: unless-stopped
     ports:
       - "127.0.0.1:${APP_PORT:-8080}:80"
     volumes:
@@ -21,6 +22,7 @@ services:
   app:
     image: natatorio-gym-app-php:local
     build: ./docker/php
+    restart: unless-stopped
     # Same user as the web requests, so no command run with "docker compose exec" creates files as root.
     # For the rare command that needs root: docker compose exec -u root app ...
     user: www-data
@@ -55,6 +57,8 @@ services:
 
   scheduler:
     image: natatorio-gym-app-php:local
+    # Same build as app, so the scheduler also builds and starts without the app service.
+    build: ./docker/php
     # Same user as app (see above).
     user: www-data
     working_dir: /var/www/html
@@ -88,7 +92,8 @@ services:
       start_period: 5s
 
   db:
-    image: postgres:17.4-bookworm
+    image: postgres:17.11-bookworm
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-natatorio_gym}
       POSTGRES_USER: ${POSTGRES_USER:-natatorio}
@@ -98,15 +103,17 @@ services:
       - ./docker/postgres/01-btree-gist.sql:/docker-entrypoint-initdb.d/01-btree-gist.sql:ro
       - ./docker/postgres/02-test-database.sh:/docker-entrypoint-initdb.d/02-test-database.sh:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
+      # Over TCP on purpose: while the first-start init scripts run, the temporary server listens only on a socket.
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 5s
       timeout: 3s
       retries: 10
       start_period: 5s
 
   mailpit:
-    image: axllent/mailpit:v1.27.8
+    image: axllent/mailpit:v1.27.11
     profiles: ["development"]
+    restart: unless-stopped
     command: ["--webroot", "/mailpit/"]
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8025/mailpit/"]

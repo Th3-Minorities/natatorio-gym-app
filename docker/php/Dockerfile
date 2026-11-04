@@ -1,6 +1,6 @@
-FROM composer:2.8.8 AS composer
+FROM composer:2.8.12 AS composer
 
-FROM php:8.3.20-fpm-bookworm
+FROM php:8.3.36-fpm-bookworm
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends libpq-dev libpq5 unzip \

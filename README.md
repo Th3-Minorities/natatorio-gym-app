@@ -1,5 +1,7 @@
 # Natatorio Gym App
 
+To find a document or read an ID like `REQ-F-12`, `E-31` or `S-01`, start with [docs/README.md](docs/README.md).
+
 ## Local containers
 
 Install Docker Desktop and start it. From the repository root, run:
@@ -13,6 +15,8 @@ The proxy is at <http://localhost:8080>. Its published port is bound to this com
 Mailpit is only for local development. Before production, disable the `development` profile and set `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD` and `MAIL_SCHEME` in protected environment configuration for the CTI SMTP server or relay. Do not commit production credentials. Use an external mail provider only after approval, since account email addresses would leave the CTI VM. The CTI mail settings are still pending.
 
 To use different local settings, copy `.env.example` to `.env` and edit it before starting the stack. The default database password is for local development only. Do not use it for production.
+
+The database password and the `btree_gist` extension only apply when the database volume is first created. If you change the password in `.env` later, or your volume is older than the extension, the database keeps the old settings. To start over, run `docker compose --profile development down --volumes` and start the stack again. This deletes all local database data and uploaded photos, so only do it with fake data.
 
 Stop the containers and keep the database:
 
