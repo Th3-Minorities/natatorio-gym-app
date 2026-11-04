@@ -108,7 +108,7 @@ The tests use their own database, `natatorio_gym_test`, so they never wipe your 
 
 ### Slow on Windows
 
-On Windows, each API request can take 7 to 20 seconds, and the tests about a minute. The cause is Docker Desktop reading the PHP files from a Windows folder; the code itself is fast (one measurement: Laravel started in 7.8 s from the Windows folder and in 0.17 s from inside the container). A repo inside OneDrive is likely slower still. CI runs on Linux and is not affected. Possible fixes for later: turn on OPcache in the PHP image, keep `backend/vendor/` in a Docker volume, or keep the repo in the WSL file system instead of a Windows folder.
+On Windows, each API request can take 7 to 20 seconds, and the tests about a minute. The cause is Docker Desktop reading the PHP files from a Windows folder; the code itself is fast (one measurement: Laravel started in 7.8 s from the Windows folder and in 0.17 s from inside the container). A repo inside OneDrive is likely slower still. CI runs on Linux and is not affected. OPcache is on in the PHP image, which helps a little. Possible fixes for later: keep `backend/vendor/` in a Docker volume, or keep the repo in the WSL file system instead of a Windows folder.
 
 ### Everyday commands
 

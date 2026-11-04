@@ -101,9 +101,10 @@ jobs:
           grep -q '"code":"database_unavailable"' /tmp/health-503.json
 
       # nginx answers this one itself (body over 1 MB), so only a request through the proxy can check it.
+      # 11 MB, just over the 10 MB upload limit.
       - name: Proxy errors use the API error format
         run: |
-          status="$(head -c 2097152 /dev/zero | curl -sS -o /tmp/413.json -w '%{http_code}' --data-binary @- http://127.0.0.1:8080/api/health)"
+          status="$(head -c 11534336 /dev/zero | curl -sS -o /tmp/413.json -w '%{http_code}' --data-binary @- http://127.0.0.1:8080/api/health)"
           cat /tmp/413.json
           test "$status" = 413
           grep -q '"code":"payload_too_large"' /tmp/413.json
