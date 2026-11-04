@@ -32,10 +32,19 @@ return [
 
         'local' => [
             'driver' => 'local',
-            // The private_photos volume (docker-compose.yml), outside the code folder.
-            'root' => '/var/www/private',
+            'root' => storage_path('app/private'),
             'serve' => true,
             'throw' => false,
+            'report' => false,
+        ],
+
+        // Athlete photos only. The private_photos volume (docker-compose.yml) is mounted here, outside
+        // the code folder. Other private files use "local", so they never land in the photo volume.
+        'photos' => [
+            'driver' => 'local',
+            'root' => '/var/www/private',
+            'visibility' => 'private',
+            'throw' => true,
             'report' => false,
         ],
 
