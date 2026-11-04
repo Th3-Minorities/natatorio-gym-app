@@ -4,6 +4,9 @@ namespace Tests\Feature\Database;
 
 use App\Models\AcademicTerm;
 use App\Models\Import;
+use App\Models\ImportedMembership;
+use App\Models\RosterRecord;
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\Concerns\InsertsAtTheSameTime;
 use Tests\TestCase;
@@ -31,6 +34,24 @@ class ConcurrentInsertsTest extends TestCase
             ['name' => 'Fall copy', 'starts_on' => '2026-09-01', 'ends_on' => '2026-12-31'],
             '23P01',
         );
+    }
+
+    public function test_the_same_membership_claimed_at_the_same_time(): void
+    {
+        $membership = ImportedMembership::factory()->create();
+        [$ana, $luis] = User::factory()->count(2)->create();
+        $claim = ['academic_term_id' => $membership->academic_term_id, 'type' => 'paid', 'status' => 'active', 'imported_membership_id' => $membership->id];
+
+        $this->assertSecondInsertLoses('authorizations', [...$claim, 'user_id' => $ana->id], [...$claim, 'user_id' => $luis->id], '23505');
+    }
+
+    public function test_the_same_roster_record_claimed_at_the_same_time(): void
+    {
+        $roster = RosterRecord::factory()->create();
+        [$ana, $luis] = User::factory()->count(2)->create();
+        $claim = ['academic_term_id' => $roster->academic_term_id, 'type' => 'athlete', 'status' => 'active', 'roster_record_id' => $roster->id];
+
+        $this->assertSecondInsertLoses('authorizations', [...$claim, 'user_id' => $ana->id], [...$claim, 'user_id' => $luis->id], '23505');
     }
 
     public function test_the_same_authorization_number_at_the_same_time(): void

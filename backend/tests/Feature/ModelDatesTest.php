@@ -16,19 +16,19 @@ class ModelDatesTest extends TestCase
     public function test_a_utc_string_is_saved_as_puerto_rico_time(): void
     {
         // The API sends dates in UTC with a "Z" (api-conventions.md).
-        $user = User::factory()->create(['email_verified_at' => '2026-10-27T01:00:00Z']);
+        $user = User::factory()->create(['deleted_at' => '2026-10-27T01:00:00Z']);
 
-        $this->assertSame('2026-10-26 21:00:00', $this->storedVerifiedAt($user));
-        $this->assertSame('2026-10-27T01:00:00+00:00', $user->fresh()->email_verified_at->utc()->toIso8601String());
+        $this->assertSame('2026-10-26 21:00:00-04', $this->storedDeletedAt($user));
+        $this->assertSame('2026-10-27T01:00:00+00:00', $user->fresh()->deleted_at->utc()->toIso8601String());
     }
 
     public function test_a_utc_carbon_is_saved_as_puerto_rico_time_and_is_not_changed(): void
     {
         $moment = Carbon::parse('2026-10-27 01:00:00', 'UTC');
 
-        $user = User::factory()->create(['email_verified_at' => $moment]);
+        $user = User::factory()->create(['deleted_at' => $moment]);
 
-        $this->assertSame('2026-10-26 21:00:00', $this->storedVerifiedAt($user));
+        $this->assertSame('2026-10-26 21:00:00-04', $this->storedDeletedAt($user));
         $this->assertSame('UTC', $moment->getTimezone()->getName());
     }
 
@@ -45,8 +45,8 @@ class ModelDatesTest extends TestCase
         }
     }
 
-    private function storedVerifiedAt(User $user): string
+    private function storedDeletedAt(User $user): string
     {
-        return DB::table('users')->where('id', $user->id)->value('email_verified_at');
+        return DB::table('users')->where('id', $user->id)->value('deleted_at');
     }
 }
