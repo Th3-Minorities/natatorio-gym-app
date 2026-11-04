@@ -14,6 +14,8 @@ Mailpit is only for local development. Before production, disable the `developme
 
 To use different local settings, copy `.env.example` to `.env` and edit it before starting the stack. The default database password is for local development only. Do not use it for production.
 
+The database password and the `btree_gist` extension only apply when the database volume is first created. If you change the password in `.env` later, or your volume is older than the extension, the database keeps the old settings. To start over, run `docker compose --profile development down --volumes` and start the stack again. This deletes all local database data and uploaded photos, so only do it with fake data.
+
 Stop the containers and keep the database:
 
 ```powershell
