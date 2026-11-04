@@ -17,8 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo(fn () => null);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        // Expected errors with a stable code are part of the API, not bugs.
-        $exceptions->dontReport(ApiException::class);
+        // Expected errors with a stable code are part of the API, not bugs. A server error thrown
+        // on purpose (5xx) is still a failure someone must see in the logs.
+        $exceptions->dontReportWhen(fn (Throwable $e) => $e instanceof ApiException && $e->status < 500);
 
         // Every /api response uses one error format (docs/design/api-conventions.md).
         $exceptions->render(fn (Throwable $e, Request $request) => $request->is('api', 'api/*')

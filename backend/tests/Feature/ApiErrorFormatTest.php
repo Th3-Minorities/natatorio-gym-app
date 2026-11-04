@@ -6,7 +6,9 @@ use App\Exceptions\ApiException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Route;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class ApiErrorFormatTest extends TestCase
@@ -28,7 +30,56 @@ class ApiErrorFormatTest extends TestCase
             // A code nobody wrote a text for (the reviewer's example, dotted on purpose).
             Route::get('/code-without-text', fn () => throw new ApiException('check_in.location_denied', 422));
             Route::get('/server-code-without-text', fn () => throw new ApiException('printer_on_fire', 503));
+            Route::get('/status/{status}', fn (int $status) => abort($status));
         });
+    }
+
+    #[DataProvider('statusCodes')]
+    public function test_each_http_status_has_its_own_code(int $status, string $code): void
+    {
+        $this->getJson('/api/test/status/'.$status)
+            ->assertStatus($status)
+            ->assertJsonPath('error.code', $code);
+    }
+
+    /** @return array<string, array{int, string}> */
+    public static function statusCodes(): array
+    {
+        return [
+            '410 is gone, not a bad request' => [410, 'gone'],
+            '415' => [415, 'unsupported_media_type'],
+            '418' => [418, 'im_a_teapot'],
+            '423' => [423, 'locked'],
+            '500' => [500, 'server_error'],
+            '501' => [501, 'not_implemented'],
+            '502' => [502, 'bad_gateway'],
+            '504' => [504, 'gateway_timeout'],
+        ];
+    }
+
+    public function test_a_status_with_a_code_but_no_text_gets_the_general_message(): void
+    {
+        app()->setLocale('es');
+        $this->getJson('/api/test/status/415')
+            ->assertExactJson(['error' => ['code' => 'unsupported_media_type', 'message' => 'No se pudo procesar la solicitud.']]);
+    }
+
+    public function test_a_server_error_thrown_on_purpose_is_logged(): void
+    {
+        Exceptions::fake();
+
+        $this->getJson('/api/test/server-code-without-text')->assertStatus(503);
+
+        Exceptions::assertReported(ApiException::class);
+    }
+
+    public function test_an_expected_client_error_is_not_logged(): void
+    {
+        Exceptions::fake();
+
+        $this->getJson('/api/test/api-exception')->assertUnprocessable();
+
+        Exceptions::assertNotReported(ApiException::class);
     }
 
     public function test_code_without_text_gets_a_readable_message_in_both_languages(): void

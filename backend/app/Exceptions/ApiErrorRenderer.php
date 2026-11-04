@@ -6,7 +6,9 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
@@ -16,7 +18,10 @@ use Throwable;
  */
 class ApiErrorRenderer
 {
-    /** Stable codes for the HTTP errors Laravel raises by itself. */
+    /**
+     * Stable codes for the HTTP errors Laravel raises by itself, each with its own text.
+     * Any other status gets its own code from its standard name (415 is `unsupported_media_type`), see codeFor().
+     */
     private const HTTP_CODES = [
         400 => 'bad_request',
         401 => 'unauthenticated',
@@ -24,11 +29,15 @@ class ApiErrorRenderer
         404 => 'not_found',
         405 => 'method_not_allowed',
         409 => 'conflict',
+        410 => 'gone',
         413 => 'payload_too_large',
         419 => 'session_expired',
         422 => 'validation_failed',
         429 => 'too_many_requests',
+        500 => 'server_error',
+        502 => 'bad_gateway',
         503 => 'service_unavailable',
+        504 => 'gateway_timeout',
     ];
 
     public static function render(Throwable $e): ?JsonResponse
@@ -41,11 +50,23 @@ class ApiErrorRenderer
             $e instanceof AuthenticationException => self::response(401, 'unauthenticated'),
             $e instanceof HttpExceptionInterface => self::response(
                 $e->getStatusCode(),
-                self::HTTP_CODES[$e->getStatusCode()] ?? ($e->getStatusCode() >= 500 ? 'server_error' : 'bad_request'),
+                self::codeFor($e->getStatusCode()),
                 headers: $e->getHeaders(),
             ),
             default => self::response(500, 'server_error', debug: self::debug($e)),
         };
+    }
+
+    /** One code per HTTP status: the listed one, else the standard name of the status. */
+    private static function codeFor(int $status): string
+    {
+        if (isset(self::HTTP_CODES[$status])) {
+            return self::HTTP_CODES[$status];
+        }
+
+        return isset(Response::$statusTexts[$status])
+            ? Str::slug(Response::$statusTexts[$status], '_')
+            : ($status >= 500 ? 'server_error' : 'bad_request');
     }
 
     /**
