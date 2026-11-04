@@ -358,10 +358,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-NF-04, REQ-NF-05 |
 | Feature | 2.3, 4.3 |
 | Why we ask | CTI said the team defines the size and asked for a growth estimate and a cleanup plan. CTI minutes, sections 3.3 and 3.7. |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Decided, with estimated numbers. Check them again when the gym answers G-05 (members per term) and G-03 (how long data is kept) |
+| Answer | Ask for 2 processors, 4 GB of memory and 60 GB of disk, CTI's usual web app size. A second backup disk only if the team picks that backup method (E-109).<br><br>How the disk number was reached. The numbers are assumptions until the gym answers:<br>- People per term: 500, 1,500 or 3,000. The only figure we have is about 150 people per day (REQ-NF-15), which is also a guess.<br>- One photo per person per term (athletes upload a new one each term, E-38).<br>- Each photo is kept at about 3 MB. People can upload up to 10 MB; the server converts it to JPEG and does not shrink it further.<br>- Photos from a past term are deleted each semester (REQ-NF-04).<br>- A backup copy of the photos sits on the same disk.<br><br>Worst case, 3,000 people: 9 GB of photos, 9 GB of backup copy and about 15 GB for Linux, the containers and logs, about 33 GB. For a few days after a term ends, the old and new photos can both be on the disk, which adds up to 9 GB more, about 42 GB. The database stays under 1 GB for years: about 150 Check Ins a day is about 37,500 rows a year, around 40 MB with indexes, and the audit log grows at a similar rate.<br><br>Memory: PostgreSQL about 1 GB, PHP about 600 MB, Linux about 500 MB, so 4 GB leaves room. Processors: about 50 phones polling every 25 seconds at the busiest hour is about 2 requests a second, which 2 processors handle easily.<br><br>When 60 GB stops being enough: if the gym keeps photos for a year or more instead of one semester, or has well over 3,000 people a term. Then either ask CTI for more disk or have the server shrink photos to about 0.3 MB, which cuts photo storage by about ten times. |
+| Answered by | Carlos Pepin |
+| Date | 2026-11-03 |
 
 ### E-112: One registration number field
 
