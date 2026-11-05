@@ -4,6 +4,9 @@ namespace Tests\Feature\Database;
 
 use App\Models\AcademicTerm;
 use App\Models\Import;
+use App\Models\ImportedMembership;
+use App\Models\RosterRecord;
+use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Tests\Concerns\InsertsAtTheSameTime;
 use Tests\TestCase;
@@ -55,5 +58,38 @@ class ConcurrentInsertsTest extends TestCase
             [...$order, 'order_reference' => 'WC-2'],
             '23505',
         );
+    }
+
+    public function test_two_claims_of_the_same_membership_at_the_same_time(): void
+    {
+        $membership = ImportedMembership::factory()->create();
+        $claim = ['academic_term_id' => $membership->academic_term_id, 'type' => 'paid', 'status' => 'active', 'imported_membership_id' => $membership->id];
+
+        $this->assertSecondInsertLoses(
+            'authorizations',
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            '23505',
+        );
+    }
+
+    public function test_two_claims_of_the_same_roster_record_in_the_same_term_at_the_same_time(): void
+    {
+        $record = RosterRecord::factory()->create();
+        $claim = ['academic_term_id' => AcademicTerm::factory()->create()->id, 'type' => 'athlete', 'status' => 'active', 'roster_record_id' => $record->id];
+
+        $this->assertSecondInsertLoses(
+            'authorizations',
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            '23505',
+        );
+    }
+
+    public function test_two_check_ins_of_the_same_user_at_the_same_time(): void
+    {
+        $session = ['user_id' => User::factory()->create()->id, 'authorization_type' => 'manual', 'status' => 'active'];
+
+        $this->assertSecondInsertLoses('facility_sessions', $session, $session, '23P01');
     }
 }
