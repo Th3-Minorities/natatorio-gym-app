@@ -11,10 +11,10 @@
 | Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
 | Decisions from the wireframe stage (2026-10-20) | 7 | 7 | 0 |
 | Questions after the CTI meeting (E-108 to E-113; E-110 is partly decided) | 6 | 5 | 1 |
-| Decisions after the Athletic Activities meeting (2026-11-04) | 31 | 31 | 0 |
+| Decisions after the Athletic Activities meeting (2026-11-04) | 38 | 38 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 136 | 127 | 9 |
+| Total | 143 | 134 | 9 |
 
 ## Scope and priorities
 
@@ -428,6 +428,13 @@ The team met the department on 2026-11-04 and settled the rest as a team the sam
 | E-142 | Choosing the period | The statistics screen has buttons for day, week, month, term and year, plus a free range from one date to another. The same period applies to the screen and to the download. SRS REQ-F-61, REQ-F-101. | Team | 2026-11-05 |
 | E-143 | Statistics for other services | A read-only REST API gives the statistics to another service, so the department can build its own charts. It gives counts only, with no names or other personal data, and needs a key. The roster never goes out through it. No service besides the app is expected to connect for now, so how keys are made stays undefined until one is. SRS REQ-F-102. | Team | 2026-11-05 |
 | E-144 | End-of-term summary | The end-of-term summary is the statistics download (E-141) with the term chosen in the period picker, with the same metrics as the screen. There is no separate report to design. Changes E-121. SRS REQ-F-96 (Merged into REQ-F-101). | Team | 2026-11-05 |
+| E-145 | Retention and the database links | Authorizations, store orders, sync records and paper log counts are deleted 5 years after they were created, like visits (E-131). A staff account is deleted 5 years after it was deactivated; an active one is never deleted. By then every visit, audit log entry and paper log entry that names the account is already gone, so no link in the database blocks the deletion, and the links stay strict as a guard. The retention task deletes the history first. Changes D13 ("never deleted"). SRS REQ-NF-05. | Team | 2026-11-05 |
+| E-146 | Voiding a wrong paper log entry | An Administrator who types a paper log entry wrong voids it instead of deleting it, so the audit log keeps the trail. A voided entry does not count in statistics, like any voided session. SRS REQ-F-95. Data model D18. | Team | 2026-11-05 |
+| E-147 | Sport on each visit | Check In copies the athlete's sport from the roster record onto the session, as it already copies student or employee. Visits per sport stay right when an Administrator changes an athlete's sport later or when the record is deleted. The copy is a snapshot of the visit, so it is repeated data on purpose. SRS REQ-F-61 (g). | Team | 2026-11-05 |
+| E-148 | Manual access in statistics | When an Administrator grants access by hand, they pick student or employee. A manual authorization then counts in the student members or the employee members group, so statistics keep three groups (athletes, student members, employee members) and E-126 holds. Answers "how statistics show manual authorizations". SRS REQ-F-87, REQ-F-61 (e). | Team | 2026-11-05 |
+| E-149 | Skipped orders in the sync record | The record of each store sync keeps the counts and, for each skipped order, only the order reference and the reason. No names or emails: the Administrator finds the order in the store by its reference. SRS REQ-F-99, REQ-NF-21. | Team | 2026-11-05 |
+| E-150 | Reactivating a staff account | An Administrator can reactivate a deactivated staff account, for example a student who comes back to work the next term. The person signs in with the same email and password. It writes an audit log entry. The 5 years of E-145 count from the last deactivation. SRS REQ-F-88. | Team | 2026-11-05 |
+| E-151 | The last Administrator | The system refuses to deactivate the last active Administrator, so the department never loses access to the Administrator screens. SRS REQ-F-88. | Team | 2026-11-05 |
 
 ## WooCommerce import
 
