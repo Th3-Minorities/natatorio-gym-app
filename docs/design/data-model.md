@@ -229,6 +229,10 @@ erDiagram
     bigint entered_by_staff_account_id FK "manual entry from the paper log only (D18)"
     bigint checked_out_by_staff_account_id FK "who marked the exit, NULL otherwise (E-129)"
   }
+  daily_visit_totals {
+    date day PK "America/Puerto_Rico date"
+    jsonb totals "visits by group and sport, manual entries, busiest hour; no personal data, kept forever (E-133)"
+  }
   manual_visit_counts {
     bigint id PK
     timestamptz starts_at "start of the time block from the paper log"
@@ -466,6 +470,9 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13
 
 **D19. Store sync instead of a file import (E-127).** Decided (team, 2026-11-04): the `imports` table records each sync run from the WooCommerce API. No new table.
 - Why: the run counts and the rejected rows still need a home, and the columns already fit. Renaming the table is optional and left to the migration author.
+
+**D20. Daily totals for statistics (E-133).** Decided (team, 2026-11-05): a nightly task writes one `daily_visit_totals` row per day, with counts only. The rows are never deleted.
+- Why: visits are deleted 5 years after they happen (E-131), and the department wants statistics forever. Counts carry no personal data.
 
 ## Gaps and questions
 

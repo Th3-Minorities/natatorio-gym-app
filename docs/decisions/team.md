@@ -10,10 +10,10 @@
 | Decisions from the design-readiness review | 24 | 24 | 0 |
 | Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
 | Decisions from the wireframe stage (2026-10-20) | 7 | 7 | 0 |
-| Decisions after the Athletic Activities meeting (2026-11-04) | 19 | 19 | 0 |
+| Decisions after the Athletic Activities meeting (2026-11-04) | 20 | 20 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 124 | 108 | 16 |
+| Total | 125 | 109 | 16 |
 
 ## Scope and priorities
 
@@ -409,6 +409,7 @@ The team met the department on 2026-11-04 and settled the rest as a team the sam
 | E-130 | Staff session time limits | A staff sign-in ends after 2 hours without a person tapping or typing; an Administrator sign-in ends after 20 minutes. Automatic refreshes of the screen do not count as activity. Deactivating a staff account ends its open sessions at once. Trade-off the team accepts: on the shared desk computer, a student who leaves without signing out leaves their account open for the next shift for up to 2 hours. SRS REQ-NF-10, REQ-F-88. | Team | 2026-11-05 |
 | E-131 | How the 5 years are counted | A User account is deleted 5 years after its last activity (last sign-in or Check In), with the anonymizing of REQ-F-09. While the account is active it stays, and its history is trimmed instead: each visit, past-term photo, sync record and audit log entry is deleted 5 years after it was created. The current waiver, emergency contact and current photo stay while the account is active. A deactivated staff account is deleted 5 years after its last audit log entry. Deleted data can still sit in the 2 backup copies for up to 4 weeks. Refines E-125. SRS REQ-NF-04, REQ-NF-05, REQ-F-09. | Team | 2026-11-05 |
 | E-132 | Paper log entries for people without an account | When an Administrator enters the paper log, a person with an account gets a manual entry linked to it. People without an account are entered only as a count for a time block (for example 3 visits on Tuesday from 2 to 4), with no names. Counts are part of the visit totals and are left out of distinct-people counts. Refines E-119. SRS REQ-F-95, REQ-F-61. Data model D18. | Team | 2026-11-05 |
+| E-133 | Statistics are never deleted | Each night the app saves the day's totals with no personal data: visits, visits by athletes, student members, employee members and manual entries, visits per sport and the busiest hour. These daily totals are kept forever, so the department can compare years after the visits themselves are deleted at 5 years (E-131). Reports older than 5 years read the totals. SRS REQ-F-61, REQ-NF-05. Data model D20. | Team | 2026-11-05 |
 | E-121 | Reports | Visits per day and per hour with the peak hour; athletes against student members and employee members; visits per sport; and an end-of-term summary the Administrator can download. SRS REQ-F-61 to REQ-F-65. | Team | 2026-11-04 |
 | E-122 | Backups | Automatic copies on a second virtual disk attached to the same VM, asked for in the same CTI request. One copy every two weeks; the 2 most recent are kept. Losing the whole VM loses the copies too; the team accepts that risk. The Administrator panel shows the last backup and has buttons to make a backup now, download one and restore one already on the server. Answers E-109 (option A). SRS REQ-NF-06. | Team | 2026-11-04 |
 | E-123 | Installer and server | The server runs Rocky Linux 10, since CTI is moving to it. One install command, run once with sudo by the team or a technician, installs Docker CE, sets the firewall and SELinux, starts the app, creates the first Administrator and schedules the backups; the same command can restore a backup on a new server. Administrators never use Docker or the server. Answers part of E-110. SRS REQ-F-88. | Team | 2026-11-04 |
