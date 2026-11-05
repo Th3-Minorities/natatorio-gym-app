@@ -105,7 +105,7 @@ sequenceDiagram
     alt photo rejected
       A-->>P: Photo error with the cause, nothing saved
     else photo accepted
-      A->>A: Convert to JPEG and strip location metadata
+      A->>A: Convert to JPEG, shrink to about 0.5 MB and strip location metadata
       A->>F: Save the photo file
       alt photo not saved
         A-->>P: Photo error, retry, nothing claimed

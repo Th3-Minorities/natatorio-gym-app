@@ -209,7 +209,7 @@ Notes:
 - Whoever has administrator access to the VM can read the database and the photos volume. That conflicts with REQ-NF-23 if team members run the server (M-16, gym G-01). CTI usually creates an account with sudo for the owner, who passes it to the team or makes another; off campus the team needs a VPN the owner requests, and the owner answers for those accounts. CTI has no staff to take over the system, and part of the install and orientation after December is the owner's.
 - Staff accounts have no recovery code (E-114). How a forgotten staff password is recovered is not decided (`admin-flows.md` gap 1).
 - If an external mail provider is used, the SMTP arrow leaves the VM, and student email addresses go with it (M-11).
-- VM request: CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team recommends the numbers, backed by a storage estimate that must be redone for the 5-year rule (E-125, E-111). The second backup disk is asked for in the same request (E-122).
+- VM request: CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team asks for 2 processors, 8 GB of memory, a 60 GB main disk and a 40 GB second disk for backups, in the same request, with a large margin on purpose (E-111, E-122).
 - Restore (E-122): the Administrator panel restores a backup already on the server, with no upload. The same install command restores a backup on a new server (E-123). A restore replaces everything saved after that backup, audit log entries included.
 
 ### Pending CTI items on these diagrams

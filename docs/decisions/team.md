@@ -10,10 +10,10 @@
 | Decisions from the design-readiness review | 24 | 24 | 0 |
 | Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
 | Decisions from the wireframe stage (2026-10-20) | 7 | 7 | 0 |
-| Decisions after the Athletic Activities meeting (2026-11-04) | 24 | 24 | 0 |
+| Decisions after the Athletic Activities meeting (2026-11-04) | 25 | 25 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 129 | 113 | 16 |
+| Total | 130 | 114 | 16 |
 
 ## Scope and priorities
 
@@ -359,10 +359,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-NF-04, REQ-NF-05 |
 | Feature | 2.3, 4.3 |
 | Why we ask | CTI said the team defines the size and asked for a growth estimate and a cleanup plan. CTI minutes, sections 3.3 and 3.7. |
-| Status | To redo: E-125 keeps every kind of data 5 years, including photos, and E-122 puts the backups on a second disk. The estimate below assumed photos deleted each term. |
-| Answer | Ask for 2 processors, 4 GB of memory and 60 GB of disk, CTI's usual web app size. A second backup disk only if the team picks that backup method (E-109).<br><br>How the disk number was reached. The numbers are assumptions until the gym answers:<br>- People per term: 500, 1,500 or 3,000. The only figure we have is about 150 people per day (REQ-NF-15), which is also a guess.<br>- One photo per person per term (athletes upload a new one each term, E-38).<br>- Each photo is kept at about 3 MB. People can upload up to 10 MB; the server converts it to JPEG and does not shrink it further.<br>- Photos from a past term are deleted each semester (REQ-NF-04).<br>- A backup copy of the photos sits on the same disk.<br><br>Worst case, 3,000 people: 9 GB of photos, 9 GB of backup copy and about 15 GB for Linux, the containers and logs, about 33 GB. For a few days after a term ends, the old and new photos can both be on the disk, which adds up to 9 GB more, about 42 GB. The database stays under 1 GB for years: about 150 Check Ins a day is about 37,500 rows a year, around 40 MB with indexes, and the audit log grows at a similar rate.<br><br>Memory: PostgreSQL about 1 GB, PHP about 600 MB, Linux about 500 MB, so 4 GB leaves room. Processors: about 50 phones polling every 25 seconds at the busiest hour is about 2 requests a second, which 2 processors handle easily.<br><br>When 60 GB stops being enough: if the gym keeps photos for a year or more instead of one semester, or has well over 3,000 people a term. Then either ask CTI for more disk or have the server shrink photos to about 0.3 MB, which cuts photo storage by about ten times. |
-| Answered by | Carlos Pepin |
-| Date | 2026-11-03 |
+| Status | Decided, redone on 2026-11-05 with a large margin on purpose: running out of disk is worse than asking for too much |
+| Answer | Ask for 2 processors, 8 GB of memory, a 60 GB main disk and a 40 GB second disk for backups (E-122), in the same VM request.<br><br>The numbers are rounded up on purpose. What we know: the store had 69 paid orders from January to October 2026 (read on 2026-11-04). We do not know how many athletes there are.<br><br>Main disk:<br>- People: we assume up to 500 new people a year, paid and athletes, several times what the store shows. An account and its current photo stay until 5 years after its last use (E-131), so up to 2,500 accounts; we double it to 5,000.<br>- Photos: only the current photo is kept (E-135), and the server shrinks each one to about 0.5 MB when it is uploaded (E-138): 5,000 x 0.5 MB = 2.5 GB.<br>- Database: visits, audit log, orders and daily totals stay under 1 GB for years at the real volume; we count 5 GB.<br>- Linux, containers, images and logs: 20 GB.<br>- Total about 28 GB. We ask for 60 GB, the top of CTI's usual size, so the disk is never close to full.<br><br>Second disk: the 2 most recent backups (E-122), each about 8 GB in the worst case (photos plus database), about 16 GB. We ask for 40 GB.<br><br>Memory: PostgreSQL about 1 GB, PHP and the queue worker about 1 GB, Linux about 0.5 GB, plus the nightly and backup tasks. 4 GB would be enough; we ask for 8 GB so a backup or a busy hour never runs short. Processors: the real load is a few requests a second at most, so 2 are enough. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-112: One registration number field
 
@@ -414,6 +414,7 @@ The team met the department on 2026-11-04 and settled the rest as a team the sam
 | E-135 | Past-term photos | When a person uploads the photo for a new term, the photo of the previous term is deleted. Only the current photo is kept: the Gym ID uses no other, and older photos only add privacy risk and disk. Changes E-125 and E-131 for photos. SRS REQ-NF-04. | Team | 2026-11-05 |
 | E-136 | Athletes removed from the roster | A roster record removed by an Administrator is deleted 5 years after its removal. Refines E-131. SRS REQ-NF-05. | Team | 2026-11-05 |
 | E-137 | Downloaded backups and the store key | A backup downloaded from the Administrator panel is an encrypted file that needs a password to open, because it holds every photo and every person's data. The read-only store key lives only in the environment file of the server and of the lead's computer; it is never shared by chat or committed, the team develops with fake data (#81), and at delivery the key is revoked and a new one is made for the server only. SRS REQ-NF-06, REQ-F-28. | Team | 2026-11-05 |
+| E-138 | Photo size | The server shrinks each uploaded photo to about 0.5 MB (about 1,200 pixels on the long side, JPEG), which is plenty for the Gym ID and the Staff screens. Uploads up to 10 MB are still accepted. It keeps the disk and the backups small. SRS REQ-NF-24. | Team | 2026-11-05 |
 | E-121 | Reports | Visits per day and per hour with the peak hour; athletes against student members and employee members; visits per sport; and an end-of-term summary the Administrator can download. SRS REQ-F-61 to REQ-F-65. | Team | 2026-11-04 |
 | E-122 | Backups | Automatic copies on a second virtual disk attached to the same VM, asked for in the same CTI request. One copy every two weeks; the 2 most recent are kept. Losing the whole VM loses the copies too; the team accepts that risk. The Administrator panel shows the last backup and has buttons to make a backup now, download one and restore one already on the server. Answers E-109 (option A). SRS REQ-NF-06. | Team | 2026-11-04 |
 | E-123 | Installer and server | The server runs Rocky Linux 10, since CTI is moving to it. One install command, run once with sudo by the team or a technician, installs Docker CE, sets the firewall and SELinux, starts the app, creates the first Administrator and schedules the backups; the same command can restore a backup on a new server. Administrators never use Docker or the server. Answers part of E-110. SRS REQ-F-88. | Team | 2026-11-04 |
