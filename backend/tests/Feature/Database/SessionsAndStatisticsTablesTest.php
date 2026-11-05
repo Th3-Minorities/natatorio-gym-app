@@ -23,7 +23,7 @@ class SessionsAndStatisticsTablesTest extends TestCase
     {
         $user = User::factory()->create();
 
-        DB::table('facility_sessions')->insert(['user_id' => $user->id, 'authorization_type' => 'manual', 'status' => 'active']);
+        DB::table('facility_sessions')->insert(['user_id' => $user->id, 'authorization_type' => 'manual', 'member_group' => 'student', 'status' => 'active']);
 
         $row = DB::selectOne("select started_at, ends_at, ends_at = started_at + interval '2 hours' as two_hours, abs(extract(epoch from started_at - now())) < 1 as set_by_database from facility_sessions");
         $this->assertTrue($row->two_hours);
@@ -81,15 +81,26 @@ class SessionsAndStatisticsTablesTest extends TestCase
         $this->assertRejected('23514', fn () => FacilitySession::factory()->create(['authorization_type' => 'guest']));
     }
 
-    public function test_only_a_paid_session_has_a_member_group(): void
+    public function test_paid_and_manual_sessions_have_a_member_group(): void
     {
         FacilitySession::factory()->paid('student')->create();
         FacilitySession::factory()->paid('employee')->create();
-        FacilitySession::factory()->create(['authorization_type' => 'athlete']);
+        FacilitySession::factory()->create(['member_group' => 'employee']);
+        FacilitySession::factory()->athlete()->create();
 
         $this->assertRejected('23514', fn () => FacilitySession::factory()->paid('faculty')->create());
         $this->assertRejected('23514', fn () => FacilitySession::factory()->create(['authorization_type' => 'paid', 'member_group' => null]));
-        $this->assertRejected('23514', fn () => FacilitySession::factory()->create(['authorization_type' => 'athlete', 'member_group' => 'student']));
+        $this->assertRejected('23514', fn () => FacilitySession::factory()->create(['member_group' => null]));
+        $this->assertRejected('23514', fn () => FacilitySession::factory()->athlete()->create(['member_group' => 'student']));
+    }
+
+    public function test_only_an_athlete_session_keeps_the_sport(): void
+    {
+        $session = FacilitySession::factory()->athlete('Baloncesto')->create();
+
+        $this->assertSame('Baloncesto', $session->fresh()->sport);
+        $this->assertRejected('23514', fn () => FacilitySession::factory()->athlete()->create(['sport' => null]));
+        $this->assertRejected('23514', fn () => FacilitySession::factory()->paid()->create(['sport' => 'Voleibol']));
     }
 
     public function test_a_manual_entry_from_the_paper_log_is_a_checked_out_session(): void
@@ -98,6 +109,15 @@ class SessionsAndStatisticsTablesTest extends TestCase
 
         $this->assertRejected('23514', fn () => FacilitySession::factory()->state(['entered_by_staff_account_id' => StaffAccount::factory()])->create());
         $this->assertRejected('23514', fn () => FacilitySession::factory()->endedEarly()->state(['entered_by_staff_account_id' => StaffAccount::factory()])->create());
+    }
+
+    public function test_a_wrong_manual_entry_can_be_voided(): void
+    {
+        $entry = FacilitySession::factory()->checkedOut(minutesIn: 45)->state(['entered_by_staff_account_id' => StaffAccount::factory()])->create();
+
+        $entry->update(['status' => 'void']);
+
+        $this->assertSame('void', $entry->fresh()->status);
     }
 
     public function test_one_active_session_per_user(): void

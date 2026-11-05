@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /** One visit: from Check In to check-out, or to 2 hours after the Check In (D14). */
 #[Fillable([
-    'user_id', 'authorization_id', 'authorization_type', 'member_group', 'started_at', 'ends_at', 'ended_at',
+    'user_id', 'authorization_id', 'authorization_type', 'member_group', 'sport', 'started_at', 'ends_at', 'ended_at',
     'status', 'assisted', 'entered_by_staff_account_id', 'checked_out_by_staff_account_id',
 ])]
 class FacilitySession extends Model

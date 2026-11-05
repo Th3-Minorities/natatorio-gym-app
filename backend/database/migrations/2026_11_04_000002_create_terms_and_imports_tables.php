@@ -34,7 +34,7 @@ return new class extends Migration
             $table->integer('created_count')->default(0);
             $table->integer('updated_count')->default(0);
             $table->integer('rejected_count')->default(0);
-            $table->jsonb('result')->comment('counts and the created, updated and rejected rows, shown again in A-07');
+            $table->jsonb('result')->comment('counts, plus the order reference and reason of each skipped order, no names or emails (E-149); shown again in A-07');
             $table->timestampsTz();
         });
 

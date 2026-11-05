@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** A User's right to use the gym in one term: paid, athlete or manual (REQ-F-19). */
 #[Fillable([
     'user_id', 'academic_term_id', 'type', 'status', 'imported_membership_id', 'roster_record_id',
-    'photo_path', 'photo_pending_at', 'created_account', 'reason',
+    'photo_path', 'photo_pending_at', 'created_account', 'member_group', 'reason',
 ])]
 class Authorization extends Model
 {

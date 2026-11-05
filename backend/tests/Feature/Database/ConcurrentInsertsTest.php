@@ -88,7 +88,7 @@ class ConcurrentInsertsTest extends TestCase
 
     public function test_two_check_ins_of_the_same_user_at_the_same_time(): void
     {
-        $session = ['user_id' => User::factory()->create()->id, 'authorization_type' => 'manual', 'status' => 'active'];
+        $session = ['user_id' => User::factory()->create()->id, 'authorization_type' => 'manual', 'member_group' => 'student', 'status' => 'active'];
 
         $this->assertSecondInsertLoses('facility_sessions', $session, $session, '23P01');
     }

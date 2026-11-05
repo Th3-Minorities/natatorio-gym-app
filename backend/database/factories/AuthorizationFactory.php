@@ -53,6 +53,7 @@ class AuthorizationFactory extends Factory
             'type' => 'manual',
             'imported_membership_id' => null,
             'roster_record_id' => null,
+            'member_group' => 'student',
             'reason' => 'Granted at the front desk after a payment check.',
         ]);
     }

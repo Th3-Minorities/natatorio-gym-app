@@ -214,6 +214,15 @@ class RosterLinksAndAuthorizationsTablesTest extends TestCase
         $this->assertRejected('23514', fn () => Authorization::factory()->manual()->create(['status' => 'pending']));
     }
 
+    public function test_only_a_manual_grant_has_a_member_group(): void
+    {
+        Authorization::factory()->manual()->create(['member_group' => 'employee']);
+
+        $this->assertRejected('23514', fn () => Authorization::factory()->manual()->create(['member_group' => null]));
+        $this->assertRejected('23514', fn () => Authorization::factory()->manual()->create(['member_group' => 'faculty']));
+        $this->assertRejected('23514', fn () => Authorization::factory()->paid()->create(['member_group' => 'student']));
+    }
+
     public function test_a_manual_grant_has_a_reason(): void
     {
         $this->assertRejected('23514', fn () => Authorization::factory()->manual()->create(['reason' => null]));

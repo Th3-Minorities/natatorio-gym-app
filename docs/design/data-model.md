@@ -145,7 +145,7 @@ erDiagram
     integer created_count
     integer updated_count
     integer rejected_count
-    jsonb result "counts and the created, updated and rejected rows, shown again in A-07"
+    jsonb result "counts, plus the order reference and reason of each skipped order, no names or emails (E-149)"
   }
   imported_memberships {
     bigint id PK
@@ -180,6 +180,7 @@ erDiagram
     varchar(255) photo_path "private volume, NULL until uploaded"
     timestamptz photo_pending_at "set when Staff mark the photo as not matching (D17)"
     boolean created_account "this claim created the account"
+    varchar(10) member_group "manual only: student or employee, picked by the Administrator (E-148)"
     text reason "manual grant, 'removed from roster', 'order cancelled' or 'order refunded'"
   }
 ```
@@ -238,7 +239,8 @@ erDiagram
     bigint user_id FK
     bigint authorization_id FK "SET NULL if the authorization is deleted"
     varchar(10) authorization_type "copy at Check In: paid, athlete or manual"
-    varchar(10) member_group "copy at Check In for paid: student or employee (D15)"
+    varchar(10) member_group "copy at Check In for paid and manual: student or employee (D15, E-148)"
+    varchar(50) sport "copy at Check In for athletes, from the roster record (E-147)"
     timestamptz started_at "database now(), or the paper time for a manual entry"
     timestamptz ends_at "started_at plus 2 hours"
     timestamptz ended_at "set on check-out, end early, closure or void"
@@ -279,7 +281,7 @@ Notes:
 - **Early end.** The exclusion constraint uses `WHERE (status <> 'void')`, and an early end shortens the period through `ended_at`. Decided, revisable (owner, 2026-10-19; check-in-flows D4).
 - **Check-out (D14, E-115).** Staff mark each person's exit from the front desk: `status = 'checked_out'`, `ended_at` is the time of the exit and `checked_out_by_staff_account_id` is who marked it. A check-out writes no audit log entry (E-129). This is the routine way a session ends; `ended_early` stays for corrections, so statistics can tell them apart. A session nobody checks out ends by itself at `ends_at`, 2 hours after the Check In; the app shows it as "closed automatically" (`status = 'expired'`). There is no daily limit: a person may Check In again the same day after a session ends, and each such entry counts as a visit.
 - **Closure (D14, E-115).** When a closure is published or the term ends, every active session gets `status = 'closed'` and `ended_at` set to that moment. The app shows "closed by closure".
-- **Manual entries (D18, E-119).** After an outage, an Administrator enters each paper log entry with the person and the times. The row has `entered_by_staff_account_id` set, `started_at` and `ended_at` from the paper, and `status = 'checked_out'`. It writes an audit log entry. Statistics count it and can filter it out by `entered_by_staff_account_id IS NOT NULL`. People without an account go in `manual_visit_counts` as a number of visits for a time block, with no names (E-132); they count in visit totals and not in distinct people.
+- **Manual entries (D18, E-119).** After an outage, an Administrator enters each paper log entry with the person and the times. The row has `entered_by_staff_account_id` set, `started_at` and `ended_at` from the paper, and `status = 'checked_out'`. It writes an audit log entry. A wrong one is voided (`status = 'void'`), not deleted (E-146). Statistics count it and can filter it out by `entered_by_staff_account_id IS NOT NULL`. People without an account go in `manual_visit_counts` as a number of visits for a time block, with no names (E-132); they count in visit totals and not in distinct people.
 - **Occupancy** (REQ-F-41) is the count of rows with `status <> 'void'` whose range contains `now()`. Analytics (REQ-F-61) read the same table: `authorization_type` keeps paid versus athlete versus manual after an authorization is deleted, `member_group` splits paid into students and employees (D15), and `user_id` keeps distinct people. `manual` is its own category in statistics (E-82).
 - **Deleted authorizations and active sessions.** When an authorization is deleted (a release, or an order deleted), active sessions keep counting until they end, because `authorization_id` is set to NULL and the row stays.
 - **Location** is not stored (REQ-NF-03).
@@ -338,7 +340,7 @@ Notes:
 - Schedule slots: one table, weekly or dated (E-90). The regular schedule is written once, and exceptions are separate rows.
 - The audit log has no `pin_active` column (E-93), and with personal accounts there is no PIN to record (D13).
 - The affected record is `subject_table` plus `subject_id`, with no foreign key. Deleting a User or an order never removes or changes an audit entry, which stays until the retention rule removes it (E-131, REQ-NF-05, REQ-NF-39, REQ-F-09).
-- The audit log names the staff account that made each change, so it says who did what (D13, #62 questions 1 to 3). Staff accounts are never deleted, only deactivated, so an entry never loses its person. `ip_address` comes from the proxy header, not the proxy's own address (design-notes).
+- The audit log names the staff account that made each change, so it says who did what (D13, #62 questions 1 to 3). A staff account is deleted only 5 years after its last deactivation, when every audit entry that names it is already gone (E-145), so an entry never loses its person. `ip_address` comes from the proxy header, not the proxy's own address (design-notes).
 - Decided (E-108): nobody can edit or delete an entry through the app, not even the Administrator; no screen and no route for it. Optional enforcement, a team idea: a trigger that rejects UPDATE, and DELETE only by the retention task (E-131, REQ-NF-05).
 - Decided (E-108): new `action` values for staff account sign in and sign out. User sign-ins are not logged (D4, REQ-NF-21).
 - The location boundary is not a setting: it is configured per environment (REQ-NF-29).
@@ -353,7 +355,7 @@ Rules written as SQL in the migrations. Laravel's schema builder cannot express 
 | Each roster record is claimed by one account at most per term, also under simultaneous requests | `authorizations` | `UNIQUE (roster_record_id, academic_term_id)` (D16) | REQ-F-17, REQ-NF-42 |
 | One active facility session per User, also under simultaneous requests | `facility_sessions` | `CREATE EXTENSION btree_gist;` then `EXCLUDE USING gist (user_id WITH =, tstzrange(started_at, LEAST(COALESCE(ended_at, ends_at), ends_at), '[)') WITH &&) WHERE (status <> 'void')`. The losing request returns the current session (REQ-F-37) | REQ-F-36, REQ-F-37, REQ-NF-42, REQ-NF-50 |
 | A session closes by itself 2 hours after the Check In; only a check-out may come later | `facility_sessions` | `CHECK (ends_at = started_at + interval '2 hours')`, `CHECK (ended_at IS NULL OR ended_at >= started_at)` and `CHECK (status <> 'ended_early' OR ended_at <= ends_at)` (D14) | REQ-F-36, REQ-F-38, REQ-F-48 |
-| Session time is backend time, except a manual entry | `facility_sessions` | `started_at DEFAULT now()`; the insert does not send a time. Only a manual entry sends the paper time: `CHECK (entered_by_staff_account_id IS NULL OR status = 'checked_out')` (D18) | REQ-NF-01 |
+| Session time is backend time, except a manual entry | `facility_sessions` | `started_at DEFAULT now()`; the insert does not send a time. Only a manual entry sends the paper time: `CHECK (entered_by_staff_account_id IS NULL OR status IN ('checked_out','void'))` (D18, E-146) | REQ-NF-01 |
 | Session status values, and check-outs and corrections record when they happened | `facility_sessions` | `CHECK (status IN ('active','expired','checked_out','ended_early','closed','void'))` and `CHECK ((status IN ('checked_out','ended_early','closed','void')) = (ended_at IS NOT NULL))` | REQ-F-48 (D14) |
 | Terms never overlap; gaps are allowed | `academic_terms` | `CHECK (starts_on <= ends_on)` and `EXCLUDE USING gist (daterange(starts_on, ends_on, '[]') WITH &&)`. Ranges need no extension | REQ-F-21 |
 | A student number appears once in the roster | `roster_records` | `UNIQUE (student_number)` (D16) | REQ-F-51 |
@@ -361,7 +363,9 @@ Rules written as SQL in the migrations. Laravel's schema builder cannot express 
 | Processing the same order twice gives no duplicate | `imported_memberships` | `UNIQUE (order_reference)`. The import runs `INSERT ... ON CONFLICT (order_reference) DO UPDATE` and does not overwrite `import_id` | REQ-F-30 |
 | An order outside every term gives no record | `imported_memberships` | `academic_term_id NOT NULL`. The import finds the term from `paid_at` and rejects the row if none is found | REQ-F-22 |
 | Every order says if the buyer is a student or an employee | `imported_memberships` | `member_group NOT NULL`, `CHECK (member_group IN ('student','employee'))` | REQ-F-61 (D15) |
-| Paid sessions keep the buyer's group for statistics | `facility_sessions` | `CHECK (member_group IN ('student','employee'))` and `CHECK ((authorization_type = 'paid') = (member_group IS NOT NULL))` | REQ-F-61 (D15) |
+| Paid and manual sessions keep the group for statistics | `facility_sessions` | `CHECK (member_group IN ('student','employee'))` and `CHECK ((authorization_type IN ('paid','manual')) = (member_group IS NOT NULL))` | REQ-F-61 (D15, E-148) |
+| Athlete sessions keep the sport for statistics | `facility_sessions` | `CHECK ((authorization_type = 'athlete') = (sport IS NOT NULL))` | REQ-F-61 (E-147) |
+| A manual grant says student or employee | `authorizations` | `CHECK (member_group IN ('student','employee'))` and `CHECK ((type = 'manual') = (member_group IS NOT NULL))` | REQ-F-87 (E-148) |
 | One account per email | `users` | `CREATE UNIQUE INDEX ON users (lower(email))`. Deleted accounts have NULL email, which never collides | REQ-F-01, REQ-F-11, REQ-F-78 |
 | An authorization has the source its type says | `authorizations` | `CHECK ((type = 'paid' AND imported_membership_id IS NOT NULL AND roster_record_id IS NULL) OR (type = 'athlete' AND roster_record_id IS NOT NULL AND imported_membership_id IS NULL) OR (type = 'manual' AND imported_membership_id IS NULL AND roster_record_id IS NULL))` | REQ-F-19, REQ-F-87 |
 | Authorization values | `authorizations` | `CHECK (type IN ('paid','athlete','manual'))`, `CHECK (status IN ('active','revoked'))` | REQ-F-19, REQ-F-87 |
@@ -409,10 +413,10 @@ Foreign key on-delete behavior that follows from this table:
 | `waiver_acceptances.user_id` | CASCADE | Same as above |
 | `authorizations.academic_term_id`, `imported_memberships.academic_term_id` | RESTRICT | Terms are never deleted (E-107); RESTRICT stops a term with data from being removed by mistake |
 | `imported_memberships.import_id` | RESTRICT | A sync record with orders cannot be deleted by mistake |
-| `audit_log_entries.staff_account_id` | RESTRICT | Staff accounts are never deleted, only deactivated, so every entry keeps its person (D13) |
+| `audit_log_entries.staff_account_id` | RESTRICT | A staff account is deleted 5 years after its last deactivation, after its entries are gone; RESTRICT guards the order (D13, E-145) |
 | `sign_in_sessions.user_id` | No SQL foreign key (Laravel default) | The backend deletes the rows in (a) |
 | `email_links.roster_record_id` | CASCADE | A link for a deleted roster record must stop working |
-| `facility_sessions.entered_by_staff_account_id`, `facility_sessions.checked_out_by_staff_account_id` | RESTRICT | Staff accounts are never deleted, only deactivated (D13) |
+| `facility_sessions.entered_by_staff_account_id`, `facility_sessions.checked_out_by_staff_account_id` | RESTRICT | The sessions are deleted at 5 years, before the staff account (E-145) |
 | `email_links.user_id` | CASCADE | Only reached if a users row is ever hard-deleted; the backend deletes the rows in (a) |
 | `email_links.staff_account_id` | CASCADE | An invite link for a deleted staff account must stop working |
 
@@ -474,7 +478,7 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13
 
 **D13. Personal accounts for Staff and Administrators (G-09, #62 questions 1 to 3).** Decided (team, 2026-11-04), after the gym meeting: option B, one account per person and no PIN, in a separate `staff_accounts` table with a `role` of `staff` or `admin`.
 - Why: the audit log must say who did what. A separate table keeps User rules (one device, deletion and anonymizing) apart from staff rules, matches the dashboard's own sign-in page (REQ-NF-10), and lets a student employee have a User account and a staff account with the same email.
-- Replaces the shared gym account, the PIN (E-56, E-83, D5) and the recovery code (E-60, E-78). Staff accounts are deactivated, never deleted, so audit entries keep their person.
+- Replaces the shared gym account, the PIN (E-56, E-83, D5) and the recovery code (E-60, E-78). Staff accounts are deactivated, and deleted only 5 years after the last deactivation, so audit entries keep their person (E-145).
 
 **D14. Check-out by Staff and the 2-hour close (G-32, E-115).** Decided (team, 2026-11-04): Staff mark each person's exit, which sets `status = 'checked_out'` and `ended_at`. A session nobody closes ends by itself 2 hours after the Check In (`ends_at`), shown as "closed automatically". A published closure or the end of a term ends every active session at once with `status = 'closed'`. There is no daily limit.
 - Why: the department wants Staff to mark exits, and a check-out gives a real count of people inside. The 60 minutes are a guide Staff apply when the gym is full, not a rule. `ended_early` stays for corrections, so statistics tell them apart.
