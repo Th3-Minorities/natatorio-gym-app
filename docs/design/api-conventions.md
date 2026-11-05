@@ -106,9 +106,86 @@ Run them from the repository root while the containers are up:
 | One test | `docker compose exec app php artisan test --filter test_health_check_answers_ok_when_the_database_is_reachable` |
 | Lint (code style) | `docker compose exec app composer lint` |
 | Fix code style | `docker compose exec app vendor/bin/pint` |
+| Create the first Administrator | `docker compose exec app php artisan staff:create-admin --name="Ana Rivera" --email="ana@example.com"` |
+| Clear a sign-in lockout | `docker compose exec app php artisan cache:clear` |
 
 The seeder is empty for now. Each feature adds its own seeder with fake data only, never real student or payment data (context.md, team rules).
 
 ## 5. CI
 
 `.github/workflows/backend.yml` runs on every pull request and on every push to `main`. It builds the same images, starts the containers, then runs lint, migrations, the seeder and the tests. At the end it calls `/api/health` through the proxy. If any step fails, the PR shows a red check.
+
+## 6. Staff sign-in, roles and the audit log
+
+Set up in GitHub issue #16. Requirements: REQ-F-07, REQ-F-52, REQ-F-88, REQ-NF-10, REQ-NF-39.
+
+### Staff sign-in
+
+Staff and Administrators sign in with their own staff account (data-model.md, D13). Laravel keeps it on a separate guard, `staff`, on the `staff_accounts` table, so a staff sign-in and a User sign-in never mix. Staff sign-in does not use Fortify, which stays free for the User sign-in (#15).
+
+The PWA calls `GET /api/sanctum/csrf-cookie` first and then sends the `X-XSRF-TOKEN` header on every POST. Sanctum starts a cookie session only for requests from the app's own origin (`SANCTUM_STATEFUL_DOMAINS`, which defaults to `APP_URL`).
+
+| Route | Who | Answer |
+|---|---|---|
+| `POST /api/staff/sign-in` | Anyone | `200` with `name`, `email`, `role` and `locale` |
+| `POST /api/staff/sign-out` | Staff, Administrator | `204` |
+| `GET /api/staff/me` | Staff, Administrator | `200` with `name`, `email`, `role` and `locale` |
+
+The sign-in matches the email in any case.
+
+| Status | Code | When |
+|---|---|---|
+| 422 | `staff_credentials_invalid` | Wrong email or password, an invited account with no password yet, or the email and password of a User account. They get the same answer on purpose, so nobody can test which emails exist |
+| 403 | `staff_account_deactivated` | At sign-in, with the right password, for an account an Administrator deactivated |
+| 401 | `staff_account_deactivated` | On any later request, when the account was deactivated while signed in |
+| 401 | `staff_session_expired` | 2 hours without activity for Staff, 20 minutes for an Administrator |
+| 429 | `too_many_requests` | 10 failed tries for that email or IP. `Retry-After` gives the seconds to wait |
+
+### Attempt limit
+
+After 10 failed sign-ins for one email, or from one IP, that email or IP waits (REQ-F-07). The first wait is 1 minute, then 5, then 15, then 60 for each later lockout. Failures older than an hour start again from zero, and the waits go back to 1 minute a day after the last lockout. The counters live in the `cache` table and expire on their own (E-91). A right password resets the count of the email but not the count of the IP, so one valid account cannot reset the count for guessing others.
+
+### Inactivity and automatic refreshes
+
+A staff sign-in ends after 2 hours without activity, an Administrator sign-in after 20 minutes (E-130). Every request counts as activity unless it carries the header `X-Auto-Refresh: 1`. The PWA sends that header on each request the screen makes by itself, like polling, and never on a request a person started with a tap or a key.
+
+When a sign-in times out, the next request gets `401 staff_session_expired`, and the audit log gets a `staff.sign_out` entry with `{"ended_by": "timeout"}`. If no request at all reaches the server, Laravel's own session lifetime (`SESSION_LIFETIME`, 120 minutes) ends the sign-in without an entry, as with a closed browser.
+
+### Roles on routes
+
+Put every gym route in a group with these three middleware, in this order:
+
+```php
+Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+    // Administrator actions
+});
+```
+
+- `auth:staff`: a staff account is signed in. Otherwise `401 unauthenticated`.
+- `staff.active`: the account is still active and the sign-in has not timed out.
+- `role:staff,admin` or `role:admin`: pick it from the role table in the SRS overview. Any other role gets `403 forbidden`.
+
+`RouteProtectionTest` fails when an `/api` route lacks these checks and is not on its list of public routes. Add a route to that list only when anyone may call it without signing in.
+
+### Audit log
+
+Gym features write entries with `App\Services\AuditLog`:
+
+```php
+public function revoke(Request $request, Authorization $authorization, AuditLog $log)
+{
+    $before = $authorization->only('status');
+    // change the authorization
+    $log->record('authorization.revoke', $authorization, $before, $authorization->only('status'), $request->input('reason'));
+}
+```
+
+The service adds the signed-in staff account, the time, the IP address and the browser. It throws an error when no staff account is signed in, because an entry with no account means a system alert. For alerts the system raises by itself, like the global lookup limit (REQ-F-71), use `recordSystem()`. Name actions `area.verb` in snake_case, like `staff.sign_in`. The model refuses to update or delete an entry (E-108). The retention job (#71) deletes old entries with a query delete, which skips that check.
+
+### Real client IP
+
+nginx passes requests straight to PHP, so Laravel sees the address that connected to nginx. `TRUSTED_PROXIES` lists the proxies in front of nginx that may set the client IP with `X-Forwarded-For`, comma separated. Empty, the default, means no proxy is in front, and Laravel ignores the header. On your own computer every request comes from the Docker gateway (an address like `172.19.0.1`), so audit entries show that address. The phone tunnel should pass on the phone's IP once you add that gateway to `TRUSTED_PROXIES` in your `.env`; nobody has checked it on a phone yet. The production value depends on CTI's answer to M-01 (architecture.md, gaps 5).
+
+### First Administrator
+
+`php artisan staff:create-admin --name="..." --email="..."` creates the first Administrator and prints its password once (REQ-F-88). The account is in Spanish unless you add `--locale=en`. The command refuses when an active Administrator already exists or when another staff account uses the email. Without `--name` or `--email` it asks for them, except with `--no-interaction`. The install script (#66) runs it. The development seeder already creates `admin@example.com`, so on a seeded database the command refuses.
