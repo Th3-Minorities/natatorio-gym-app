@@ -35,8 +35,8 @@ stateDiagram-v2
 
 Notes:
 
-- The one-device rule does not apply to staff accounts (REQ-F-03): a person can be signed in on several computers. Whether staff sessions end after some time without activity is not decided (gap 18).
-- A deactivated account cannot sign in. It is never deleted, so the audit log keeps pointing at it (data-model D13). Whether its open sessions end at once is not decided (gap 19).
+- The one-device rule does not apply to staff accounts (REQ-F-03): a person can be signed in on several computers. A Staff sign-in ends after 2 hours without a person tapping or typing, and an Administrator sign-in after 20 minutes; automatic refreshes do not count (E-130, gap 18).
+- A deactivated account cannot sign in. It is never deleted, so the audit log keeps pointing at it (data-model D13). Deactivating it ends its open sessions at once (E-130, gap 19).
 - The Administrators are the two department secretaries and the department director (E-114). The install command creates the first one (section 3). Administrators invite Staff by email (section 4). How the other Administrators are added is not decided (gap 20).
 - Staff and Administrators share one dashboard on a path under the app's name (E-124). The dashboard menu shows the Administrator items only to Administrators (REQ-NF-10). This is a design choice that follows from E-114 and the team should confirm it.
 - The staff sign-in is N-11. The User sign-in has no link to it, so Staff reach it by typing the dashboard address (E-65).
@@ -72,7 +72,7 @@ sequenceDiagram
 Notes:
 
 - With no PIN there is no timeout that closes Administrator mode, so unsaved input on a form is not lost for that reason.
-- A middleware can check `deactivated_at` on every request, so a deactivated account stops working at once (data-model gap 9, to confirm during implementation).
+- A middleware checks `deactivated_at` on every request, so a deactivated account stops working at once (E-130, data-model gap 9).
 
 ### 3. Install command and first Administrator
 
@@ -235,7 +235,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   A0["Administrator opens the athlete roster"] --> A1{"What to do?"}
-  A1 -->|"Add one"| A2["Type name, sport, student number, institutional email"]
+  A1 -->|"Add athletes"| A2["Quick form: type name, sport, student number, institutional email<br/>the current sport shows large at the top"]
   A1 -->|"Edit"| A4["Change fields of a record"]
   A1 -->|"Remove"| A9["Removal flow, section 11"]
   A2 --> V1{"Required fields present?<br/>student number not already in the roster?"}
@@ -243,12 +243,16 @@ flowchart TD
   V1 -->|"No"| V2["Reject that record, with the reason<br/>database unique on student number"]
   V1 -->|"Yes"| V3["Save the roster record"]
   V3 --> AU["AUDIT: roster change<br/>one entry per record"]
+  V3 --> A3["Added from the quick form: the form stays open and empty<br/>for the next athlete, the sport keeps the last value"]
+  A3 --> A2
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
   class AU audit
 ```
 
 **About this diagram:** the roster is one list, not one per term, and Administrators fill it by hand (E-116, REQ-F-49). There is no file import, because the department keeps the lists in Word, so the earlier upload path and the CTI proposal to accept an Excel or CSV file no longer apply. Each record has name, sport, student number and institutional email (REQ-F-51). Adding, editing and removing stay Administrator only (REQ-F-49, REQ-F-52); one audit entry per record is D10. Staff see the roster read only, with search by name or student number (E-59).
+
+Athletes are entered one at a time with a quick form (E-139). After saving, the form stays open and empty for the next athlete, except the sport, which keeps the last value because the lists come by sport. The form shows the current sport large at the top ("Adding athletes of: Volleyball") so nobody forgets to change it. There are about 100 athletes, so there is no paste or file tool.
 
 An athlete stays on the roster until an Administrator removes them, across terms. Each new term the athlete only uploads a new photo and the waiver is not asked again (E-116, registration-flows diagram 8). The audit log filters roster changes, so there is no separate roster report (E-126).
 
@@ -469,14 +473,14 @@ Actions that write an audit log entry (REQ-NF-39):
 | Store sync run, and each authorization it revokes (E-127) | Administrator for Sync now; system for a scheduled run or a registration lookup | Section 6 |
 | Release of a claimed Authorization Number | Administrator | Section 13 |
 | Manual grant or revoke, with reason | Administrator | Section 12 |
-| Manual entry from the paper log (E-119); names who entered it | Administrator | Section 18 |
+| Manual entry from the paper log (E-119), or a count of visits by people without an account (E-132); names who entered it | Administrator | Section 18 |
 | Global lookup limit alert | System | Section 15 |
 | Account deletion on User request (Proposed, not in the list) | Administrator | Section 14 |
 | Staff account invited or deactivated (Proposed, not in the list) | Administrator | Section 4 |
 | Backup now or restore (Proposed, not in the list) | Administrator | Section 19 |
-| Proposed (E-108): sign in and sign out of staff accounts | Staff member or Administrator | Section 1 |
+| Sign in and sign out of staff accounts (E-108) | Staff member or Administrator | Section 1 |
 
-Each entry holds the staff account, time, IP address, device and browser, and values before and after (REQ-NF-39). Only Administrators can read the log, and they can filter roster changes, so there is no separate roster report (E-126). Proposed (E-108, CTI's request to student projects): no screen or request edits or deletes an entry, for anyone. The Administrator can search by staff account and date range and export to CSV or Excel. Secrets are never written: a password change records only that it changed. Retention: 5 years, like every other kind of data (REQ-NF-05, E-125).
+Each entry holds the staff account, time, IP address, device and browser, and values before and after (REQ-NF-39). Only Administrators can read the log, and they can filter roster changes, so there is no separate roster report (E-126). Decided (E-108, CTI's request to student projects): no screen or request edits or deletes an entry, for anyone. The Administrator can search by staff account and date range and export to CSV or Excel. Secrets are never written: a password change records only that it changed. Retention: each entry is deleted 5 years after it was created (REQ-NF-05, E-125, E-131).
 
 ### 18. Manual entries from the paper log
 
@@ -485,18 +489,25 @@ Each entry holds the staff account, time, IP address, device and browser, and va
 ```mermaid
 flowchart TD
   M0["App was down<br/>Staff used the paper log and checked payment by hand"] --> M1["App is back<br/>an Administrator opens Manual entries"]
-  M1 --> M2["Find the person<br/>type the entry time and the exit time from the paper"]
+  M1 --> MA{"Does the person on the paper have an account?"}
+  MA -->|"Yes"| M2["Find the person<br/>type the entry time and the exit time from the paper"]
   M2 --> M3{"Exit after entry, and no overlap<br/>with another session of this person?"}
   M3 -->|"No"| M4["Reject, say why"]
   M3 -->|"Yes"| M5["Save a facility session with the paper times<br/>status checked out, marked as a manual entry"]
   M5 --> M6["AUDIT: manual entry<br/>names the Administrator who entered it"]
   M5 --> M7["Counts in statistics<br/>reports can filter it out"]
+  MA -->|"No"| C1["Type the time block and the number of visits<br/>for example 3 visits on Tuesday from 2 to 4, no names"]
+  C1 --> C2{"At least one visit, and the block ends after it starts?"}
+  C2 -->|"No"| M4
+  C2 -->|"Yes"| C3["Save a manual visit count"]
+  C3 --> C4["AUDIT: manual entry<br/>names the Administrator who entered it"]
+  C3 --> C5["Counts in visit totals<br/>left out of distinct people"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
-  class M6 audit
+  class M6,C4 audit
 ```
 
-**About this diagram:** this is REQ-F-95 (E-119). Up to one week down is acceptable (REQ-NF-31). Only Administrators enter manual entries, because desk staff change often. The row is a normal facility session with `entered_by_staff_account_id` set (data-model D18), so statistics keep working in one place. The overlap check is the exclusion constraint that guards the one-session rule. A person on the paper log with no account cannot get a manual entry, because a session belongs to a User; how to handle that case is not decided.
+**About this diagram:** this is REQ-F-95 (E-119). Up to one week down is acceptable (REQ-NF-31). Only Administrators enter manual entries, because desk staff change often. The row is a normal facility session with `entered_by_staff_account_id` set (data-model D18), so statistics keep working in one place. The overlap check is the exclusion constraint that guards the one-session rule. A person on the paper log with no account cannot get a manual entry, because a session belongs to a User. Such people are entered only as a count for a time block, with no names (E-132, REQ-F-95): a `manual_visit_counts` row, part of the visit totals and left out of distinct-people counts (REQ-F-61).
 
 ### 19. Backups
 
@@ -524,7 +535,7 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 
 **D2. PIN attempt limit and wait.** Replaced by E-114: there is no PIN. Sign-in attempts follow REQ-F-07.
 
-**D3. How the backend learns about person activity.** Replaced by E-114: there is no PIN to close after inactivity. Staff session time limits are open (gap 18).
+**D3. How the backend learns about person activity.** Replaced by E-114: there is no PIN to close after inactivity. Staff session time limits are decided by E-130 (gap 18).
 
 **D4. Effect of a PIN change on other browsers.** Replaced by E-114: there is no PIN.
 
@@ -592,8 +603,8 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 15. **Roster record after a removal.** Resolved by D16: a removal sets `removed_at`, hides the record from Staff search and revokes the authorization with the reason "removed from roster", and nothing is deleted by cascade (E-93). The revoked authorization keeps the roster record claimed, so the athlete cannot claim it again; Reinstate on A-05 is the way back (E-95). Still to confirm: email links sent before a removal must stop working (the backend checks `removed_at` when a link is opened), and the exact wording of the message shown when Reinstate is refused. Decided: Reinstate is refused when the person already has an active authorization in that term, and the database rejects it too (E-94); the reason is required, 10 characters or more, as in E-86.
 16. **Release when the released authorization was the account's only one.** Resolved by E-106 (D12): the account is kept without an authorization. The person signs in, sees U-07 and can claim the correct number.
 17. **People missing from a new roster list.** Resolved by E-116: there is one roster and an athlete stays until an Administrator removes them, so a new term needs no new list.
-18. **Staff session time limits.** Not decided. The old PIN timeout is gone. Whether staff sessions, especially Administrator ones, end after some time without activity is open (data-model gap 18).
-19. **Deactivation and open sessions.** Not decided whether deactivating an account ends its open sessions at once (data-model gap 9). A middleware that checks `deactivated_at` on every request would do it.
+18. **Staff session time limits.** Resolved by E-130: a Staff sign-in ends after 2 hours without a person tapping or typing, an Administrator sign-in after 20 minutes. Automatic refreshes do not count as activity (data-model gap 18).
+19. **Deactivation and open sessions.** Resolved by E-130: deactivating an account ends its open sessions at once. A middleware checks `deactivated_at` on every request (data-model gap 9).
 20. **How the other Administrators are added.** The install command creates the first Administrator and Administrators invite Staff (E-114). Nothing says how the second secretary and the director get their Administrator accounts.
 21. **Store access.** Open. The sync needs a read-only API key from the store owner and outbound HTTPS from the VM to the store, which is a question for CTI (E-127, SRS 2.5). The key lives only in the server's environment file.
 22. **Letter case of the Authorization Number.** Open. The number can include letters (E-128). Whether the lookup compares with or without regard to case is not decided.
@@ -657,6 +668,9 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 | E-115 | 8. Academic terms (term end closes sessions); 11. Removing and reinstating an athlete mid-term; 16. Schedules, closures, notices and facility information (closure closes sessions) |
 | E-116 | 10. Athlete roster: add, edit, remove; 11. Removing and reinstating an athlete mid-term; D10; gap 17 |
 | E-119 | 18. Manual entries from the paper log; 17. Audit action table |
+| E-130 | 1. Staff account states (notes); 2. Backend check on every gym request (notes); D3; gaps 18, 19 |
+| E-132 | 18. Manual entries from the paper log (people without an account) |
+| E-139 | 10. Athlete roster (quick form) |
 | E-120 | 6. WooCommerce store sync (refunded orders, student or employee); 12. Manual grant and revoke (notes, refunds) |
 | E-122 | 19. Backups |
 | E-123 | 3. Install command and first Administrator; 19. Backups |

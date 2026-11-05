@@ -71,7 +71,7 @@ For the project: automatic copies on a second virtual disk in the same VM, asked
 - The department described a recent problem: people paid while the gym was closed, so it turned off the store and gave refunds. One refund went to an employee who is also a graduate student and had paid the student price. The department told her to pay as an employee next time, because the student price needs an active enrollment for that semester. The semester fee is about 45 dollars.
 - The team asked to visit to see the machines for the app's pictures. The department said to call ahead so someone opens the room.
 
-For the project: G-05 has no numbers from the department; the team takes last term's paid count from the store, which it can access. Question 34 is partly answered: the rest of this semester is athletes only. The store sells at least a student price and an employee price; the order import (G-19) needs to know the difference.
+For the project: G-05 has no numbers from the department; the team takes last term's paid count from the store, which it can access. Question 34 is partly answered: the rest of this semester is athletes only. The store sells at least a student price and an employee price; the order sync (G-19) needs to know the difference.
 
 ### 3.10 The athlete list
 
@@ -98,7 +98,7 @@ For the project: the roster is one list, not one per term. Athletes stay until a
 - The fee pays for gym upkeep and new equipment; the new floor was paid with it.
 - (Not recorded) Employees also have access to the gym.
 
-For the project: no special groups. Employees are paying members; each order stores whether the buyer is a student or an employee, for statistics. A refunded order makes its authorization invalid at the next import (E-120).
+For the project: no special groups. Employees are paying members; each order stores whether the buyer is a student or an employee, for statistics. A refunded order makes its authorization invalid at the next sync (E-120).
 
 ### 3.13 Summer
 
@@ -129,7 +129,7 @@ For the project: one account per person; the Administrators are the two secretar
 - The team asked what device the staff use at the desk. The answer was not recorded. (Not recorded) A desktop computer.
 - The team asked how long to keep accounts and Check In records. The recording has "5 años, 5 años", but it is not clear who said it. (Not recorded) All data is kept for 5 years.
 
-For the project: question 29 is answered (desktop). Every kind of data is kept 5 years (E-125). Five years of photos changes the storage estimate (E-111).
+For the project: question 29 is answered (desktop). Every kind of data is kept 5 years (E-125), counted as in E-131. Only the current photo is kept (E-135) and each one is shrunk to about 0.5 MB (E-138); the storage estimate was redone on 2026-11-05 (E-111).
 
 ### 3.17 Announcements
 

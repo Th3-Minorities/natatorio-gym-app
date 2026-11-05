@@ -1,19 +1,19 @@
 # Data Model
 
-This document turns the logical data model in `design-notes.md` into PostgreSQL tables. It shows each table with its main fields, keys and links, the rules the database itself enforces, and what is deleted or kept when an account is deleted, an import is undone, or an Authorization Number is released. It is the agreement the team builds the migrations from (GitHub issue #4). Field lists hold only what the requirements need, because REQ-NF-21 limits the personal data the system may store.
+This document turns the logical data model in `design-notes.md` into PostgreSQL tables. It shows each table with its main fields, keys and links, the rules the database itself enforces, and what is deleted or kept when an account is deleted or an Authorization Number is released. It is the agreement the team builds the migrations from (GitHub issue #4). Field lists hold only what the requirements need, because REQ-NF-21 limits the personal data the system may store.
 
 ## Conventions
 
-- Table names are the snake_case plurals of the logical entities, plus `imports` for WooCommerce import batches.
+- Table names are the snake_case plurals of the logical entities, plus `imports` for the WooCommerce store sync runs (D19).
 - Every table has a `bigint` identity `id` unless the diagram says otherwise, and Laravel `created_at` and `updated_at`. The timestamps are not drawn.
 - Times are `timestamptz`. Term dates are `date` in the `America/Puerto_Rico` time zone (REQ-NF-37).
 - `PK` primary key, `FK` foreign key, `UK` unique. A composite unique key is written in the field comment.
 - Solid lines are foreign keys in SQL. Dotted lines are links with no foreign key column.
-- Laravel framework tables are not drawn: `migrations`, `cache` (also holds the attempt limit counters of REQ-F-07 and REQ-F-71, and the request limit for emailed links; sign-in counters are keyed by IP and email, for User and staff accounts alike, link requests by student number; all are discarded when the wait ends; E-91, E-93), `jobs`, `failed_jobs` and `password_reset_tokens` (REQ-F-06). Outgoing mail is assumed (E-61): the CTI mail gateway after CTI authorizes the VM; an external provider only if it does not.
+- Laravel framework tables are not drawn: `migrations`, `cache` (also holds the attempt limit counters of REQ-F-07 and REQ-F-71, and the request limit for emailed links; sign-in counters are keyed by IP and email, for User and staff accounts alike, link requests by student number; all are discarded when the wait ends; E-91, E-93), `jobs`, `failed_jobs` and `password_reset_tokens` (REQ-F-06). Staff password resets use their own `staff_password_reset_tokens`, drawn in diagram 2. Outgoing mail is assumed (E-61): the CTI mail gateway after CTI authorizes the VM; an external provider only if it does not.
 
 ## 1. Overview: tables and links
 
-All 16 tables and how they relate. Fields are in sections 2 to 4.
+All 19 tables and how they relate. Fields are in sections 2 to 4.
 
 ### 1. All tables and links
 
@@ -33,8 +33,15 @@ erDiagram
   roster_records |o--o| authorizations : "claimed by"
   roster_records ||--o{ email_links : "link sent for"
   users |o--o{ email_links : "asked for by"
+  staff_accounts |o--o{ email_links : "invited by"
+  staff_accounts |o..o{ staff_password_reset_tokens : "resets by email, no FK column"
   authorizations |o--o{ facility_sessions : "used for"
   staff_accounts |o--o{ audit_log_entries : "records"
+  staff_accounts |o--o{ facility_sessions : "checks out or enters"
+  staff_accounts |o--o{ manual_visit_counts : "enters"
+  daily_visit_totals {
+    date day PK
+  }
   schedule_slots {
     bigint id PK
   }
@@ -72,6 +79,8 @@ erDiagram
   roster_records |o--o| authorizations : "claimed by"
   roster_records ||--o{ email_links : "link sent for"
   users |o--o{ email_links : "asked for by"
+  staff_accounts |o--o{ email_links : "invited by"
+  staff_accounts |o..o{ staff_password_reset_tokens : "resets by email, no FK column"
 
   users {
     bigint id PK
@@ -79,16 +88,22 @@ erDiagram
     varchar(255) password "hash, NULL after deletion"
     varchar(2) locale "es or en, asked at account creation, changed in profile preferences"
     varchar(255) current_session_id "the one session allowed in, checked on every request"
+    timestamptz last_signed_in_at "NULL until the first sign-in (E-131)"
     timestamptz deleted_at "set when the account is deleted"
   }
   staff_accounts {
     bigint id PK
     varchar(255) name "shown in the audit log"
     varchar(255) email UK "unique on lower(email)"
-    varchar(255) password "hash"
+    varchar(255) password "hash, NULL until the invite link is used"
     varchar(10) role "staff or admin"
     varchar(2) locale "es or en, changed in the account's preferences"
     timestamptz deactivated_at "NULL while access is allowed, set when the person leaves"
+  }
+  staff_password_reset_tokens {
+    varchar(255) email PK "email of the staff account"
+    varchar(255) token "hash of the token in the link"
+    timestamp created_at
   }
   sign_in_sessions {
     varchar(255) id PK "Laravel session id"
@@ -131,7 +146,6 @@ erDiagram
     integer updated_count
     integer rejected_count
     jsonb result "counts and the created, updated and rejected rows, shown again in A-07"
-    timestamptz undone_at "NULL until undone"
   }
   imported_memberships {
     bigint id PK
@@ -166,37 +180,39 @@ erDiagram
     varchar(255) photo_path "private volume, NULL until uploaded"
     timestamptz photo_pending_at "set when Staff mark the photo as not matching (D17)"
     boolean created_account "this claim created the account"
-    text reason "manual grant, 'removed from roster' or 'order refunded'"
+    text reason "manual grant, 'removed from roster', 'order cancelled' or 'order refunded'"
   }
 ```
 
 Notes:
 
 - **Claim status** is not a column. A membership or roster record is claimed when an authorization points at it. Releasing the number (REQ-F-74) deletes that authorization and keeps the account (E-106), so the number is free again with no flag to reset.
-- **Photo.** The term photo belongs to the authorization, not the account (design-notes, REQ-F-26). The bytes are a JPEG on the private volume (REQ-NF-20, REQ-NF-24); the row stores only the relative path. Registration never creates an authorization without a photo (E-69). `photo_path` is NULL only for a manual grant, where the User gives the photo on U-02 before Check In, like an athlete (E-69). An athlete in a new term is found at the first app open by the student number of the account's last claim (REQ-F-26, E-69) and gets the authorization in the same step that saves the new photo (registration-flows diagram 8). Check In needs a photo; the backend checks it. **Photo pending (D17, E-118):** when the photo does not match the person, Staff set `photo_pending_at`; Check In is refused until the person uploads a new photo from their phone, which replaces the file. This is the one case where a photo changes during an active authorization (REQ-F-26). Whether the upload clears the mark by itself or Staff approve it is still open.
+- **Photo.** The term photo belongs to the authorization, not the account (design-notes, REQ-F-26). The bytes are a JPEG on the private volume (REQ-NF-20, REQ-NF-24); the row stores only the relative path. Registration never creates an authorization without a photo (E-69). `photo_path` is NULL for a manual grant until the User gives the photo on U-02 before Check In, like an athlete (E-69), and on a past-term authorization after its photo is deleted when the new-term photo arrives (E-135, D21). An athlete in a new term is found at the first app open by the student number of the account's last claim (REQ-F-26, E-69) and gets the authorization in the same step that saves the new photo (registration-flows diagram 8). Check In needs a photo; the backend checks it. **Photo pending (D17, E-118):** when the photo does not match the person, Staff set `photo_pending_at`; Check In is refused until the person uploads a new photo from their phone, which replaces the file. This is the one case where a photo changes during an active authorization (REQ-F-26). Whether the upload clears the mark by itself or Staff approve it is still open.
 - **Expiry** is not stored. An authorization is current when `status = 'active'` and today in `America/Puerto_Rico` is on or before the term's `ends_on` (REQ-F-22, REQ-NF-01). Editing a term never blocks: records keep their term and authorization, and the end date follows the term's new `ends_on` (E-88). A revoke (REQ-F-87) sets `status = 'revoked'` and keeps the claim, so the number is not freed. Reinstate on A-05 sets the status back to `active` (E-95).
 - **Removing an athlete from the roster (REQ-F-49, E-93, D16)** sets `roster_records.removed_at` and revokes the current authorization: `status = 'revoked'` and `reason = 'removed from roster'`. Nothing is deleted by cascade. The Gym ID stops being valid at once, the current session keeps counting, and no new Check In is allowed. The roster record stays claimed by that authorization.
 - **Reinstate (E-95).** The Administrator can return a revoked authorization to active on A-05, for example after removing an athlete by mistake. The action needs a reason, required and free text of 10 characters or more, the same rule as a manual grant and a revoke (E-86), and writes an audit log entry. Reinstate is refused with a message when the person already has an active authorization in that term: the unique index of section 5 rejects it (E-94), and the Administrator revokes the other authorization by hand if needed.
 - **One active authorization per User and term (E-68, E-94).** Only active authorizations count: a revoked one does not block a new grant or claim in the same term. This is the owner's decision (E-94). A partial unique index enforces it (section 5). A manual grant for a person who already has an active one is rejected.
-- **Authorization Number (E-71).** The number is unique per term, not across terms, and the registration lookup reads only the imported orders of the current term. A number from an ended term gets the same answer as an invalid or claimed one. If a lookup matches two orders, it is denied and shows the gym contact number. This cannot happen while the unique key holds: the import rejects the second order with the same number in the same term. The rule is a backstop.
-- **`created_account`** is set when registration created the account in the same step as the claim (REQ-F-13). Release keeps the account in every case (E-87, E-106), so the column does not drive a deletion and no rule reads it now. Whether to keep the column is to confirm. If it stays, it cannot be derived from "first authorization", because an import undo can delete the first one.
-- **Import result (E-84).** `imports.result` stores the counts and the created, updated and rejected rows (REQ-F-28), so the Administrator reopens the result later from A-07. Every row holds a name and an email, so how long they are kept is pending (REQ-NF-05, G-03). An import record has no uploaded-by or uploaded-at column: the audit log records each import with the account and the time (REQ-NF-39, E-93).
-- **Name (D7).** The name on the Gym ID and in Staff search is `waiver_acceptances.full_name`, written once at registration. It does not depend on the order or the roster, so an import undo does not erase it.
+- **Authorization Number (E-128, D1).** The number is unique across all orders, not only per term (this replaces the per-term rule of E-71). The registration lookup reads only the orders of the current term, so a number from an ended term gets the same answer as an invalid or claimed one. If the gateway ever repeats a code, the sync rejects the second order and the Administrator sees it in the sync result.
+- **`created_account`** is set when registration created the account in the same step as the claim (REQ-F-13). Release keeps the account in every case (E-87, E-106), so the column does not drive a deletion and no rule reads it now. Whether to keep the column is to confirm. If it stays, it cannot be derived from "first authorization", because a release can delete the first one.
+- **Sync result (E-84, E-127).** `imports.result` stores the counts and the created, updated and rejected rows (REQ-F-28), so the Administrator reopens the result later from A-07. Every row holds a name and an email; each sync record is deleted 5 years after it was created (E-131). A sync record has no uploaded-by or uploaded-at column: the audit log records who pressed "Sync now" and when (REQ-NF-39, E-93).
+- **Name (D7).** The name on the Gym ID and in Staff search is `waiver_acceptances.full_name`, written once at registration. It does not depend on the order or the roster, so a change to either does not erase it.
 - **Language (E-64).** One language per account. A User picks it at account creation and changes it in profile preferences. Each staff account has its own language in `staff_accounts.locale` (D11). Before an account exists, the app shows Spanish on N-01 and N-02 (E-103); that needs no column.
 - **Emailed links (REQ-F-15, E-58, D9).** Athlete registration and "I am an athlete" use the same link: a random token sent to the roster record's `institutional_email`. `email_links` stores only the hash of the token. A link works once, before `expires_at`; using it sets `used_at`. For "I am an athlete" (`purpose = 'athlete_link'`), the claim (an `athlete` authorization) is created only when the link is opened, not when the student number is entered. Link requests are limited with a counter in the `cache` table. The athlete sets the password, photo and waiver on the link page, after the link is opened (E-69), so no pending registration table is needed. Outgoing mail is assumed (E-61). There is no in-person code (E-117).
 - **Terms are never deleted (E-107).** A term created by mistake is fixed by editing its dates (E-88). No delete action exists for `academic_terms`.
 - **Staff read the roster (E-59).** Staff search the `roster_records` without `removed_at` by name or student number, read only. No table change: who may write stays a backend permission rule. Student numbers are shown in full to Staff and the Administrator (E-81).
-- **Staff accounts (D13, #62 questions 1 to 3).** Every Staff member and Administrator signs in as themselves, with their own email and password, and `role` says what they may do: `staff` for the front desk, `admin` for administration. There is no shared gym account, no PIN and no recovery code. The audit log names the staff account that made each change. When someone leaves, the account is not deleted: `deactivated_at` is set and sign-in is refused, so the audit log keeps pointing at it. A staff account is separate from a User account, so a student employee can have both, with the same email. Who creates the first Administrator and how new accounts are invited is not decided (gap 17).
+- **Staff accounts (D13, #62 questions 1 to 3).** Every Staff member and Administrator signs in as themselves, with their own email and password, and `role` says what they may do: `staff` for the front desk, `admin` for administration. There is no shared gym account, no PIN and no recovery code. The audit log names the staff account that made each change. When someone leaves, the account is not deleted: `deactivated_at` is set and sign-in is refused, so the audit log keeps pointing at it. A staff account is separate from a User account, so a student employee can have both, with the same email. The install command creates the first Administrator, and Administrators invite Staff by email (E-114, gap 17). An invited account has `password` NULL until the person opens the invite link and sets one.
+- **Staff password reset.** Laravel's `password_reset_tokens` is keyed by email, and a User and a staff account may share an email, so one reset would overwrite the other's token. Staff resets use `staff_password_reset_tokens`, with the same shape: the staff account's email as primary key, the token hash and `created_at`.
+- **Last sign-in (E-131).** `users.last_signed_in_at` is set on each sign-in. With the last Check In it says when the User was last active, which starts the 5 years before the account is deleted.
 - **One roster (D16, E-116).** The roster is one list. Administrators add, edit and remove records by hand; there is no roster import. An athlete keeps one roster record across terms and gets one authorization per term, created at the first app open of the term in the same step that saves the new photo. The waiver is not asked again.
 - **Refunds (E-120).** Refunds are made in the payment gateway, outside the store, so the store does not show them. An Administrator revokes the authorization by hand with `reason` set to the refund (REQ-F-87). If an order ever arrives as `refunded` or `cancelled` after it was `completed`, the sync revokes its authorization with `reason = 'order refunded'` or `'order cancelled'`.
-- **Store sync (D19, E-127).** Orders come from the store's API, not from a file. Each sync run is a row in `imports` (the name stays): its counts and its `result`. `file_name` holds the sync kind (`registration lookup`, `scheduled` or `sync now`). `undone_at` stays NULL, because there is no undo any more. Only `completed` orders create rows that can be claimed.
+- **Store sync (D19, E-127).** Orders come from the store's API, not from a file. Each sync run is a row in `imports` (the name stays): its counts and its `result`. `file_name` holds the sync kind (`registration lookup`, `scheduled` or `sync now`). There is no undo, so the table has no `undone_at`. Only `completed` orders create rows that can be claimed.
 - **Roster sport (#62 question 15).** Each coach's list gives the sport, so every roster record stores it. Employees pay through the store and say in the order that they are employees (#62 question 18). They have the same access as paid students, so they keep the `paid` type; `imported_memberships.member_group` says `student` or `employee`, and statistics show them apart (D15).
 
 ### Sign-in sessions
 
 - `sign_in_sessions` is Laravel's database session table, with `config('session.table')` set to `sign_in_sessions`. Its columns are Laravel's, unchanged except that `ip_address` and `user_agent` are always NULL (decision D4). The session handler is extended to write NULL.
 - **One device per User (REQ-F-03).** Not a SQL constraint: Laravel writes the session row at the end of each request, and a unique index on `user_id` would make the new device's insert fail silently. The valid session id is stored in `users.current_session_id`, a middleware checks it on every request, and old rows are deleted (decision D3).
-- **Staff sign-in sessions.** A staff account signs in on the gym dashboard's own sign-in page (REQ-NF-10). Its session row has `user_id` NULL; the signed-in staff account is in the session `payload`, so the User rules on `user_id` (one device, deletion in section 6) never touch a staff session. Staff accounts have no device limit. Session time limits for staff accounts are not decided (gap 18).
+- **Staff sign-in sessions.** A staff account signs in on the gym dashboard's own sign-in page (REQ-NF-10). Its session row has `user_id` NULL; the signed-in staff account is in the session `payload`, so the User rules on `user_id` (one device, deletion in section 6) never touch a staff session. Staff accounts have no device limit. A staff sign-in ends after 2 hours without a person tapping or typing, an Administrator sign-in after 20 minutes, and deactivating an account ends its open sessions at once (E-130, gap 18).
 
 ## 3. Sessions and occupancy
 
@@ -265,7 +281,7 @@ Notes:
 - **Closure (D14, E-115).** When a closure is published or the term ends, every active session gets `status = 'closed'` and `ended_at` set to that moment. The app shows "closed by closure".
 - **Manual entries (D18, E-119).** After an outage, an Administrator enters each paper log entry with the person and the times. The row has `entered_by_staff_account_id` set, `started_at` and `ended_at` from the paper, and `status = 'checked_out'`. It writes an audit log entry. Statistics count it and can filter it out by `entered_by_staff_account_id IS NOT NULL`. People without an account go in `manual_visit_counts` as a number of visits for a time block, with no names (E-132); they count in visit totals and not in distinct people.
 - **Occupancy** (REQ-F-41) is the count of rows with `status <> 'void'` whose range contains `now()`. Analytics (REQ-F-61) read the same table: `authorization_type` keeps paid versus athlete versus manual after an authorization is deleted, `member_group` splits paid into students and employees (D15), and `user_id` keeps distinct people. `manual` is its own category in statistics (E-82).
-- **Undo and active sessions.** An import can be undone even after Check Ins used its authorizations (E-84). Active sessions keep counting until they end, because `authorization_id` is set to NULL and the row stays.
+- **Deleted authorizations and active sessions.** When an authorization is deleted (a release, or an order deleted), active sessions keep counting until they end, because `authorization_id` is set to NULL and the row stays.
 - **Location** is not stored (REQ-NF-03).
 - **My visits (E-105).** The My visits screen (U-09) lists the signed-in User's past Check Ins. It reads the existing `facility_sessions` rows of that `user_id`: no new table and no new column. The list shows the full history (E-126), and rows are kept 5 years (E-125).
 
@@ -321,10 +337,10 @@ Notes:
 - The gym contact number is a row in `settings`. The Administrator edits it in A-12, Facility information editor (E-66).
 - Schedule slots: one table, weekly or dated (E-90). The regular schedule is written once, and exceptions are separate rows.
 - The audit log has no `pin_active` column (E-93), and with personal accounts there is no PIN to record (D13).
-- The affected record is `subject_table` plus `subject_id`, with no foreign key. Deleting a User or undoing an import never removes or changes an audit entry, which must stay until the end of its term (REQ-NF-05, REQ-NF-39, REQ-F-09).
+- The affected record is `subject_table` plus `subject_id`, with no foreign key. Deleting a User or an order never removes or changes an audit entry, which stays until the retention rule removes it (E-131, REQ-NF-05, REQ-NF-39, REQ-F-09).
 - The audit log names the staff account that made each change, so it says who did what (D13, #62 questions 1 to 3). Staff accounts are never deleted, only deactivated, so an entry never loses its person. `ip_address` comes from the proxy header, not the proxy's own address (design-notes).
-- Proposed (E-108): nobody can edit or delete an entry through the app, not even the Administrator; no screen and no route for it. Optional enforcement, a team idea: a trigger that rejects UPDATE, and DELETE only by the scheduled task at term end (REQ-NF-05).
-- Proposed (E-108): new `action` values for staff account sign in and sign out. User sign-ins are not logged (D4, REQ-NF-21).
+- Decided (E-108): nobody can edit or delete an entry through the app, not even the Administrator; no screen and no route for it. Optional enforcement, a team idea: a trigger that rejects UPDATE, and DELETE only by the retention task (E-131, REQ-NF-05).
+- Decided (E-108): new `action` values for staff account sign in and sign out. User sign-ins are not logged (D4, REQ-NF-21).
 - The location boundary is not a setting: it is configured per environment (REQ-NF-29).
 
 ## 5. Database rules
@@ -354,7 +370,9 @@ Rules written as SQL in the migrations. Laravel's schema builder cannot express 
 | One waiver per account | `waiver_acceptances` | `UNIQUE (user_id)` | REQ-F-60 |
 | One staff account per email | `staff_accounts` | `CREATE UNIQUE INDEX ON staff_accounts (lower(email))`. Separate from `users`, so the same email may have a User account too (D13) | REQ-F-52 (D13) |
 | A staff account is Staff or Administrator | `staff_accounts` | `CHECK (role IN ('staff','admin'))` | REQ-F-52 (D13) |
-| An emailed link is found only by its hash and has the right owner | `email_links` | `UNIQUE (token_hash)`, `CHECK (purpose IN ('athlete_registration','athlete_link'))`, `CHECK ((purpose = 'athlete_link') = (user_id IS NOT NULL))` | REQ-F-15 (E-58) |
+| One staff password reset per email | `staff_password_reset_tokens` | `email` is the primary key, apart from `password_reset_tokens`, so a User and a staff account with the same email never collide | REQ-F-06, REQ-F-88 |
+| A paper log count is at least one visit, for a real time block | `manual_visit_counts` | `CHECK (visits > 0)` and `CHECK (ends_at > starts_at)` | REQ-F-95 (E-132) |
+| An emailed link is found only by its hash and has the right owner | `email_links` | `UNIQUE (token_hash)` and `CHECK ((purpose = 'athlete_registration' AND roster_record_id IS NOT NULL AND user_id IS NULL AND staff_account_id IS NULL) OR (purpose = 'athlete_link' AND roster_record_id IS NOT NULL AND user_id IS NOT NULL AND staff_account_id IS NULL) OR (purpose = 'staff_invite' AND roster_record_id IS NULL AND user_id IS NULL AND staff_account_id IS NOT NULL))` | REQ-F-15, REQ-F-88 (E-58, E-114) |
 | Chosen language is Spanish or English | `users`, `staff_accounts` | `CHECK (locale IN ('es','en'))` on both tables | REQ-NF-33, REQ-NF-35 |
 | A schedule slot is either weekly or dated, never both | `schedule_slots` | `CHECK ((weekday IS NOT NULL AND start_time IS NOT NULL AND end_time IS NOT NULL AND starts_at IS NULL AND ends_at IS NULL) OR (weekday IS NULL AND start_time IS NULL AND end_time IS NULL AND starts_at IS NOT NULL AND ends_at IS NOT NULL))`, plus `CHECK (type IN (...))` and `CHECK (type NOT IN ('special_hours','closure') OR starts_at IS NOT NULL)` | REQ-F-55 |
 
@@ -362,58 +380,63 @@ Rules written as SQL in the migrations. Laravel's schema builder cannot express 
 
 Photo files live outside the database, so no foreign key can delete them. The backend deletes the file after the transaction commits. A scheduled task removes files that no authorization points at, in case a delete failed.
 
-| Table or data | (a) User deletes the account (REQ-F-09) | (b) Import is undone (REQ-F-31) | (c) Administrator releases an Authorization Number (REQ-F-74) |
-|---|---|---|---|
-| `users` | Row kept with no personal data: `email`, `password`, `locale`, `current_session_id` set to NULL, `deleted_at` set (decision D2). The email is free again | Kept: accounts stay (E-57) | Kept in every release case: also when the claim created the account (E-87) and when the released authorization was the account's only one (E-106) |
-| `authorizations` | Deleted. Only expired or revoked ones can exist, because deletion needs no active authorization | Those that point at the deleted memberships are deleted (ON DELETE CASCADE) | Only the released one is deleted. Other authorizations of the same account stay (E-87) |
-| Photo files | Deleted with their authorizations | Deleted with their authorizations, row and file (E-57). The User uploads a new photo on the next claim | Deleted with the released authorization, row and file (E-57, E-87), also when the number was added to an existing account |
-| `waiver_acceptances` | Deleted | Kept | Kept |
-| `sign_in_sessions` | All of the User's rows deleted | Kept | Kept |
-| `facility_sessions` | Kept and still linked to the anonymous `users` row, so Check In counts, paid versus athlete and distinct people do not change (REQ-F-61) | Kept; `authorization_id` set to NULL; `authorization_type` keeps the type | Kept; `authorization_id` set to NULL |
-| `imported_memberships` | Kept: it is a copy of the WooCommerce order, not account data. It becomes unclaimed (gap 5) | Rows created by that import (`import_id`) deleted. Changes that import made to older records are not reverted (E-84) | Kept and unclaimed again |
-| `roster_records` | Kept: it is the department's list. It becomes unclaimed | Kept | Not affected |
-| `imports` | Not affected | Row kept with `undone_at` set. The stored result and all its rows stay (E-84) | Not affected |
-| `audit_log_entries` | Kept unchanged for 5 years (E-125, REQ-NF-05) | Kept; an undo entry is added (REQ-NF-39) | Kept; a release entry is added (REQ-NF-39) |
-| `password_reset_tokens` | Rows for the old email deleted | Not affected | Not affected |
-| `email_links` | The User's rows deleted | Not affected | Not affected |
+There is no import undo any more (E-127, REQ-F-31 Removed), so its old column is gone and the release column is now (b).
+
+| Table or data | (a) User deletes the account (REQ-F-09) | (b) Administrator releases an Authorization Number (REQ-F-74) |
+|---|---|---|
+| `users` | Row kept with no personal data: `email`, `password`, `locale`, `current_session_id` set to NULL, `deleted_at` set (decision D2). The email is free again | Kept in every release case: also when the claim created the account (E-87) and when the released authorization was the account's only one (E-106) |
+| `authorizations` | Deleted. Only expired or revoked ones can exist, because deletion needs no active authorization | Only the released one is deleted. Other authorizations of the same account stay (E-87) |
+| Photo files | Deleted with their authorizations | Deleted with the released authorization, row and file (E-57, E-87), also when the number was added to an existing account |
+| `waiver_acceptances` | Deleted | Kept |
+| `sign_in_sessions` | All of the User's rows deleted | Kept |
+| `facility_sessions` | Kept and still linked to the anonymous `users` row, so Check In counts, paid versus athlete and distinct people do not change (REQ-F-61) | Kept; `authorization_id` set to NULL |
+| `imported_memberships` | Kept: it is a copy of the WooCommerce order, not account data. It becomes unclaimed (gap 5) | Kept and unclaimed again |
+| `roster_records` | Kept: it is the department's list. It becomes unclaimed | Not affected |
+| `imports` | Not affected | Not affected |
+| `audit_log_entries` | Kept unchanged for 5 years (E-125, REQ-NF-05) | Kept; a release entry is added (REQ-NF-39) |
+| `password_reset_tokens` | Rows for the old email deleted | Not affected |
+| `email_links` | The User's rows deleted | Not affected |
 
 Foreign key on-delete behavior that follows from this table:
 
 | Foreign key | ON DELETE | Why |
 |---|---|---|
 | `facility_sessions.user_id` | RESTRICT | Users are never hard-deleted (decision D2); this stops a mistake from erasing Check In history |
-| `facility_sessions.authorization_id` | SET NULL | Undo, release and account deletion remove authorizations, and the sessions must stay |
-| `authorizations.imported_membership_id` | CASCADE | Undo deletes the authorizations that depend on the memberships (REQ-F-31) |
+| `facility_sessions.authorization_id` | SET NULL | Release and account deletion remove authorizations, and the sessions must stay |
+| `authorizations.imported_membership_id` | CASCADE | An authorization cannot outlive its order. The sync never deletes orders (E-127), so this is reached only by a mistake |
 | `authorizations.roster_record_id` | RESTRICT | No cascade (E-93). Removing an athlete from the roster sets `status = 'revoked'` with the reason "removed from roster", which ends the Gym ID at once (REQ-F-49). Reinstate (E-95) sets it back to `active` |
 | `authorizations.user_id` | CASCADE | Only reached if a users row is ever hard-deleted |
 | `waiver_acceptances.user_id` | CASCADE | Same as above |
 | `authorizations.academic_term_id`, `imported_memberships.academic_term_id` | RESTRICT | Terms are never deleted (E-107); RESTRICT stops a term with data from being removed by mistake |
-| `imported_memberships.import_id` | RESTRICT | Import rows are never deleted; undo sets `undone_at` |
+| `imported_memberships.import_id` | RESTRICT | A sync record with orders cannot be deleted by mistake |
 | `audit_log_entries.staff_account_id` | RESTRICT | Staff accounts are never deleted, only deactivated, so every entry keeps its person (D13) |
 | `sign_in_sessions.user_id` | No SQL foreign key (Laravel default) | The backend deletes the rows in (a) |
 | `email_links.roster_record_id` | CASCADE | A link for a deleted roster record must stop working |
 | `facility_sessions.entered_by_staff_account_id`, `facility_sessions.checked_out_by_staff_account_id` | RESTRICT | Staff accounts are never deleted, only deactivated (D13) |
 | `email_links.user_id` | CASCADE | Only reached if a users row is ever hard-deleted; the backend deletes the rows in (a) |
+| `email_links.staff_account_id` | CASCADE | An invite link for a deleted staff account must stop working |
 
 ## 7. Personal data check (REQ-NF-21)
 
 | Column | Allowed by |
 |---|---|
 | `users.email`, `users.password`, `users.locale` | REQ-NF-21 (account email, password, chosen language) |
-| `staff_accounts`: `name`, `email`, `password`, `locale` | Needed so the audit log names who did what (D13). REQ-NF-21 lists User account data only; the SRS does not list staff account data yet (gap 19) |
+| `users.last_signed_in_at` | Needed to count the 5 years from the last activity (E-131) |
+| `staff_accounts`: `name`, `email`, `password`, `locale` | REQ-NF-21 (name, email, password and language of staff accounts). Needed so the audit log names who did what (D13) |
+| `staff_password_reset_tokens.email` | The staff account's email, already allowed above |
 | `imported_memberships`: `name`, `email`, `member_group`, `membership_details`, `authorization_number`, `order_reference`, `order_status`, `paid_at`, term, `synced_at` | REQ-F-29. No billing, address, phone, IP or marketing fields, and no student number (E-127). `member_group` comes from the product variation (D15) |
-| `roster_records`: `student_number`, `name`, `institutional_email`, `sport`, term | REQ-F-51 (sport: #62 question 15) |
+| `roster_records`: `student_number`, `name`, `institutional_email`, `sport` | REQ-F-51 (sport: #62 question 15) |
 | `authorizations.photo_path` and the file | Term photo |
 | `waiver_acceptances`: all fields | REQ-F-60 |
 | `audit_log_entries`: `ip_address`, `user_agent`, `before_values`, `after_values` | REQ-NF-39 |
-| `imports.result` | Rows of the result hold a name and an email (REQ-F-28, REQ-F-29). How long they are kept is pending (REQ-NF-05, G-03) |
+| `imports.result` | Rows of the result hold a name and an email (REQ-F-28, REQ-F-29). Each sync record is deleted 5 years after it was created (E-131) |
 | `sign_in_sessions.ip_address`, `sign_in_sessions.user_agent` | Always NULL, so nothing is stored (decision D4, E-91) |
 | `cache` attempt counters | Temporary counters, discarded when the wait ends: sign-in counters by IP and email, link requests by student number. REQ-NF-21 now says so (SRS v0.7, E-91) |
 | `email_links` | No new personal data: a token hash, times, and links to a roster record and an account. The email goes to `roster_records.institutional_email`, already allowed (REQ-F-51) |
 
 ## Design decisions
 
-Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13 to D15 on 2026-11-04, after the gym meeting (#62). The expiry and early-end rules of section 3 are decided and can be revisited. D1 still waits on a real export.
+Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13 to D15 on 2026-11-04, after the gym meeting (#62). The expiry and early-end rules of section 3 are decided and can be revisited.
 
 **D1. Uniqueness of the Authorization Number (E-30, G-19).** Decided (owner, 2026-10-19; E-71), changed by the team on 2026-11-04 (E-128): `UNIQUE (authorization_number)` across all orders.
 - Why: a read of all 84 store orders found no repeated value among the 69 paid ones. If the gateway ever repeats a code, the sync rejects that order and the Administrator sees it in the sync result.
@@ -430,10 +453,10 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13
 
 **D5. Where the PIN state and last person activity live (REQ-NF-48).** Replaced by D13 (2026-11-04): with personal staff accounts there is no PIN, so there is no PIN state to store.
 
-**D6. Photos when an import is undone (REQ-F-31).** Decided (E-57): option A, the photo (row and file) is deleted with the authorization, on undo and on release; accounts stay, and REQ-F-31 now says so.
+**D6. Photos when an import is undone (REQ-F-31).** Decided (E-57): option A, the photo (row and file) is deleted with the authorization on release; accounts stay. The undo part is gone: there is no import undo (E-127, REQ-F-31 Removed).
 
 **D7. Where the User's name comes from (REQ-F-40, REQ-F-45).** Decided (owner, 2026-10-19): option A, `waiver_acceptances.full_name`.
-- Why: it is written once at registration and does not depend on the order or roster, so an import undo does not erase it.
+- Why: it is written once at registration and does not depend on the order or roster, so a change to either does not erase it.
 
 **D8. How regular hours repeat (REQ-F-55, REQ-F-33).** Decided (owner, 2026-10-19; E-90): option A, one table where a slot is weekly (weekday and local times) or dated (start and end).
 - Why: the regular schedule is written once and exceptions are separate rows. Regular hours and athletes-only slots can be weekly; special hours and closures are dated. Summer hours that differ would need a term link later (G-28 is pending).
@@ -459,7 +482,7 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13
 
 **D15. Employees in the statistics (#62 question 18).** Decided (team, 2026-11-04), after the gym meeting: option A, employees stay `paid` members, and the order's group is stored in `imported_memberships.member_group` (`student` or `employee`). Check In copies it to `facility_sessions.member_group`, like `authorization_type`.
 - Why: employees pay in the store and say so in the order, and they have the same access as paid students, so every paid rule (athletes-only periods, one active authorization) stays unchanged. Only the statistics show them apart.
-- Still pending: how the export marks an employee (a product, a field or text). It waits on the sample Export Orders file, like D1.
+- How the store marks an employee: the product variation of the order (E-120, E-127).
 
 **D16. One roster (G-33, E-116).** Decided (team, 2026-11-04): `roster_records` has no term. A student number appears once; `removed_at` marks a removed athlete. Authorizations stay per term, so the claim key becomes `UNIQUE (roster_record_id, academic_term_id)`.
 - Why: the department keeps one list, edits it by hand and removes athletes who leave. Per-term authorizations keep the per-term photo and expiry rules.
@@ -481,25 +504,25 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13
 
 ## Gaps and questions
 
-1. **Resolved by E-57.** Undo and release delete the photo (row and file) with the authorization; accounts stay.
-2. **Resolved by E-84.** Undo deletes only what that import created and does not revert changes made to older records. Undoing import 1 deletes its orders, including those import 2 corrected.
-3. **Resolved by E-125.** Every kind of data, the audit log included, is kept 5 years, so entries between terms need no term. Earlier note: **REQ-NF-05, audit entries between terms.** Entries are kept "until the end of the term in which it happened", but REQ-F-21 allows gaps between terms. An entry in a gap has no term. What happens after the term ends is pending (G-03). CTI said no screen or button may edit or delete an entry, and that the log is wanted after an incident; CTI did not speak about retention. The end-of-term rule stays decided (REQ-NF-05, G-03).
+1. **Resolved by E-57.** Release deletes the photo (row and file) with the authorization; accounts stay. Import undo is gone (E-127).
+2. **Closed by E-127.** There is no import undo any more, so this question no longer applies.
+3. **Resolved by E-125.** Every kind of data, the audit log included, is kept 5 years, so entries between terms need no term. Earlier note: **REQ-NF-05, audit entries between terms.** Entries are kept "until the end of the term in which it happened", but REQ-F-21 allows gaps between terms. An entry in a gap has no term. What happens after the term ends is pending (G-03). CTI said no screen or button may edit or delete an entry, and that the log is wanted after an incident; CTI did not speak about retention. 
 4. **Resolved by E-91 for the session table.** IP and user agent are NULL. The `cache` counters keyed by IP and email stay for a short time; REQ-NF-21 now says so (SRS v0.7, E-91).
 5. **REQ-F-09 and revoked numbers.** Deleting an account deletes its authorizations, so a revoked current-term Authorization Number becomes claimable again. The SRS does not say if that is wanted.
 6. **Resolved by E-69.** A User with a manual authorization gives the term photo on U-02 before Check In, like an athlete.
 7. **Resolved by E-82.** `manual` is its own value in `authorization_type` and its own category in statistics.
 8. **Resolved by E-68 and E-94.** One active authorization per User and term; only active ones count, and a manual grant is rejected when the person already has an active one.
-9. **REQ-F-88, open staff sign-in sessions.** With personal accounts (D13), access is withdrawn by deactivating the staff account. The SRS does not say whether that person's open sessions end at once. If yes, a middleware can check `deactivated_at` on every request (to confirm during implementation).
+9. **Resolved by E-130.** Deactivating a staff account ends its open sessions at once; a middleware checks `deactivated_at` on every request.
 10. **REQ-F-01 cannot be fully enforced by the database.** Uniqueness is per email. A person whose payment email differs from the account email, and who registers while signed out, gets a second account. REQ-F-20 assumes they add the number from inside the account. When the payment email already has an account, registration shows the masked email and asks the person to sign in (E-70).
 11. **Resolved by E-69.** At the first app open in a new term, the roster is looked up by the student number of the account's last claim, and the athlete gives the new photo.
-12. **Active sessions after release.** E-84 settles undo: active sessions keep counting. For a release, the design keeps the session counting too, but nobody has confirmed it.
+12. **Active sessions after release.** For a release, the design keeps the session counting, but nobody has confirmed it.
 13. **Resolved by D16.** One roster: a removed athlete has `removed_at` set and is hidden from Staff search. The athlete stays until an Administrator removes them, and Administrators add athletes by hand during the term. Still to confirm: links sent before a removal must stop working; the backend checks `removed_at` when a link is opened.
 14. **Retention of rejected import rows.** They are stored with the import result (E-84) and kept 5 years like everything else (E-125). CTI: the reports the gym wants decide which data is kept and for how long. Proposed (E-111): a growth estimate and cleanup options per term or per year.
 15. **Visit history for the User.** Resolved by E-105 (D10): the My visits screen (U-09) reads `facility_sessions`. The list shows the full history (E-126), and rows are kept 5 years (E-125).
 16. **Resolved by D13.** Staff and Administrators have personal accounts in `staff_accounts`, and `audit_log_entries.staff_account_id` names who made each change.
 17. **Resolved (2026-11-05).** The Administrators are the two secretaries and the department director, and the install command creates the first one (E-114). Administrators invite Staff by email, and the invitation is an `email_links` row with `purpose = 'staff_invite'` and `staff_account_id` (D9).
 18. **Resolved by E-130.** Staff sessions end after 2 hours without activity and Administrator sessions after 20 minutes; the last person activity lives in the session `payload`, and automatic refreshes do not update it. Deactivation ends open sessions at once (a middleware checks `deactivated_at`).
-19. **Staff account data in REQ-NF-21.** REQ-NF-21 lists the personal data of User accounts only. Staff account name, email and password are needed for D13 but are not listed yet.
+19. **Resolved.** REQ-NF-21 now lists the name, email, password and language of staff accounts (REQ-F-88).
 
 ## Traceability
 
@@ -521,7 +544,7 @@ Diagram titles: 1. All tables and links; 2. Accounts and access tables; 3. Sessi
 | REQ-F-28 | Diagram 2 (`imports.result`); section 2 notes (import result, E-84); 7. Personal data check |
 | REQ-F-29 | Diagram 2 (`imported_memberships`); 7. Personal data check |
 | REQ-F-30 | 5. Database rules (`order_reference`) |
-| REQ-F-31 | 6. Deletion, column (b); D6; Gaps 1 and 2 (resolved, E-84) |
+| REQ-F-31 | Removed (E-127): no import undo. 6. Deletion (note); D6; Gaps 1 and 2 (resolved, E-84) |
 | REQ-F-36 | Diagram 3 (`facility_sessions`); section 3 notes; 5. Database rules (exclusion with `btree_gist`) |
 | REQ-F-37 | 5. Database rules |
 | REQ-F-38 | Section 3 notes; 5. Database rules |
@@ -534,11 +557,11 @@ Diagram titles: 1. All tables and links; 2. Accounts and access tables; 3. Sessi
 | REQ-F-58 | Diagrams 3 and 4 (`text_en` NULL shows Spanish) |
 | REQ-F-60 | Diagram 2 (`waiver_acceptances`); 5. Database rules |
 | REQ-F-61 | Diagram 3 (`authorization_type`); section 3 notes (`manual` category, E-82); 6. Deletion, column (a) |
-| REQ-F-74 | 6. Deletion, column (c) (E-87, E-106); section 2 notes; D2 |
+| REQ-F-74 | 6. Deletion, column (b) (E-87, E-106); section 2 notes; D2 |
 | REQ-F-77 | Removed (E-117): no in-person code |
 | REQ-F-78 | 5. Database rules (one account per email) |
 | REQ-F-87 | Diagram 2 (`authorizations`); 5. Database rules (reason, E-86) |
-| REQ-F-88 | 5. Database rules; Gaps 9 |
+| REQ-F-88 | Diagram 2 (`staff_accounts.password`, `staff_password_reset_tokens`); section 2 notes (staff accounts, staff password reset); 5. Database rules; 6. Deletion, FK table (`email_links.staff_account_id`); Gaps 9 and 17 |
 | REQ-F-89 | No recovery code with personal staff accounts (D13) |
 | REQ-NF-01 | Section 3 notes; 5. Database rules |
 | REQ-NF-05 | Section 4 notes; section 3 notes (My visits); 6. Deletion; Gaps 3 and 15 |
@@ -549,7 +572,7 @@ Diagram titles: 1. All tables and links; 2. Accounts and access tables; 3. Sessi
 | REQ-NF-42 | 5. Database rules (simultaneous requests) |
 | REQ-NF-48 | No PIN with personal staff accounts (D13, D5); staff session limits are gap 18 |
 | E-56 | Replaced by D13 (no PIN) |
-| E-57 | 6. Deletion, columns (b) and (c); D6; Gaps 1 |
+| E-57 | 6. Deletion, column (b); D6; Gaps 1 |
 | E-58 | Diagrams 1 and 2 (`email_links`); section 2 notes (emailed links); 6. Deletion; D9 |
 | E-59 | Section 2 notes (Staff read the roster). No table change |
 | E-60 | Replaced by D13 (no recovery code) |
@@ -559,9 +582,9 @@ Diagram titles: 1. All tables and links; 2. Accounts and access tables; 3. Sessi
 | E-103 | Section 2 notes (language). No table change |
 | E-104 | Diagram 2 (`staff_accounts.locale`); section 2 notes (language); D11 |
 | E-105 | Section 3 notes (My visits); D10; Gaps 15 |
-| E-106 | 6. Deletion, column (c); section 2 notes (`created_account`); D2 |
+| E-106 | 6. Deletion, column (b); section 2 notes (`created_account`); D2 |
 | E-107 | Section 2 notes (terms); 6. Deletion, FK table; D12 |
-| E-84 | Diagram 2 (`imports.result`); section 2 notes (import result); 6. Deletion, column (b); 7. Personal data check; Gaps 14 |
+| E-84 | Diagram 2 (`imports.result`); section 2 notes (sync result); 7. Personal data check; Gaps 14 |
 | E-93 | Conventions (`cache`); Diagram 2 (`authorizations.reason`); section 2 notes (removing an athlete); section 4 notes; 6. Deletion, FK table; Gaps 13 |
 | E-95 | Section 2 notes (Reinstate); 6. Deletion, FK table; Gaps 13 |
 | #62 gym meeting (2026-11-04) | D13 (staff accounts); D14 (check-out, 2-hour close, closure); D15 (employees); D16 (one roster); D17 (photo pending); D18 (manual entries); Diagram 2 (`staff_accounts`, `roster_records.sport`, `imported_memberships.member_group`); Diagram 3 (`facility_sessions.member_group`); section 2 notes (staff accounts, roster sport); section 3 notes (check-out); section 4 notes; 5. Database rules; Gaps 16 to 19 |

@@ -120,7 +120,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Affects | REQ-F-20 Change type without losing the account |
 | Feature | 3.4 Authorization, Academic Terms and Renewal |
 | Why we ask | The person must keep one account and its Check In history. Paid members use the payment email and athletes the roster email, so the two may differ. The answer also tells us how to match a roster record to an existing account. |
-| Answer | A: the current account email stays. The user signs in to the existing account and adds the new authorization from inside it: an Authorization Number for a new paid membership, or a student number ("I am an athlete") that is in the current-term roster and unclaimed. No new account is created and staff do not merge accounts. |
+| Answer | A: the current account email stays. The user signs in to the existing account and adds the new authorization from inside it: an Authorization Number for a new paid membership, or a student number ("I am an athlete") that is in the current-term roster and unclaimed. No new account is created and staff do not merge accounts. Update 2026-11-05: the roster is now one list, not one per term (team.md, E-116). |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
@@ -158,7 +158,7 @@ Also asked in cti.md, if CTI manages the store.
 | Affects | REQ-F-09 Delete an account or its data |
 | Feature | 3.1 Accounts and Sign In |
 | Why we ask | REQ-F-09 is new and nobody has approved it. Retention periods come from G-03. |
-| Answer | The user requests deletion from the app, only when the user has no active authorization. Personal data and photos are deleted. Anonymous Check In counts are kept for analytics. PIN holders can handle a deletion for a user if needed. |
+| Answer | The user requests deletion from the app, only when the user has no active authorization. Personal data and photos are deleted. Anonymous Check In counts are kept for analytics. PIN holders can handle a deletion for a user if needed. Update 2026-11-05: there is no PIN; an Administrator with a personal account handles a deletion when the user asks (team.md, E-114). |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
@@ -220,7 +220,7 @@ Also asked in cti.md, if CTI manages the store.
 | Affects | REQ-NF-48 Only PIN holders change the PIN (was REQ-F-53); REQ-F-49 Only PIN holders change the roster |
 | Feature | 3.10 Gym Account, PIN and Permissions, 3.9 Athlete Roster |
 | Why we ask | Only Staff with this permission can change the roster. REQ-F-53 (now part of REQ-NF-48) stayed Pending until we knew who grants it. |
-| Answer | Closed. There is no separate roster permission. The gym uses one shared gym account, and the roster tool needs the PIN. Who holds the PIN is asked in G-29. |
+| Answer | Closed. There is no separate roster permission. The gym uses one shared gym account, and the roster tool needs the PIN. Who holds the PIN is asked in G-29. Update 2026-11-05: there is no shared gym account and no PIN; only Administrators, with personal accounts, change the roster (team.md, E-114, E-116). |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 

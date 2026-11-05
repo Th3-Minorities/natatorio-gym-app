@@ -97,12 +97,12 @@ flowchart TD
   class MAIL,RELAY,STORE pending
 ```
 
-**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-12 (outbound HTTPS to the store). Backups are decided (E-122, REQ-NF-06). The proxy choice is D1 and is still proposed. The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Every kind of data, photos included, is kept 5 years (REQ-NF-04, REQ-NF-05, E-125).
+**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-12 (outbound HTTPS to the store). Backups are decided (E-122, REQ-NF-06). The proxy choice is D1 and is still proposed. The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Every kind of data is kept 5 years (REQ-NF-05, E-125, E-131), but only the current photo of each person is kept (REQ-NF-04, E-135).
 
 Notes:
 
-- The proxy has no route to the photos volume. A photo is read only through a Laravel route that checks the role (REQ-NF-20). Uploads are JPEG, PNG or HEIC up to 10 MB, saved as JPEG without location metadata (REQ-NF-24).
-- Every kind of data is kept 5 years, so the storage estimate (bytes per photo, people, uploads per term) must be redone (E-125, E-111). The backups sit on a second virtual disk of the same VM, asked for in the same CTI request (E-122).
+- The proxy has no route to the photos volume. A photo is read only through a Laravel route that checks the role (REQ-NF-20). Uploads are JPEG, PNG or HEIC up to 10 MB, saved as JPEG without location metadata and shrunk to about 0.5 MB, about 1,200 pixels on the long side (REQ-NF-24, E-138).
+- Every kind of data is kept 5 years, and only the current photo is kept (E-125, E-131, E-135). The storage estimate was redone on 2026-11-05 with that rule (E-111). The backups sit on a second virtual disk of the same VM, asked for in the same CTI request (E-122).
 - The service worker in the PWA does not cache `/api` responses, so stale data is never shown as current (`design-notes.md`, REQ-NF-26). Screens poll `/api` every 20 to 30 seconds (REQ-F-43).
 - The scheduler makes the backups, runs the store sync at least 3 times a day (REQ-F-28), closes sessions at a closure or the end of a term, and marks old sessions as expired. The backend still computes session expiry at query time, from backend time (REQ-NF-01, REQ-F-38, check-in D3).
 - Email goes out during the request. There is no queue and no worker container for now (D4). The lookup at registration also asks the store during the request (REQ-F-97), through the same lookup limits.

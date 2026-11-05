@@ -131,7 +131,7 @@ sequenceDiagram
 **About this diagram:** Step 3 is the one-device rule (REQ-F-03). The exclusion constraint is the final guard of REQ-F-36 and depends on CTI accepting PostgreSQL (M-09). The 200 answer follows REQ-F-37.
 
 - Steps 13 to 24 are the single protected operation: re-check, look for an active session and create one, in one transaction. The read in step 16 gives a clean answer in the normal case. Under simultaneous requests both reads can see nothing, so the constraint decides (REQ-NF-42 tests this).
-- Backend time is the database clock `now()` (REQ-NF-01). The response carries server time so the phone can count the time left before the automatic close for a paid member without trusting its own clock. Athletes never see time left (E-75).
+- Backend time is the database clock `now()` (REQ-NF-01). The response carries server time, so the Gym ID clock does not trust the phone's own clock. The Gym ID shows no countdown for anyone: an active session shows "Active session" and the Check In time (E-129).
 
 ### 4. Facility session states
 
@@ -216,7 +216,7 @@ flowchart TD
 ```mermaid
 stateDiagram-v2
   state "No session, Check In button" as pm_none
-  state "Active with Member tag, name, photo, authorization, time left before the automatic close, clock" as pm_active
+  state "Active with Member tag, name, photo, authorization, Active session and the Check In time, clock" as pm_active
   state "Ended, shown with text and icon" as pm_expired
   state "No connection, not valid now, clock stopped" as pm_offline
 
@@ -465,7 +465,7 @@ Status: Proposed. REQ-F-43 allows 20 to 30 seconds.
 - B. 30 seconds. Pro: fewer requests and less battery on phones. Con: up to 30 seconds of delay on a value that changes only with Check In, expiry or a correction.
 - C. 20 for Staff screens, 30 for User screens. Pro: fresh where Staff work. Con: two values to test.
 
-Recommendation: B, one setting, polling only while the page is visible. Time left (paid members only) and the clock run on the phone from the server end time, so they do not depend on the interval, and Staff searches are fresh requests.
+Recommendation: B, one setting, polling only while the page is visible. The clock runs on the phone from the server time, so it does not depend on the interval, and Staff searches are fresh requests.
 
 ### D7. Can the User see their own past Check Ins
 
