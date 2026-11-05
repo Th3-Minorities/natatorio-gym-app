@@ -251,7 +251,7 @@ Every A screen also shows Loading, "No connection: actions disabled", and the no
 | C-02 | Schedules | Everyone, also before sign in (shown on N-01) | Regular hours, special hours, closures, athletes-only slots; "open now" or "closed now" | Loading. Empty: "no schedule published". Error. No connection: loaded content stays with "not current, updated at TIME" (SM-6) | Both | N-01; Hours tab; dashboard menu | none drawn |
 | C-03 | Notices | Everyone, also before sign in (shown on N-01) | Current maintenance notices and updates | Loading. Empty: "no notices". Error. No connection: loaded content stays with "not current, updated at TIME" (SM-6) | Both | N-01; Notices tab; dashboard menu | none drawn |
 | C-04 | Facility information | User, Staff, Administrator | Rules, towel, footwear, machines, equipment instructions | Loading. Empty per topic. Error. No connection: loaded content stays with "not current, updated at TIME" (SM-6). Stretch: a QR code opens one topic (REQ-F-59) | Both | More menu; dashboard menu | none drawn |
-| C-05 | Analytics | User, Staff, Administrator | Period picker and metrics (a) to (g) of REQ-F-61: visits per day and per hour with the peak hour, athletes against student members and employee members, visits per sport. Manual authorizations count as paid members for every rule (E-126); how they show is to confirm. Administrators also see a button to download the end-of-term summary (REQ-F-96) | Loading. Empty: zeros, not an error. Error. No connection: charts already loaded stay with "not current, updated at TIME" (SM-6) | Both | Stats tab; C-01 tap (today); dashboard menu | none drawn |
+| C-05 | Analytics | User, Staff, Administrator | Period picker with buttons for day, week, month, term and year plus a free date range (E-142), and metrics (a) to (g) of REQ-F-61: visits per day and per hour with the peak hour, athletes against student members and employee members, visits per sport. Manual authorizations count as paid members for every rule (E-126); how they show is to confirm. Administrators also see a button to download the chosen period as PDF or Excel; the end-of-term summary is this download with the term chosen (REQ-F-101, E-144) | Loading. Empty: zeros, not an error. Error. No connection: charts already loaded stay with "not current, updated at TIME" (SM-6) | Both | Stats tab; C-01 tap (today); dashboard menu | none drawn |
 | A-10 | Schedules editor | Administrator | Regular hours, special hours, closures, athletes-only slots, Spanish and English text. Each slot repeats weekly or has a concrete date: the regular schedule is written once and exceptions are separate entries (E-90) | Loading. Empty. Error: Spanish text missing. No connection: actions disabled. Slot list pending G-28 | Desk | S-01 menu (Administrators) | none drawn |
 | A-11 | Notices editor | Administrator | Create, edit, delete notices in Spanish and English. A help text says notices are public, so they must hold no sensitive data (E-66) | Loading. Empty. Error: Spanish text missing. No connection: actions disabled | Desk | S-01 menu (Administrators) | none drawn |
 | A-12 | Facility information editor | Administrator | Edit rules, towel, footwear, machines, equipment instructions; edit the gym contact number (E-66) | Loading. Error: Spanish text missing; contact number empty or invalid. No connection: actions disabled | Desk | S-01 menu (Administrators) | none drawn |
@@ -260,7 +260,7 @@ Every A screen also shows Loading, "No connection: actions disabled", and the no
 
 - The athletes-only periods are not known yet (G-28). Draw the slot type in C-02 and A-10 with placeholder times.
 - C-04 QR code per topic is a stretch goal (REQ-F-59). Mark it as optional on the wireframe.
-- C-05 metrics (a) to (g) are listed in REQ-F-61 in the SRS. Draw aggregated counts only (issue scope). The content and format of the end-of-term summary are not decided (REQ-F-96): draw only the button.
+- C-05 metrics (a) to (g) are listed in REQ-F-61 in the SRS. Draw aggregated counts only (issue scope). Administrators get one download button (PDF or Excel) for the chosen period; the end-of-term summary is that download with the term chosen (REQ-F-101, E-144).
 
 #### Diagrams to read
 
@@ -433,7 +433,7 @@ These diagrams describe the backend, the database or the servers. The issue name
 | Waiver form: on screen, signature or paper (G-21) | N-03, N-05 | Draw acceptance on screen |
 | Users off campus (G-31) | none | Nothing to draw |
 | Photo pending: does the new photo clear the mark by itself, or do Staff approve it (E-118) | U-02, S-02 | Draw the mark and the upload; leave the clearing step open |
-| End-of-term summary: content and format not decided (REQ-F-96) | C-05 | Draw only the download button for Administrators |
+| End-of-term summary: decided, it is the period download with the term chosen (REQ-F-101, E-144) | C-05 | Draw the download button for Administrators |
 | Manual entry for a person with no account (REQ-F-95) | A-17 | Draw the error state |
 | Two registration paths (decided, E-112): "I paid for a membership" asks for the receipt number, with a picture of where it is; "I am an athlete" asks for the student number | N-01, N-03, N-04 | Draw the two paths |
 | Backups panel: last backup, back up now, download, restore (E-122) | A-16 | Draw as decided |
