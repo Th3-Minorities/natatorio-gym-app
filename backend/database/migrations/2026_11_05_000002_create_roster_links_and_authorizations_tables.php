@@ -63,11 +63,13 @@ return new class extends Migration
             $table->string('status', 10)->comment('active or revoked, one active per User and term');
             // Deleting an order deletes its authorization.
             $table->foreignId('imported_membership_id')->nullable()->unique()->constrained()->cascadeOnDelete()->comment('paid only');
-            // No cascade (E-93): removing an athlete revokes the authorization instead.
+            // No cascade (E-93): removing an athlete sets removed_at and revokes the authorization. The record is deleted
+            // 5 years after its removal, when its authorizations (deleted 5 years after they were created) are gone (E-145).
             $table->foreignId('roster_record_id')->nullable()->constrained()->restrictOnDelete()->comment('athlete only, unique with the term (D16)');
             $table->string('photo_path')->nullable()->comment('private volume, NULL until uploaded');
             $table->timestampTz('photo_pending_at')->nullable()->comment('set when Staff mark the photo as not matching (D17)');
             $table->boolean('created_account')->default(false)->comment('this claim created the account');
+            $table->string('member_group', 10)->nullable()->comment('manual only: student or employee, picked by the Administrator (E-148)');
             $table->text('reason')->nullable()->comment('manual grant, "removed from roster", "order cancelled" or "order refunded"');
             $table->timestampsTz();
 
@@ -85,6 +87,8 @@ return new class extends Migration
             OR (type = 'manual' AND imported_membership_id IS NULL AND roster_record_id IS NULL))");
 
         // The backend checks the 10 characters and writes the reason to the audit log (E-86).
+        DB::statement("ALTER TABLE authorizations ADD CONSTRAINT authorizations_member_group_check CHECK (member_group IN ('student', 'employee'))");
+        DB::statement("ALTER TABLE authorizations ADD CONSTRAINT authorizations_manual_member_group_check CHECK ((type = 'manual') = (member_group IS NOT NULL))");
         DB::statement("ALTER TABLE authorizations ADD CONSTRAINT authorizations_manual_reason_check CHECK (type <> 'manual' OR reason IS NOT NULL)");
 
         // Only active authorizations count (E-68, E-94): a revoked one does not block a new grant or claim.

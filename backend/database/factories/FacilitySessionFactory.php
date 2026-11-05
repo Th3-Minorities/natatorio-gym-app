@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
 /**
- * An active manual-type session that starts now, with the times left to the database clock.
+ * An active manual-type session for a student member that starts now, with the times left to the database clock.
  * The states that need a known start or end send explicit times, two hours apart.
  *
  * @extends Factory<FacilitySession>
@@ -20,8 +20,14 @@ class FacilitySessionFactory extends Factory
         return [
             'user_id' => User::factory(),
             'authorization_type' => 'manual',
+            'member_group' => 'student',
             'status' => 'active',
         ];
+    }
+
+    public function athlete(string $sport = 'Voleibol'): static
+    {
+        return $this->state(['authorization_type' => 'athlete', 'member_group' => null, 'sport' => $sport]);
     }
 
     public function paid(string $memberGroup = 'student'): static

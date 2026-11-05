@@ -21,7 +21,8 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->foreignId('authorization_id')->nullable()->constrained()->nullOnDelete()->comment('SET NULL if the authorization is deleted');
             $table->string('authorization_type', 10)->comment('copy at Check In: paid, athlete or manual');
-            $table->string('member_group', 10)->nullable()->comment('copy at Check In for paid: student or employee (D15)');
+            $table->string('member_group', 10)->nullable()->comment('copy at Check In for paid and manual: student or employee (D15, E-148)');
+            $table->string('sport', 50)->nullable()->comment('copy at Check In for athletes, from the roster record (E-147)');
             // Both come from the database clock, because the Check In sends no time. Only a manual entry sends the paper time (D18).
             $table->timestampTz('started_at')->useCurrent()->comment('database now(), or the paper time for a manual entry');
             $table->timestampTz('ends_at')->default(DB::raw("now() + interval '2 hours'"))->comment('started_at plus 2 hours (D14)');
@@ -47,12 +48,15 @@ return new class extends Migration
             CHECK (authorization_type IN ('paid', 'athlete', 'manual'))");
         DB::statement("ALTER TABLE facility_sessions ADD CONSTRAINT facility_sessions_member_group_check
             CHECK (member_group IN ('student', 'employee'))");
-        DB::statement("ALTER TABLE facility_sessions ADD CONSTRAINT facility_sessions_paid_member_group_check
-            CHECK ((authorization_type = 'paid') = (member_group IS NOT NULL))");
+        // Paid and manual sessions count as student or employee members; athlete sessions count by sport (E-147, E-148).
+        DB::statement("ALTER TABLE facility_sessions ADD CONSTRAINT facility_sessions_member_group_source_check
+            CHECK ((authorization_type IN ('paid', 'manual')) = (member_group IS NOT NULL))");
+        DB::statement("ALTER TABLE facility_sessions ADD CONSTRAINT facility_sessions_athlete_sport_check
+            CHECK ((authorization_type = 'athlete') = (sport IS NOT NULL))");
 
-        // A manual entry from the paper log is a finished visit (D18).
+        // A manual entry from the paper log is a finished visit (D18); a wrong one is voided, not deleted (E-146).
         DB::statement("ALTER TABLE facility_sessions ADD CONSTRAINT facility_sessions_manual_entry_check
-            CHECK (entered_by_staff_account_id IS NULL OR status = 'checked_out')");
+            CHECK (entered_by_staff_account_id IS NULL OR status IN ('checked_out', 'void'))");
 
         // One active session per User, also under simultaneous requests. The range stops at ends_at, so an expired
         // session stops blocking by itself and a late check-out never blocks a newer Check In. now() is not
