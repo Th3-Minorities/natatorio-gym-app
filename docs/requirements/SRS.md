@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.10 draft, not approved
+**Version:** 0.11 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -56,10 +56,11 @@
 | Delete a User's account when the User asks in person (REQ-F-09) | No | No | Yes |
 | See the audit log (REQ-NF-39); invite Staff by email and deactivate staff accounts (REQ-F-88) | No | No | Yes |
 | Enter paper log entries after an outage (REQ-F-95) | No | No | Yes |
+| Download the athlete roster as Word or PDF (REQ-F-100) | No | No | Yes |
 | See the last backup, back up now, download a backup, restore a backup (REQ-NF-06) | No | No | Yes |
-| Download the end-of-term summary (REQ-F-96) | No | No | Yes |
+| Download the statistics of a chosen period, including the term (REQ-F-101) | No | No | Yes |
 
-**Still open.** Pending requirements: REQ-F-28, F-67, F-68, F-69, F-82, F-91, F-94, F-96, REQ-NF-07, NF-09, NF-23, NF-25, NF-28, NF-46, NF-47, NF-53. Details: Summary of Open Items.
+**Still open.** Pending requirements: REQ-F-28, F-67, F-68, F-69, F-82, F-91, F-94, REQ-NF-07, NF-09, NF-23, NF-25, NF-28, NF-46, NF-47, NF-53. Details: Summary of Open Items.
 
 ## Revision History
 
@@ -75,6 +76,7 @@
 | Carlos J. Pepin Delgado | 2026-10-20 | Wireframe decisions E-101 to E-107 (`team.md`): a Lock button returns the Administrator to Staff mode, no separate administration menu screen, welcome and sign-in screens in Spanish before an account exists, the gym account changes its language on the dashboard without the PIN, a "My visits" list of the User's own Check Ins (new REQ-F-92), releasing a number never deletes the account, terms are never deleted | 0.8 |
 | Carlos J. Pepin Delgado | 2026-10-25 | CTI meeting answers (M-02, M-09 answered; M-03, M-04, M-06, M-07, M-13, M-16 partly answered): containers and PostgreSQL are the team's choice, the project owner files the VM, domain and VPN requests, mail through the CTI gateway after authorization, backups are the team's decision. New open items for the gym (G-31 to G-37) and the team (E-108 to E-113). Proposed, CTI advice: audit log search and export (REQ-F-93), installer (REQ-NF-52), hand-over documents (REQ-NF-53) | 0.9 |
 | Carlos J. Pepin Delgado | 2026-11-04 | Team decisions E-114 to E-126 (`team.md`), after the Athletic Activities meeting: personal staff accounts for Staff and Administrators, with no shared gym account, PIN or recovery code (REQ-F-89 and REQ-NF-48 removed; REQ-F-52, REQ-F-88, REQ-NF-10, REQ-NF-39 rewritten); check-out and a session that ends by itself after 2 hours or at a closure; one athlete roster entered by hand; no in-person registration code (REQ-F-77 removed); photo pending (new REQ-F-94); manual entries from the paper log (new REQ-F-95); student or employee on each order and refunds revoked by hand by an Administrator (E-120, rewritten: the store never shows them); new reports and an end-of-term summary (new REQ-F-96); backups on a second disk every two weeks; Rocky Linux 10 and one install command; own UPRM subdomain; every kind of data kept 5 years; store button, optional English notices, four manuals. Then E-127 and E-128: paid memberships come from the store's REST API, not from an uploaded file (REQ-F-28, F-29, F-30, F-10 rewritten; REQ-F-31 and F-32 removed; new REQ-F-97 to F-99; the import result screen becomes the Store sync screen), and the Authorization Number is a 6-character code that can include letters, unique across all orders | 0.10 |
+| Carlos J. Pepin Delgado | 2026-11-05 | Team decisions E-140 to E-144 (`team.md`): Administrators download the athlete roster as Word or PDF (new REQ-F-100); Administrators download the statistics of any period as PDF or Excel (new REQ-F-101), and the end-of-term summary is that download with the term chosen (E-144, REQ-F-96 merged); the period is picked with buttons (day, week, month, term, year) or a free date range (REQ-F-61); a read-only REST API gives statistics with no personal data to other services (new REQ-F-102) | 0.11 |
 
 ## 1. Introduction
 
@@ -316,6 +318,7 @@ Change from the proposal: Administrators enter the department's athlete lists by
 |---|---|---|---|---|---|
 | REQ-F-49 | Only Administrators shall be able to add, edit and remove athletes in the roster, by hand. The roster is one list, not one per term, and there is no file import (E-116). An athlete stays on the roster until an Administrator removes them. Staff shall be able to see the roster, read only, and search it by name or student number. If an athlete is removed, the athlete's Gym ID stops being valid at once, the athlete keeps counting in occupancy until the current session ends, and the athlete cannot do another Check In. The removal revokes the athlete's authorization with the reason "removed from roster". If the removal was a mistake, the Administrator uses "Reinstate" on the athlete roster screen, and the revoked authorization becomes active again. Reinstate needs a reason, free text of at least 10 characters, as in REQ-F-87, and is logged (REQ-NF-39). Reinstate is refused with a message when the person already has an active authorization in that term. | Secondary | High | Clear | Proposal:206, 218; Team decision (E-59, E-93, E-95, E-116) |
 | REQ-F-51 | Each roster record shall have name, sport, student number and institutional email. A repeated student number is rejected. | Secondary | High | Clear | Proposal:206; Team decision (E-116) |
+| REQ-F-100 | The Administrator shall be able to download the whole athlete roster as a Word file or a PDF file, with name, sport, student number and institutional email. Staff cannot download it. | N/A | Medium | Clear | Team decision (E-140) |
 
 ### 3.10 Staff Accounts and Permissions
 
@@ -350,8 +353,9 @@ Analytics are facility statistics with aggregated counts only, no names. This ch
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-61 | Every signed-in role (User, Staff, Administrator) shall be able to see for a chosen period: (a) visits per day and per hour, also by week and month, with the peak hour; (b) high- and low-use periods; (c) estimated occupancy over time; (d) average and maximum occupancy; (e) use by athletes, student members and employee members, as three groups (REQ-F-29); manual authorizations (REQ-F-87) count as paid members for every rule (E-126); (f) distinct people, counting repeat visits once; (g) visits per sport, from the sport in the athlete's roster record. A re-entry after a check-out counts as a new visit (REQ-F-38). Manual entries from the paper log (REQ-F-95) are counted and can be filtered out. Voided sessions do not count. A period with no data shows zero, not an error. | Secondary | Medium | Clear. To confirm: how statistics show manual authorizations | Proposal:186-188, 220; Team decision (E-82, E-115, E-119, E-121, E-126) |
-| REQ-F-96 | The Administrator shall be able to download an end-of-term summary of the statistics of REQ-F-61 for the term. | N/A | Medium | Pending: content and file format of the summary (team, design) | Team decision (E-121) |
+| REQ-F-61 | Every signed-in role (User, Staff, Administrator) shall be able to see for a chosen period, picked with buttons for day, week, month, term and year or with a free range from one date to another (E-142): (a) visits per day and per hour, also by week and month, with the peak hour; (b) high- and low-use periods; (c) estimated occupancy over time; (d) average and maximum occupancy; (e) use by athletes, student members and employee members, as three groups (REQ-F-29); manual authorizations (REQ-F-87) count as paid members for every rule (E-126); (f) distinct people, counting repeat visits once; (g) visits per sport, from the sport in the athlete's roster record. A re-entry after a check-out counts as a new visit (REQ-F-38). Manual entries from the paper log (REQ-F-95) are counted and can be filtered out. Voided sessions do not count. A period with no data shows zero, not an error. | Secondary | Medium | Clear. To confirm: how statistics show manual authorizations | Proposal:186-188, 220; Team decision (E-82, E-115, E-119, E-121, E-126) |
+| REQ-F-101 | The Administrator shall be able to download the statistics of REQ-F-61 for the chosen period as a PDF file (charts and totals) or an Excel file (the numbers). The download uses the same period as the screen. Other roles see the statistics on screen only. | N/A | Medium | Clear | Team decision (E-141, E-142) |
+| REQ-F-102 | The system shall give the statistics of REQ-F-61 to other services through a read-only REST API that needs a key. The API gives counts only, with no names or other personal data, and never gives the roster. | N/A | Medium | Undefined: how keys are made. No service besides the app is expected to connect for now (E-143) | Team decision (E-143) |
 
 ### 3.14 PWA Installation
 
@@ -380,7 +384,8 @@ Only items not defined by a requirement.
 | Report | Content | Who sees it |
 |---|---|---|
 | Utilization analytics | REQ-F-61 | Every signed-in role |
-| End-of-term summary | REQ-F-96. A download | Administrator |
+| Statistics of a chosen period, the end-of-term summary included | REQ-F-101. A download, PDF or Excel | Administrator |
+| Athlete roster | REQ-F-100. A download, Word or PDF | Administrator |
 | Audit log | REQ-NF-39 | Administrator |
 | Store sync | REQ-F-99, REQ-F-22. When the last sync ran and its counts (created, updated, revoked, skipped). Layout: design | Administrator |
 | Roster changes | No separate report. The audit log filters roster changes (REQ-NF-39, E-126) | Administrator |
@@ -410,6 +415,7 @@ Screens by role follow the Overview table. Detailed screen design: design phase.
 ### 5.2 Software Interfaces
 
 - WooCommerce: REST API, wc/v3 orders endpoint, read only, over HTTPS, with a key kept in the server's environment file (REQ-F-28, REQ-F-97). The VM needs outbound HTTPS to the store (2.5).
+- Statistics API: a read-only REST API under `/api` that gives the statistics of REQ-F-61 to other services, with a key and no personal data (REQ-F-102).
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
@@ -604,6 +610,7 @@ IDs that are no longer rows. Old references resolve here.
 | REQ-F-85 | Merged: Staff see waiver and emergency contact | REQ-NF-19 |
 | REQ-F-86 | Merged: distinct people | REQ-F-61 (f) |
 | REQ-F-89 | Removed (E-114, 2026-11-04): the paper recovery code is gone. Every Staff member and Administrator has a personal account, so there is no shared gym account to recover | REQ-F-52, REQ-F-88 |
+| REQ-F-96 | Merged (E-144, 2026-11-05): the end-of-term summary is the statistics download with the term chosen | REQ-F-101 |
 | REQ-NF-02 | Merged: uniqueness and one active session enforced in the database | REQ-F-17, REQ-F-36 |
 | REQ-NF-08 | Merged: development uses fake data | REQ-NF-07; `context.md` section 3 |
 | REQ-NF-17 | Merged: each role has only the access it needs | REQ-F-52 |
@@ -639,7 +646,7 @@ Not discussed in the CTI meeting: the HTTPS certificate and single origin (M-03)
 | Who fixes a session mistake found after the session ended | Team | E-80 | REQ-F-48 |
 | Staff account password follows REQ-NF-51 (assumed) | Team | E-63 | REQ-NF-51 |
 | Photo pending: does the new photo clear the mark by itself, or do Staff approve it | Team | E-118 | REQ-F-94 |
-| Content and file format of the end-of-term summary | Team | None (design) | REQ-F-96 |
+| Content and file format of the end-of-term summary (resolved: the statistics download with the term chosen, E-144) | Team | E-141, E-144 | REQ-F-101 |
 | How statistics show manual authorizations | Team | E-126 | REQ-F-61 |
 | When the 5 years start and what happens to data after them (resolved: E-131 and E-136; daily totals kept forever, E-133) | Team, UPRM | E-125, E-131 | REQ-NF-05 |
 | Store sells only during terms; summer | Gym | G-26 | REQ-F-21, F-22 |
