@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\StaffAccount;
 use App\Models\User;
 
 return [
@@ -42,6 +43,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Staff and Administrators sign in with their own accounts, kept apart from Users (D13).
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'staff_accounts',
+        ],
     ],
 
     /*
@@ -65,6 +72,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'staff_accounts' => [
+            'driver' => 'eloquent',
+            'model' => StaffAccount::class,
         ],
 
         // 'users' => [

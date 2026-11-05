@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // The API has no login page, so guests get a 401 instead of a redirect to route('login').
         $middleware->redirectGuestsTo(fn () => null);
+
+        // The PWA signs in with Sanctum cookies on the same origin, not tokens (context.md).
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Expected errors with a stable code are part of the API, not bugs.
