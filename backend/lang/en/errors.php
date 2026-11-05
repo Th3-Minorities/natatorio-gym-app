@@ -16,4 +16,6 @@ return [
     'service_unavailable' => 'The service is not available right now. Try again later.',
     'server_error' => 'Something went wrong on our side. Try again later.',
     'database_unavailable' => 'The service is not available right now. Try again later.',
+    'staff_credentials_invalid' => 'The email or password is not correct.',
+    'staff_account_deactivated' => 'This account was deactivated. Ask an Administrator if you need access again.',
 ];
