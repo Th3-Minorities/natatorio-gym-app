@@ -206,6 +206,18 @@ class SessionsAndStatisticsTablesTest extends TestCase
         $this->assertRejected('23503', fn () => ManualVisitCount::factory()->create(['entered_by_staff_account_id' => 999_999]));
     }
 
+    public function test_a_manual_visit_count_is_at_least_one_visit(): void
+    {
+        $this->assertRejected('23514', fn () => ManualVisitCount::factory()->create(['visits' => 0]));
+        $this->assertRejected('23514', fn () => ManualVisitCount::factory()->create(['visits' => -3]));
+    }
+
+    public function test_a_manual_visit_count_time_block_ends_after_it_starts(): void
+    {
+        $this->assertRejected('23514', fn () => ManualVisitCount::factory()->create(['starts_at' => '2026-11-03 14:00:00', 'ends_at' => '2026-11-03 14:00:00']));
+        $this->assertRejected('23514', fn () => ManualVisitCount::factory()->create(['starts_at' => '2026-11-03 16:00:00', 'ends_at' => '2026-11-03 14:00:00']));
+    }
+
     public function test_a_staff_account_that_entered_counts_cannot_be_deleted(): void
     {
         $count = ManualVisitCount::factory()->create();

@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /** A gym User. Deleting the account keeps the row with no personal data and deleted_at set (D2). */
-#[Fillable(['email', 'password', 'locale', 'current_session_id', 'deleted_at'])]
+#[Fillable(['email', 'password', 'locale', 'current_session_id', 'last_signed_in_at', 'deleted_at'])]
 #[Hidden(['password'])]
 class User extends Authenticatable
 {
@@ -26,6 +26,7 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
+            'last_signed_in_at' => 'datetime',
             'deleted_at' => 'datetime',
             'password' => 'hashed',
         ];

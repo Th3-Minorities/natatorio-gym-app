@@ -41,9 +41,19 @@ class AccountsAndAuditTablesTest extends TestCase
     public function test_a_user_keeps_only_the_columns_the_design_lists(): void
     {
         $this->assertSame(
-            ['id', 'email', 'password', 'locale', 'current_session_id', 'deleted_at', 'created_at', 'updated_at'],
+            ['id', 'email', 'password', 'locale', 'current_session_id', 'last_signed_in_at', 'deleted_at', 'created_at', 'updated_at'],
             Schema::getColumnListing('users'),
         );
+    }
+
+    public function test_a_user_keeps_the_last_sign_in_for_the_five_year_count(): void
+    {
+        $user = User::factory()->create();
+        $this->assertNull($user->fresh()->last_signed_in_at);
+
+        $user->update(['last_signed_in_at' => '2026-11-05 08:00:00']);
+
+        $this->assertSame('2026-11-05', $user->fresh()->last_signed_in_at->toDateString());
     }
 
     public function test_sessions_live_in_sign_in_sessions(): void
@@ -79,6 +89,24 @@ class AccountsAndAuditTablesTest extends TestCase
     public function test_a_staff_account_language_is_spanish_or_english(): void
     {
         $this->assertRejected('23514', fn () => StaffAccount::factory()->create(['locale' => 'fr']));
+    }
+
+    public function test_an_invited_staff_account_has_no_password_until_the_invite_link_is_used(): void
+    {
+        $invited = StaffAccount::factory()->create(['password' => null]);
+
+        $this->assertNull($invited->fresh()->password);
+    }
+
+    public function test_staff_password_resets_have_their_own_table_so_a_shared_email_never_collides(): void
+    {
+        DB::table('password_reset_tokens')->insert(['email' => 'same@example.com', 'token' => 'user-token-hash', 'created_at' => now()]);
+        DB::table('staff_password_reset_tokens')->insert(['email' => 'same@example.com', 'token' => 'staff-token-hash', 'created_at' => now()]);
+
+        $this->assertSame(['email', 'token', 'created_at'], Schema::getColumnListing('staff_password_reset_tokens'));
+        $this->assertRejected('23505', fn () => DB::table('staff_password_reset_tokens')->insert(
+            ['email' => 'same@example.com', 'token' => 'second-token-hash', 'created_at' => now()],
+        ));
     }
 
     public function test_a_staff_account_is_active_until_deactivated_at_is_set(): void

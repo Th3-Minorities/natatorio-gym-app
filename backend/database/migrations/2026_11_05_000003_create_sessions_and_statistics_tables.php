@@ -71,6 +71,9 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
+        DB::statement('ALTER TABLE manual_visit_counts ADD CONSTRAINT manual_visit_counts_visits_check CHECK (visits > 0)');
+        DB::statement('ALTER TABLE manual_visit_counts ADD CONSTRAINT manual_visit_counts_time_block_check CHECK (ends_at > starts_at)');
+
         // Counts only, no personal data, never deleted (D20, E-133).
         Schema::create('daily_visit_totals', function (Blueprint $table) {
             $table->date('day')->primary()->comment('America/Puerto_Rico date');

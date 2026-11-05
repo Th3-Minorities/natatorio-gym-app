@@ -232,7 +232,7 @@ class RosterLinksAndAuthorizationsTablesTest extends TestCase
         $this->assertNotNull($authorization->fresh()->photo_pending_at);
     }
 
-    public function test_undoing_an_import_deletes_the_authorizations_of_its_memberships(): void
+    public function test_deleting_an_order_deletes_its_authorization(): void
     {
         $authorization = Authorization::factory()->paid()->create();
         Authorization::factory()->manual()->create();

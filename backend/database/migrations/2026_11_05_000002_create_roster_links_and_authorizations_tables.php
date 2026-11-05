@@ -61,14 +61,14 @@ return new class extends Migration
             $table->foreignId('academic_term_id')->constrained()->restrictOnDelete();
             $table->string('type', 10)->comment('paid, athlete or manual');
             $table->string('status', 10)->comment('active or revoked, one active per User and term');
-            // Undo deletes the authorizations of the memberships it removes (REQ-F-31).
+            // Deleting an order deletes its authorization.
             $table->foreignId('imported_membership_id')->nullable()->unique()->constrained()->cascadeOnDelete()->comment('paid only');
             // No cascade (E-93): removing an athlete revokes the authorization instead.
             $table->foreignId('roster_record_id')->nullable()->constrained()->restrictOnDelete()->comment('athlete only, unique with the term (D16)');
             $table->string('photo_path')->nullable()->comment('private volume, NULL until uploaded');
             $table->timestampTz('photo_pending_at')->nullable()->comment('set when Staff mark the photo as not matching (D17)');
             $table->boolean('created_account')->default(false)->comment('this claim created the account');
-            $table->text('reason')->nullable()->comment('manual grant, "removed from roster" or "order refunded"');
+            $table->text('reason')->nullable()->comment('manual grant, "removed from roster", "order cancelled" or "order refunded"');
             $table->timestampsTz();
 
             // A roster record is claimed once per term (D16). Paid and manual rows have NULL and never collide.

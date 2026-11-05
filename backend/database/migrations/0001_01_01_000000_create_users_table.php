@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('password')->nullable()->comment('hash, NULL after deletion');
             $table->string('locale', 2)->nullable()->comment('es or en, asked at account creation, NULL after deletion');
             $table->string('current_session_id')->nullable()->comment('the one session allowed in, checked on every request (D3)');
+            $table->timestampTz('last_signed_in_at')->nullable()->comment('NULL until the first sign-in; with the last Check In it starts the 5 years (E-131)');
             $table->timestampTz('deleted_at')->nullable()->comment('set when the account is deleted, the row stays (D2)');
             $table->timestampsTz();
         });

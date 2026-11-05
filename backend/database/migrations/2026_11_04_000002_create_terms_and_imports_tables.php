@@ -27,7 +27,7 @@ return new class extends Migration
         DB::statement("ALTER TABLE academic_terms ADD CONSTRAINT academic_terms_no_overlap
             EXCLUDE USING gist (daterange(starts_on, ends_on, '[]') WITH &&)");
 
-        // Import rows are never deleted; undo sets undone_at (E-84).
+        // One row per store sync (E-127). There is no undo.
         Schema::create('imports', function (Blueprint $table) {
             $table->id();
             $table->string('file_name');
@@ -35,7 +35,6 @@ return new class extends Migration
             $table->integer('updated_count')->default(0);
             $table->integer('rejected_count')->default(0);
             $table->jsonb('result')->comment('counts and the created, updated and rejected rows, shown again in A-07');
-            $table->timestampTz('undone_at')->nullable()->comment('NULL until undone');
             $table->timestampsTz();
         });
 

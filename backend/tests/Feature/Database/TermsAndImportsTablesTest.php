@@ -79,6 +79,11 @@ class TermsAndImportsTablesTest extends TestCase
         ));
     }
 
+    public function test_an_import_has_no_undo(): void
+    {
+        $this->assertFalse(Schema::hasColumn('imports', 'undone_at'));
+    }
+
     public function test_an_order_needs_a_term(): void
     {
         $this->assertRejected('23502', fn () => DB::table('imported_memberships')->insert(
