@@ -17,7 +17,7 @@ class ImportFactory extends Factory
             'created_count' => 0,
             'updated_count' => 0,
             'rejected_count' => 0,
-            'result' => ['created' => [], 'updated' => [], 'rejected' => []],
+            'result' => ['skipped' => []],
         ];
     }
 }
