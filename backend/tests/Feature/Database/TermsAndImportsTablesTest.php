@@ -7,6 +7,7 @@ use App\Models\Import;
 use App\Models\ImportedMembership;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Tests\Concerns\AssertsDatabaseRules;
 use Tests\TestCase;
 
@@ -46,24 +47,23 @@ class TermsAndImportsTablesTest extends TestCase
         ));
     }
 
-    public function test_an_authorization_number_is_unique_within_a_term(): void
-    {
-        DB::table('imported_memberships')->insert($this->membershipRow(['authorization_number' => 'A-500']));
-
-        $this->assertRejected('23505', fn () => DB::table('imported_memberships')->insert(
-            $this->membershipRow(['authorization_number' => 'A-500', 'order_reference' => 'WC-OTHER']),
-        ));
-    }
-
-    public function test_the_same_number_is_allowed_in_another_term(): void
+    public function test_an_authorization_number_is_unique_across_all_orders(): void
     {
         $fall = $this->term('2026-08-15', '2026-12-15');
         $spring = $this->term('2027-01-10', '2027-05-15');
+        DB::table('imported_memberships')->insert($this->membershipRow(['academic_term_id' => $fall, 'authorization_number' => '12345A', 'order_reference' => 'WC-1']));
 
-        DB::table('imported_memberships')->insert($this->membershipRow(['academic_term_id' => $fall, 'authorization_number' => 'A-500', 'order_reference' => 'WC-1']));
-        DB::table('imported_memberships')->insert($this->membershipRow(['academic_term_id' => $spring, 'authorization_number' => 'A-500', 'order_reference' => 'WC-2']));
+        $this->assertRejected('23505', fn () => DB::table('imported_memberships')->insert(
+            $this->membershipRow(['academic_term_id' => $fall, 'authorization_number' => '12345A', 'order_reference' => 'WC-2']),
+        ));
+        $this->assertRejected('23505', fn () => DB::table('imported_memberships')->insert(
+            $this->membershipRow(['academic_term_id' => $spring, 'authorization_number' => '12345A', 'order_reference' => 'WC-3']),
+        ));
+    }
 
-        $this->assertSame(2, DB::table('imported_memberships')->where('authorization_number', 'A-500')->count());
+    public function test_an_order_stores_no_student_number(): void
+    {
+        $this->assertFalse(Schema::hasColumn('imported_memberships', 'student_number'));
     }
 
     public function test_an_order_says_if_the_buyer_is_a_student_or_an_employee(): void

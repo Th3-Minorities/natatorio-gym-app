@@ -144,7 +144,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Affects | REQ-F-10 Validate Authorization Number against imports |
 | Feature | 3.2 Paid Member Registration, 4.1 Data Dictionary |
 | Why we ask | The number is the paid member's proof of purchase. If it is short or in sequence, someone can guess another member's number, and registration needs extra protection. |
-| Answer | From a sample receipt email: the Authorization Number is the 6-digit value in the Payment Description. Registration uses only this number, with these protections: limits on failed lookups per IP address and in total, a masked payment email, the same message for an invalid and an already claimed number, release of a number claimed by mistake by PIN holders, and recovery by the real owner with the password reset. Still open: whether the number is unique across orders. The team checks it with a real export (team.md, E-30). Update 2026-11-04: the team confirms 6 digits, but the field does not enforce a fixed length. |
+| Answer | From a sample receipt email: the Authorization Number is the 6-digit value in the Payment Description. Registration uses only this number, with these protections: limits on failed lookups per IP address and in total, a masked payment email, the same message for an invalid and an already claimed number, release of a number claimed by mistake by PIN holders, and recovery by the real owner with the password reset. Still open: whether the number is unique across orders. The team checks it with a real export (team.md, E-30). Update 2026-11-04: a read of all 84 store orders shows the number is the gateway field PGPAY_AUTHNUM, 6 characters that can include letters (3 of 69 end in a letter), and no value repeats. It is unique across all orders (team.md, E-128). |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
@@ -294,7 +294,7 @@ Also asked in cti.md, if CTI manages the store.
 | Affects | REQ-F-27 Refund or cancellation removes the authorization (now Removed) |
 | Feature | 3.4 Authorization, Academic Terms and Renewal |
 | Why we ask | REQ-F-27 removes the authorization, but the effect on a session already open is not defined. |
-| Answer | Closed. There are no refunds or cancellations; memberships only expire at the end of the term. REQ-F-27 is Removed. Update 2026-11-04: the department does refund in some cases, for example when the gym stays closed. Refunds stay outside the app; a refunded order makes its authorization invalid at the next import (team.md, E-120). |
+| Answer | Closed. There are no refunds or cancellations; memberships only expire at the end of the term. REQ-F-27 is Removed. Update 2026-11-04: the department does refund in some cases, for example when the gym stays closed. Refunds are made in the payment gateway, outside the store, so an Administrator revokes the authorization by hand in the app (team.md, E-120). |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 
