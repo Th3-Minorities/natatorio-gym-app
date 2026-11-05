@@ -100,10 +100,11 @@ erDiagram
   }
   email_links {
     bigint id PK
-    varchar(25) purpose "athlete_registration or athlete_link"
+    varchar(25) purpose "athlete_registration, athlete_link or staff_invite"
     varchar(64) token_hash UK "hash of the token in the link"
-    bigint roster_record_id FK "record the link is for"
+    bigint roster_record_id FK "record the link is for, NULL for staff_invite"
     bigint user_id FK "signed-in User, NULL for registration"
+    bigint staff_account_id FK "invited staff account, staff_invite only"
     timestamptz expires_at
     timestamptz used_at "NULL until opened, single use"
   }
@@ -496,7 +497,7 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13
 14. **Retention of rejected import rows.** They are stored with the import result (E-84) and kept 5 years like everything else (E-125). CTI: the reports the gym wants decide which data is kept and for how long. Proposed (E-111): a growth estimate and cleanup options per term or per year.
 15. **Visit history for the User.** Resolved by E-105 (D10): the My visits screen (U-09) reads `facility_sessions`. The list shows the full history (E-126), and rows are kept 5 years (E-125).
 16. **Resolved by D13.** Staff and Administrators have personal accounts in `staff_accounts`, and `audit_log_entries.staff_account_id` names who made each change.
-17. **New staff accounts.** The Administrators are the two secretaries and the department director, and the install command creates the first one (E-114). Administrators invite Staff by email; how the invitation is stored is still to design. If invitations go by email, they may need a table or a new `email_links` purpose.
+17. **Resolved (2026-11-05).** The Administrators are the two secretaries and the department director, and the install command creates the first one (E-114). Administrators invite Staff by email, and the invitation is an `email_links` row with `purpose = 'staff_invite'` and `staff_account_id` (D9).
 18. **Resolved by E-130.** Staff sessions end after 2 hours without activity and Administrator sessions after 20 minutes; the last person activity lives in the session `payload`, and automatic refreshes do not update it. Deactivation ends open sessions at once (a middleware checks `deactivated_at`).
 19. **Staff account data in REQ-NF-21.** REQ-NF-21 lists the personal data of User accounts only. Staff account name, email and password are needed for D13 but are not listed yet.
 
