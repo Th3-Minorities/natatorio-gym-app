@@ -18,7 +18,7 @@ class ModelDatesTest extends TestCase
         // The API sends dates in UTC with a "Z" (api-conventions.md).
         $user = User::factory()->create(['deleted_at' => '2026-10-27T01:00:00Z']);
 
-        $this->assertSame('2026-10-26 21:00:00-04', $this->storedDeletedAt($user));
+        $this->assertSame('2026-10-26 21:00:00', $this->storedDeletedAt($user));
         $this->assertSame('2026-10-27T01:00:00+00:00', $user->fresh()->deleted_at->utc()->toIso8601String());
     }
 
@@ -28,7 +28,7 @@ class ModelDatesTest extends TestCase
 
         $user = User::factory()->create(['deleted_at' => $moment]);
 
-        $this->assertSame('2026-10-26 21:00:00-04', $this->storedDeletedAt($user));
+        $this->assertSame('2026-10-26 21:00:00', $this->storedDeletedAt($user));
         $this->assertSame('UTC', $moment->getTimezone()->getName());
     }
 
@@ -47,6 +47,7 @@ class ModelDatesTest extends TestCase
 
     private function storedDeletedAt(User $user): string
     {
-        return DB::table('users')->where('id', $user->id)->value('deleted_at');
+        // The column is timestamptz and the connection reads it in Puerto Rico time.
+        return DB::selectOne("select to_char(deleted_at, 'YYYY-MM-DD HH24:MI:SS') as stored from users where id = ?", [$user->id])->stored;
     }
 }

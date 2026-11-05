@@ -16,6 +16,11 @@ class UserFactory extends Factory
      */
     protected static ?string $password;
 
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [
@@ -23,16 +28,5 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'locale' => 'es',
         ];
-    }
-
-    /** An account the User deleted: no personal data left (decision D2). */
-    public function deleted(): static
-    {
-        return $this->state(fn () => [
-            'email' => null,
-            'password' => null,
-            'current_session_id' => null,
-            'deleted_at' => now(),
-        ]);
     }
 }

@@ -27,7 +27,7 @@ return new class extends Migration
         DB::statement("ALTER TABLE academic_terms ADD CONSTRAINT academic_terms_no_overlap
             EXCLUDE USING gist (daterange(starts_on, ends_on, '[]') WITH &&)");
 
-        // Import rows are never deleted; undo sets undone_at (E-84).
+        // One row per store sync (E-127). There is no undo.
         Schema::create('imports', function (Blueprint $table) {
             $table->id();
             $table->string('file_name');
@@ -35,7 +35,6 @@ return new class extends Migration
             $table->integer('updated_count')->default(0);
             $table->integer('rejected_count')->default(0);
             $table->jsonb('result')->comment('counts and the created, updated and rejected rows, shown again in A-07');
-            $table->timestampTz('undone_at')->nullable()->comment('NULL until undone');
             $table->timestampsTz();
         });
 
@@ -45,10 +44,9 @@ return new class extends Migration
             $table->foreignId('import_id')->constrained()->restrictOnDelete()->comment('import that created the row');
             $table->foreignId('academic_term_id')->constrained()->restrictOnDelete()->comment('term that contains paid_at');
             $table->string('order_reference', 100)->unique()->comment('the import upserts on it (REQ-F-30)');
-            $table->string('authorization_number', 20);
+            $table->string('authorization_number', 20)->unique()->comment('6 characters, may include letters, unique across all orders (D1, E-128)');
             $table->string('name');
             $table->string('email')->comment('payment email');
-            $table->string('student_number', 20)->nullable()->comment('NULL when absent');
             $table->string('member_group', 10)->comment('student or employee, from the order (D15)');
             $table->text('membership_details')->nullable();
             $table->string('order_status', 30);
@@ -56,8 +54,7 @@ return new class extends Migration
             $table->timestampTz('synced_at');
             $table->timestampsTz();
 
-            // The number is unique per term, not across terms (decision D1, E-71).
-            $table->unique(['academic_term_id', 'authorization_number']);
+            // The Authorization Number is unique across all orders (decision D1, E-128).
         });
 
         // Employees pay like students and only differ in the statistics (D15).

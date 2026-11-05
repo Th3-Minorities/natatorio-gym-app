@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
 /**
- * Front desk Staff by default; admin() for an Administrator.
- *
  * @extends Factory<StaffAccount>
  */
 class StaffAccountFactory extends Factory
@@ -19,7 +17,7 @@ class StaffAccountFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->userName().'@example.com',
+            'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'staff',
             'locale' => 'es',
@@ -28,6 +26,11 @@ class StaffAccountFactory extends Factory
 
     public function admin(): static
     {
-        return $this->state(fn () => ['role' => 'admin']);
+        return $this->state(['role' => 'admin']);
+    }
+
+    public function deactivated(): static
+    {
+        return $this->state(fn () => ['deactivated_at' => now()]);
     }
 }

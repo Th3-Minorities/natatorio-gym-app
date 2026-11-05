@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** A copy of one WooCommerce order. Claimed when an authorization points at it. */
 #[Fillable([
     'import_id', 'academic_term_id', 'order_reference', 'authorization_number', 'name', 'email',
-    'student_number', 'member_group', 'membership_details', 'order_status', 'paid_at', 'synced_at',
+    'member_group', 'membership_details', 'order_status', 'paid_at', 'synced_at',
 ])]
 class ImportedMembership extends Model
 {

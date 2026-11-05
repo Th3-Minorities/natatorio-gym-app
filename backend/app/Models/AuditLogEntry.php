@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** One change made by a staff account, or a system alert (REQ-NF-39). */
+/** Who did what and when. The affected record is subject_table plus subject_id, with no foreign key. */
 #[Fillable([
-    'staff_account_id', 'occurred_at', 'ip_address', 'user_agent', 'action',
-    'subject_table', 'subject_id', 'before_values', 'after_values', 'reason',
+    'staff_account_id', 'occurred_at', 'ip_address', 'user_agent', 'action', 'subject_table', 'subject_id',
+    'before_values', 'after_values', 'reason',
 ])]
 class AuditLogEntry extends Model
 {

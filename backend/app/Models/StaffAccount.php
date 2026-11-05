@@ -7,16 +7,12 @@ use Database\Factories\StaffAccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 
-/**
- * A Staff member or Administrator, signed in as themselves (decision D13).
- * Never deleted: setting deactivated_at ends access and keeps their audit entries.
- */
+/** A Staff member or Administrator with a personal account. Never deleted, only deactivated (D13). */
 #[Fillable(['name', 'email', 'password', 'role', 'locale', 'deactivated_at'])]
 #[Hidden(['password'])]
-class StaffAccount extends Authenticatable
+class StaffAccount extends Model
 {
     /** @use HasFactory<StaffAccountFactory> */
     use HasFactory, SavesDatesInAppTimezone;
@@ -24,11 +20,5 @@ class StaffAccount extends Authenticatable
     protected function casts(): array
     {
         return ['password' => 'hashed', 'deactivated_at' => 'datetime'];
-    }
-
-    /** @return HasMany<AuditLogEntry, $this> */
-    public function auditLogEntries(): HasMany
-    {
-        return $this->hasMany(AuditLogEntry::class);
     }
 }

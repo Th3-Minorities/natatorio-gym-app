@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-/** One WooCommerce import batch. Never deleted: undo sets undone_at (E-84). */
-#[Fillable(['file_name', 'created_count', 'updated_count', 'rejected_count', 'result', 'undone_at'])]
+/** One WooCommerce store sync (E-127). There is no undo. */
+#[Fillable(['file_name', 'created_count', 'updated_count', 'rejected_count', 'result'])]
 class Import extends Model
 {
     /** @use HasFactory<ImportFactory> */
@@ -18,7 +18,7 @@ class Import extends Model
 
     protected function casts(): array
     {
-        return ['result' => 'array', 'undone_at' => 'datetime'];
+        return ['result' => 'array'];
     }
 
     /** @return HasMany<ImportedMembership, $this> */

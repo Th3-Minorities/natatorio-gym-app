@@ -18,7 +18,8 @@ class WaiverAcceptanceFactory extends Factory
             'full_name' => fake()->name(),
             'email' => fake()->safeEmail(),
             'emergency_contact_name' => fake()->name(),
-            'emergency_contact_phone' => fake()->numerify('787-###-####'),
+            'emergency_contact_phone' => fake()->numerify('787-555-####'),
+            'waiver_version' => '2026-11',
             'accepted_at' => now(),
         ];
     }

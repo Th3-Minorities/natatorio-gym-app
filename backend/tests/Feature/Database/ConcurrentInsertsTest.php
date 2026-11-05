@@ -36,24 +36,6 @@ class ConcurrentInsertsTest extends TestCase
         );
     }
 
-    public function test_the_same_membership_claimed_at_the_same_time(): void
-    {
-        $membership = ImportedMembership::factory()->create();
-        [$ana, $luis] = User::factory()->count(2)->create();
-        $claim = ['academic_term_id' => $membership->academic_term_id, 'type' => 'paid', 'status' => 'active', 'imported_membership_id' => $membership->id];
-
-        $this->assertSecondInsertLoses('authorizations', [...$claim, 'user_id' => $ana->id], [...$claim, 'user_id' => $luis->id], '23505');
-    }
-
-    public function test_the_same_roster_record_claimed_at_the_same_time(): void
-    {
-        $roster = RosterRecord::factory()->create();
-        [$ana, $luis] = User::factory()->count(2)->create();
-        $claim = ['academic_term_id' => $roster->academic_term_id, 'type' => 'athlete', 'status' => 'active', 'roster_record_id' => $roster->id];
-
-        $this->assertSecondInsertLoses('authorizations', [...$claim, 'user_id' => $ana->id], [...$claim, 'user_id' => $luis->id], '23505');
-    }
-
     public function test_the_same_authorization_number_at_the_same_time(): void
     {
         $term = AcademicTerm::factory()->create();
@@ -76,5 +58,38 @@ class ConcurrentInsertsTest extends TestCase
             [...$order, 'order_reference' => 'WC-2'],
             '23505',
         );
+    }
+
+    public function test_two_claims_of_the_same_membership_at_the_same_time(): void
+    {
+        $membership = ImportedMembership::factory()->create();
+        $claim = ['academic_term_id' => $membership->academic_term_id, 'type' => 'paid', 'status' => 'active', 'imported_membership_id' => $membership->id];
+
+        $this->assertSecondInsertLoses(
+            'authorizations',
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            '23505',
+        );
+    }
+
+    public function test_two_claims_of_the_same_roster_record_in_the_same_term_at_the_same_time(): void
+    {
+        $record = RosterRecord::factory()->create();
+        $claim = ['academic_term_id' => AcademicTerm::factory()->create()->id, 'type' => 'athlete', 'status' => 'active', 'roster_record_id' => $record->id];
+
+        $this->assertSecondInsertLoses(
+            'authorizations',
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            [...$claim, 'user_id' => User::factory()->create()->id],
+            '23505',
+        );
+    }
+
+    public function test_two_check_ins_of_the_same_user_at_the_same_time(): void
+    {
+        $session = ['user_id' => User::factory()->create()->id, 'authorization_type' => 'manual', 'status' => 'active'];
+
+        $this->assertSecondInsertLoses('facility_sessions', $session, $session, '23P01');
     }
 }

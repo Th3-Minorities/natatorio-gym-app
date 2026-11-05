@@ -9,8 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** The waiver accepted on screen, one per account. Its full_name is the User's name (D7). */
-#[Fillable(['user_id', 'full_name', 'email', 'emergency_contact_name', 'emergency_contact_phone', 'accepted_at'])]
+/** The waiver a User accepted, with the version of its text (E-134). One per account. */
+#[Fillable([
+    'user_id', 'full_name', 'email', 'emergency_contact_name', 'emergency_contact_phone', 'waiver_version', 'accepted_at',
+])]
 class WaiverAcceptance extends Model
 {
     /** @use HasFactory<WaiverAcceptanceFactory> */

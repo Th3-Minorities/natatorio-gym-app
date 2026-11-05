@@ -9,13 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/**
- * Access for one User in one term: paid (an order), athlete (a roster record) or manual
- * (granted with a reason). One active per User and term (E-94).
- */
+/** A User's right to use the gym in one term: paid, athlete or manual (REQ-F-19). */
 #[Fillable([
     'user_id', 'academic_term_id', 'type', 'status', 'imported_membership_id', 'roster_record_id',
-    'photo_path', 'created_account', 'reason',
+    'photo_path', 'photo_pending_at', 'created_account', 'reason',
 ])]
 class Authorization extends Model
 {
@@ -24,7 +21,7 @@ class Authorization extends Model
 
     protected function casts(): array
     {
-        return ['created_account' => 'boolean'];
+        return ['photo_pending_at' => 'datetime', 'created_account' => 'boolean'];
     }
 
     /** @return BelongsTo<User, $this> */

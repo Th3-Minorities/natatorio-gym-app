@@ -15,14 +15,14 @@ class AuditLogEntryFactory extends Factory
     {
         return [
             'staff_account_id' => StaffAccount::factory(),
-            'occurred_at' => now(),
             'ip_address' => fake()->ipv4(),
             'user_agent' => fake()->userAgent(),
-            'action' => 'notice_created',
-            'subject_table' => 'notices',
-            'subject_id' => fake()->numberBetween(1, 100),
-            'before_values' => null,
-            'after_values' => ['text_es' => fake()->sentence()],
+            'action' => 'authorization.revoke',
+            'subject_table' => 'authorizations',
+            'subject_id' => fake()->numberBetween(1, 1000),
+            'before_values' => ['status' => 'active'],
+            'after_values' => ['status' => 'revoked'],
+            'reason' => 'Refund made in the payment gateway.',
         ];
     }
 }

@@ -1,268 +1,196 @@
-# Gym account and administration flows
+# Staff account and administration flows
 
-This document draws what the shared gym account does: signing in as Staff, unlocking Administrator actions with the PIN, recovery with the recovery code, and each Administrator task (WooCommerce import and undo, academic terms, athlete roster, manual authorizations, release of a claimed Authorization Number, account deletion, and PIN, password and recovery code changes). It marks every action that writes an audit log entry. Staff session screens are out of scope (Check In flows). Requirements come from `docs/requirements/SRS.md` v0.7 and the team decisions E-56 to E-107 in `docs/decisions/team.md`. Entity names follow the logical data model in `docs/design/design-notes.md`.
+This document draws what staff accounts do: signing in as Staff or Administrator, the install command that creates the first Administrator, inviting and deactivating staff accounts, and each Administrator task (the WooCommerce store sync, academic terms, the athlete roster, manual authorizations, release of a claimed Authorization Number, account deletion, manual entries from the paper log, and backups). It marks every action that writes an audit log entry. Staff session screens are out of scope (Check In flows). Requirements come from `docs/requirements/SRS.md` v0.10 and the team decisions E-56 to E-128 in `docs/decisions/team.md`. The shared gym account, the PIN and the recovery code of E-56 to E-83 were replaced by personal staff accounts (E-114). Entity names follow the logical data model in `docs/design/data-model.md`.
 
 Legend: nodes in red with the word **AUDIT** write one audit log entry (REQ-NF-39). "Proposed" marks a rule this design suggests and the team must confirm (see "Design decisions to confirm"). "Decided" marks a rule the team already chose. "To confirm" or "pending" marks an open item that nobody has decided yet.
 
 ## Diagrams
 
-### 1. Gym account and PIN states
+### 1. Staff account states
 
-**Type:** State diagram. **Use it to:** build the padlocked items, the PIN dialog and the 5-minute warning, and write test cases for each move between states. The Lock button returns to Staff mode at once (E-101).
+**Type:** State diagram. **Use it to:** build the staff sign-in, the invitation and the deactivation, and write test cases for each move between states.
 
 ```mermaid
 stateDiagram-v2
-  state "Signed out" as Out
-  state "Staff (no PIN)" as Staff
-  state "PIN dialog" as PinEntry
-  state "Administrator (PIN open in this browser only, menu unlocked on the dashboard)" as Admin
-  state "Warning: PIN closes in 5 minutes" as Warn
-  state "Staff, PIN blocked for a wait" as PinWait
+  state "Invited" as Invited
+  state "Active, signed out" as Out
+  state "Signed in as Staff" as Staff
+  state "Signed in as Administrator" as Admin
+  state "Deactivated" as Off
 
-  [*] --> Out
-  Out --> Staff: correct gym account password
-  Out --> Out: wrong password, sign-in limits apply
-  Staff --> PinEntry: tap a padlocked Administrator item
-  PinEntry --> Admin: correct PIN, stays on the dashboard, all items unlock, this browser stores the current PIN version
-  PinEntry --> Staff: wrong PIN with attempts left, or Cancel
-  PinEntry --> PinWait: wrong PIN reaches the attempt limit
-  PinWait --> Staff: wait ends
-  Admin --> Admin: tap or key press by a person restarts the 15 minutes
-  Admin --> Warn: 10 minutes without a person tap or key press
-  Warn --> Admin: Keep going button restarts the full 15 minutes
-  Warn --> Staff: 15 minutes reached, PIN closes
-  Admin --> Staff: Lock button, back to Staff mode at once
-  Admin --> Staff: PIN changed in another browser
-  Staff --> Out: sign out, password changed or recovery code used elsewhere
-  Admin --> Out: sign out, password changed or recovery code used elsewhere
-  PinWait --> Out: sign out
+  [*] --> Out : install command creates the first Administrator
+  [*] --> Invited : an Administrator invites a Staff member by email
+  Invited --> Out : the person opens the email link and sets a password
+  Out --> Staff : correct password, role staff
+  Out --> Admin : correct password, role admin
+  Out --> Out : wrong password, sign-in limits apply
+  Staff --> Out : sign out
+  Admin --> Out : sign out
+  Out --> Off : an Administrator deactivates the account
+  Staff --> Off : an Administrator deactivates the account
+  Admin --> Off : an Administrator deactivates the account
 ```
 
-**About this diagram:** the sign-in limits are those of REQ-F-07. The PIN state lives in the session data of each browser (E-56), so unlocking in one browser never unlocks another (REQ-NF-48).
+**About this diagram:** every Staff member and Administrator has a personal account with an email, a password and a role of `staff` or `admin` (E-114, REQ-F-52). There is no shared gym account, no PIN and no recovery code. The sign-in limits are those of REQ-F-07. An Administrator action is allowed by the role, so there is no step between Staff and Administrator, and no Lock button or "Administrator mode" bar.
 
 Notes:
 
-- The one-device rule does not apply to the gym account (REQ-F-03): many browsers can be signed in as Staff at once.
-- Open for the gym (G-09): CTI suggested that each Staff member and each Administrator sign in as themselves, so the audit log names the person. The shared account was a team decision; nobody said the gym asked for it, and the gym has not confirmed it. Diagrams 1 to 5 keep the shared account until the gym answers.
-- A PIN change raises the PIN version of the gym account. Every other browser holds the old version, so its PIN closes at its next request (E-56, D4).
-- Automatic polling (REQ-F-43) never counts as activity. The "Keep going" button takes keyboard focus and is read by screen readers (WCAG 2.2.1, REQ-NF-48).
-- The PIN attempt limit and wait are a design decision (D2). Staff work stays available during the PIN wait.
-- Staff and Administrator share one dashboard on its own route. Administrator items show grayed out with a padlock for Staff. Tapping one opens the PIN dialog, and after the correct PIN every item unlocks on the same screen (E-65). The Administrator stays on the dashboard, under an Administrator mode bar that holds the Lock button (E-101, E-102).
-- Decided (E-101): while the dashboard is unlocked, an Administrator mode bar shows a Lock button. One tap returns to Staff mode at once. The automatic close after inactivity stays, with the warning at 10 minutes. Proposed: the Lock button also removes the stored PIN version of this browser, so the backend closes the PIN too and not only the screen.
-- Decided (E-102): the separate Administrator menu screen (A-03) is removed. After the PIN the Administrator stays on the dashboard with the menu unlocked. The IDs A-04 to A-14 do not change, and A-03 stays in the list marked as removed.
-- The gym account signs in on its own route (N-11). The User sign-in has no link to it, so Staff reach it by typing the dashboard address (E-65).
-- The PIN is 4 digits entered on a numeric keypad (E-83, D1).
-- The gym account has one language, stored on the account, so it is the same on every computer (E-64). Decided (E-104): changing it needs no PIN. The control is C-06 on the dashboard, and it may also be a button in the dashboard top bar; the wireframe picks the placement. The rule of no language button in the top bar (E-64) applies to the User app, not to the gym dashboard.
+- The one-device rule does not apply to staff accounts (REQ-F-03): a person can be signed in on several computers. A Staff sign-in ends after 2 hours without a person tapping or typing, and an Administrator sign-in after 20 minutes; automatic refreshes do not count (E-130, gap 18).
+- A deactivated account cannot sign in. It is never deleted, so the audit log keeps pointing at it (data-model D13). Deactivating it ends its open sessions at once (E-130, gap 19).
+- The Administrators are the two department secretaries and the department director (E-114). The install command creates the first one (section 3). Administrators invite Staff by email (section 4). How the other Administrators are added is not decided (gap 20).
+- Staff and Administrators share one dashboard on a path under the app's name (E-124). The dashboard menu shows the Administrator items only to Administrators (REQ-NF-10). This is a design choice that follows from E-114 and the team should confirm it.
+- The staff sign-in is N-11. The User sign-in has no link to it, so Staff reach it by typing the dashboard address (E-65).
+- Each staff account has its own language, stored on the account and changed in its preferences, with no extra permission (E-104, data-model D11). The rule of no language button in the top bar (E-64) applies to the User app, not to the gym dashboard.
+- A staff account is separate from a User account, so a student employee can have both with the same email (data-model D13).
 
-### 2. Backend check on every Administrator request
+### 2. Backend check on every gym request
 
-**Type:** Sequence diagram. **Use it to:** write the backend check that guards every Administrator route, and its tests.
+**Type:** Sequence diagram. **Use it to:** write the backend check that guards every Staff and Administrator route, and its tests.
 
 ```mermaid
 sequenceDiagram
   autonumber
-  actor P as Person at the front desk computer
+  actor P as Staff member or Administrator
   participant F as PWA in the browser
   participant A as Laravel API
-  participant S as Session data of this browser
   participant DB as PostgreSQL
-  P->>F: Tap or key press
-  F->>A: Activity signal, at most every 30 s (Proposed)
-  A->>S: Set last person activity
-  F->>A: Polling request for occupancy
-  Note over A: Polling never sets last person activity
-  P->>F: Administrator action, for example undo an import
+  P->>F: Action, for example press Sync now
   F->>A: Request with the session cookie
-  A->>S: Read stored PIN version and last person activity
-  A->>DB: Read gym_accounts.pin_version
-  alt Session is not the gym account
+  A->>DB: Read the staff account of this session
+  alt Session is not a staff account, or the account is deactivated
+    A-->>F: 401 or 403
+  else Role is staff and the action is for Administrators
     A-->>F: 403 forbidden
-  else No stored version, versions differ, or 15 minutes since last person activity
-    A->>S: Remove the stored PIN version
-    A-->>F: 403 PIN needed
-    F-->>P: Back to the Staff view, ask for the PIN
-  else Versions match and activity is recent
-    A->>DB: One transaction: the action and its audit log entry
-    A->>S: Set last person activity
+  else Role allows the action
+    A->>DB: One transaction: the action and its audit log entry with the staff account
     A-->>F: 200 with the result
   end
 ```
 
-**About this diagram:** the interface hides Administrator screens without the PIN, but the backend decides (REQ-F-52), so a request that skips the interface gets the same answer. The PIN state and last person activity live in the session data, not in columns (E-56). The activity signal is design decision D3.
+**About this diagram:** the interface hides Administrator items from Staff, but the backend decides by role (REQ-F-52), so a request that skips the interface gets the same answer. The audit log entry is written in the same transaction as the action and names the staff account (REQ-NF-39).
 
 Notes:
 
-- Unsaved input on an Administrator form is lost when the PIN closes. The PWA shows the warning 5 minutes before, so this is rare.
-- The warning timer runs in the PWA. The backend enforces the 15-minute cut with the last person activity stored in the session data.
+- With no PIN there is no timeout that closes Administrator mode, so unsaved input on a form is not lost for that reason.
+- A middleware checks `deactivated_at` on every request, so a deactivated account stops working at once (E-130, data-model gap 9).
 
-### 3. First setup of the gym account
+### 3. Install command and first Administrator
 
 **Type:** System flow. **Use it to:** write the install command and its tests.
 
 ```mermaid
 flowchart TD
-  I1["Team runs the install command on the server"] --> I2{"A gym account already exists?"}
-  I2 -->|"Yes"| I3["Refuse. Nothing changes"]
-  I2 -->|"No"| I4["Ask for the password and the first PIN<br/>check password rules and PIN format"]
-  I4 --> I5["Create the first recovery code"]
-  I5 --> I6["Save the gym account<br/>password hash, PIN hash, recovery code hash,<br/>first PIN version"]
-  I6 --> I7["Show the recovery code once"]
-  I7 --> I8["Team gives the password, the PIN and the code<br/>to the administration in person"]
-  I8 --> I9["Administration keeps the code on paper<br/>in a safe place"]
+  I1["Team or a technician runs the install command once, with sudo,<br/>on a Rocky Linux 10 server"] --> I2["Install Docker CE, set the firewall and SELinux"]
+  I2 --> I3["Start the app"]
+  I3 --> I4{"A backup to restore on this new server?"}
+  I4 -->|"Yes"| I5["Restore the backup:<br/>accounts, data and photos"]
+  I4 -->|"No, first install"| I6{"An Administrator already exists?"}
+  I6 -->|"Yes"| I7["Leave the accounts as they are"]
+  I6 -->|"No"| I8["Ask for name, email and password<br/>check the password rules"]
+  I8 --> I9["Save the first Administrator, role admin"]
+  I5 --> I10["Schedule the backups every two weeks"]
+  I7 --> I10
+  I9 --> I10
+  I10 --> I11["The Administrator signs in at N-11<br/>and invites Staff from A-15"]
 ```
 
-**About this diagram:** this runs once (REQ-F-88), for example as `php artisan gym:install`. Proposed (E-110): if the team builds the install script CTI asks groups for (a plain Linux machine to a running app with the first account created), this command is its last step. There is only one gym account (REQ-F-52), so the command never creates a second one. The recovery code comes from E-60 and REQ-F-89; no audit entry is written because no gym action has happened yet. The code has 12 characters in 3 groups of 4, without look-alike characters (no 0 and O, no 1 and l), and the system generates it (E-78). The password rules and the PIN format are in section 4.
-
-### 4. Change of gym account password, PIN and recovery code
-
-**Type:** User flow. **Use it to:** build the Security settings screens (A-14) and their error messages.
-
-```mermaid
-flowchart TD
-  C0["Administrator opens Security settings"] --> C1{"Change what?"}
-  C1 -->|"Password"| P1["Type current PIN and new password twice"]
-  C1 -->|"PIN"| N1["Type current PIN and new PIN twice"]
-  C1 -->|"Recovery code"| W1["Press Generate new code<br/>type current PIN"]
-  P1 --> V{"Current PIN correct?"}
-  N1 --> V
-  W1 --> V
-  V -->|"No"| V1["Reject. Counts toward the PIN attempt limit"]
-  V -->|"Yes, password"| P2{"New password meets the password rules?"}
-  P2 -->|"No"| P3["Reject, say which rule"]
-  P2 -->|"Yes"| P4["Save the new password hash"]
-  P4 --> P5["End every other sign-in session of the gym account<br/>this is how access is withdrawn"]
-  P5 --> P6["AUDIT: gym account password change<br/>before and after say only changed, never a hash"]
-  V -->|"Yes, PIN"| N2{"New PIN meets the PIN format?"}
-  N2 -->|"No"| N3["Reject, say which rule"]
-  N2 -->|"Yes"| N4["Save the new PIN hash<br/>raise the PIN version"]
-  N4 --> N5["PIN closes in every other browser<br/>this browser stores the new version and stays open"]
-  N5 --> N6["AUDIT: PIN change"]
-  V -->|"Yes, code"| W2["Void the old code<br/>save the hash of a new code"]
-  W2 --> W3["AUDIT: recovery code change<br/>says only changed, never a code or hash"]
-  W3 --> W4["Show the new code once<br/>retype it to confirm"]
-
-  classDef audit fill:#fde2e1,stroke:#b42318,color:#000
-  class P6,N6,W3 audit
-```
-
-**About this diagram:** only PIN holders can change the PIN (REQ-NF-48). The browser where the change was made stays signed in. Closing the PIN everywhere else is Decided (E-56, D4). The Generate new code button covers a lost paper copy, which before needed the server command (E-78).
+**About this diagram:** this is the install command of REQ-F-88 and REQ-NF-52 (E-114, E-123). Administrators never use Docker or the server. The same command restores a backup on a new server (E-123). No audit entry is written for the first Administrator because no gym action has happened yet. The password rules are those of REQ-NF-51 (E-63). The command can be a Laravel artisan command called by the install script, for example `php artisan gym:install`.
 
 Notes:
 
-- PIN format: 4 digits on a numeric keypad (E-83). The owner accepted a known tradeoff: 4 digits give 10,000 combinations. The attempt limits protect the screen, but if the database leaks, the stored hash of a 4-digit PIN can be broken at once.
-- Password rules (E-63): at least 10 characters, no rules about mixing letters, digits or symbols, at least 64 characters allowed, and a check against leaked passwords with Laravel `Password::min(10)->uncompromised()`. That check calls an outside service (haveibeenpwned.com, k-anonymity), so it needs a test for the case when the service does not answer. NIST SP 800-63B-4 asks for 15 characters for single-factor passwords. The team chose 10 for typing on a phone. The gym account is assumed to follow the same rule (to confirm).
-- The new code from the Generate new code button has the same format as the install code (E-78). The confirmation is retyping it in a field, because the app cannot check the paper copy.
+- Password rules (E-63): at least 10 characters, no rules about mixing letters, digits or symbols, at least 64 characters allowed, and a check against leaked passwords with Laravel `Password::min(10)->uncompromised()`. That check calls an outside service (haveibeenpwned.com, k-anonymity), so it needs a test for the case when the service does not answer. NIST SP 800-63B-4 asks for 15 characters for single-factor passwords. The team chose 10 for typing on a phone. Staff accounts are assumed to follow the same rule (to confirm).
+- Forgetting a staff password: not decided (gap 1).
 
-### 5. Recovery with the recovery code
+### 4. Invite and deactivate staff accounts
 
-**Type:** User flow. **Use it to:** build the recovery screens on the gym account sign-in page, their error messages, and the attempt limit tests.
+**Type:** User flow. **Use it to:** build the Staff accounts screen (A-15) and its error messages.
 
 ```mermaid
 flowchart TD
-  K0["Gym account sign-in screen"] --> K1["Person picks Use the recovery code"]
-  K1 --> K2{"Recovery blocked for a wait?"}
-  K2 -->|"Yes"| K3["Say when to try again"]
-  K2 -->|"No"| K4["Type the recovery code"]
-  K4 --> K5{"Code matches the stored hash?"}
-  K5 -->|"No"| K6["Reject. Counts toward the attempt limit<br/>same limit and wait as the PIN"]
-  K5 -->|"Yes"| K7["Type new password twice and new PIN twice"]
-  K7 --> K8{"Password rules and PIN format met?"}
-  K8 -->|"No"| K9["Reject, say which rule"]
-  K9 --> K7
-  K8 -->|"Yes"| K10["Save new password hash and PIN hash<br/>raise the PIN version"]
-  K10 --> K11["End every sign-in session of the gym account"]
-  K11 --> K12["Old code used up<br/>save the hash of a new code"]
-  K12 --> K13["AUDIT: use of the recovery code<br/>says only changed, never a code or hash"]
-  K13 --> K14["Show the new code once<br/>keep it on paper in a safe place"]
-  K14 --> K15["Retype the new code to continue"]
-  K15 --> K16["Back to the gym account sign-in"]
+  C0["Administrator opens Staff accounts"] --> C1{"What to do?"}
+  C1 -->|"Invite"| I1["Type the name and email of the Staff member"]
+  I1 --> I2{"Email already used by a staff account?"}
+  I2 -->|"Yes"| I3["Reject, say so"]
+  I2 -->|"No"| I4["Create the account as invited, role staff<br/>send an invitation email"]
+  I4 --> I5["AUDIT, Proposed: staff account invited"]
+  I4 --> I6["The person opens the link and sets a password<br/>password rules of REQ-NF-51"]
+  I6 --> I7["Account is active<br/>the person signs in at N-11"]
+  C1 -->|"Deactivate"| D1["Pick a staff account"]
+  D1 --> D2{"Administrator confirms?"}
+  D2 -->|"No"| D3["Nothing changes"]
+  D2 -->|"Yes"| D4["Set the deactivation time<br/>sign-in is refused, the account is never deleted"]
+  D4 --> D5["AUDIT, Proposed: staff account deactivated"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
-  class K13 audit
+  class I5,D5 audit
 ```
 
-**About this diagram:** this is E-60 and REQ-F-89. Saving, using up the old code and the audit entry happen in one transaction; the new code is shown only after it commits. After the new code the person returns to the sign-in and confirms by retyping it, because the app cannot check the paper copy (E-78). If the paper is lost but the PIN is known, the Administrator makes a new code in section 4 (E-78). If the PIN and the password are lost too, only the server install command remains (see gap 1).
+**About this diagram:** only Administrators invite Staff and deactivate accounts (REQ-F-88, E-114). Deactivating is how access is withdrawn when a person leaves. The invitation email, its link and its validity are design details, like the athlete link (REG-6). The two audit entries are Proposed: REQ-NF-39 does not list them yet.
 
-Notes:
+### 5. Recovery with the recovery code (removed)
 
-- Code format (E-78): 12 characters in 3 groups of 4, letters and numbers without look-alike characters. It is accepted with or without hyphens and in any case. It is stored hashed (REQ-F-89).
-- The new PIN in K7 is 4 digits on a numeric keypad (E-83).
+Removed by E-114 (2026-11-04). The paper recovery code and its sign-in screen (N-12) no longer exist, because there is no shared gym account to recover. The section number stays so references from issues and docs resolve. Recovering a forgotten staff password is not decided (gap 1).
 
-### 6. WooCommerce import and re-import
+### 6. WooCommerce store sync
 
-**Type:** System flow. **Use it to:** write the import job, its row rules and its tests.
+**Type:** System flow. **Use it to:** write the sync job, the lookup at registration, their order rules and their tests.
 
 ```mermaid
 flowchart TD
-  U1["Administrator uploads an Export Orders file"] --> U2{"Format as expected?<br/>exact columns still to confirm"}
-  U2 -->|"No"| U3["Import nothing<br/>say what is wrong with the file"]
-  U2 -->|"Yes"| U4["Create the import record<br/>file name only, the audit entry has the account and time"]
-  U4 --> L["Next order in the file"]
-  L --> R1["Read only the kept fields<br/>billing and address columns are never read or stored"]
+  T1["Scheduled task, at least 3 times a day"] --> S1
+  T2["Administrator presses Sync now on A-07"] --> S1
+  T3["Registration lookup: the typed Authorization Number<br/>is not in the app yet (registration-flows, diagram 2)"] --> S1
+  S1["Ask the store: wc/v3 orders<br/>read-only key from the environment file"] --> S2{"Store answered?"}
+  S2 -->|"No"| S3["Change nothing<br/>A-07 shows the error and the last good sync<br/>the lookup says try again later, with the contact number"]
+  S2 -->|"Yes"| L["Next order"]
+  L --> R1["Read only the kept fields<br/>address, phone, IP, marketing fields<br/>and the order's student number are never read or stored"]
   R1 --> R2{"Required fields present and valid?"}
-  R2 -->|"No"| X1["Rejected: missing or invalid field"]
-  R2 -->|"Yes"| R3{"Payment date inside a term?<br/>Puerto Rico time"}
-  R3 -->|"No"| X2["Rejected: outside every term"]
-  R3 -->|"Yes"| R4{"Authorization Number already on another order<br/>in the same term?"}
-  R4 -->|"Yes"| X3["Rejected: number used by another order in this term"]
-  R4 -->|"No"| R5{"Order reference already stored?"}
-  R5 -->|"No"| C1["Created: new imported membership<br/>linked to this import"]
-  R5 -->|"Yes, values differ"| C2["Updated: overwrite fields, set last sync time"]
-  R5 -->|"Yes, same values"| C3["Unchanged: set last sync time"]
-  C2 --> C4{"Membership already claimed?"}
-  C4 -->|"Yes"| C5["Its authorization follows the new term"]
-  C4 -->|"No"| M{"More orders?"}
-  C5 --> M
-  C1 --> M
-  C3 --> M
+  R2 -->|"No"| X1["Skipped: missing or invalid field"]
+  R2 -->|"Yes"| R5{"Order id already stored?"}
+  R5 -->|"Yes"| K1{"Status now cancelled or refunded<br/>and the authorization is active?"}
+  K1 -->|"Yes"| K2["Revoke the authorization<br/>reason: order cancelled or order refunded"]
+  K2 --> K3["AUDIT: authorization revoked by the sync<br/>order id, status before and after"]
+  K1 -->|"No"| C2["Updated or unchanged:<br/>overwrite the fields, set the last sync time"]
+  R5 -->|"No"| R6{"Status completed?"}
+  R6 -->|"No"| X4["Ignored: only completed orders give access"]
+  R6 -->|"Yes"| R3{"Paid date inside a term?<br/>Puerto Rico time"}
+  R3 -->|"No"| X2["Skipped: outside every term"]
+  R3 -->|"Yes"| R4{"Authorization Number already on another order?"}
+  R4 -->|"Yes"| X3["Skipped: number used by another order"]
+  R4 -->|"No"| C1["Created: new membership record<br/>the term comes from the paid date"]
+  C1 --> M{"More orders?"}
+  C2 --> M
+  K3 --> M
+  K2 --> M
   X1 --> M
   X2 --> M
   X3 --> M
+  X4 --> M
   M -->|"Yes"| L
-  M -->|"No"| F1["Commit the whole file in one transaction (Proposed)"]
-  F1 --> F2["AUDIT: import<br/>import id, file name, counts"]
-  F2 --> F3["Save the import result: counts and every row<br/>show it, reopen it later from A-07"]
+  M -->|"No"| F1["Commit the whole run in one transaction (Proposed, D5)"]
+  F1 --> F2["AUDIT: store sync<br/>kind, counts, staff account only for Sync now"]
+  F2 --> F3["Save the run: when it ran and its counts<br/>A-07 shows the last run"]
+  F3 --> F4["Lookup only: retry the lookup with the new records"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
-  class F2 audit
+  class F2,K3 audit
 ```
 
-**About this diagram:** re-import of a corrected file (reconciliation) is the same flow: orders match by order reference, so nothing is duplicated (REQ-F-30). The column check waits on E-55 and on the sample Export Orders file (does one file hold two orders with the same number?), and the transaction on D5. The Authorization Number is unique per term, so the second order with the same number in the same term is rejected (E-71). The result layout and its saving are Decided (D6).
+**About this diagram:** the app reads the store's REST API with a read-only key kept in the server's environment file; there is no file upload (E-127, REQ-F-28). The same job runs in three ways: the scheduled task (at least 3 times a day, to pick up changes to known orders), the Sync now button on A-07, and the registration lookup when the typed Authorization Number is not known yet, so a person who just paid registers at once (REQ-F-97). Reading an order twice updates or confirms the same record by order id, so nothing is duplicated (REQ-F-30). Only orders with status `completed` give access. A known order that becomes `cancelled` or `refunded` loses its authorization (REQ-F-98). The Authorization Number is unique across all orders, so a second order with the same number is skipped (E-128). The sync cannot see a refund made in the UPR Payment Gateway portal: an Administrator revokes those by hand (section 12, E-120). A failed run changes no record (REQ-F-99). The transaction waits on D5.
 
 Notes:
 
-- Fields kept (REQ-F-29): name, email, student number when present, membership details, Authorization Number, order reference, status, payment date, term, last synchronization time. Billing and address data are never copied.
-- The term comes from the payment date (REQ-F-22), not from today, so an import works even when no term covers today. Time zone: America/Puerto_Rico.
-- "Unchanged" means the order was confirmed (REQ-F-30). The result counts it with "updated" (D6).
-- The import record keeps no uploaded-by or uploaded-at fields. The audit entry already holds the gym account and the time (REQ-NF-39, E-93).
-- The saved result holds the counts and the created, updated and rejected rows. Every row has a name and an email, so how long the result is kept is pending (REQ-NF-05, G-03).
+- Fields kept (REQ-F-29): order id, Authorization Number (meta field PGPAY_AUTHNUM of the "UPR Payment Gateway"), buyer name, payment email, product variation (student or employee membership, for statistics, E-120), status, paid date and the last sync time. The term comes from the paid date. The order's student number is not stored (athletes' student numbers come from the roster). Address, phone, IP and marketing fields are never stored.
+- The term comes from the paid date (REQ-F-22), not from today, so the sync works even when no term covers today. Time zone: America/Puerto_Rico.
+- "Unchanged" means the order was confirmed (REQ-F-30). The run counts it with "updated".
+- The run counts orders created, updated, revoked and skipped (REQ-F-99). The audit entry of a scheduled run or a registration lookup has no staff account; the one of Sync now names the Administrator (REQ-NF-39).
+- Registration lookups go through the failed lookup limits of REQ-F-71, so guessing numbers cannot flood the store with requests (REQ-F-97).
+- The saved run holds the counts and the rows of the run. Rows hold a name and an email, and the record is kept 5 years (REQ-NF-05, E-125).
+- The VM needs outbound HTTPS to the store. This is an open item for CTI (SRS 2.5).
 
-### 7. Undo of an import
+### 7. Undo of an import (removed)
 
-**Type:** System flow. **Use it to:** write the undo action, its confirm screen and its tests.
-
-```mermaid
-flowchart TD
-  Z1["Administrator picks an import in the import history (A-07)"] --> Z2["Show what undo removes: memberships created by this import,<br/>how many are claimed, authorizations and their photos,<br/>active facility sessions. Counts are information only"]
-  Z2 --> Z3{"Administrator confirms?"}
-  Z3 -->|"No"| Z4["Nothing changes"]
-  Z3 -->|"Yes"| Z5["Start one transaction"]
-  Z5 --> Z6["Delete the authorizations that came from<br/>the memberships this import created"]
-  Z6 --> Z7["Delete the term photo of each of them<br/>record and file"]
-  Z7 --> Z8["Delete those imported memberships<br/>their Authorization Numbers are free again"]
-  Z8 --> Z9["Accounts stay"]
-  Z9 --> Z10["Active facility sessions keep counting until they end<br/>Gym ID shows not valid, no new Check In"]
-  Z10 --> Z11["Mark the import as undone, keep the import record"]
-  Z11 --> Z12["AUDIT: import undo<br/>import id, counts, affected accounts"]
-  Z12 --> Z13["People claim again after the corrected file is imported<br/>and upload a new photo, as in any renewal"]
-
-  classDef audit fill:#fde2e1,stroke:#b42318,color:#000
-  class Z12 audit
-```
-
-**About this diagram:** undo is allowed at any time (REQ-F-31), even after Check Ins used its authorizations, and the counts on the confirm screen never block it (E-84). It deletes the photos with their authorizations (E-57). Photo files should be deleted only after the transaction commits, so a rollback never loses a file (Proposed). Active sessions follow D7; older records follow D8.
-
-Notes: undo removes only the memberships the import created; it does not roll back changes that import made to older records (E-84, D8). Past facility sessions stay, so analytics do not change.
+Removed by E-127 (2026-11-04). There is no uploaded file any more, so there is no import to undo and no re-import. A changed order updates its record at the next sync, and a `cancelled` or `refunded` order is revoked (section 6). A wrong authorization is fixed with the manual revoke (section 12) or the release (section 13). The section number stays so references from issues and docs resolve.
 
 ### 8. Academic terms
 
@@ -281,7 +209,7 @@ flowchart TD
   class T9 audit
 ```
 
-**About this diagram:** an edit is never blocked because orders or roster records fall outside the new dates (E-88). The store sells only while a term runs (assumption G-26, still to confirm with the gym), so this case is rare. Terms are never deleted (E-107): a term created by mistake is fixed by editing its dates, and A-04 has no delete button and no delete states. Gaps between terms are allowed (REQ-F-21). The overlap rule can use a PostgreSQL exclusion constraint on the date range, the same tool as the one-session rule (`context.md` section 2; depends on M-09).
+**About this diagram:** an edit is never blocked because orders or roster records fall outside the new dates (E-88). The store sells only while a term runs (assumption G-26, still to confirm with the gym), so this case is rare. Terms are never deleted (E-107): a term created by mistake is fixed by editing its dates, and A-04 has no delete button and no delete states. Gaps between terms are allowed (REQ-F-21). The overlap rule can use a PostgreSQL exclusion constraint on the date range, the same tool as the one-session rule (`context.md` section 2; depends on M-09). When a term ends, every active session closes at once, shown as closed by closure (E-115).
 
 ### 9. No term for the current date
 
@@ -292,43 +220,41 @@ flowchart TD
   N1{"Does a term contain today?"} -->|"Yes"| N2["New authorizations allowed"]
   N1 -->|"No"| N3["No new authorization is created"]
   N3 --> N4["Authorization Number claim: refused"]
-  N3 --> N5["Athlete lookup: no current-term roster,<br/>say that no term is active"]
+  N3 --> N5["Athlete link or new-term photo: no authorization<br/>can be created, say that no term is active"]
   N3 --> N6["Manual grant: only into a term that has not ended,<br/>access starts when that term starts"]
   N3 --> N7["Every Administrator screen shows a notice<br/>and each error gives the reason"]
-  N3 --> N8["Import still works: orders are matched<br/>by payment date"]
+  N3 --> N8["Store sync still works: orders are matched<br/>by paid date"]
 ```
 
 **About this diagram:** the athlete lookup message is that of REQ-F-76. The notice and the reason in each error are Decided (D9).
 
-### 10. Athlete roster: create, import, change
+### 10. Athlete roster: add, edit, remove
 
-**Type:** User flow. **Use it to:** build the roster screens, the list import, and their error messages.
+**Type:** User flow. **Use it to:** build the roster screen (A-05) and its error messages.
 
 ```mermaid
 flowchart TD
-  A0["Administrator picks a term"] --> A1{"What to do?"}
-  A1 -->|"Add one"| A2["Type student number, name, institutional email"]
-  A1 -->|"Import a list"| A3["Upload the list<br/>Proposed: the file the gym receives<br/>format still to confirm with the gym"]
+  A0["Administrator opens the athlete roster"] --> A1{"What to do?"}
+  A1 -->|"Add athletes"| A2["Quick form: type name, sport, student number, institutional email<br/>the current sport shows large at the top"]
   A1 -->|"Edit"| A4["Change fields of a record"]
   A1 -->|"Remove"| A9["Removal flow, section 11"]
-  A3 --> A5{"Format as expected?"}
-  A5 -->|"No"| A6["Import nothing"]
-  A5 -->|"Yes"| A7["Each row of the list"]
-  A2 --> V1{"Required fields present?<br/>student number unique in this term?"}
+  A2 --> V1{"Required fields present?<br/>student number not already in the roster?"}
   A4 --> V1
-  A7 --> V1
-  V1 -->|"No"| V2["Reject that record or row, with the reason<br/>database unique on term and student number"]
+  V1 -->|"No"| V2["Reject that record, with the reason<br/>database unique on student number"]
   V1 -->|"Yes"| V3["Save the roster record"]
-  V3 --> AU["AUDIT: roster change<br/>one entry per record (Proposed)"]
-  A7 --> RL["List result: added and rejected rows"]
+  V3 --> AU["AUDIT: roster change<br/>one entry per record"]
+  V3 --> A3["Added from the quick form: the form stays open and empty<br/>for the next athlete, the sport keeps the last value"]
+  A3 --> A2
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
   class AU audit
 ```
 
-**About this diagram:** minimum fields are student number, name, institutional email and term (REQ-F-51; final list pending G-10). Adding, editing, removing and importing stay Administrator only (REQ-F-49, REQ-F-52); one audit entry per record is D10. Staff now have a read-only view of the current-term roster with search by name or student number (E-59, still to be confirmed by the gym).
+**About this diagram:** the roster is one list, not one per term, and Administrators fill it by hand (E-116, REQ-F-49). There is no file import, because the department keeps the lists in Word, so the earlier upload path and the CTI proposal to accept an Excel or CSV file no longer apply. Each record has name, sport, student number and institutional email (REQ-F-51). Adding, editing and removing stay Administrator only (REQ-F-49, REQ-F-52); one audit entry per record is D10. Staff see the roster read only, with search by name or student number (E-59).
 
-Proposed (CTI recommendation): accept the Excel or CSV file the gym receives, so nobody retypes it; the system keeps the columns it needs and ignores the rest. Open for the gym (G-33): a second upload of the same list could skip people already in the roster instead of rejecting them. Today REQ-F-51 rejects a repeated student number in the same term; nodes V1, V2 and RL stay as drawn.
+Athletes are entered one at a time with a quick form (E-139). After saving, the form stays open and empty for the next athlete, except the sport, which keeps the last value because the lists come by sport. The form shows the current sport large at the top ("Adding athletes of: Volleyball") so nobody forgets to change it. There are about 100 athletes, so there is no paste or file tool.
+
+An athlete stays on the roster until an Administrator removes them, across terms. Each new term the athlete only uploads a new photo and the waiver is not asked again (E-116, registration-flows diagram 8). The audit log filters roster changes, so there is no separate roster report (E-126).
 
 ### 11. Removing and reinstating an athlete mid-term
 
@@ -336,12 +262,12 @@ Proposed (CTI recommendation): accept the Excel or CSV file the gym receives, so
 
 ```mermaid
 flowchart TD
-  R0["Administrator removes an athlete<br/>from the current-term roster"] --> R1["Roster record leaves the current-term roster<br/>how the record is kept is pending"]
+  R0["Administrator removes an athlete<br/>from the roster"] --> R1["Roster record is marked removed<br/>and hidden from Staff search (D16)"]
   R1 --> R2{"Record claimed by an account?"}
   R2 -->|"No"| R8["AUDIT: roster change"]
   R2 -->|"Yes"| R3["Authorization status revoked<br/>reason: removed from roster. Nothing is deleted"]
   R3 --> R4["Backend: Gym ID not valid at once<br/>Staff verification shows not authorized"]
-  R3 --> R5["Active facility session stays active<br/>and counts until its 60 minutes end"]
+  R3 --> R5["Active facility session stays open<br/>and counts until it is closed"]
   R3 --> R6["New Check In and Staff-assisted Check In rejected"]
   R4 --> R8
   R5 --> R8
@@ -388,7 +314,8 @@ flowchart TD
 Notes:
 
 - A manually granted User gives the term photo the same way as an athlete: the app asks for it on U-02 before Check In (E-69).
-- Statistics count manual authorizations as their own value, `manual`, a third category in C-05 next to paid members and athletes (E-82).
+- The revoke is how the department's refunds are handled (E-120). Refunds are made in the UPR Payment Gateway portal, outside WordPress and WooCommerce, so the store never shows them and the sync cannot revoke them. When the department refunds a membership, an Administrator finds the account, picks the authorization and revokes it with a reason that says it was refunded. The Administrator manual describes this task (REQ-NF-53). If a refund is ever recorded in WooCommerce as `refunded`, the sync revokes it on its own (section 6).
+- A manual authorization counts as a paid member for every rule (E-126). Statistics keep `manual` as its own value (E-82); how C-05 shows it next to student members, employee members and athletes is to confirm.
 
 ### 13. Release of a claimed Authorization Number
 
@@ -426,7 +353,7 @@ flowchart TD
   X2 -->|"No"| X4["Administrator confirms"]
   X4 --> X5["Delete personal data, photos, waiver,<br/>emergency contact, sign-in sessions"]
   X5 --> X6["Keep anonymous Check In counts<br/>distinct-people counts already computed do not change"]
-  X6 --> X7["Audit entries that mention the User<br/>stay until the end of their term"]
+  X6 --> X7["Audit entries that mention the User<br/>stay for 5 years (E-125)"]
   X7 --> X8["AUDIT: account deletion<br/>(Proposed, not in the required audit list)"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
@@ -447,7 +374,7 @@ flowchart TD
   Q2 -->|"Yes"| Q4["Slow each lookup, never block a registration"]
   Q4 --> Q5{"Alert already written in this window?"}
   Q5 -->|"Yes"| Q6["No new entry"]
-  Q5 -->|"No"| Q7["AUDIT: global lookup limit alert<br/>no gym account, failure count, window"]
+  Q5 -->|"No"| Q7["AUDIT: global lookup limit alert<br/>no staff account, failure count, window"]
   Q7 --> Q8["Administrator sees it in the audit log"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
@@ -467,41 +394,40 @@ flowchart TD
   S1 -->|"Yes"| S3["Save. English optional: Spanish shown when missing"]
   S3 --> S4{"Schedule slot? regular hours, special hours,<br/>closure or athletes only"}
   S4 -->|"Yes"| S5["AUDIT: schedule change"]
+  S5 --> S7{"Closure?"}
+  S7 -->|"Yes"| S8["Every active facility session ends at once<br/>note: closed by closure"]
   S4 -->|"No, notice or facility information"| S6["No audit entry"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
   class S5 audit
 ```
 
-**About this diagram:** simple create, edit and delete (REQ-F-55, REQ-F-58). REQ-NF-39 lists schedule changes but not notices or facility information. Schedules live in one table: each slot is weekly or has a concrete date, so the regular schedule is written once and exceptions are separate rows (E-90). The gym contact number is part of the facility information and is edited in A-12 (E-66).
+**About this diagram:** simple create, edit and delete (REQ-F-55, REQ-F-58). REQ-NF-39 lists schedule changes but not notices or facility information. Schedules live in one table: each slot is weekly or has a concrete date, so the regular schedule is written once and exceptions are separate rows (E-90). The gym contact number is part of the facility information and is edited in A-12 (E-66). Publishing a closure ends every active session at once (E-115, REQ-F-38).
 
 ### 17. Audit log entry and supporting data
 
-**Type:** Entity-relationship diagram. **Use it to:** write the migrations and constraints for the gym account, imports and the audit log.
+**Type:** Entity-relationship diagram. **Use it to:** write the migrations and constraints for staff accounts, store sync runs and the audit log.
 
 ```mermaid
 erDiagram
-  gym_accounts |o..o{ sign_in_sessions : "signs in on, no FK column"
-  gym_accounts |o--o{ audit_log_entries : "records"
+  staff_accounts |o--o{ audit_log_entries : "records"
+  staff_accounts |o--o{ facility_sessions : "enters manual entries"
   imports ||--o{ imported_memberships : "created"
   imported_memberships |o--o| authorizations : "claimed as"
-  gym_accounts {
-    text password_hash
-    text pin_hash
-    int pin_version "raised on every PIN change"
-    text recovery_code_hash "one-time code, replaced after use"
-    varchar(2) locale "es or en, one for every computer"
-  }
-  sign_in_sessions {
-    text payload "session data: PIN version, last person activity"
+  staff_accounts {
+    text name
+    text email
+    text password
+    varchar(10) role "staff or admin"
+    varchar(2) locale "es or en, one per account"
+    timestamptz deactivated_at "NULL while the account is active"
   }
   imports {
-    text file_name
-    jsonb result "counts and the created, updated and rejected rows, kept"
-    timestamptz undone_at
+    text file_name "sync kind: registration lookup, scheduled or sync now"
+    jsonb result "counts and the rows of the run, kept"
   }
   audit_log_entries {
-    bigint gym_account_id "null for system alerts"
+    bigint staff_account_id "null for system alerts"
     timestamptz occurred_at
     text action
     text subject_table "affected record, no FK"
@@ -516,18 +442,22 @@ erDiagram
     text type "paid, athlete, manual"
     text status "revoked with reason removed from roster on a roster removal"
     boolean created_account "set at claim, no rule reads it now (E-106)"
+    timestamptz photo_pending_at "set by Staff when the photo does not match"
+  }
+  facility_sessions {
+    text status "active, expired, checked_out, ended_early, closed, void"
+    bigint entered_by_staff_account_id "manual entry from the paper log only"
   }
 ```
 
-**About this diagram:** only the fields these flows need; other entities and fields belong to the data model design (`docs/design/data-model.md`), which rules where the two differ (E-93). The PIN state is kept in the session data, not in session columns, and `pin_version` replaces a per-session unlock time (E-56). `recovery_code_hash` comes from E-60; whether recovery attempts share the PIN counters or get their own follows D2.
+**About this diagram:** only the fields these flows need; other entities and fields belong to the data model design (`docs/design/data-model.md`), which rules where the two differ (E-93, data-model D13 to D18). There is no PIN state and no recovery code (E-114).
 
 Corrections made to match the data model (E-93):
 
-- PIN attempt counters live in the Laravel `cache` table, not in `gym_accounts`.
-- The audit log has no `pin_active` column.
-- `imports` has no uploaded-by or uploaded-at. The audit log records the import with the account and time (REQ-NF-39). It keeps `result` (E-84).
+- Staff and Administrators are rows of `staff_accounts`, apart from `users`. The audit log points at `staff_account_id`, so it names the person (D13).
+- `imports` holds one row per store sync run (E-127): the sync kind in `file_name` and the `result`. It has no uploaded-by or uploaded-at and no `undone_at`, because there is no file and no undo. The audit log records the run with the staff account (empty for a scheduled run or a lookup) and time (REQ-NF-39).
 - Removing an athlete from the roster sets the authorization to `revoked` with the reason "removed from roster". There is no cascade delete.
-- `gym_accounts.locale` matches the data model (E-64). The gym account changes it without the PIN (E-104).
+- `staff_accounts.locale` is the language of that account (E-64, E-104, data-model D11).
 - `authorizations.created_account` no longer drives the release (E-106). Whether to keep the column is to confirm.
 
 Actions that write an audit log entry (REQ-NF-39):
@@ -536,86 +466,101 @@ Actions that write an audit log entry (REQ-NF-39):
 |---|---|---|
 | Staff correction (end early, void) | Staff | Check In flows (out of scope here) |
 | Staff-assisted Check In, as an exception | Staff | Check In flows |
-| In-person athlete registration code (Staff generate it, E-62) | Staff | Registration flows |
-| Roster change (add, import row, edit, remove) | Administrator | Sections 10, 11 |
+| Roster change (add, edit, remove) | Administrator | Sections 10, 11 |
 | Reinstate of a removed athlete, with reason (E-95) | Administrator | Section 11 |
 | Term change | Administrator | Section 8 |
-| Schedule change | Administrator | Section 16 |
-| Import | Administrator | Section 6 |
-| Import undo | Administrator | Section 7 |
+| Schedule change, closures included | Administrator | Section 16 |
+| Store sync run, and each authorization it revokes (E-127) | Administrator for Sync now; system for a scheduled run or a registration lookup | Section 6 |
 | Release of a claimed Authorization Number | Administrator | Section 13 |
 | Manual grant or revoke, with reason | Administrator | Section 12 |
-| PIN change | Administrator | Section 4 |
-| Gym account password change | Administrator | Section 4 |
-| Use of the recovery code (E-60, REQ-F-89) | Person at the sign-in screen, not signed in | Section 5 |
-| New recovery code from the Generate new code button (E-78); says only that the code changed | Administrator | Section 4 |
+| Manual entry from the paper log (E-119), or a count of visits by people without an account (E-132); names who entered it | Administrator | Section 18 |
 | Global lookup limit alert | System | Section 15 |
 | Account deletion on User request (Proposed, not in the list) | Administrator | Section 14 |
-| PIN block after too many attempts (Proposed, not in the list) | Staff | Section 1 |
-| Proposed (E-108): sign in and sign out of the gym account | Person at the sign-in screen | Section 1 |
+| Staff account invited or deactivated (Proposed, not in the list) | Administrator | Section 4 |
+| Backup now or restore (Proposed, not in the list) | Administrator | Section 19 |
+| Sign in and sign out of staff accounts (E-108) | Staff member or Administrator | Section 1 |
 
-Each entry holds the gym account, time, IP address, device and browser, and values before and after (REQ-NF-39). Only Administrators can read the log. Proposed (E-108, CTI's request to student projects): no screen or request edits or deletes an entry, for anyone. The Administrator can search by account and date range and export to CSV or Excel. Secrets are never written: a password, PIN or recovery code change records only that it changed. Retention: until the end of the term in which the entry happened (REQ-NF-05).
+Each entry holds the staff account, time, IP address, device and browser, and values before and after (REQ-NF-39). Only Administrators can read the log, and they can filter roster changes, so there is no separate roster report (E-126). Decided (E-108, CTI's request to student projects): no screen or request edits or deletes an entry, for anyone. The Administrator can search by staff account and date range and export to CSV or Excel. Secrets are never written: a password change records only that it changed. Retention: each entry is deleted 5 years after it was created (REQ-NF-05, E-125, E-131).
+
+### 18. Manual entries from the paper log
+
+**Type:** User flow. **Use it to:** build the Manual entries screen (A-17) and its error messages.
+
+```mermaid
+flowchart TD
+  M0["App was down<br/>Staff used the paper log and checked payment by hand"] --> M1["App is back<br/>an Administrator opens Manual entries"]
+  M1 --> MA{"Does the person on the paper have an account?"}
+  MA -->|"Yes"| M2["Find the person<br/>type the entry time and the exit time from the paper"]
+  M2 --> M3{"Exit after entry, and no overlap<br/>with another session of this person?"}
+  M3 -->|"No"| M4["Reject, say why"]
+  M3 -->|"Yes"| M5["Save a facility session with the paper times<br/>status checked out, marked as a manual entry"]
+  M5 --> M6["AUDIT: manual entry<br/>names the Administrator who entered it"]
+  M5 --> M7["Counts in statistics<br/>reports can filter it out"]
+  MA -->|"No"| C1["Type the time block and the number of visits<br/>for example 3 visits on Tuesday from 2 to 4, no names"]
+  C1 --> C2{"At least one visit, and the block ends after it starts?"}
+  C2 -->|"No"| M4
+  C2 -->|"Yes"| C3["Save a manual visit count"]
+  C3 --> C4["AUDIT: manual entry<br/>names the Administrator who entered it"]
+  C3 --> C5["Counts in visit totals<br/>left out of distinct people"]
+
+  classDef audit fill:#fde2e1,stroke:#b42318,color:#000
+  class M6,C4 audit
+```
+
+**About this diagram:** this is REQ-F-95 (E-119). Up to one week down is acceptable (REQ-NF-31). Only Administrators enter manual entries, because desk staff change often. The row is a normal facility session with `entered_by_staff_account_id` set (data-model D18), so statistics keep working in one place. The overlap check is the exclusion constraint that guards the one-session rule. A person on the paper log with no account cannot get a manual entry, because a session belongs to a User. Such people are entered only as a count for a time block, with no names (E-132, REQ-F-95): a `manual_visit_counts` row, part of the visit totals and left out of distinct-people counts (REQ-F-61).
+
+### 19. Backups
+
+**Type:** System flow. **Use it to:** build the Backups screen (A-16), the scheduled task and their tests.
+
+```mermaid
+flowchart TD
+  S0["Scheduled task, every two weeks"] --> B3
+  B0["Administrator opens Backups"] --> B1["Show the date of the last backup"]
+  B1 --> B2{"What to do?"}
+  B2 -->|"Back up now"| B3["Make a backup of the database and the photos<br/>on the second virtual disk"]
+  B2 -->|"Download"| B4["Download one of the backups on the server"]
+  B2 -->|"Restore"| B5["Pick a backup already on the server<br/>confirm"]
+  B5 --> B6["Replace the current data with that backup"]
+  B3 --> B7["Keep the 2 most recent backups<br/>delete the older ones"]
+```
+
+**About this diagram:** this is REQ-NF-06 (E-122). The second disk is attached to the same VM, so losing the whole VM loses the backups too; the team accepts that risk. Restore takes only a backup already on the server, so there is no upload. A restore replaces everything saved after that backup, audit log entries included. The same install command restores a backup on a new server (section 3). Administrators never use Docker or the server (E-123). A downloaded backup holds all personal data and photos on the computer that downloads it (`context.md` section 7).
 
 ## Design decisions to confirm
 
-Marked Decided when the owner chose in the design review (October 2026) or the team chose earlier. D14 to D16 and the extension of D12 were decided on 2026-10-20 (E-101 to E-107). D2, D3, D5, D10 and D13 are still Proposed and stay open for the PR review.
+Marked Decided when the owner chose in the design review (October 2026) or the team chose earlier. D14 to D16 and the extension of D12 were decided on 2026-10-20 (E-101 to E-107). D1 to D4 and D14 were replaced on 2026-11-04 by E-114 (personal staff accounts, no PIN). D5 and D13 are still Proposed and stay open for the PR review.
 
-**D1. PIN format.** Decided (E-83): option A.
-- A: 4 digits. Fast to type. NIST SP 800-63B-4 section 3.2.10 (activation secrets) sets 4 as the minimum it SHALL accept. Easier to guess or see over a shoulder.
-- B: 6 to 12 digits. NIST 3.2.10 says SHOULD be at least 6. One million options at 6 digits, still easy on a numeric keypad.
-- C: any characters, 8 or more. Stronger, but slower at the front desk and harder to share safely.
-- Decided: A, 4 digits on a numeric keypad, for A-01, A-14 and the PIN field of N-12. Option A is the fastest to type. The owner chose it over the earlier recommendation of B and gave no other reason. Accepted tradeoff: 4 digits are 10,000 combinations. Attempt limits protect the screen, but the stored hash of a 4-digit PIN falls at once if the database leaks.
+**D1. PIN format.** Replaced by E-114: there is no PIN.
 
-**D2. PIN attempt limit and wait.**
-- A: 5 wrong PINs in a row, counted per gym account across all browsers, then a 5-minute wait that doubles on each new block, up to 1 hour. A success resets the count. Mirrors REQ-F-07.
-- B: 10 wrong PINs, then the PIN is disabled until the team resets it on the server (NIST 3.2.10 style). Strong, but a front desk user could lock the administration out, and the reset needs server access (REQ-NF-23 conflict).
-- C: count per browser only. Simple, but opening a new browser gives new attempts.
-- Recommendation: A. Counting per gym account closes the new-browser trick, and the wait ends on its own. NIST 3.2.2 sets 100 failed attempts as the upper bound; A is far below it. Also log each block (see Gaps). The recovery code uses the same limit (E-60).
-- Decided (E-93): the attempt counters live in the Laravel `cache` table, not in `gym_accounts`. The limit and wait values above stay Proposed.
+**D2. PIN attempt limit and wait.** Replaced by E-114: there is no PIN. Sign-in attempts follow REQ-F-07.
 
-**D3. How the backend learns about person activity.**
-- A: the PWA sends a small activity signal on tap or key press, at most every 30 seconds; requests the person triggers carry a header that also counts. Polling sends neither. The backend stores the time in the session data (E-56) and enforces 15 minutes.
-- B: the PWA tracks the timer alone and tells the backend to close the PIN. Simple, but a modified client keeps the PIN open, which breaks REQ-F-52.
-- Recommendation: A. The cut can be up to 30 seconds late, which does not matter for a 15-minute rule.
+**D3. How the backend learns about person activity.** Replaced by E-114: there is no PIN to close after inactivity. Staff session time limits are decided by E-130 (gap 18).
 
-**D4. Effect of a PIN change on other browsers.** Decided (E-56): a PIN change raises `pin_version`, which closes the PIN in every other browser; they stay signed in as Staff.
+**D4. Effect of a PIN change on other browsers.** Replaced by E-114: there is no PIN.
 
-**D5. Import transaction.**
-- A: whole file in one transaction. A crash or a database error imports nothing. Row-level rejects (bad field, outside every term) do not stop the rest.
-- B: one transaction per order. A crash leaves half a file, and undo has to clean it.
-- Recommendation: A. A few hundred orders per file fit easily in one transaction (reasoned estimate, not measured).
+**D5. Sync transaction.** Proposed (rewritten by E-127).
+- A: the run first reads every page of orders from the store, then writes everything in one transaction. A store error or a database error changes nothing (REQ-F-99). Row-level skips (invalid field, outside every term, repeated number) do not stop the rest.
+- B: one transaction per order. A crash leaves a half-finished run, and the next run has to finish it.
+- Recommendation: A. A few hundred orders fit easily in one transaction (reasoned estimate, not measured: 84 orders were read on 2026-11-04).
 
-**D6. Import result layout.** Decided (E-84): option A.
-- A: counts at the top (created, updated, rejected; "unchanged" shown inside updated), then one table per group: order reference, name, term, and the reason for rejected rows. Saved with the import so it can be opened later.
-- B: as A, plus a CSV download of the rejected rows to fix in WooCommerce.
-- C: counts only. Not enough: REQ-F-28 asks to list the orders.
-- Decided: A. The result is saved with all its rows and the Administrator reopens it from A-07. The owner chose to keep the result so the Administrator can reopen it later. The CSV download of B is not part of this decision. Pending: how long the saved rows are kept (REQ-NF-05, G-03), because they hold names and emails.
+**D6. Import result layout.** Replaced by E-127: there is no import result screen. A-07 is the Store sync screen. It shows when the last sync ran, its counts (created, updated, revoked, skipped), the skipped orders with the reason, the error of a failed run and the Sync now button (REQ-F-99). The layout is a wireframe decision.
 
-**D7. Undo after people checked in with those authorizations.** Decided (E-84): option A.
-- A: always allowed. Active facility sessions follow the roster-removal rule: they count until they end, the Gym ID shows not valid, no new Check In. Past sessions stay.
-- B: allowed, but the confirm screen shows how many people have active sessions and past Check Ins, and asks to confirm again.
-- C: blocked once anyone checked in. This contradicts REQ-F-31 ("undo any import at any time") and would need an SRS change.
-- Decided: A. Undo is always allowed. Active sessions keep counting until they end. The confirm screen in A-07 shows the counts (authorizations, sessions, photos) as information and does not block. Why: a wrong file or number cannot produce Check Ins, and the gym has full control of this decision.
+**D7. Undo after people checked in with those authorizations.** Replaced by E-127: there is no undo.
 
-**D8. What undo removes when a later import touched the same orders.** Decided (E-84): option A.
-- A: undo deletes the memberships the import created, even if a later import updated them. Updates an import made to older records are not rolled back; the fix is to re-import a correct file.
-- B: keep a copy of the old values for every update and restore them on undo. Complete, but more data and code.
-- C: allow undo only of the latest import. Simple, but contradicts "any import".
-- Decided: A. Why: reconciliation already handles wrong values. Revisable.
+**D8. What undo removes when a later import touched the same orders.** Replaced by E-127: there is no undo.
 
 **D9. Message when no term covers today.** Decided (E-85): option A.
 - A: a banner on every Administrator screen ("No academic term covers today. New authorizations cannot be created. Add a term.") plus the same reason in any error it causes.
 - B: only the error at the moment something fails.
 - Decided: A. Why: the Administrator learns about it before a member is refused at the front desk.
 
-**D10. Audit entries for a roster import.**
-- A: one entry per record added, changed or removed, with a shared batch id.
-- B: one entry per list import with the whole list as "after".
-- Recommendation: A. REQ-NF-39 says "each roster change", and per-record entries keep before and after simple.
+**D10. Audit entries for roster changes.** Decided (E-116): the roster has no file import, so each record added, changed or removed writes one audit entry.
+- Why: REQ-NF-39 says "each roster change", and per-record entries keep before and after simple.
 
 **D11. Reason for manual grant and revoke.** Decided (E-86): option A.
 - A: required free text, at least 10 characters, for both grant and revoke.
-- B: required pick list (order error, payment not imported, other) plus optional text.
+- B: required pick list (order error, payment not found in the store, other) plus optional text.
 - C: optional.
 - Decided: A. Why: REQ-NF-39 already says "with its reason" for grant and revoke. The reason goes to the audit log, and the data model keeps its CHECK for it.
 
@@ -630,11 +575,9 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 - B: one entry per slowed lookup. Can flood the log during an attack.
 - Recommendation: A.
 
-**D14. Lock button and the Administrator menu screen.** Decided (E-101, E-102), owner, 2026-10-20.
-- Lock button: yes. An Administrator mode bar with a visible Lock button shows while the dashboard is unlocked, and one tap returns to Staff mode at once. The automatic close after inactivity stays (warning at 10 minutes).
-- Menu screen: A-03 is removed. After the PIN the Administrator stays on the dashboard with the menu unlocked. A-04 to A-14 keep their IDs, and A-03 stays in the list marked as removed, so the IDs in issues and docs do not shift.
+**D14. Lock button and the Administrator menu screen.** Replaced by E-114 (2026-11-04): there is no Lock button, no "Administrator mode" bar and no PIN. A-03 stays removed (E-102). A-14 is removed and A-15 to A-17 are new; the other A IDs do not change.
 
-**D15. Where the gym account changes its language.** Decided (E-104), owner, 2026-10-20: no PIN.
+**D15. Where staff accounts change their language.** Decided (E-104, owner, 2026-10-20), updated by E-114 and data-model D11: each staff account stores its own language and changes it in its preferences.
 - The control is C-06 on the dashboard and may also be a button in the dashboard top bar. The wireframe picks the placement.
 - The rule of no language button in the top bar (E-64) applies to the User app, not to the gym dashboard.
 
@@ -643,23 +586,28 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 
 ## Gaps and questions
 
-1. **Forgotten PIN or gym password.** Resolved by E-60: the recovery code (section 5). A lost paper copy is now covered when the PIN is known: the Administrator presses Generate new code in A-14 (E-78, section 4). Still open: if the PIN, the password and the paper are all lost, the install command refuses to run when a gym account exists (section 3), so it needs a reset option.
-2. **Audit list misses two actions.** REQ-NF-39 does not list account deletion by the Administrator (REQ-F-09) or PIN blocks after too many attempts (REQ-NF-48). Both look like they belong. Drawn as Proposed.
-3. **Photos after undo.** Resolved by E-57: undo and the release of an added authorization delete the authorization with its term photo, record and file.
-4. **Corrected order that changes email or Authorization Number of a claimed membership.** REQ-F-30 updates the record and REQ-F-11 says the account email is the payment email. Not said: does the account email change, and does the old number stay claimed? Suggest: update the membership, keep the account email, flag the row in the import result.
+1. **Forgotten staff password.** Not decided. Staff accounts have an email and a password, so a reset by email like REQ-F-06 is the natural way, but no decision covers it.
+2. **Audit list misses some actions.** REQ-NF-39 does not list account deletion by the Administrator (REQ-F-09), staff account invites and deactivations, or backup actions. All look like they belong. Drawn as Proposed.
+3. **Photos after undo.** Resolved by E-57 for the release of an added authorization, which deletes the authorization with its term photo, record and file. The import undo it also covered was removed by E-127.
+4. **Corrected order that changes email or Authorization Number of a claimed membership.** REQ-F-30 updates the record and REQ-F-11 says the account email is the payment email. Not said: does the account email change, and does the old number stay claimed? Suggest: update the membership, keep the account email, flag the row in the sync result.
 5. **Editing a term after records exist.** Resolved (E-88): the edit is allowed. Records keep their term and authorization, and only the authorization end date follows the new term end. REQ-F-22 now says that a record belongs to the term it was assigned, even if dates change later (SRS v0.7). Terms are never deleted (E-107, D16), so the missing term deletion in the SRS is settled.
 6. **Photo for a manual grant.** Resolved (E-69): the athlete rule. The User gives the term photo on U-02 before Check In.
 7. **Account deletion during an active facility session.** REQ-F-09 and REQ-F-74 do not say what happens to an active session of a deleted account. Suggest: void is wrong (it changes counts); keep the session anonymous and let it expire.
 8. **Checking that the User asked.** Resolved (E-89): the request is confirmed in person with identification at the gym.
-9. **Audit entries with no gym account.** The data model links every audit entry to the gym account, but the global lookup alert (REQ-F-71) is written by the system. Drawn with an empty gym account.
-10. **Duplicate Authorization Number across orders.** Decided (E-71): the number is unique per term. The import rejects the second order with the same number in the same term, and a lookup that matches two orders is denied with the gym contact number. Still pending: open the sample Export Orders file and check its columns, how the term comes from the payment date, and whether two orders in one file share a number (E-30, E-55, G-19).
+9. **Audit entries with no staff account.** The data model links every audit entry to a staff account, but the global lookup alert (REQ-F-71) is written by the system. Drawn with an empty staff account.
+10. **Duplicate Authorization Number across orders.** Decided (E-128, which replaces E-71): the number is unique across all orders, not only per term. The sync skips the second order with the same number, and a lookup that matches two orders is denied with the gym contact number. Resolved by the read of 84 orders on 2026-11-04: no value repeats among the 69 paid ones (E-55, G-19). If the gateway ever repeats a code, the Administrator sees the skipped order on A-07.
 11. **Gym ID "at once".** REQ-F-49 says the Gym ID stops being valid at once. The backend does; the phone shows it at its next refresh. The Check In flows should set how often the Gym ID screen refreshes.
-12. **Retention of the saved import rows.** Pending (E-84). The saved import result holds the names and emails of the orders it lists (REQ-NF-05, G-03).
-13. **Lock button and the A-03 menu screen.** Resolved by E-101 and E-102 (D14). The Lock button returns to Staff mode at once, and A-03 is removed. Issue #45 has 8 screens.
-14. **Gym account language.** Resolved by E-104 (D15): no PIN, a control on the dashboard and/or a top bar button. The wireframe picks the placement.
-15. **Roster record after a removal.** Pending: a removal sets the authorization to `revoked` with the reason "removed from roster" and forbids a cascade delete (E-93). The revoked authorization keeps the roster record claimed, so the athlete cannot claim it again; Reinstate on A-05 is the way back (E-95). Still open: how the roster record itself is kept or hidden (the data model has no column to mark it); what happens to pending email links and in-person codes for a removed record, which must stop working; and the exact wording of the message shown when Reinstate is refused. Decided: Reinstate is refused when the person already has an active authorization in that term, and the database rejects it too (E-94); the reason is required, 10 characters or more, as in E-86.
+12. **Retention of the saved sync rows.** Resolved by E-125: kept 5 years like every other kind of data (REQ-NF-05). The saved sync run holds the names and emails of the orders it lists.
+13. **Lock button and the A-03 menu screen.** Resolved by E-114: there is no PIN, no Lock button and no Administrator mode bar. A-03 stays removed (E-102).
+14. **Staff account language.** Resolved by E-104 (D15) and E-114: each staff account has its own language, changed in its preferences. The wireframe picks the placement.
+15. **Roster record after a removal.** Resolved by D16: a removal sets `removed_at`, hides the record from Staff search and revokes the authorization with the reason "removed from roster", and nothing is deleted by cascade (E-93). The revoked authorization keeps the roster record claimed, so the athlete cannot claim it again; Reinstate on A-05 is the way back (E-95). Still to confirm: email links sent before a removal must stop working (the backend checks `removed_at` when a link is opened), and the exact wording of the message shown when Reinstate is refused. Decided: Reinstate is refused when the person already has an active authorization in that term, and the database rejects it too (E-94); the reason is required, 10 characters or more, as in E-86.
 16. **Release when the released authorization was the account's only one.** Resolved by E-106 (D12): the account is kept without an authorization. The person signs in, sees U-07 and can claim the correct number.
-17. **People missing from a new roster list.** Open for the gym (G-33): (a) the list is final, so missing people lose athlete status; (b) they stay and are removed by hand, for example a graduate the gym still treats as an athlete. Today's design: within a term, (b), removal is a manual Administrator action; across terms each term has its own roster, so a person missing from the new term's list is not an athlete in that term.
+17. **People missing from a new roster list.** Resolved by E-116: there is one roster and an athlete stays until an Administrator removes them, so a new term needs no new list.
+18. **Staff session time limits.** Resolved by E-130: a Staff sign-in ends after 2 hours without a person tapping or typing, an Administrator sign-in after 20 minutes. Automatic refreshes do not count as activity (data-model gap 18).
+19. **Deactivation and open sessions.** Resolved by E-130: deactivating an account ends its open sessions at once. A middleware checks `deactivated_at` on every request (data-model gap 9).
+20. **How the other Administrators are added.** The install command creates the first Administrator and Administrators invite Staff (E-114). Nothing says how the second secretary and the director get their Administrator accounts.
+21. **Store access.** Open. The sync needs a read-only API key from the store owner and outbound HTTPS from the VM to the store, which is a question for CTI (E-127, SRS 2.5). The key lives only in the server's environment file.
+22. **Letter case of the Authorization Number.** Open. The number can include letters (E-128). Whether the lookup compares with or without regard to case is not decided.
 
 ## Traceability
 
@@ -667,47 +615,67 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 |---|---|
 | REQ-F-09 | 14. Account deletion when a User asks |
 | REQ-F-21 | 8. Academic terms; 9. No term for the current date |
-| REQ-F-28 | 6. WooCommerce import and re-import; D6 |
-| REQ-F-29 | 6. WooCommerce import and re-import (kept fields and notes) |
-| REQ-F-30 | 6. WooCommerce import and re-import (order reference check) |
-| REQ-F-31 | 6. WooCommerce import and re-import; 7. Undo of an import; D7, D8 |
+| REQ-F-28 | 6. WooCommerce store sync; D5; gap 21 |
+| REQ-F-29 | 6. WooCommerce store sync (kept fields and notes) |
+| REQ-F-30 | 6. WooCommerce store sync (order id check) |
+| REQ-F-31 (removed) | 7. Undo of an import (removed by E-127); D7, D8 replaced |
+| REQ-F-97 | 6. WooCommerce store sync (registration lookup) |
+| REQ-F-98 | 6. WooCommerce store sync (cancelled or refunded orders); 12. Manual grant and revoke (notes) |
+| REQ-F-99 | 6. WooCommerce store sync (A-07 and its counts); D6 |
 | REQ-F-49 | 10. Athlete roster; 11. Removing and reinstating an athlete mid-term |
-| REQ-F-52 | 1. Gym account and PIN states; 2. Backend check on every Administrator request |
+| REQ-F-52 | 1. Staff account states; 2. Backend check on every gym request |
 | REQ-F-74 | 13. Release of a claimed Authorization Number; D12 (E-106) |
 | REQ-F-87 | 12. Manual grant and revoke; 9. No term for the current date; D11 |
-| REQ-F-88 | 3. First setup of the gym account; 4. Change of gym account password, PIN and recovery code |
-| REQ-F-89 | 3. First setup of the gym account; 4. Change of gym account password, PIN and recovery code (Generate new code); 5. Recovery with the recovery code |
-| REQ-NF-39 | 17. Audit log entry and supporting data; AUDIT nodes in sections 4 to 16 |
-| REQ-NF-48 | 1. Gym account and PIN states; 2. Backend check; 4. Change of PIN; D1 to D4 (D1 decided) |
-| E-56 | 1. Gym account and PIN states; 2. Backend check; 4. Change of PIN; 17. Audit log entry and supporting data; D4 |
-| E-57 | 7. Undo of an import; 13. Release of a claimed Authorization Number; gap 3 |
+| REQ-F-88 | 3. Install command and first Administrator; 4. Invite and deactivate staff accounts |
+| REQ-F-89 (removed) | 5. Recovery with the recovery code (removed by E-114) |
+| REQ-F-95 | 18. Manual entries from the paper log |
+| REQ-NF-39 | 17. Audit log entry and supporting data; AUDIT nodes in sections 4 to 16 and 18 |
+| REQ-NF-48 (removed) | 1. Staff account states (no PIN, E-114); D1 to D4 replaced |
+| REQ-NF-06 | 19. Backups |
+| REQ-NF-52 | 3. Install command and first Administrator |
+| E-56 | Replaced by E-114: 1. Staff account states; D4 |
+| E-57 | 13. Release of a claimed Authorization Number; gap 3 (the import undo it also covered was removed by E-127) |
 | E-59 | 10. Athlete roster (Staff read-only view) |
-| E-60 | 3. First setup of the gym account; 5. Recovery with the recovery code; 17. Audit log entry and supporting data; gap 1 |
-| E-61 | Audit action table (in-person registration is no longer "only if no mail") |
-| E-62 | Audit action table (in-person registration code) |
-| E-63 | 4. Change of gym account password, PIN and recovery code (notes) |
-| E-64 | 1. Gym account and PIN states (notes); 17. Audit log entry and supporting data; gap 14 (resolved by E-104) |
-| E-65 | 1. Gym account and PIN states (padlocked items, notes); gap 13 (Lock button and A-03 decided by E-101 and E-102) |
+| E-60 | Replaced by E-114: 5. Recovery with the recovery code (removed); gap 1 |
+| E-61 | Mail is assumed available; the in-person tool is removed by E-117 |
+| E-62 | Removed by E-117 (no in-person registration): audit action table no longer lists it |
+| E-63 | 3. Install command and first Administrator (notes) |
+| E-64 | 1. Staff account states (notes); 17. Audit log entry and supporting data; gap 14 (resolved by E-104) |
+| E-65 | 1. Staff account states (notes); gap 13 (resolved by E-114) |
 | E-66 | 16. Schedules, closures, notices and facility information |
 | E-68 | 12. Manual grant and revoke |
 | E-69 | 12. Manual grant and revoke (notes); D12; gap 6 |
-| E-71 | 6. WooCommerce import and re-import; gap 10 |
-| E-78 | 3. First setup; 4. Change of gym account password, PIN and recovery code; 5. Recovery with the recovery code; Audit action table; gap 1 |
+| E-71 | Replaced by E-128: 6. WooCommerce store sync; gap 10 |
+| E-78 | Replaced by E-114 (recovery code): 5. Recovery with the recovery code (removed); gap 1 |
 | E-82 | 12. Manual grant and revoke (notes) |
-| E-83 | 1. Gym account and PIN states (notes); 4. Change of PIN (notes); D1 |
-| E-84 | 6. WooCommerce import and re-import; 7. Undo of an import; 17. Audit log entry and supporting data; D6, D7, D8; gap 12 |
+| E-83 | Replaced by E-114 (PIN format): D1 |
+| E-84 | Replaced by E-127 (import result and undo): 6. WooCommerce store sync; 7. Undo of an import (removed); 17. Audit log entry and supporting data; D6, D7, D8; gap 12 |
 | E-85 | 9. No term for the current date; D9 |
 | E-86 | 12. Manual grant and revoke; D11 |
 | E-87 | 13. Release of a claimed Authorization Number; D12 |
 | E-88 | 8. Academic terms; gap 5 |
 | E-89 | 14. Account deletion when a User asks; gap 8 |
 | E-90 | 16. Schedules, closures, notices and facility information |
-| E-93 | D2; 6. WooCommerce import and re-import (notes); 11. Removing and reinstating an athlete mid-term; 17. Audit log entry and supporting data; gap 15 |
+| E-93 | D2 (replaced by E-114); 6. WooCommerce store sync (notes); 11. Removing and reinstating an athlete mid-term; 17. Audit log entry and supporting data; gap 15 |
 | E-94 | 12. Manual grant and revoke; gap 15 |
 | E-95 | 11. Removing and reinstating an athlete mid-term; Audit action table; gap 15 |
-| E-101 | 1. Gym account and PIN states (diagram and notes); D14; gap 13 |
-| E-102 | 1. Gym account and PIN states (notes); D14; gap 13 |
-| E-104 | 1. Gym account and PIN states (notes); 17. Audit log entry and supporting data; D15; gap 14 |
+| E-101 | Replaced by E-114: D14; gap 13 |
+| E-102 | D14; gap 13 |
+| E-104 | 1. Staff account states (notes); 17. Audit log entry and supporting data; D15; gap 14 |
 | E-106 | 13. Release of a claimed Authorization Number; 17. Audit log entry and supporting data; D12; gap 16 |
 | E-107 | 8. Academic terms; D16; gap 5 |
+| E-114 | 1 to 5; 17. Audit log entry and supporting data; D1 to D4, D14, D15; gaps 1, 18, 19, 20 |
+| E-115 | 8. Academic terms (term end closes sessions); 11. Removing and reinstating an athlete mid-term; 16. Schedules, closures, notices and facility information (closure closes sessions) |
+| E-116 | 10. Athlete roster: add, edit, remove; 11. Removing and reinstating an athlete mid-term; D10; gap 17 |
+| E-119 | 18. Manual entries from the paper log; 17. Audit action table |
+| E-130 | 1. Staff account states (notes); 2. Backend check on every gym request (notes); D3; gaps 18, 19 |
+| E-132 | 18. Manual entries from the paper log (people without an account) |
+| E-139 | 10. Athlete roster (quick form) |
+| E-120 | 6. WooCommerce store sync (refunded orders, student or employee); 12. Manual grant and revoke (notes, refunds) |
+| E-122 | 19. Backups |
+| E-123 | 3. Install command and first Administrator; 19. Backups |
+| E-125 | 6. WooCommerce store sync (notes); 14. Account deletion when a User asks; 17. Audit log entry and supporting data; gap 12 |
+| E-126 | 12. Manual grant and revoke (manual authorization counts as paid); 17. Audit log entry and supporting data (roster changes filter) |
+| E-127 | 6. WooCommerce store sync; 7. Undo of an import (removed); 17. Audit log entry and supporting data; D5, D6, D7, D8; gap 21 |
+| E-128 | 6. WooCommerce store sync (unique number); gaps 10, 22 |
 | Also used: REQ-F-03, F-07, F-22, F-51, F-55, F-58, F-71, F-76 | Sections 1, 6, 9, 10, 15, 16 |

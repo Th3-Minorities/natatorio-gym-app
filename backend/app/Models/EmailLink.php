@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** A single-use athlete link or in-person code. Only the hash is stored (D9). */
-#[Fillable(['purpose', 'token_hash', 'roster_record_id', 'user_id', 'expires_at', 'used_at'])]
+/** A single-use link sent by email. Only the hash of its token is stored (D9). */
+#[Fillable(['purpose', 'token_hash', 'roster_record_id', 'user_id', 'staff_account_id', 'expires_at', 'used_at'])]
 class EmailLink extends Model
 {
     /** @use HasFactory<EmailLinkFactory> */
@@ -25,5 +25,17 @@ class EmailLink extends Model
     public function rosterRecord(): BelongsTo
     {
         return $this->belongsTo(RosterRecord::class);
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<StaffAccount, $this> */
+    public function staffAccount(): BelongsTo
+    {
+        return $this->belongsTo(StaffAccount::class);
     }
 }
