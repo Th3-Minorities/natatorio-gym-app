@@ -30,6 +30,12 @@ What this issue does not cover, and which issue does.
 - [ ] Works on a real phone (iPhone with Safari, Android with Chrome) through the tunnel
 - [ ] Usable with keyboard and screen reader (WCAG 2.2 AA)
 - [ ] Gym actions in this issue write their audit log entry, if the requirements ask for one
+- [ ] Security checks for this issue pass, each with a test:
+  - every input is validated on the server, not only in the form
+  - no database query is built from user text (only bound parameters)
+  - every route checks the role on the server; a test shows a lower role gets "forbidden"
+  - no user text is shown as raw HTML
+  - a test tries an injection (SQL and script) on each new input and it is rejected or shown as plain text
 - [ ] Another member approved it in a PR
 - [ ] 
 

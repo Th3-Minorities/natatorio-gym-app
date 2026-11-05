@@ -6,13 +6,15 @@
 
 | Section | Total | Answered | Open |
 |---|---|---|---|
-| Requirement questions | 23 | 15 | 8 |
+| Requirement questions | 17 | 17 | 0 |
 | Decisions from the design-readiness review | 24 | 24 | 0 |
 | Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
 | Decisions from the wireframe stage (2026-10-20) | 7 | 7 | 0 |
+| Questions after the CTI meeting (E-108 to E-113; E-110 is partly decided) | 6 | 5 | 1 |
+| Decisions after the Athletic Activities meeting (2026-11-04) | 38 | 38 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 105 | 89 | 16 |
+| Total | 143 | 134 | 9 |
 
 ## Scope and priorities
 
@@ -86,9 +88,9 @@
 | Affects | REQ-F-10 Validate Authorization Number against imports; REQ-F-17 One account per roster record or number |
 | Feature | 3.2 Paid Member Registration, 4.1 Data Dictionary |
 | Why we ask | Registration uses only the Authorization Number, which has 6 digits in the sample receipt. If two orders can share a number, the lookup can match the wrong order. Also asked in gym.md, G-19. |
-| Answer | |
-| Answered by | |
-| Date | |
+| Answer | Answered by a read of all 84 store orders on 2026-11-04: the number is the gateway field PGPAY_AUTHNUM, 6 characters that can include letters, and no value repeats. It is unique across all orders (E-128). |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-11: Password reset by email
 
@@ -305,7 +307,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-102 | Administration menu screen | Removed. After the PIN, the Administrator stays on the dashboard with the menu unlocked and the "Administrator mode" bar. The other screen IDs keep their numbers, and the removed screen is marked "removed" so references in issues and docs stay valid. SRS REQ-NF-10. | Carlos Pepin | 2026-10-20 |
 | E-103 | Language before an account exists | The welcome and User sign-in screens are always in Spanish until the person picks a language when creating the account. A User whose account is in English sees these two screens in Spanish while signed out; the account language applies after sign in. Answers part of E-64. SRS REQ-NF-33. | Carlos Pepin | 2026-10-20 |
 | E-104 | Gym account language | Changed on the dashboard without the PIN. The control can be a dashboard setting, a button in the dashboard top bar, or both; the wireframe picks the place. The E-64 rule of no language button in the top bar covers the User app only. Answers the rest of E-64. SRS REQ-NF-33. | Carlos Pepin | 2026-10-20 |
-| E-105 | "My visits" | The User sees a list of their own past Check Ins on a new "My visits" screen, opened from the account screen. Proposed: each row shows the date and time. The list never shows location (REQ-NF-03). To confirm: how far back it goes (all history or the current term) and retention (REQ-NF-05, G-03). Carlos chose this over the recommendation to leave it for later. SRS REQ-F-92 (new). | Carlos Pepin | 2026-10-20 |
+| E-105 | "My visits" | The User sees a list of their own past Check Ins on a new "My visits" screen, opened from the account screen. Proposed: each row shows the date and time. The list never shows location (REQ-NF-03). How far back: all history (E-126); retention is 5 years (E-125). Carlos chose this over the recommendation to leave it for later. SRS REQ-F-92 (new). | Carlos Pepin | 2026-10-20 |
 | E-106 | Release of an account's only authorization | The account always stays, with no authorization. Only the authorization and its term photo go. The person signs in, sees the no-authorization banner and can claim the correct number. Carlos chose this over the recommendation to delete the account when it never had a Check In. Answers the open case of E-87. SRS REQ-F-74. | Carlos Pepin | 2026-10-20 |
 | E-107 | Deleting a term | Terms are never deleted. The Administrator fixes a term created by mistake by editing its dates. The term screen has no delete button. Answers the open case of E-88. SRS REQ-F-21. | Carlos Pepin | 2026-10-20 |
 
@@ -319,10 +321,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-NF-39; new REQ-F-93 (Proposed) |
 | Feature | 8.1 Audit |
 | Why we ask | CTI said it always asks every project for such a log. CTI did not say whether it is a condition for the VM. CTI minutes, section 3.15 (`docs/meetings/2026-10-22-cti-minuta.md`). |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Decided |
+| Answer | Yes to all three: (a) no screen, route or command edits or deletes an entry, not even an Administrator; entries leave only by the retention rule (E-131); (b) the Administrator searches by staff account and date range and exports to CSV or Excel (REQ-F-93); (c) staff account sign in and sign out are logged. User sign-ins stay out. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-109: Backup method
 
@@ -332,10 +334,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-NF-06 |
 | Feature | 4.3 |
 | Why we ask | CTI said where backups go is the team's decision and that the team must agree the backup and restore procedure with the owner. CTI minutes, section 3.16. |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Decided (E-122) |
+| Answer | A: a second virtual disk on the same VM, asked for in the VM request. One copy every two weeks, the 2 most recent kept, plus a Download button and a restore from the panel (E-122). |
+| Answered by | Team |
+| Date | 2026-11-04 |
 
 ### E-110: Hand-over package
 
@@ -345,10 +347,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-F-88, REQ-NF-06, REQ-NF-23, REQ-NF-31; new REQ-NF-52 and REQ-NF-53 (Proposed) |
 | Feature | 2.5, 4.3, 6.3 |
 | Why we ask | CTI said it normally asks its groups for both. CTI did not say whether they are conditions for the VM. User and administrator manuals are asked of the director (gym.md, G-36). CTI minutes, sections 3.16 and 3.23. |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Partly decided (E-123) |
+| Answer | Yes to the installer: one sudo command that installs everything on Rocky Linux 10, creates the first Administrator, schedules backups and can restore a backup on a new server (E-123). Restore is also a button in the Administrator panel, from a copy already on the server (E-122). Still open: the written disaster recovery plan, and removing the team's sudo and VPN access at delivery. |
+| Answered by | Team |
+| Date | 2026-11-04 |
 
 ### E-111: Storage estimate and VM size
 
@@ -358,10 +360,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-NF-04, REQ-NF-05 |
 | Feature | 2.3, 4.3 |
 | Why we ask | CTI said the team defines the size and asked for a growth estimate and a cleanup plan. CTI minutes, sections 3.3 and 3.7. |
-| Status | Decided, with estimated numbers. Check them again when the gym answers G-05 (members per term) and G-03 (how long data is kept) |
-| Answer | Ask for 2 processors, 4 GB of memory and 60 GB of disk, CTI's usual web app size. A second backup disk only if the team picks that backup method (E-109).<br><br>How the disk number was reached. The numbers are assumptions until the gym answers:<br>- People per term: 500, 1,500 or 3,000. The only figure we have is about 150 people per day (REQ-NF-15), which is also a guess.<br>- One photo per person per term (athletes upload a new one each term, E-38).<br>- Each photo is kept at about 3 MB. People can upload up to 10 MB; the server converts it to JPEG and does not shrink it further.<br>- Photos from a past term are deleted each semester (REQ-NF-04).<br>- A backup copy of the photos sits on the same disk.<br><br>Worst case, 3,000 people: 9 GB of photos, 9 GB of backup copy and about 15 GB for Linux, the containers and logs, about 33 GB. For a few days after a term ends, the old and new photos can both be on the disk, which adds up to 9 GB more, about 42 GB. The database stays under 1 GB for years: about 150 Check Ins a day is about 37,500 rows a year, around 40 MB with indexes, and the audit log grows at a similar rate.<br><br>Memory: PostgreSQL about 1 GB, PHP about 600 MB, Linux about 500 MB, so 4 GB leaves room. Processors: about 50 phones polling every 25 seconds at the busiest hour is about 2 requests a second, which 2 processors handle easily.<br><br>When 60 GB stops being enough: if the gym keeps photos for a year or more instead of one semester, or has well over 3,000 people a term. Then either ask CTI for more disk or have the server shrink photos to about 0.3 MB, which cuts photo storage by about ten times. |
-| Answered by | Carlos Pepin |
-| Date | 2026-11-03 |
+| Status | Decided, redone on 2026-11-05 with a large margin on purpose: running out of disk is worse than asking for too much |
+| Answer | Ask for 2 processors, 8 GB of memory, a 60 GB main disk and a 40 GB second disk for backups (E-122), in the same VM request.<br><br>The numbers are rounded up on purpose. What we know: the store had 69 paid orders from January to October 2026 (read on 2026-11-04). We do not know how many athletes there are.<br><br>Main disk:<br>- People: we assume up to 500 new people a year, paid and athletes, several times what the store shows. An account and its current photo stay until 5 years after its last use (E-131), so up to 2,500 accounts; we double it to 5,000.<br>- Photos: only the current photo is kept (E-135), and the server shrinks each one to about 0.5 MB when it is uploaded (E-138): 5,000 x 0.5 MB = 2.5 GB.<br>- Database: visits, audit log, orders and daily totals stay under 1 GB for years at the real volume; we count 5 GB.<br>- Linux, containers, images and logs: 20 GB.<br>- Total about 28 GB. We ask for 60 GB, the top of CTI's usual size, so the disk is never close to full.<br><br>Second disk: the 2 most recent backups (E-122), each about 8 GB in the worst case (photos plus database), about 16 GB. We ask for 40 GB.<br><br>Memory: PostgreSQL about 1 GB, PHP and the queue worker about 1 GB, Linux about 0.5 GB, plus the nightly and backup tasks. 4 GB would be enough; we ask for 8 GB so a backup or a busy hour never runs short. Processors: the real load is a few requests a second at most, so 2 are enough. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-112: One registration number field
 
@@ -371,10 +373,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91 |
 | Feature | 3.2, 3.3 |
 | Why we ask | CTI minutes, section 3.21. |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Decided: not adopted |
+| Answer | A: keep two paths. "I paid for a membership" asks only for the Authorization Number from the receipt, with a picture of where it is in the receipt email; "I am an athlete" asks only for the student number. Why: paid members are students too and have a student number, so one field invites them to type it, which looks in the wrong place and shows a confusing error. Each path asks for one number, the right one. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-113: Address of the gym dashboard
 
@@ -384,10 +386,55 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-NF-10 |
 | Feature | 5.1 |
 | Why we ask | CTI said each domain is a separate request filed by the owner. CTI minutes, section 3.6. |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Decided (E-124) |
+| Answer | A path under the same name. The app has its own UPRM subdomain and the dashboard lives under it, so there is no second domain request (E-124). |
+| Answered by | Team |
+| Date | 2026-11-04 |
+
+## Decisions after the Athletic Activities meeting (2026-11-04)
+
+The team met the department on 2026-11-04 and settled the rest as a team the same day. The meeting minutes are in `docs/meetings/2026-11-04-athletics-minuta.md`; the gym's answers are in `gym.md`.
+
+| ID | Topic | Answer | Answered by | Date |
+|---|---|---|---|---|
+| E-114 | Personal accounts for Staff and Administrators | One account per person with its own email and password and a role of Staff or Administrator. No shared gym account, no PIN and no paper recovery code. The Administrators are the two department secretaries and the department director; they invite Staff by email and deactivate an account when the person leaves. The install command creates the first Administrator. Only Administrators give access by hand after seeing a receipt, because desk staff change often. Replaces E-56, E-60, E-78, E-83, E-101 and the PIN part of E-104. SRS REQ-F-52, REQ-F-88, REQ-F-89 (Removed), REQ-NF-10, REQ-NF-39, REQ-NF-48 (Removed). Data model D13. | Team | 2026-11-04 |
+| E-115 | Check-out and the 2-hour close | A session stays open until Staff check the person out at the desk. A session nobody closes ends by itself 2 hours after the Check In, with the note "closed automatically". When a closure is published or the term ends, every active session ends at once with the note "closed by closure". Estimated occupancy counts the open sessions. A person may come back the same day; each entry after a check-out counts as a visit, and stepping out briefly (the bathroom, the car) is the same session. The 60 minutes are a guide Staff apply when the gym is full, not a rule the app enforces. Replaces the 60-minute session. SRS REQ-F-33, REQ-F-36, REQ-F-37, REQ-F-38, REQ-F-41, REQ-F-48, REQ-F-83. Data model D14. | Team | 2026-11-04 |
+| E-116 | One athlete roster, entered by hand | The roster is one list, not one per term. Administrators add, edit and remove athletes by hand; there is no file import, because the department keeps the lists only in Word. Each record has name, sport, student number and institutional email. An athlete stays until an Administrator removes them. Staff see the roster read only. At the first app open in a new term, an athlete on the roster only uploads a new photo; the waiver is not asked again. Replaces the per-term roster and the roster import. SRS REQ-F-25, REQ-F-26, REQ-F-49, REQ-F-51. Data model D16. | Team | 2026-11-04 |
+| E-117 | In-person registration code | Removed. Athletes register only with the link sent to the roster email; if it fails they call the office at 265-3866. Replaces E-62. SRS REQ-F-77 (Removed). | Team | 2026-11-04 |
+| E-118 | Photo that does not match | Staff mark the account "photo pending". It cannot Check In until the person uploads a new photo from their phone. Staff do not take photos. Still open: whether the new photo clears the mark by itself or Staff approve it. Exception to REQ-F-26, which forbids a new photo during an active authorization. Data model D17. | Team | 2026-11-04 |
+| E-119 | Paper log during an outage | If the app is down, Staff use the paper log and check payment by hand. Up to one week down is acceptable. When the app is back, only Administrators enter the paper entries as manual entries with the person and the times. Each one writes an audit log entry with who entered it. They count in statistics and can be filtered out. New requirement. Data model D18. | Team | 2026-11-04 |
+| E-120 | Student or employee, and refunds | Each order stores whether the buyer is a student or an employee, from the product variation in the store, for statistics (data model D15). A buyer who paid the wrong price is the department's mistake to fix. Refunds are made in the UPR Payment Gateway portal, outside WordPress and WooCommerce, so the store never shows them: none of the 84 orders read on 2026-11-04 has a refund, a refunded status or a refund note. The team will not ask for access to the gateway or to Finance systems just for refunds. So when the department refunds a membership, an Administrator revokes the authorization by hand in the app (REQ-F-87), with a reason. This is an Administrator task and goes in the Administrator manual. If a refund is ever recorded in WooCommerce, the sync revokes it on its own (E-127). Changes G-22. SRS REQ-F-22, REQ-F-87. | Team | 2026-11-04 |
+| E-127 | Paid memberships from the store's API | The app reads the orders from the WooCommerce REST API with a read-only key kept in the server's environment file, instead of an uploaded export file. At registration, when a person types an Authorization Number the app does not have, the app asks the store right then, so a person who just paid registers at once. A full sync runs at least 3 times a day and picks up changes to known orders. Only `completed` orders give access; an order that later becomes `cancelled` or `refunded` loses it. The Administrator sees the last sync and has a "Sync now" button. There is no file upload, re-import or undo. Why: a test read of all 84 orders on 2026-11-04 worked with a read-only key, and it saves the Administrator a manual step. The VM needs outbound HTTPS to the store (to ask CTI). The order's student number is not stored, and address, phone, IP and marketing fields never are. Answers E-55 and #77 question 42. SRS REQ-F-28 to REQ-F-31 (REQ-F-31 Removed). Data model D1, D19. | Team | 2026-11-04 |
+| E-128 | Authorization Number format | A 6-character code from the UPR Payment Gateway (order field PGPAY_AUTHNUM). It can include letters: 3 of the 69 paid orders end in a letter. It is unique across all orders, not only per term: no value repeats in the 69. Registration accepts letters in the paid member path (E-112 keeps two paths). Changes G-19 and E-71. Data model D1. | Team | 2026-11-04 |
+| E-129 | Gym ID time and who checked out | The Gym ID shows no countdown: an active session shows "Active session" and the Check In time. A 2-hour countdown would invite people to stay 2 hours, and a 60-minute one would suggest the session ends there. Staff apply the 60-minute guide from the Check In time on their screen. A check-out writes no audit log entry; the session stores which staff account marked the exit. The audit log stays for changes and corrections (void, early end, manual entry). SRS REQ-F-40, REQ-F-48. Data model D14. | Team | 2026-11-04 |
+| E-130 | Staff session time limits | A staff sign-in ends after 2 hours without a person tapping or typing; an Administrator sign-in ends after 20 minutes. Automatic refreshes of the screen do not count as activity. Deactivating a staff account ends its open sessions at once. Trade-off the team accepts: on the shared desk computer, a student who leaves without signing out leaves their account open for the next shift for up to 2 hours. SRS REQ-NF-10, REQ-F-88. | Team | 2026-11-05 |
+| E-131 | How the 5 years are counted | A User account is deleted 5 years after its last activity (last sign-in or Check In), with the anonymizing of REQ-F-09. While the account is active it stays, and its history is trimmed instead: each visit, sync record and audit log entry is deleted 5 years after it was created. Past-term photos are deleted sooner, when the new photo arrives (E-135). The current waiver, emergency contact and current photo stay while the account is active. A deactivated staff account is deleted 5 years after its last audit log entry. Deleted data can still sit in the 2 backup copies for up to 4 weeks. Refines E-125. SRS REQ-NF-04, REQ-NF-05, REQ-F-09. | Team | 2026-11-05 |
+| E-132 | Paper log entries for people without an account | When an Administrator enters the paper log, a person with an account gets a manual entry linked to it. People without an account are entered only as a count for a time block (for example 3 visits on Tuesday from 2 to 4), with no names. Counts are part of the visit totals and are left out of distinct-people counts. Refines E-119. SRS REQ-F-95, REQ-F-61. Data model D18. | Team | 2026-11-05 |
+| E-133 | Statistics are never deleted | Each night the app saves the day's totals with no personal data: visits, visits by athletes, student members, employee members and manual entries, visits per sport and the busiest hour. These daily totals are kept forever, so the department can compare years after the visits themselves are deleted at 5 years (E-131). Reports older than 5 years read the totals. SRS REQ-F-61, REQ-NF-05. Data model D20. | Team | 2026-11-05 |
+| E-134 | Waiver text version | Each waiver acceptance stores which version of the text the person accepted. The waiver still stays valid when the text changes (REQ-F-60), but the record shows what each person agreed to. SRS REQ-F-60. Data model D21. | Team | 2026-11-05 |
+| E-135 | Past-term photos | When a person uploads the photo for a new term, the photo of the previous term is deleted. Only the current photo is kept: the Gym ID uses no other, and older photos only add privacy risk and disk. Changes E-125 and E-131 for photos. SRS REQ-NF-04. | Team | 2026-11-05 |
+| E-136 | Athletes removed from the roster | A roster record removed by an Administrator is deleted 5 years after its removal. Refines E-131. SRS REQ-NF-05. | Team | 2026-11-05 |
+| E-137 | Downloaded backups and the store key | A backup downloaded from the Administrator panel is an encrypted file that needs a password to open, because it holds every photo and every person's data. The read-only store key lives only in the environment file of the server and of the lead's computer; it is never shared by chat or committed, the team develops with fake data (#81), and at delivery the key is revoked and a new one is made for the server only. SRS REQ-NF-06, REQ-F-28. | Team | 2026-11-05 |
+| E-138 | Photo size | The server shrinks each uploaded photo to about 0.5 MB (about 1,200 pixels on the long side, JPEG), which is plenty for the Gym ID and the Staff screens. Uploads up to 10 MB are still accepted. It keeps the disk and the backups small. SRS REQ-NF-24. | Team | 2026-11-05 |
+| E-139 | Entering the roster | Administrators enter athletes one at a time on the roster screen, with a quick form: after saving, the form stays open and empty for the next athlete, except the sport, which keeps the last value because the lists come by sport. The form shows the current sport large at the top ("Adding athletes of: Volleyball") so nobody forgets to change it. There are about 100 athletes, so no paste or file tool is needed. SRS REQ-F-49. | Team | 2026-11-05 |
+| E-121 | Reports | Visits per day and per hour with the peak hour; athletes against student members and employee members; visits per sport; and an end-of-term summary the Administrator can download. SRS REQ-F-61 to REQ-F-65 (REQ-F-62 to REQ-F-65 Merged). | Team | 2026-11-04 |
+| E-122 | Backups | Automatic copies on a second virtual disk attached to the same VM, asked for in the same CTI request. One copy every two weeks; the 2 most recent are kept. Losing the whole VM loses the copies too; the team accepts that risk. The Administrator panel shows the last backup and has buttons to make a backup now, download one and restore one already on the server. Answers E-109 (option A). SRS REQ-NF-06. | Team | 2026-11-04 |
+| E-123 | Installer and server | The server runs Rocky Linux 10, since CTI is moving to it. One install command, run once with sudo by the team or a technician, installs Docker CE, sets the firewall and SELinux, starts the app, creates the first Administrator and schedules the backups; the same command can restore a backup on a new server. Administrators never use Docker or the server. Answers part of E-110. SRS REQ-F-88. | Team | 2026-11-04 |
+| E-124 | Address | The app gets its own UPRM subdomain and does not replace the department's site. The gym dashboard is a path under the same name, so no second domain request. The name is still to pick. Answers E-113. SRS REQ-NF-10. | Team | 2026-11-04 |
+| E-125 | Retention | Every kind of data is kept 5 years, including photos, waivers, emergency contacts, visits and the audit log. Replaces the end-of-term rule for the audit log and the per-term photo deletion. The storage estimate of E-111 must be redone. SRS REQ-NF-04, REQ-NF-05. | Team | 2026-11-04 |
+| E-126 | Smaller answers | "Buy membership" button to the store, no redirect, only while a term runs; the store address is a setting. The English text of a notice is optional and Spanish shows when it is empty. Four manuals (User, Staff, Administrator, Developer), each in Spanish and English. The classroom demo uses fake data only. Users see their full visit history. No separate roster report: the audit log filters roster changes. Manual access counts as a paid member for every rule. Outgoing mail uses a no-reply sender. The team drafts the privacy notice. SRS REQ-F-62 (Merged), REQ-F-82, REQ-F-87, REQ-F-92. | Team | 2026-11-04 |
+| E-140 | Downloading the athlete roster | An Administrator can download the whole athlete roster as a Word file or a PDF file, with name, sport, student number and institutional email. Staff cannot download it, because the roster holds personal data. SRS REQ-F-100. | Team | 2026-11-05 |
+| E-141 | Downloading statistics | The statistics of the chosen period download as a PDF file (charts and totals, to read or print) or an Excel file (the numbers, to work with). Only Administrators can download; the other roles see the statistics on screen only. SRS REQ-F-101. | Team | 2026-11-05 |
+| E-142 | Choosing the period | The statistics screen has buttons for day, week, month, term and year, plus a free range from one date to another. The same period applies to the screen and to the download. SRS REQ-F-61, REQ-F-101. | Team | 2026-11-05 |
+| E-143 | Statistics for other services | A read-only REST API gives the statistics to another service, so the department can build its own charts. It gives counts only, with no names or other personal data, and needs a key. The roster never goes out through it. No service besides the app is expected to connect for now, so how keys are made stays undefined until one is. SRS REQ-F-102. | Team | 2026-11-05 |
+| E-144 | End-of-term summary | The end-of-term summary is the statistics download (E-141) with the term chosen in the period picker, with the same metrics as the screen. There is no separate report to design. Changes E-121. SRS REQ-F-96 (Merged into REQ-F-101). | Team | 2026-11-05 |
+| E-145 | Retention and the database links | Authorizations, store orders, sync records and paper log counts are deleted 5 years after they were created, like visits (E-131). A staff account is deleted 5 years after it was deactivated; an active one is never deleted. By then every visit, audit log entry and paper log entry that names the account is already gone, so no link in the database blocks the deletion, and the links stay strict as a guard. The retention task deletes the history first. Changes D13 ("never deleted"). SRS REQ-NF-05. | Team | 2026-11-05 |
+| E-146 | Voiding a wrong paper log entry | An Administrator who types a paper log entry wrong voids it instead of deleting it, so the audit log keeps the trail. A voided entry does not count in statistics, like any voided session. SRS REQ-F-95. Data model D18. | Team | 2026-11-05 |
+| E-147 | Sport on each visit | Check In copies the athlete's sport from the roster record onto the session, as it already copies student or employee. Visits per sport stay right when an Administrator changes an athlete's sport later or when the record is deleted. The copy is a snapshot of the visit, so it is repeated data on purpose. SRS REQ-F-61 (g). | Team | 2026-11-05 |
+| E-148 | Manual access in statistics | When an Administrator grants access by hand, they pick student or employee. A manual authorization then counts in the student members or the employee members group, so statistics keep three groups (athletes, student members, employee members) and E-126 holds. Answers "how statistics show manual authorizations". SRS REQ-F-87, REQ-F-61 (e). | Team | 2026-11-05 |
+| E-149 | Skipped orders in the sync record | The record of each store sync keeps the counts and, for each skipped order, only the order reference and the reason. No names or emails: the Administrator finds the order in the store by its reference. SRS REQ-F-99, REQ-NF-21. | Team | 2026-11-05 |
+| E-150 | Reactivating a staff account | An Administrator can reactivate a deactivated staff account, for example a student who comes back to work the next term. The person signs in with the same email and password. It writes an audit log entry. The 5 years of E-145 count from the last deactivation. SRS REQ-F-88. | Team | 2026-11-05 |
+| E-151 | The last Administrator | The system refuses to deactivate the last active Administrator, so the department never loses access to the Administrator screens. SRS REQ-F-88. | Team | 2026-11-05 |
 
 ## WooCommerce import
 
@@ -400,10 +447,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Feature | 3.5 WooCommerce Import, 3.2 Paid Member Registration |
 | Why we ask | The team has an example file but cannot share it yet. The import cannot be designed without the real columns. |
 | Owner | Carlos Pepin |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Answered (E-127, E-128) |
+| Answer | The orders were read from the store's API instead of an export file. The fields the app needs, where each lives and what it stores are in E-127 and E-128. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ## Questions for the professor or advisors
 
