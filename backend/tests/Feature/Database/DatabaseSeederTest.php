@@ -11,13 +11,13 @@ class DatabaseSeederTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** The data model tables; Laravel's own tables (cache, jobs, sessions, resets) stay empty. */
+    /** The data model tables; Laravel's framework tables (cache, jobs, password_reset_tokens) stay empty. */
     private const TABLES = [
         'settings', 'notices', 'facility_information', 'schedule_slots',
         'academic_terms', 'imports', 'imported_memberships',
-        'staff_accounts', 'audit_log_entries',
+        'staff_accounts', 'staff_password_reset_tokens', 'audit_log_entries',
         'users', 'roster_records', 'email_links', 'waiver_acceptances', 'authorizations',
-        'facility_sessions', 'manual_visit_counts', 'daily_visit_totals',
+        'sign_in_sessions', 'facility_sessions', 'manual_visit_counts', 'daily_visit_totals',
     ];
 
     public function test_every_data_model_table_gets_rows(): void
@@ -40,6 +40,10 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame(['athlete', 'manual', 'paid'], $this->distinct('facility_sessions', 'authorization_type'));
         $this->assertContains('checked_out', $this->distinct('facility_sessions', 'status'));
         $this->assertContains('active', $this->distinct('facility_sessions', 'status'));
+        $this->assertContains('expired', $this->distinct('facility_sessions', 'status'));
+        $this->assertContains('ended_early', $this->distinct('facility_sessions', 'status'));
+        $this->assertContains('void', $this->distinct('facility_sessions', 'status'));
+        $this->assertGreaterThan(0, DB::table('facility_sessions')->whereNotNull('entered_by_staff_account_id')->count());
     }
 
     public function test_the_help_number_is_the_office_line(): void

@@ -21,6 +21,9 @@ use App\Models\User;
 use App\Models\WaiverAcceptance;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Fake data for every data model table, for development, demos and test evidence (issue #81).
@@ -37,7 +40,8 @@ class FakeDataSeeder extends Seeder
         $athletes = $this->athletes($current);
         $manual = $this->manualGrant($current);
         $this->links();
-        $this->visits($paid, $athletes, $manual, $staff);
+        $this->signInData();
+        $this->visits($paid, $athletes, $manual, $admin, $staff);
         $this->auditLog($admin, $staff);
     }
 
@@ -146,11 +150,33 @@ class FakeDataSeeder extends Seeder
         ]);
     }
 
+    private function signInData(): void
+    {
+        $session = fn (?int $userId) => [
+            'id' => Str::random(40),
+            'user_id' => $userId,
+            'ip_address' => '192.0.2.1',
+            'user_agent' => 'Fake data',
+            'payload' => base64_encode(serialize([])),
+            'last_activity' => time(),
+        ];
+
+        DB::table('sign_in_sessions')->insert([
+            $session(User::query()->value('id')),
+            $session(null),
+        ]);
+        DB::table('staff_password_reset_tokens')->insert([
+            'email' => 'staff@example.com',
+            'token' => Hash::make(Str::random(40)),
+            'created_at' => now(),
+        ]);
+    }
+
     /**
      * @param  list<Authorization>  $paid
      * @param  list<Authorization>  $athletes
      */
-    private function visits(array $paid, array $athletes, Authorization $manual, StaffAccount $staff): void
+    private function visits(array $paid, array $athletes, Authorization $manual, StaffAccount $admin, StaffAccount $staff): void
     {
         foreach ([...$paid, ...$athletes, $manual] as $index => $authorization) {
             // Yesterday, checked out by the front desk.
@@ -164,6 +190,35 @@ class FakeDataSeeder extends Seeder
         foreach ([$paid[0], $athletes[0], $manual] as $authorization) {
             $this->visit($authorization)->startedMinutesAgo(20)->create();
         }
+
+        $paperStart = now()->subDays(2)->setTime(9, 0);
+        $this->visit($manual)
+            ->state(['started_at' => $paperStart])
+            ->checkedOut(45)
+            ->create(['entered_by_staff_account_id' => $admin->id]);
+
+        $voidStart = now()->subDays(3)->setTime(9, 0);
+        $this->visit($manual)->create([
+            'status' => 'void',
+            'started_at' => $voidStart,
+            'ends_at' => $voidStart->copy()->addHours(2),
+            'ended_at' => $voidStart->copy()->addMinutes(10),
+            'entered_by_staff_account_id' => $admin->id,
+        ]);
+
+        $expiredStart = now()->subDays(4)->setTime(9, 0);
+        $this->visit($athletes[1])->create([
+            'status' => 'expired',
+            'started_at' => $expiredStart,
+            'ends_at' => $expiredStart->copy()->addHours(2),
+            'ended_at' => null,
+        ]);
+
+        $earlyStart = now()->subDays(4)->setTime(12, 0);
+        $this->visit($paid[2])
+            ->state(['started_at' => $earlyStart])
+            ->endedEarly(30)
+            ->create();
 
         // Paper log counts for people without an account (E-132), and a week of daily totals.
         ManualVisitCount::factory()->count(2)->create(['entered_by_staff_account_id' => $staff->id]);
