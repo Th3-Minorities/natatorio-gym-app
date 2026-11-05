@@ -144,8 +144,9 @@ erDiagram
     varchar(255) file_name
     integer created_count
     integer updated_count
-    integer rejected_count
-    jsonb result "counts, plus the order reference and reason of each skipped order, no names or emails (E-149)"
+    integer revoked_count
+    integer skipped_count
+    jsonb result "the order reference and reason of each skipped order, no names or emails (E-149); the counts are the four columns above"
   }
   imported_memberships {
     bigint id PK
@@ -195,7 +196,7 @@ Notes:
 - **One active authorization per User and term (E-68, E-94).** Only active authorizations count: a revoked one does not block a new grant or claim in the same term. This is the owner's decision (E-94). A partial unique index enforces it (section 5). A manual grant for a person who already has an active one is rejected.
 - **Authorization Number (E-128, D1).** The number is unique across all orders, not only per term (this replaces the per-term rule of E-71). The registration lookup reads only the orders of the current term, so a number from an ended term gets the same answer as an invalid or claimed one. If the gateway ever repeats a code, the sync rejects the second order and the Administrator sees it in the sync result.
 - **`created_account`** is set when registration created the account in the same step as the claim (REQ-F-13). Release keeps the account in every case (E-87, E-106), so the column does not drive a deletion and no rule reads it now. Whether to keep the column is to confirm. If it stays, it cannot be derived from "first authorization", because a release can delete the first one.
-- **Sync result (E-84, E-127).** `imports.result` stores the counts and the created, updated and rejected rows (REQ-F-28), so the Administrator reopens the result later from A-07. Every row holds a name and an email; each sync record is deleted 5 years after it was created (E-131). A sync record has no uploaded-by or uploaded-at column: the audit log records who pressed "Sync now" and when (REQ-NF-39, E-93).
+- **Sync result (E-84, E-127).** `created_count`, `updated_count`, `revoked_count` and `skipped_count` hold the counts, and `imports.result` lists only the skipped orders, each with its order reference and the reason (REQ-F-28, REQ-F-99, E-149), so the Administrator reopens the result later from A-07. The counts are stored once, in the columns (section 8). No row holds a name or an email (E-149); each sync record is deleted 5 years after it was created (E-131). A sync record has no uploaded-by or uploaded-at column: the audit log records who pressed "Sync now" and when (REQ-NF-39, E-93).
 - **Name (D7).** The name on the Gym ID and in Staff search is `waiver_acceptances.full_name`, written once at registration. It does not depend on the order or the roster, so a change to either does not erase it.
 - **Language (E-64).** One language per account. A User picks it at account creation and changes it in profile preferences. Each staff account has its own language in `staff_accounts.locale` (D11). Before an account exists, the app shows Spanish on N-01 and N-02 (E-103); that needs no column.
 - **Emailed links (REQ-F-15, E-58, D9).** Athlete registration and "I am an athlete" use the same link: a random token sent to the roster record's `institutional_email`. `email_links` stores only the hash of the token. A link works once, before `expires_at`; using it sets `used_at`. For "I am an athlete" (`purpose = 'athlete_link'`), the claim (an `athlete` authorization) is created only when the link is opened, not when the student number is entered. Link requests are limited with a counter in the `cache` table. The athlete sets the password, photo and waiver on the link page, after the link is opened (E-69), so no pending registration table is needed. Outgoing mail is assumed (E-61). There is no in-person code (E-117).
@@ -437,6 +438,22 @@ Foreign key on-delete behavior that follows from this table:
 | `sign_in_sessions.ip_address`, `sign_in_sessions.user_agent` | Always NULL, so nothing is stored (decision D4, E-91) |
 | `cache` attempt counters | Temporary counters, discarded when the wait ends: sign-in counters by IP and email, link requests by student number. REQ-NF-21 now says so (SRS v0.7, E-91) |
 | `email_links` | No new personal data: a token hash, times, and links to a roster record and an account. The email goes to `roster_records.institutional_email`, already allowed (REQ-F-51) |
+
+## 8. Normal form check
+
+Every table was checked against third normal form: each column depends on the table's key, the whole key, and nothing else. Every key is a single column, so no column can depend on part of a key. The design stores each fact once and links tables by foreign key, with the exceptions below. Each one keeps a copy on purpose, because without it the system would lose information or could not enforce a rule. Checked on 2026-11-05 (issue #13).
+
+| Table and columns | What is stored twice | Why the copy is kept | What keeps it right |
+|---|---|---|---|
+| `facility_sessions.authorization_type`, `member_group`, `sport` | The authorization's type, the group of its order or manual grant, and the roster sport | An authorization can be deleted (release, cancelled order) and a roster sport can be edited. Past visits must keep counting the same in statistics (E-147, E-148) | Copied once at Check In and never updated. CHECKs tie `member_group` to paid and manual, and `sport` to athletes (section 5) |
+| `waiver_acceptances.full_name`, `email` | The person's name and email at registration; `users.email` holds the account email | The waiver is the record of what the person accepted, as they typed it then. A later change to the account email must not change it. `full_name` is also the only place the name lives (D7) | Written once at registration. The User edits only the emergency contact |
+| `daily_visit_totals.totals` | Counts that could be computed from `facility_sessions` | Visits are deleted after 5 years, but daily totals are kept forever with no personal data (E-133), so they cannot be counted again later. One row per day also keeps statistics fast | Saved each night for the day that ended, with no personal data (E-133, D20). Not decided: whether a visit or paper log entry voided after its day's totals were saved (E-146) changes that day's total |
+| `facility_sessions.ends_at` | Always `started_at` plus 2 hours | The exclusion constraint needs a plain column: `now()` and `timestamptz + interval` cannot go in an index (section 3) | `CHECK (ends_at = started_at + interval '2 hours')` |
+| `authorizations.academic_term_id` for a paid authorization | The term of its order, also in `imported_memberships.academic_term_id` | "One active authorization per User and term" is a unique index, which needs the term in the same table. For athletes and manual grants the term is the authorization's own data | Set from the order when the claim is made. Terms are never deleted (E-107) |
+| `imported_memberships.academic_term_id` | The term that contains `paid_at` | Editing a term's dates (E-88) must not move orders between terms; an order keeps the term it was synced into | Set by the sync from `paid_at`, then left alone |
+| `jsonb` columns: `imports.result`, `audit_log_entries.before_values` and `after_values`, `daily_visit_totals.totals` | Several values in one column (first normal form) | Each is a snapshot of how something was at one moment. It is read whole and never searched by field | Written once, never updated. `imports.result` holds only the skipped orders; the counts are stored once, in `created_count`, `updated_count`, `revoked_count` and `skipped_count` |
+
+Two copies looked like repetition but are not: `imported_memberships.name` and `email` come from the store order and can differ from the User's account, and `roster_records.institutional_email` comes from the department's list.
 
 ## Design decisions
 

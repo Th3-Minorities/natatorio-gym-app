@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Concerns\SavesDatesInAppTimezone;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -11,8 +10,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['name', 'email', 'password'])]
-#[Hidden(['password', 'remember_token'])]
+/** A gym User. Deleting the account keeps the row with no personal data and deleted_at set (D2). */
+#[Fillable(['email', 'password', 'locale', 'current_session_id', 'last_signed_in_at', 'deleted_at'])]
+#[Hidden(['password'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
@@ -26,7 +26,8 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
+            'last_signed_in_at' => 'datetime',
+            'deleted_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
