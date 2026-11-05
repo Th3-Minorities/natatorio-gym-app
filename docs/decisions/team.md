@@ -10,10 +10,10 @@
 | Decisions from the design-readiness review | 24 | 24 | 0 |
 | Decisions from the design review (2026-10-17 and 2026-10-19) | 40 | 40 | 0 |
 | Decisions from the wireframe stage (2026-10-20) | 7 | 7 | 0 |
-| Decisions after the Athletic Activities meeting (2026-11-04) | 25 | 25 | 0 |
+| Decisions after the Athletic Activities meeting (2026-11-04) | 26 | 26 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 130 | 114 | 16 |
+| Total | 131 | 115 | 16 |
 
 ## Scope and priorities
 
@@ -415,6 +415,7 @@ The team met the department on 2026-11-04 and settled the rest as a team the sam
 | E-136 | Athletes removed from the roster | A roster record removed by an Administrator is deleted 5 years after its removal. Refines E-131. SRS REQ-NF-05. | Team | 2026-11-05 |
 | E-137 | Downloaded backups and the store key | A backup downloaded from the Administrator panel is an encrypted file that needs a password to open, because it holds every photo and every person's data. The read-only store key lives only in the environment file of the server and of the lead's computer; it is never shared by chat or committed, the team develops with fake data (#81), and at delivery the key is revoked and a new one is made for the server only. SRS REQ-NF-06, REQ-F-28. | Team | 2026-11-05 |
 | E-138 | Photo size | The server shrinks each uploaded photo to about 0.5 MB (about 1,200 pixels on the long side, JPEG), which is plenty for the Gym ID and the Staff screens. Uploads up to 10 MB are still accepted. It keeps the disk and the backups small. SRS REQ-NF-24. | Team | 2026-11-05 |
+| E-139 | Entering the roster | Administrators enter athletes one at a time on the roster screen, with a quick form: after saving, the form stays open and empty for the next athlete, except the sport, which keeps the last value because the lists come by sport. The form shows the current sport large at the top ("Adding athletes of: Volleyball") so nobody forgets to change it. There are about 100 athletes, so no paste or file tool is needed. SRS REQ-F-49. | Team | 2026-11-05 |
 | E-121 | Reports | Visits per day and per hour with the peak hour; athletes against student members and employee members; visits per sport; and an end-of-term summary the Administrator can download. SRS REQ-F-61 to REQ-F-65. | Team | 2026-11-04 |
 | E-122 | Backups | Automatic copies on a second virtual disk attached to the same VM, asked for in the same CTI request. One copy every two weeks; the 2 most recent are kept. Losing the whole VM loses the copies too; the team accepts that risk. The Administrator panel shows the last backup and has buttons to make a backup now, download one and restore one already on the server. Answers E-109 (option A). SRS REQ-NF-06. | Team | 2026-11-04 |
 | E-123 | Installer and server | The server runs Rocky Linux 10, since CTI is moving to it. One install command, run once with sudo by the team or a technician, installs Docker CE, sets the firewall and SELinux, starts the app, creates the first Administrator and schedules the backups; the same command can restore a backup on a new server. Administrators never use Docker or the server. Answers part of E-110. SRS REQ-F-88. | Team | 2026-11-04 |
