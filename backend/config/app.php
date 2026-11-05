@@ -54,6 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+    // Proxies allowed to set the client IP with X-Forwarded-For, comma separated (app/Http/Middleware/TrustProxies.php).
+    'trusted_proxies' => array_values(array_filter(array_map('trim', explode(',', (string) env('TRUSTED_PROXIES', ''))))),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
