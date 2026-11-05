@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Models\StaffAccount;
 use App\Services\AuditLog;
+use App\Services\SignInThrottle;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -24,13 +25,20 @@ class StaffSessionController extends Controller
             'password' => ['required', 'string', 'max:255'],
         ]);
 
+        $throttle = new SignInThrottle('staff-sign-in');
+        $throttle->ensureNotLocked($credentials['email'], $request->ip());
+
         // The unique index ignores case (data-model.md section 5), so the lookup does too.
         $account = StaffAccount::query()->whereRaw('lower(email) = lower(?)', [$credentials['email']])->first();
 
         // An invited account has no password until the person sets one (#84).
         if ($account?->password === null || ! Hash::check($credentials['password'], $account->password)) {
+            $throttle->recordFailure($credentials['email'], $request->ip());
+
             throw new ApiException('staff_credentials_invalid', 422);
         }
+
+        $throttle->clearAccount($credentials['email']);
 
         // Only after the right password, so nobody learns which emails belong to people who left.
         if ($account->deactivated_at !== null) {
