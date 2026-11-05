@@ -435,5 +435,5 @@ These diagrams describe the backend, the database or the servers. The issue name
 | Photo pending: does the new photo clear the mark by itself, or do Staff approve it (E-118) | U-02, S-02 | Draw the mark and the upload; leave the clearing step open |
 | End-of-term summary: content and format not decided (REQ-F-96) | C-05 | Draw only the download button for Administrators |
 | Manual entry for a person with no account (REQ-F-95) | A-17 | Draw the error state |
-| One registration number field (Proposed, E-112). If adopted: 6 characters is an order, 9 digits is a student number (E-128) | N-01, N-03, N-04 | Draw the two paths |
+| Two registration paths (decided, E-112): "I paid for a membership" asks for the receipt number, with a picture of where it is; "I am an athlete" asks for the student number | N-01, N-03, N-04 | Draw the two paths |
 | Backups panel: last backup, back up now, download, restore (E-122) | A-16 | Draw as decided |

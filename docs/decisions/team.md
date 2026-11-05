@@ -87,9 +87,9 @@
 | Affects | REQ-F-10 Validate Authorization Number against imports; REQ-F-17 One account per roster record or number |
 | Feature | 3.2 Paid Member Registration, 4.1 Data Dictionary |
 | Why we ask | Registration uses only the Authorization Number, which has 6 digits in the sample receipt. If two orders can share a number, the lookup can match the wrong order. Also asked in gym.md, G-19. |
-| Answer | |
-| Answered by | |
-| Date | |
+| Answer | Answered by a read of all 84 store orders on 2026-11-04: the number is the gateway field PGPAY_AUTHNUM, 6 characters that can include letters, and no value repeats. It is unique across all orders (E-128). |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-11: Password reset by email
 
@@ -320,10 +320,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-NF-39; new REQ-F-93 (Proposed) |
 | Feature | 8.1 Audit |
 | Why we ask | CTI said it always asks every project for such a log. CTI did not say whether it is a condition for the VM. CTI minutes, section 3.15 (`docs/meetings/2026-10-22-cti-minuta.md`). |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Decided |
+| Answer | Yes to all three: (a) no screen, route or command edits or deletes an entry, not even an Administrator; entries leave only by the retention rule (E-131); (b) the Administrator searches by staff account and date range and exports to CSV or Excel (REQ-F-93); (c) staff account sign in and sign out are logged. User sign-ins stay out. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-109: Backup method
 
@@ -372,10 +372,10 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Affects | REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91 |
 | Feature | 3.2, 3.3 |
 | Why we ask | CTI minutes, section 3.21. |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Decided: not adopted |
+| Answer | A: keep two paths. "I paid for a membership" asks only for the Authorization Number from the receipt, with a picture of where it is in the receipt email; "I am an athlete" asks only for the student number. Why: paid members are students too and have a student number, so one field invites them to type it, which looks in the wrong place and shows a confusing error. Each path asks for one number, the right one. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ### E-113: Address of the gym dashboard
 
@@ -404,7 +404,7 @@ The team met the department on 2026-11-04 and settled the rest as a team the sam
 | E-119 | Paper log during an outage | If the app is down, Staff use the paper log and check payment by hand. Up to one week down is acceptable. When the app is back, only Administrators enter the paper entries as manual entries with the person and the times. Each one writes an audit log entry with who entered it. They count in statistics and can be filtered out. New requirement. Data model D18. | Team | 2026-11-04 |
 | E-120 | Student or employee, and refunds | Each order stores whether the buyer is a student or an employee, from the product variation in the store, for statistics (data model D15). A buyer who paid the wrong price is the department's mistake to fix. Refunds are made in the UPR Payment Gateway portal, outside WordPress and WooCommerce, so the store never shows them: none of the 84 orders read on 2026-11-04 has a refund, a refunded status or a refund note. The team will not ask for access to the gateway or to Finance systems just for refunds. So when the department refunds a membership, an Administrator revokes the authorization by hand in the app (REQ-F-87), with a reason. This is an Administrator task and goes in the Administrator manual. If a refund is ever recorded in WooCommerce, the sync revokes it on its own (E-127). Changes G-22. SRS REQ-F-22, REQ-F-87. | Team | 2026-11-04 |
 | E-127 | Paid memberships from the store's API | The app reads the orders from the WooCommerce REST API with a read-only key kept in the server's environment file, instead of an uploaded export file. At registration, when a person types an Authorization Number the app does not have, the app asks the store right then, so a person who just paid registers at once. A full sync runs at least 3 times a day and picks up changes to known orders. Only `completed` orders give access; an order that later becomes `cancelled` or `refunded` loses it. The Administrator sees the last sync and has a "Sync now" button. There is no file upload, re-import or undo. Why: a test read of all 84 orders on 2026-11-04 worked with a read-only key, and it saves the Administrator a manual step. The VM needs outbound HTTPS to the store (to ask CTI). The order's student number is not stored, and address, phone, IP and marketing fields never are. Answers E-55 and #77 question 42. SRS REQ-F-28 to REQ-F-31. Data model D1, D19. | Team | 2026-11-04 |
-| E-128 | Authorization Number format | A 6-character code from the UPR Payment Gateway (order field PGPAY_AUTHNUM). It can include letters: 3 of the 69 paid orders end in a letter. It is unique across all orders, not only per term: no value repeats in the 69. Registration accepts letters; the one-field registration (E-112) tells an order (6 characters) from a student number (9 digits) by length. Changes G-19 and E-71. Data model D1. | Team | 2026-11-04 |
+| E-128 | Authorization Number format | A 6-character code from the UPR Payment Gateway (order field PGPAY_AUTHNUM). It can include letters: 3 of the 69 paid orders end in a letter. It is unique across all orders, not only per term: no value repeats in the 69. Registration accepts letters in the paid member path (E-112 keeps two paths). Changes G-19 and E-71. Data model D1. | Team | 2026-11-04 |
 | E-129 | Gym ID time and who checked out | The Gym ID shows no countdown: an active session shows "Active session" and the Check In time. A 2-hour countdown would invite people to stay 2 hours, and a 60-minute one would suggest the session ends there. Staff apply the 60-minute guide from the Check In time on their screen. A check-out writes no audit log entry; the session stores which staff account marked the exit. The audit log stays for changes and corrections (void, early end, manual entry). SRS REQ-F-40, REQ-F-48. Data model D14. | Team | 2026-11-04 |
 | E-130 | Staff session time limits | A staff sign-in ends after 2 hours without a person tapping or typing; an Administrator sign-in ends after 20 minutes. Automatic refreshes of the screen do not count as activity. Deactivating a staff account ends its open sessions at once. Trade-off the team accepts: on the shared desk computer, a student who leaves without signing out leaves their account open for the next shift for up to 2 hours. SRS REQ-NF-10, REQ-F-88. | Team | 2026-11-05 |
 | E-131 | How the 5 years are counted | A User account is deleted 5 years after its last activity (last sign-in or Check In), with the anonymizing of REQ-F-09. While the account is active it stays, and its history is trimmed instead: each visit, sync record and audit log entry is deleted 5 years after it was created. Past-term photos are deleted sooner, when the new photo arrives (E-135). The current waiver, emergency contact and current photo stay while the account is active. A deactivated staff account is deleted 5 years after its last audit log entry. Deleted data can still sit in the 2 backup copies for up to 4 weeks. Refines E-125. SRS REQ-NF-04, REQ-NF-05, REQ-F-09. | Team | 2026-11-05 |
@@ -433,10 +433,10 @@ The team met the department on 2026-11-04 and settled the rest as a team the sam
 | Feature | 3.5 WooCommerce Import, 3.2 Paid Member Registration |
 | Why we ask | The team has an example file but cannot share it yet. The import cannot be designed without the real columns. |
 | Owner | Carlos Pepin |
-| Status | Open |
-| Answer | |
-| Answered by | |
-| Date | |
+| Status | Answered (E-127, E-128) |
+| Answer | The orders were read from the store's API instead of an export file. The fields the app needs, where each lives and what it stores are in E-127 and E-128. |
+| Answered by | Team |
+| Date | 2026-11-05 |
 
 ## Questions for the professor or advisors
 

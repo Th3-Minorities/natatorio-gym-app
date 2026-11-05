@@ -424,7 +424,7 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 
 ### REG-14: One registration number field (E-112)
 
-**Proposed (E-112).** A: keep two paths (today). B: one field; paid members type the receipt number, athletes the student number; the system tells them apart by length, with no lookup in both places: 6 characters is an order (E-128, letters allowed) and 9 digits is a student number (CTI suggestion; a remark that most likely came from the CTI side said the current choice is fine). Tradeoffs: one screen and fewer choices; the two kinds of number cannot collide, because their lengths differ; a mistyped length gets a form error; the 'not on the roster' message (REQ-F-76) and the lookup limits would have to cover one field.
+**Decided (E-112, 2026-11-05): A, keep two paths.** Paid members are students too and have a student number, so one field would invite them to type it. Earlier options: A: keep two paths (today). B: one field; paid members type the receipt number, athletes the student number; the system tells them apart by length, with no lookup in both places: 6 characters is an order (E-128, letters allowed) and 9 digits is a student number (CTI suggestion; a remark that most likely came from the CTI side said the current choice is fine). Tradeoffs: one screen and fewer choices; the two kinds of number cannot collide, because their lengths differ; a mistyped length gets a form error; the 'not on the roster' message (REQ-F-76) and the lookup limits would have to cover one field.
 
 ## Gaps and questions
 

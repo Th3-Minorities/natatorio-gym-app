@@ -654,7 +654,6 @@ Not discussed in the CTI meeting: the HTTPS certificate and single origin (M-03)
 | Who looks after the system (CTI says it is the owner's question) | Gym | G-01 | REQ-NF-23, NF-31 |
 | Location boundary values | Team | None (measure at the gym) | REQ-NF-28 |
 | Cookies on iPhone | Team | E-17 | REQ-F-03, F-66 |
-| One registration number field (CTI suggestion). If adopted, it tells an order (6 characters) from a student number (9 digits) by length (E-128) | Team | E-112 | 3.2, 3.3, REQ-F-76, F-91 |
 | Rubric, deliverables, stack approval | Professor | P-01 to P-03 | 1.3, 2.4 |
 | License | Professor, UPRM | P-05 | REQ-NF-46 |
 | Stretch inputs | Gym, team | None | REQ-F-67 to F-69 |
