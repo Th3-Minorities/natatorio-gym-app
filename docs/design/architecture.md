@@ -8,29 +8,26 @@ This document shows how the system is built and where it runs. It replaces the S
 
 **Type:** Context diagram. **Use it to:** agree on which outside systems the team must connect to, and which of them wait on CTI.
 
-Only the Administrator brings in WooCommerce data, by uploading an Export Orders file. There is no API link in the MVP. How the store and the app would talk later (WordPress sends the data, or the app asks for it) is not decided, and no technical contact is named (G-35).
+The app reads paid memberships from the store's REST API (wc/v3 orders) with a read-only key kept in the server's environment file (E-127). It asks in two ways: at registration, when a person types an Authorization Number the app does not have yet, and in a full sync at least 3 times a day. The Administrator can also press "Sync now". There is no file upload. The VM needs outbound HTTPS to the store, which waits on CTI (M-12).
 
 ```mermaid
 flowchart LR
   U["User<br/>paid member or athlete<br/>mostly on a phone"]
-  G["Gym account<br/>Staff without PIN<br/>Administrator with PIN"]
+  G["Staff accounts<br/>Staff and Administrators<br/>each with a personal account"]
   SYS["UPRM Weight Gym platform<br/>PWA and Laravel API"]
   GEO["Browser Geolocation API<br/>on the User's phone"]
   WOO["Athletic department store<br/>WooCommerce on the department's WordPress"]
-  FILE["Export Orders file"]
-  LISTS["Department athlete lists"]
+  LISTS["Department athlete lists<br/>Word files, one per sport"]
   MAIL["Outgoing mail<br/>mail service on the VM, relay to the CTI mail gateway<br/>needs CTI to authorize the VM; SPF and DKIM not discussed"]
-  NAME["UPRM subdomain: domain ticket by the owner<br/>HTTPS certificate pending CTI answer"]
+  NAME["Own UPRM subdomain, name still to pick<br/>domain ticket by the owner<br/>HTTPS certificate pending CTI answer"]
   PWN["Compromised-password check<br/>external call from the VM<br/>only a 5-character hash prefix leaves, no student data"]
 
   U -->|"register, Check In, Gym ID"| SYS
   U -->|"gives location permission"| GEO
   GEO -->|"position and accuracy, only at Check In"| SYS
-  G -->|"dashboard routes, own sign in: verify, correct, manage"| SYS
-  WOO -->|"Administrator runs Export Orders"| FILE
-  FILE -->|"uploaded by the Administrator"| SYS
-  WOO -.->|"API or webhooks, Stretch only"| SYS
-  LISTS -->|"entered by the Administrator each term<br/>Proposed: upload of the file the gym receives (G-10)"| SYS
+  G -->|"dashboard path under the same name, own sign in: verify, correct, manage"| SYS
+  SYS -.->|"outbound HTTPS, read only: at registration and at least 3 times a day<br/>pending CTI answer"| WOO
+  LISTS -->|"entered by hand by an Administrator<br/>one roster, no file import (E-116)"| SYS
   SYS -->|"athlete links, password reset"| MAIL
   MAIL -->|"email"| U
   SYS -->|"password check when a password is set"| PWN
@@ -40,17 +37,16 @@ flowchart LR
   class MAIL,NAME pending
 ```
 
-**About this diagram:** the mail box waits on CTI authorizing the VM (M-07) and the name box on M-03. The dashed WooCommerce link is REQ-F-32 (Stretch, M-12). The password check is E-63. It sends no student data, so it is not submitted to M-11 (E-98).
+**About this diagram:** the mail box waits on CTI authorizing the VM (M-07) and the name box on M-03. The dashed WooCommerce link is the store sync (REQ-F-28, REQ-F-97, E-127): the app is the only side that calls, and it waits on outbound HTTPS from the VM (M-12). The password check is E-63. It sends no student data, so it is not submitted to M-11 (E-98).
 
 Notes:
 
 - Location goes from the Geolocation API to the PWA, which sends it to the backend with the Check In. Coordinates are not stored, only the result of the check (REQ-NF-03, REQ-NF-11).
 - Mail is assumed available (E-61). CTI described a relay through its mail gateway once it authorizes the VM, so an external provider is probably not needed. If CTI does not authorize the VM, the team uses an external SMTP or transactional mail provider, because this is a prototype (the team's own fallback, E-61). An external provider sends student email addresses out of the CTI VM, so it needs approval (M-11).
-- Mail carries two kinds of athlete links: the athlete registration link and, since E-58, the "I am an athlete" link that a signed-in User gets at the institutional email of the roster record. Both use the same single-use link mechanism: an `email_links` table with a hash, an expiry and single use (data-model D9). Password reset links use Laravel's `password_reset_tokens` table, not `email_links`.
-- Staff can still register an athlete in person. Staff generate a one-time code that lasts 15 minutes, and the athlete fills in the rest on their own phone (E-62). The code is another type in `email_links`, with the same method (data-model D9). The tool stays now that mail exists (REQ-F-77).
-- Passwords use Laravel's built-in handling. There is no external identity service (E-63). The rule is a minimum of 10 characters, no mixing rules, and a check against known compromised passwords with `Password::min(10)->uncompromised()` (E-63). That check is an external call, but only a 5-character hash prefix leaves the VM: no names, emails, photos or full password. It is not submitted to M-11 (E-98). The tests need a case where the service does not answer (#30). The same rule for the gym account is assumed, not confirmed.
-- The gym account signs in on its own dashboard routes, with no link from the User sign-in (E-65). It is not a separate app (to confirm, E-65).
-- Payments stay in WooCommerce. The system never talks to the payment side (REQ-F-28, REQ-F-29).
+- Mail also carries the invitation to a new Staff member (REQ-F-88). It carries two kinds of athlete links: the athlete registration link and, since E-58, the "I am an athlete" link that a signed-in User gets at the institutional email of the roster record. Both use the same single-use link mechanism: an `email_links` table with a hash, an expiry and single use (data-model D9). Password reset links use Laravel's `password_reset_tokens` table, not `email_links`.
+- Passwords use Laravel's built-in handling. There is no external identity service (E-63). The rule is a minimum of 10 characters, no mixing rules, and a check against known compromised passwords with `Password::min(10)->uncompromised()` (E-63). That check is an external call, but only a 5-character hash prefix leaves the VM: no names, emails, photos or full password. It is not submitted to M-11 (E-98). The tests need a case where the service does not answer (#30). The same rule for staff accounts is assumed, not confirmed.
+- Staff and Administrators sign in with their own staff accounts on the dashboard, a path under the app's name with no link from the User sign-in (E-114, E-124). It is not a separate app (to confirm, E-65).
+- Payments stay in WooCommerce. The system only reads orders, with a read-only key, and never talks to the payment side (REQ-F-28, REQ-F-29). The key lives only in the server's environment file, never in the database, the repository or the logs. Refunds are made in the UPR Payment Gateway portal, which the app does not reach, so an Administrator revokes a refunded membership by hand (E-120, REQ-F-87).
 
 ### 2. Containers on one host
 
@@ -61,12 +57,12 @@ The same `docker-compose` file runs on a member's PC and on the CTI VM. Only the
 ```mermaid
 flowchart TD
   PH["User phone<br/>browser or installed PWA"]
-  FD["Front desk computer<br/>browser with the gym account<br/>dashboard routes<br/>device still to confirm with the gym"]
+  FD["Front desk computer<br/>browser with a staff account<br/>dashboard path<br/>device still to confirm with the gym"]
 
   subgraph HOST["docker-compose on one host: member PC or CTI VM. CTI delivers plain Linux; the team installs the container engine"]
     subgraph PXC["proxy container: nginx or Caddy, not decided"]
       PX["HTTPS end and routing<br/>two rules: /api to Laravel, the rest to the PWA<br/>one name for app and API, proposed<br/>certificate pending CTI answer"]
-      ST["PWA static files<br/>React, TypeScript, Vite build<br/>served at /, user and dashboard routes"]
+      ST["PWA static files<br/>React, TypeScript, Vite build<br/>served at /, user routes and the dashboard path"]
     end
     APP["app container<br/>Laravel on PHP-FPM<br/>API at /api"]
     SCH["scheduler container<br/>same image as app<br/>scheduled tasks"]
@@ -76,8 +72,9 @@ flowchart TD
     PV[("private photos volume<br/>disk encryption pending CTI answer")]
   end
 
+  STORE["WooCommerce store<br/>REST API, wc/v3 orders<br/>outbound HTTPS from the VM pending CTI answer"]
   MAIL["Mail<br/>development: fake mail server container<br/>production: CTI mail gateway, after CTI authorizes the VM<br/>external provider only if it does not"]
-  BK["Backups: method not chosen (E-109)<br/>CTI options: second disk on the VM (not outside it), Administrator download, copy to a second server<br/>retention not discussed"]
+  BK["Backups on a second virtual disk of the same VM (E-122)<br/>every two weeks, the last 2 kept<br/>losing the whole VM loses them too"]
 
   PH -->|"HTTPS"| PX
   FD -->|"HTTPS"| PX
@@ -87,26 +84,28 @@ flowchart TD
   DB --- DV
   APP -->|"save and stream photos, role checked"| PV
   SCH -->|"SQL"| DB
-  SCH -.->|"discard old term photos, retention not set"| PV
+  SCH -->|"make the backups"| BK
   APP -->|"SMTP, sent during the request"| MAIL
+  APP -.->|"HTTPS, read only: registration lookup"| STORE
+  SCH -.->|"HTTPS, read only: sync at least 3 times a day"| STORE
   APP -.->|"production, proposed"| RELAY
   RELAY -.-> MAIL
-  DV -.->|"pending CTI answer about backups"| BK
-  PV -.->|"pending CTI answer about backups"| BK
+  DV -->|"backup every two weeks"| BK
+  PV -->|"backup every two weeks"| BK
 
   classDef pending stroke-dasharray: 5 5
-  class MAIL,BK,RELAY pending
+  class MAIL,RELAY,STORE pending
 ```
 
-**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-06 (backup method and retention). The proxy choice is D1 and is still proposed. The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Photo retention is REQ-NF-04.
+**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-12 (outbound HTTPS to the store). Backups are decided (E-122, REQ-NF-06). The proxy choice is D1 and is still proposed. The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Every kind of data, photos included, is kept 5 years (REQ-NF-04, REQ-NF-05, E-125).
 
 Notes:
 
 - The proxy has no route to the photos volume. A photo is read only through a Laravel route that checks the role (REQ-NF-20). Uploads are JPEG, PNG or HEIC up to 10 MB, saved as JPEG without location metadata (REQ-NF-24).
-- Proposed (E-111): a storage estimate (bytes per photo, people, uploads per term) and cleanup options for the gym and UPRM to choose. The scheduler does the automatic part (REQ-NF-04). No period is set by the team (G-03).
+- Every kind of data is kept 5 years, so the storage estimate (bytes per photo, people, uploads per term) must be redone (E-125, E-111). The backups sit on a second virtual disk of the same VM, asked for in the same CTI request (E-122).
 - The service worker in the PWA does not cache `/api` responses, so stale data is never shown as current (`design-notes.md`, REQ-NF-26). Screens poll `/api` every 20 to 30 seconds (REQ-F-43).
-- The scheduler does cleanup and retention, and marks old sessions as expired. The backend still computes session expiry at query time, from backend time (REQ-NF-01, REQ-F-38, check-in D3).
-- Email goes out during the request. There is no queue and no worker container for now (D4).
+- The scheduler makes the backups, runs the store sync at least 3 times a day (REQ-F-28), closes sessions at a closure or the end of a term, and marks old sessions as expired. The backend still computes session expiry at query time, from backend time (REQ-NF-01, REQ-F-38, check-in D3).
+- Email goes out during the request. There is no queue and no worker container for now (D4). The lookup at registration also asks the store during the request (REQ-F-97), through the same lookup limits.
 - Both the User app and the gym dashboard are routes of the same PWA code (to confirm, E-65). The two proxy rules cover both (D2).
 
 ### 3. Development on each member's PC
@@ -156,7 +155,7 @@ Notes:
 
 **Type:** Deployment diagram. **Use it to:** plan the CTI VM setup, the image build and the separate demo environment.
 
-Production runs on a CTI VM with a UPRM subdomain and HTTPS. Who asks: the project owner. The VM and the domain are separate tickets on the CTI request page; the team's VPN is a VPN ticket or an email from him with the team's emails. CTI assigns the IP and acts only on the owner's request. The team gives the owner the size and the name. The December demo runs in a separate environment with the classroom boundary, so the classroom boundary never reaches production (REQ-NF-29, team decision E-42). Where the demo runs is not decided (D5).
+Production runs on a Rocky Linux 10 CTI VM (E-123) with its own UPRM subdomain (E-124) and HTTPS. Who asks: the project owner. The VM and the domain are separate tickets on the CTI request page; the team's VPN is a VPN ticket or an email from him with the team's emails. CTI assigns the IP and acts only on the owner's request. The team gives the owner the size and the name. The December demo runs in a separate environment with the classroom boundary, so the classroom boundary never reaches production (REQ-NF-29, team decision E-42). Where the demo runs is not decided (D5).
 
 ```mermaid
 flowchart LR
@@ -164,11 +163,11 @@ flowchart LR
   DESK["Front desk computer<br/>device still to confirm with the gym"]
   BUILD["Image build in one place<br/>pinned versions, linux/amd64<br/>place not decided"]
   LAP["Team laptops off campus<br/>through the CTI VPN"]
-  INST["Proposed: install script (E-110)<br/>plain Linux to a running app with the first account"]
+  INST["Install command (E-123)<br/>one sudo command on Rocky Linux 10: Docker CE, firewall,<br/>SELinux, app, first Administrator, backup schedule"]
 
-  subgraph VM["CTI VM: plain Linux, OS not stated. Typically ready the same day to about a day after the owner's ticket; first account with sudo to the owner. No approval step described; early access not asked"]
-    subgraph PROD["docker-compose, production. Docker or Podman: team's choice; check what the VM's OS provides"]
-      PX2["proxy<br/>HTTPS for the UPRM subdomain<br/>name: the owner files a domain ticket, CTI gives the IP<br/>certificate pending CTI answer"]
+  subgraph VM["CTI VM: Rocky Linux 10 (E-123). Typically ready the same day to about a day after the owner's ticket; first account with sudo to the owner. No approval step described; early access not asked"]
+    subgraph PROD["docker-compose, production, with Docker CE (E-123)"]
+      PX2["proxy<br/>HTTPS for the app's own UPRM subdomain, dashboard as a path<br/>name: the owner files a domain ticket, CTI gives the IP<br/>certificate pending CTI answer"]
       APP2["app<br/>gym boundary, no flag set<br/>refuses to start if the boundary is over 50 m from the gym"]
       SCH2["scheduler"]
       DB2[("PostgreSQL")]
@@ -181,7 +180,7 @@ flowchart LR
   end
 
   SMTP["Outgoing mail: relay to the CTI mail gateway after CTI authorizes the VM<br/>sender: usually no-reply at the server's name, owner may want another<br/>SPF and DKIM not discussed"]
-  BK2["Backups: method not chosen (E-109)<br/>CTI options: second disk on the VM (not outside it), Administrator download, copy to a second server<br/>retention not discussed"]
+  BK2["Backups on a second virtual disk of the same VM (E-122)<br/>every two weeks, the last 2 kept<br/>losing the whole VM loses them too"]
 
   PHN -->|"HTTPS, reach from the internet not answered (M-01)"| PX2
   DESK -->|"HTTPS"| PX2
@@ -190,15 +189,15 @@ flowchart LR
   APP2 --> PV2
   SCH2 --> DB2
   APP2 -->|"SMTP"| SMTP
-  DB2 -.->|"pending"| BK2
-  PV2 -.->|"pending"| BK2
+  DB2 -->|"backup every two weeks"| BK2
+  PV2 -->|"backup every two weeks"| BK2
   BUILD -.-> PROD
   BUILD -.-> DEMOAPP
   LAP -.-> VM
   INST -.-> PROD
 
   classDef pending stroke-dasharray: 5 5
-  class SMTP,BK2,BUILD,DEMO,LAP,INST pending
+  class SMTP,BUILD,DEMO,LAP pending
 ```
 
 **About this diagram:** pending CTI items are M-01 (reach from the internet), M-03, M-04, M-05, M-06, M-07 (authorization), M-13 and M-18 (ports); see the table below. The demo host is D5 and the build place is D8. The 50 m rule is D6.
@@ -206,12 +205,12 @@ flowchart LR
 Notes:
 
 - The 50 m startup check is how REQ-NF-29 is enforced (`design-notes.md`, team decision E-16). The 50 m check always runs at startup. Only a flag allows another boundary, and development and the demo set it. Production does not set it. Without the flag, a boundary farther than 50 m stops the app from starting (D6).
-- Server credentials live in protected configuration outside the repository. Development and production settings are separate (`context.md` section 3).
+- Server credentials live in protected configuration outside the repository. Development and production settings are separate (`context.md` section 3). The read-only store key is one of them: it lives only in the server's environment file (E-127).
 - Whoever has administrator access to the VM can read the database and the photos volume. That conflicts with REQ-NF-23 if team members run the server (M-16, gym G-01). CTI usually creates an account with sudo for the owner, who passes it to the team or makes another; off campus the team needs a VPN the owner requests, and the owner answers for those accounts. CTI has no staff to take over the system, and part of the install and orientation after December is the owner's.
-- If the gym account password and PIN are lost, the paper recovery code from the install command sets new ones from the gym account sign-in screen (E-60, REQ-F-89). If the paper is lost too, only running the install command on the server remains, so it needs someone with server access (M-16).
+- Staff accounts have no recovery code (E-114). How a forgotten staff password is recovered is not decided (`admin-flows.md` gap 1).
 - If an external mail provider is used, the SMTP arrow leaves the VM, and student email addresses go with it (M-11).
-- Proposed VM request (E-111): CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team recommends the numbers, backed by a storage estimate. A second backup disk, if chosen, is agreed with whoever creates the VM, probably in the same request.
-- Restore is open (E-110): an 'upload backup' action in the app after a fresh install (CTI's picture) or a step on the server. An in-app restore would exceed the planned 10 MB upload limit and would replace audit log entries.
+- VM request: CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team recommends the numbers, backed by a storage estimate that must be redone for the 5-year rule (E-125, E-111). The second backup disk is asked for in the same request (E-122).
+- Restore (E-122): the Administrator panel restores a backup already on the server, with no upload. The same install command restores a backup on a new server (E-123). A restore replaces everything saved after that backup, audit log entries included.
 
 ### Pending CTI items on these diagrams
 
@@ -222,13 +221,14 @@ Notes:
 | M-03 | Who makes the subdomain and certificate; app and API on one name | Diagrams 1, 2 and 4, proxy | Two names: cookie login design changes (cross-site cookies, CORS) |
 | M-04 | What CTI needs to approve the VM, and how long | Diagram 4, VM box | Late VM: no production in December. CTI stated no conditions and described no approval step (to confirm). CTI did not say whether its usual requests (audit log, installer, disaster plan) are conditions; any condition becomes a new requirement |
 | M-05 | Early access to the VM | Diagram 4, VM box | First real deployment happens close to the demo. Demo option D5 A is at risk |
-| M-06 | Where backups go and for how long | Diagrams 2 and 4, backup box | Partly answered: the team decides among CTI's three options. The second disk is not outside the VM (REQ-NF-06). Retention and CTI snapshots still open |
+| M-06 | Where backups go and for how long | Diagrams 2 and 4, backup box | Decided by the team (E-122): a second virtual disk on the same VM, every two weeks, the last 2 kept. It is not outside the VM and the team accepts that risk. CTI snapshots were not discussed |
 | M-07 | Outgoing mail: answered A in principle (CTI relay after CTI authorizes the VM). Open: the authorization, SPF and DKIM, the sender. External provider only if CTI declines | Diagrams 1, 2 and 4, mail box | CTI cannot provide it: the team uses an external SMTP or transactional provider (E-61), which needs approval (M-11) because email addresses leave the VM. "No mail" is no longer a plan |
 | M-09 | PostgreSQL accepted (answered: team's choice) | Diagrams 2 and 4, database | MySQL required: REQ-F-17 and REQ-F-36 need a new design |
 | M-13 | Data on the VM disk, disk encryption (data on the VM disk: answered; encryption still pending) | Diagrams 2 and 4, volumes | Disk not encrypted: team decides whether to encrypt files itself |
+| M-12 | Can the VM make outbound HTTPS requests to the WooCommerce store? Open (E-127); a new question to number in `cti.md`. The read-only key itself comes from the store owner (G-35) | Diagrams 1 and 2, app and scheduler to the store | The app cannot read the store, so new paid members cannot register and no sync runs |
 | M-18 | Which ports are open to the VM (80 and 443), and whether a firewall request is needed | Diagram 4, proxy | Port closed: nobody reaches the app |
 
-Also relevant, not in the list asked for this issue: M-11 (external services approval, affects the tunnel and an external mail provider; the compromised-password check is not submitted, E-98), M-12 (WooCommerce API, Stretch only) and M-16 (who administers the server).
+Also relevant, not in the list asked for this issue: M-11 (external services approval, affects the tunnel and an external mail provider; the compromised-password check is not submitted, E-98) and M-16 (who administers the server).
 
 ### 5. Request path: one Check In
 
@@ -272,7 +272,7 @@ sequenceDiagram
         API->>DB: Read the existing active session
         API-->>PWA: Existing session and Gym ID
       else Insert works
-        DB-->>API: New session, end is start plus 60 minutes
+        DB-->>API: New session, closes by itself at start plus 2 hours
         API-->>PWA: New session and Gym ID
       end
     end
@@ -289,9 +289,9 @@ Notes:
 - The server rejects with a fixed code per cause, for example `check_in_location_denied`. The app writes the text in the account's language (E-74). REQ-F-33 gains two causes: location unavailable and new term photo needed.
 - One sign-in session per User: the valid session is stored in `users.current_session_id`, and a middleware compares it on every request. Old rows are deleted (data-model D3).
 - The `sign_in_sessions` table keeps no IP and no browser: both columns are NULL (E-91). Gym actions stay traceable through the audit log, which records IP, device and browser (REQ-NF-39).
-- Attempt counters live in the `cache` table, keyed by IP and email for sign in, and the PIN counters sit there too (E-91, E-93). They are temporary and are discarded when the wait ends. The "discarded" part is a default the owner did not object to.
+- Attempt counters live in the `cache` table, keyed by IP and email for sign in (E-91, E-93). They are temporary and are discarded when the wait ends. The "discarded" part is a default the owner did not object to.
 - The database, not the PWA, guarantees one active session per User, also under simultaneous requests (REQ-F-36, REQ-NF-42). This needs PostgreSQL (M-09). The exclusion constraint ignores void rows (`WHERE status <> 'void'`), so an early end shortens the period (check-in D4).
-- Schedule and athletes-only checks use `schedule_slots` (REQ-F-33, REQ-F-82). If an athletes-only period starts inside the 60 minutes, the response carries its start time (REQ-F-83).
+- Schedule and athletes-only checks use `schedule_slots` (REQ-F-33, REQ-F-82). If an athletes-only period starts while the session is open, the response carries its start time (REQ-F-83).
 
 ## Design decisions to confirm
 
@@ -377,18 +377,18 @@ Decision: each member chooses, and the tunnel host lives in one `.env` value so 
 - **A. Build on the VM** from a tagged commit. No registry. The VM needs the build tools and internet access to download base images (M-04).
 - **B. Build in GitHub Actions** and push to a private registry; the VM pulls by tag. Repeatable and always `linux/amd64`. Needs a registry token on the VM and outbound access to the registry (M-04).
 
-Recommendation: A for December, because it has fewer parts. Move to B if the team wants automatic builds later. If the install script is adopted, it must install the container engine and get the images: option A needs build tools in the script, option B a registry token.
+Recommendation: A for December, because it has fewer parts. Move to B if the team wants automatic builds later. The install command (E-123) installs Docker CE and gets the images: option A needs build tools in the command, option B a registry token.
 
 ## Gaps and questions
 
 1. **REQ-NF-12 says "all traffic" goes over HTTPS.** In development the desktop browser uses plain HTTP on `localhost` (browsers treat `localhost` as secure, so location still works), and the tunnel client talks plain HTTP to the proxy on the same PC. Inside the compose network, proxy to app is not encrypted either. Suggest the SRS say "all traffic between the client and the server". Confidence 8: based on the tested tunnel setup in `context.md` section 5; the `localhost` rule is from browser behavior, not checked in this project.
-2. **REQ-NF-09 and the tunnel.** The tunnel provider ends HTTPS and can read the traffic. That is fine with fake data only, but the real-data import test (REQ-NF-07, M-17) must not go through a tunnel. The SRS does not say this. Confidence 8.
-3. **REQ-NF-29 does not say where the demo runs or what data it uses.** Real student data in a classroom demo would conflict with REQ-NF-07. Suggest "demo uses fake data" unless the gym says otherwise. See D5 and D6.
+2. **REQ-NF-09 and the tunnel.** The tunnel provider ends HTTPS and can read the traffic. That is fine with fake data only, but a test of the store sync with the real key and real orders (REQ-NF-07, M-17) must not go through a tunnel. The SRS does not say this. Confidence 8.
+3. **REQ-NF-29 does not say where the demo runs or what data it uses.** Decided (E-126): the classroom demo uses fake data only. Where it runs: see D5 and D6.
 4. **REQ-NF-01 depends on a correct clock.** Backend time decides expiry, so the VM clock must be synced. No CTI question asks about time sync. Suggest adding it to M-04.
 5. **Real client IP for the audit log (REQ-NF-39).** If CTI puts its own proxy in front of the VM (M-01 answer C), the real IP passes two proxies, and Laravel must trust both. The trusted proxy list depends on M-01. The attempt counters keyed by IP (E-91) depend on the same list.
-6. **REQ-NF-06 has no frequency or recovery target.** It says "backups" and "a tested restore", not how often or how much data may be lost. The database and the photos volume should be copied together so they match. CTI asks every project for a written disaster plan: how often, which data, the steps to recover. CTI's minimum advice is a daily backup in the afternoon, or Fridays. CTI's view is that losing about a week is not much when a backup exists, and CTI expects the team to agree the backup and restore procedure with the owner (E-109).
+6. **REQ-NF-06 frequency and recovery target.** Resolved by E-122: a backup every two weeks on a second virtual disk of the same VM, the last 2 kept; losing the whole VM loses the backups too. The database and the photos volume are copied together so they match. The written disaster recovery plan CTI asks for is still open (E-110).
 7. **An external mail provider sends data out of the VM.** If CTI does not authorize the VM on its mail gateway, the fallback provider (E-61) receives student email addresses, which needs approval (M-11). M-11 asks who approves such services. The compromised-password check (E-63) is also an external call, but it sends no student data, only a 5-character hash prefix, so it is not submitted to M-11 (E-98).
-8. **The route paths of the gym dashboard are not set.** E-65 says the dashboard lives on its own routes in the same codebase. The path names, and whether the build is shared with the User app, are not written anywhere. The owner said "different routes" and the same-codebase part is a reading still to confirm.
+8. **The path of the gym dashboard is not set.** Decided (E-124): the dashboard is a path under the app's own name. The path name, and whether the build is shared with the User app, are not written anywhere. The owner said "different routes" and the same-codebase part is a reading still to confirm.
 9. **The name of the flag in D6 is not set.** D6 does not name it.
 
 ## Traceability
@@ -402,7 +402,7 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 | REQ-NF-29 | 3. Development on each member's PC, 4. Production and demo, 5. Request path: one Check In, D5, D6 |
 | REQ-NF-01 | 2. Containers on one host notes, Gaps 4 |
 | REQ-NF-03 | 1. System context notes, 5. Request path: one Check In |
-| REQ-NF-04 | 2. Containers on one host (scheduler to photos, pending) |
+| REQ-NF-04 | 2. Containers on one host (photos kept 5 years, no per-term deletion) |
 | REQ-NF-06 | 2. Containers on one host and 4. Production and demo (backup box, M-06), Gaps 6 |
 | REQ-NF-07 | 3. Development on each member's PC (fake data), Gaps 2 and 3 |
 | REQ-NF-09 | 3. Development on each member's PC notes, Gaps 2 |
@@ -413,22 +413,28 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 | REQ-NF-39 | 5. Request path: one Check In (client IP header, audit log), Gaps 5 |
 | REQ-NF-42 | 5. Request path: one Check In notes |
 | REQ-F-03 | 5. Request path: one Check In (middleware and `users.current_session_id`, data-model D3) |
-| REQ-F-06, REQ-F-15, REQ-F-75, REQ-F-77 | 1. System context (mail, M-07, in-person tool kept, E-62) |
-| REQ-F-28, REQ-F-29 | 1. System context (Export Orders file) |
-| REQ-F-32 | 1. System context (dashed API link, Stretch) |
+| REQ-F-06, REQ-F-15, REQ-F-75 | 1. System context (mail, M-07) |
+| REQ-F-28, REQ-F-29, REQ-F-97 | 1. System context (store sync); 2. Containers on one host (app and scheduler call the store); M-12 row |
+| REQ-F-32 (merged into REQ-F-28) | 1. System context (the dashed link is now the store sync, E-127) |
+| E-127 (paid memberships from the store's API) | 1. System context; 2. Containers on one host notes; 4. Production and demo notes; M-12 row |
+| E-120 (refunds revoked by hand) | 1. System context notes |
 | REQ-F-33, REQ-F-82, REQ-F-83 | 5. Request path: one Check In (cause codes, E-74) |
 | REQ-F-36, REQ-F-37 | 5. Request path: one Check In |
 | REQ-F-38 | 2. Containers on one host notes |
 | REQ-F-43 | 2. Containers on one host notes |
-| REQ-F-89 (E-60 recovery code) | 4. Production and demo notes |
+| REQ-F-89 (removed, E-114) | 4. Production and demo notes (no recovery code) |
 | E-58 ("I am an athlete" link by mail) | 1. System context (mail), M-07 row, D4 |
 | E-61 (mail assumed available) | 1. System context, 2. Containers on one host, 4. Production and demo, M-07 row, D4, Gaps 7 |
 | E-63, E-98, REQ-NF-51 (passwords in Laravel, compromised-password check) | 1. System context (diagram and notes), Gaps 7 |
 | E-65 (gym dashboard on its own routes) | 1. System context, 2. Containers on one host, Gaps 8 |
-| E-62, data-model D9 (in-person code, `email_links`) | 1. System context notes |
+| E-62 (removed by E-117), data-model D9 (`email_links`) | 1. System context notes |
 | Check-in D1, E-74 (two-step Check In, cause codes) | 5. Request path: one Check In |
 | Data-model D3, E-91, E-93 (one session per User, no IP in sessions, counters in `cache`) | 5. Request path: one Check In notes, Gaps 5 |
 | Check-in D4, check-in D3 (exclusion constraint, expiry task) | 5. Request path: one Check In notes, 2. Containers on one host notes |
 | Architecture D2, D3, D4, D6, D7 | D2, D3, D4, D6, D7 |
+| E-114 (personal staff accounts) | 1. System context, 2. Containers on one host, 4. Production and demo notes |
+| E-122 (backups), E-123 (Rocky Linux 10 and install command) | 2. Containers on one host, 4. Production and demo, M-06 row |
+| E-124 (own subdomain, dashboard as a path) | 1. System context, 4. Production and demo, Gaps 8 |
+| E-125 (every kind of data kept 5 years) | 2. Containers on one host notes, 4. Production and demo notes |
 
-E-56 (PIN state in the browser session), E-57 (photos on import undo) and E-59 (Staff see the roster) change no diagram in this file.
+E-56 (PIN state in the browser session) was replaced by E-114. E-57 (photos on release) and E-59 (Staff see the roster) change no diagram in this file.
