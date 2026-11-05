@@ -16,7 +16,8 @@ class ImportFactory extends Factory
             'file_name' => 'orders-'.fake()->date('Y-m-d').'.csv',
             'created_count' => 0,
             'updated_count' => 0,
-            'rejected_count' => 0,
+            'revoked_count' => 0,
+            'skipped_count' => 0,
             'result' => ['skipped' => []],
         ];
     }

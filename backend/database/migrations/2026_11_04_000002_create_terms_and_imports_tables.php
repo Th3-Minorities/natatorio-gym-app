@@ -33,8 +33,9 @@ return new class extends Migration
             $table->string('file_name');
             $table->integer('created_count')->default(0);
             $table->integer('updated_count')->default(0);
-            $table->integer('rejected_count')->default(0);
-            $table->jsonb('result')->comment('order reference and reason of each skipped order, no names or emails (E-149); the counts are the columns above; shown again in A-07');
+            $table->integer('revoked_count')->default(0);
+            $table->integer('skipped_count')->default(0);
+            $table->jsonb('result')->comment('order reference and reason of each skipped order, no names or emails (E-149); the counts are the four columns above; shown again in A-07');
             $table->timestampsTz();
         });
 

@@ -84,6 +84,21 @@ class TermsAndImportsTablesTest extends TestCase
         $this->assertFalse(Schema::hasColumn('imports', 'undone_at'));
     }
 
+    public function test_an_import_stores_all_sync_counts(): void
+    {
+        $import = Import::factory()->create([
+            'created_count' => 1,
+            'updated_count' => 2,
+            'revoked_count' => 3,
+            'skipped_count' => 4,
+        ]);
+
+        $this->assertSame(1, $import->fresh()->created_count);
+        $this->assertSame(2, $import->fresh()->updated_count);
+        $this->assertSame(3, $import->fresh()->revoked_count);
+        $this->assertSame(4, $import->fresh()->skipped_count);
+    }
+
     public function test_an_order_needs_a_term(): void
     {
         $this->assertRejected('23502', fn () => DB::table('imported_memberships')->insert(
