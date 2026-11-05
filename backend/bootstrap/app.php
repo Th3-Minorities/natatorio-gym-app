@@ -2,6 +2,7 @@
 
 use App\Exceptions\ApiErrorRenderer;
 use App\Exceptions\ApiException;
+use App\Http\Middleware\EnsureStaffRole;
 use App\Http\Middleware\EnsureStaffSessionIsActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -24,8 +25,11 @@ return Application::configure(basePath: dirname(__DIR__))
         // The audit log needs the real client IP, so only listed proxies may set it (REQ-NF-39).
         $middleware->replace(TrustProxies::class, App\Http\Middleware\TrustProxies::class);
 
-        // Every staff route: auth:staff first, then this (E-130).
-        $middleware->alias(['staff.active' => EnsureStaffSessionIsActive::class]);
+        // Every staff route: auth:staff, then staff.active (E-130), then role:... (REQ-F-52).
+        $middleware->alias([
+            'staff.active' => EnsureStaffSessionIsActive::class,
+            'role' => EnsureStaffRole::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // Expected errors with a stable code are part of the API, not bugs.
