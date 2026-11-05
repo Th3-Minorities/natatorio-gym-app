@@ -17,5 +17,6 @@ return [
     'server_error' => 'Algo salió mal de nuestro lado. Intenta más tarde.',
     'database_unavailable' => 'El servicio no está disponible ahora. Intenta más tarde.',
     'staff_credentials_invalid' => 'El correo o la contraseña no son correctos.',
+    'staff_session_expired' => 'Tu sesión terminó tras un rato sin actividad. Inicia sesión de nuevo.',
     'staff_account_deactivated' => 'Esta cuenta fue desactivada. Pide acceso a un Administrador si lo necesitas de nuevo.',
 ];

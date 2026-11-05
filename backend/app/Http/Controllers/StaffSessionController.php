@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
+use App\Http\Middleware\EnsureStaffSessionIsActive;
 use App\Models\StaffAccount;
 use App\Services\AuditLog;
 use App\Services\SignInThrottle;
@@ -47,6 +48,7 @@ class StaffSessionController extends Controller
 
         Auth::guard('staff')->login($account);
         $request->session()->regenerate();
+        $request->session()->put(EnsureStaffSessionIsActive::LAST_ACTIVITY, now()->getTimestamp());
         $log->record('staff.sign_in', $account);
 
         return response()->json($this->profile($account));
@@ -58,6 +60,7 @@ class StaffSessionController extends Controller
 
         // Ends only the staff sign-in; a User sign-in in the same browser stays.
         Auth::guard('staff')->logout();
+        $request->session()->forget(EnsureStaffSessionIsActive::LAST_ACTIVITY);
         $request->session()->regenerate(destroy: true);
         $request->session()->regenerateToken();
 

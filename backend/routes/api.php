@@ -12,7 +12,7 @@ Route::get('/health', HealthController::class);
 Route::prefix('staff')->group(function () {
     Route::post('/sign-in', [StaffSessionController::class, 'signIn']);
 
-    Route::middleware('auth:staff')->group(function () {
+    Route::middleware(['auth:staff', 'staff.active'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);
         Route::get('/me', [StaffSessionController::class, 'me']);
     });

@@ -17,5 +17,6 @@ return [
     'server_error' => 'Something went wrong on our side. Try again later.',
     'database_unavailable' => 'The service is not available right now. Try again later.',
     'staff_credentials_invalid' => 'The email or password is not correct.',
+    'staff_session_expired' => 'Your session ended after a while without activity. Sign in again.',
     'staff_account_deactivated' => 'This account was deactivated. Ask an Administrator if you need access again.',
 ];
