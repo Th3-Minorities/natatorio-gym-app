@@ -114,6 +114,7 @@ erDiagram
     varchar(255) email
     varchar(255) emergency_contact_name "the User can edit it"
     varchar(30) emergency_contact_phone "the User can edit it"
+    varchar(20) waiver_version "which text the person accepted (E-134)"
     timestamptz accepted_at
   }
   academic_terms {
@@ -473,6 +474,9 @@ Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13
 
 **D20. Daily totals for statistics (E-133).** Decided (team, 2026-11-05): a nightly task writes one `daily_visit_totals` row per day, with counts only. The rows are never deleted.
 - Why: visits are deleted 5 years after they happen (E-131), and the department wants statistics forever. Counts carry no personal data.
+
+**D21. Waiver version and current photo only (E-134, E-135).** Decided (team, 2026-11-05): `waiver_acceptances.waiver_version` stores the version of the text accepted. When a new-term photo is saved, the previous authorization's photo file is deleted and its `photo_path` set to NULL. A roster record with `removed_at` is deleted 5 years later (E-136).
+- Why: the record must show what each person agreed to, and photos nobody uses only add risk and disk.
 
 ## Gaps and questions
 
