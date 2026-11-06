@@ -10,6 +10,16 @@ export const en: Messages = {
     offline: 'API: no connection',
   },
 
+  states: {
+    loading: 'Loading',
+    empty: 'No results',
+    errorTitle: 'Could not load',
+    errorDetail: 'We could not load the data. Try again.',
+    retry: 'Try again',
+    offlineTitle: 'No connection',
+    offlineLead: 'No connection. The data may have changed. Actions will be available when the connection is back.',
+  },
+
   // Keep them in sync with backend/lang/en/errors.php.
   errors: {
     bad_request: 'The request could not be processed.',

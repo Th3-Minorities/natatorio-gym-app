@@ -1,0 +1,162 @@
+/*
+ * Shared pieces, measured from the Figma file MOCKUPS-GYM:
+ * buttons and fields from N-11 (4039:3871) and A-15 (100:1205), field error from A-08 (107:1814),
+ * notice from N-11, states from A-08 (107:1884, 107:1898, 132:3759, 132:3777).
+ */
+
+/* Button */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-4);
+  height: 40px;
+  /* Figma's buttons are drawn wider than their 10px padding (Cancelar 94px, Desactivar cuenta 165px): about 20px a side. */
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.button--primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.button--secondary {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--primary);
+}
+
+.button--link {
+  background: transparent;
+  color: var(--primary);
+}
+
+.button--large {
+  height: 52px;
+}
+
+.button--full {
+  width: 100%;
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Text field */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.field__label,
+.field__error {
+  margin: 0;
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 21px;
+  color: var(--foreground);
+}
+
+/* 12px under the field in Figma (A-08 107:1814): the field's 8px gap plus 4px. */
+.field__error {
+  margin-top: var(--spacing-4);
+}
+
+.field__input {
+  width: 100%;
+  height: 52px;
+  padding: var(--spacing-4) 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 20px;
+}
+
+/* Notice */
+.notice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  padding: var(--spacing-16);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.notice__title,
+.notice__text {
+  margin: 0;
+}
+
+.notice__title {
+  font-weight: 600;
+}
+
+/* Loading, empty, error and no connection */
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-12);
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.state__title,
+.state__lead,
+.state__detail {
+  margin: 0;
+}
+
+.state__title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 24px;
+  color: var(--foreground);
+}
+
+.state__lead {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--foreground);
+}
+
+.state__detail {
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--muted-foreground);
+}
+
+.state__button {
+  min-width: 160px;
+}
+
+/* "Error al cargar" is drawn a little differently (A-08 132:3759): semi-bold title, taller line, 16px gaps. */
+.state--error {
+  gap: var(--spacing-16);
+}
+
+.state--error .state__title {
+  font-weight: 600;
+  line-height: 29px;
+}

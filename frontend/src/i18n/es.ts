@@ -8,6 +8,17 @@ export const es = {
     offline: 'API: sin conexión',
   },
 
+  // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
+  states: {
+    loading: 'Cargando',
+    empty: 'Sin resultados',
+    errorTitle: 'Error al cargar',
+    errorDetail: 'No pudimos cargar los datos. Inténtalo de nuevo.',
+    retry: 'Reintentar',
+    offlineTitle: 'Sin conexión',
+    offlineLead: 'Sin conexión. Los datos pueden haber cambiado. Las acciones estarán disponibles al recuperar la conexión.',
+  },
+
   // Texts for the stable API error codes. Keep them in sync with backend/lang/es/errors.php.
   errors: {
     bad_request: 'No se pudo procesar la solicitud.',
