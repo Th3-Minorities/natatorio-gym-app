@@ -1,0 +1,31 @@
+/*
+ * Design values from the Figma file MOCKUPS-GYM (variables of the dashboard shell, node 98:5).
+ * Change them here and in Figma together; tokens.test.ts checks them and their contrast.
+ */
+:root {
+  /* Colors */
+  --background: #f7f5ed;
+  --surface: #fffdf8;
+  --foreground: #25291e;
+  --muted-foreground: #616653;
+  --border: #d9dccb;
+  --primary: #337137;
+  --primary-foreground: #ffffff;
+  --hero: #204e2a;
+  --accent: #fa9500;
+  --sage: #babd8d;
+
+  /* Spacing */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+
+  /* Type */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --weight-normal: 400;
+  --weight-medium: 500;
+}
