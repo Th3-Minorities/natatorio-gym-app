@@ -10,6 +10,39 @@ export const en: Messages = {
     offline: 'API: no connection',
   },
 
+  dashboard: {
+    skipToContent: 'Skip to content',
+    brandCampus: 'UPRM',
+    brandName: 'Weight Gym',
+    menu: 'Dashboard menu',
+    staffSection: 'Staff',
+    generalSection: 'General',
+    adminSection: 'Administration',
+    staffItems: {
+      activeSessions: 'Active sessions',
+      searchPerson: 'Find a person',
+      athleteRoster: 'Athlete roster',
+    },
+    generalItems: {
+      schedules: 'Schedules',
+      notices: 'Notices',
+      information: 'Information',
+      statistics: 'Statistics',
+    },
+    adminItems: {
+      terms: 'Terms',
+      manageAthletes: 'Manage athletes',
+      storeSync: 'Store sync',
+      accounts: 'Accounts',
+      staffAccounts: 'Staff accounts',
+      backups: 'Backups',
+      manualEntries: 'Manual entries',
+      auditLog: 'Audit log',
+    },
+    roles: { staff: 'Staff', admin: 'Administrator' },
+    signOut: 'Sign out',
+  },
+
   states: {
     loading: 'Loading',
     empty: 'No results',

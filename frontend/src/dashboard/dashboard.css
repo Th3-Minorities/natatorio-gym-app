@@ -1,0 +1,229 @@
+/* Dashboard shell, measured from Figma MOCKUPS-GYM "Dashboard / Shell" (98:5): 256px sidebar, 32px page padding. */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+  background: var(--background);
+}
+
+/* Only visible while it has keyboard focus (WCAG 2.4.1). */
+.shell__skip {
+  position: absolute;
+  left: -9999px;
+  top: var(--spacing-8);
+  z-index: 10;
+  padding: var(--spacing-8) var(--spacing-12);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+}
+
+.shell__skip:focus {
+  left: var(--spacing-8);
+}
+
+/* Sidebar */
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--spacing-16);
+  width: 256px;
+  height: 100vh;
+  overflow-y: auto;
+  padding: var(--spacing-20);
+  background: var(--hero);
+  color: var(--primary-foreground);
+}
+
+/* The page's green focus outline would not show on dark green (WCAG 2.4.11). */
+.sidebar :focus-visible {
+  outline-color: var(--primary-foreground);
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand__campus,
+.brand__name {
+  margin: 0;
+}
+
+.brand__campus {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.88px;
+}
+
+.brand__name {
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.brand__accent {
+  width: 40px;
+  height: 4px;
+  background: var(--accent);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+}
+
+.nav__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.nav__section--admin {
+  position: relative;
+  padding: var(--spacing-8);
+  border-radius: 6px;
+  background: var(--hero-raised);
+}
+
+/* The 2px sage line on the left of the Administration group. */
+.nav__section--admin::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background: var(--sage);
+}
+
+.nav__label {
+  margin: 0;
+  color: var(--sage);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.nav__section--admin .nav__label {
+  color: var(--sage-on-raised);
+}
+
+.nav__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav__item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+  /* 32px per item in Figma, 44px when the text wraps to two lines ("Sincronización de la tienda"). */
+  min-height: 32px;
+  padding: 1px var(--spacing-8);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.nav__icon {
+  flex-shrink: 0;
+  color: var(--primary-foreground);
+}
+
+.nav__icon--accent {
+  color: var(--accent);
+}
+
+.person {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin-top: auto;
+}
+
+.person__name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--weight-medium);
+  line-height: 19px;
+}
+
+.person__sign-out {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--spacing-12);
+  padding: var(--spacing-8);
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--primary-foreground);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 21px;
+  cursor: pointer;
+}
+
+/* Main area */
+.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-24);
+  min-width: 0;
+  padding: var(--spacing-32);
+}
+
+.page:focus {
+  outline: none;
+}
+
+.page__top {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-24);
+}
+
+.page__heading {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+.page__title,
+.page__description {
+  margin: 0;
+}
+
+.page__title {
+  color: var(--foreground);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 35px;
+}
+
+.page__description {
+  color: var(--muted-foreground);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+.page__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+}

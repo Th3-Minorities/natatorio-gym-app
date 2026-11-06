@@ -8,6 +8,41 @@ export const es = {
     offline: 'API: sin conexión',
   },
 
+  // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
+  dashboard: {
+    skipToContent: 'Saltar al contenido',
+    brandCampus: 'RUM',
+    brandName: 'Gimnasio de pesas',
+    menu: 'Menú del dashboard',
+    staffSection: 'Staff',
+    generalSection: 'General',
+    adminSection: 'Administración',
+    staffItems: {
+      activeSessions: 'Sesiones activas',
+      searchPerson: 'Buscar persona',
+      athleteRoster: 'Roster de atletas',
+    },
+    generalItems: {
+      schedules: 'Horarios',
+      notices: 'Avisos',
+      information: 'Información',
+      statistics: 'Estadísticas',
+    },
+    adminItems: {
+      terms: 'Términos',
+      manageAthletes: 'Gestionar atletas',
+      storeSync: 'Sincronización de la tienda',
+      accounts: 'Cuentas',
+      staffAccounts: 'Cuentas del staff',
+      backups: 'Respaldos',
+      manualEntries: 'Entradas manuales',
+      auditLog: 'Registro de auditoría',
+    },
+    // Neutral: staff accounts have no gender, so not "Administrador" or "Administradora".
+    roles: { staff: 'Staff', admin: 'Administración' },
+    signOut: 'Cerrar sesión',
+  },
+
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
   states: {
     loading: 'Cargando',

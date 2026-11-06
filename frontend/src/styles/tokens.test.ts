@@ -65,6 +65,8 @@ describe('design tokens', () => {
     ['button text on the primary green', 'primary-foreground', 'primary', 4.5],
     ['sidebar text on the dark green', 'primary-foreground', 'hero', 4.5],
     ['sidebar section labels', 'sage', 'hero', 4.5],
+    ['Administration items on their own background', 'primary-foreground', 'hero-raised', 4.5],
+    ['the Administration label on its own background', 'sage-on-raised', 'hero-raised', 4.5],
     ['links on a card', 'primary', 'surface', 4.5],
     ['orange icons and marks in the sidebar', 'accent', 'hero', 3],
   ])('%s meet WCAG AA contrast', (_, text, back, minimum) => {

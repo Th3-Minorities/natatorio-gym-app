@@ -12,6 +12,11 @@
   --primary: #337137;
   --primary-foreground: #ffffff;
   --hero: #204e2a;
+  /* The Administration group in the sidebar. Drawn as a plain color in Figma, not a variable. */
+  --hero-raised: #325b36;
+  /* The "Administración" label on --hero-raised. Figma uses --sage there (4.00:1); this is --sage made
+     16% lighter so the small text meets WCAG AA (4.5:1). */
+  --sage-on-raised: #c5c89f;
   --accent: #fa9500;
   --sage: #babd8d;
 
