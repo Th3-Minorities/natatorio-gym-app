@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Exceptions\ApiException;
+use App\Models\User;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class ApiErrorFormatTest extends TestCase
         parent::setUp();
 
         // Routes that only exist in this test, to trigger each kind of error.
-        Route::prefix('api/test')->group(function () {
+        Route::prefix('api/test')->middleware('api')->group(function () {
             Route::post('/validation', fn (Request $request) => $request->validate(['email' => ['required', 'email']]));
             Route::get('/api-exception', fn () => throw new ApiException('number_invalid', 422, 'Bad number.', ['field' => 'number']));
             Route::get('/crash', fn () => throw new \LogicException('secret internal detail'));
@@ -38,7 +39,7 @@ class ApiErrorFormatTest extends TestCase
             ->assertUnprocessable()
             ->assertExactJson(['error' => ['code' => 'check_in.location_denied', 'message' => 'No se pudo procesar la solicitud.']]);
 
-        app()->setLocale('en');
+        $this->actingAs(new User(['locale' => 'en']));
         $this->getJson('/api/test/code-without-text')
             ->assertExactJson(['error' => ['code' => 'check_in.location_denied', 'message' => 'The request could not be processed.']]);
     }
@@ -50,7 +51,7 @@ class ApiErrorFormatTest extends TestCase
             ->assertStatus(503)
             ->assertExactJson(['error' => ['code' => 'printer_on_fire', 'message' => 'Algo salió mal de nuestro lado. Intenta más tarde.']]);
 
-        app()->setLocale('en');
+        $this->actingAs(new User(['locale' => 'en']));
         $this->getJson('/api/test/server-code-without-text')
             ->assertExactJson(['error' => ['code' => 'printer_on_fire', 'message' => 'Something went wrong on our side. Try again later.']]);
     }
