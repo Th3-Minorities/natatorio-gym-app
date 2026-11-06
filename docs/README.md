@@ -72,6 +72,7 @@ All documents are in the `docs` folder.
 | What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) | |
 | Where each finished wireframe is in Figma | [Wireframes](design/wireframes.md) | |
 | Rules for the code that answers the app | [API conventions](design/api-conventions.md) | |
+| Design values, texts, dates and shared pieces of the screens | [Frontend base](design/frontend-base.md) | |
 | Older notes moved out of the SRS | [Design notes](design/design-notes.md) | |
 
 Each design document ends with three lists: decisions still waiting for a yes, open questions, and which requirements each diagram covers.
