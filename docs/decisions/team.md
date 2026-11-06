@@ -435,6 +435,7 @@ The team met the department on 2026-11-04 and settled the rest as a team the sam
 | E-149 | Skipped orders in the sync record | The record of each store sync keeps the counts and, for each skipped order, only the order reference and the reason. No names or emails: the Administrator finds the order in the store by its reference. SRS REQ-F-99, REQ-NF-21. | Team | 2026-11-05 |
 | E-150 | Reactivating a staff account | An Administrator can reactivate a deactivated staff account, for example a student who comes back to work the next term. The person signs in with the same email and password. It writes an audit log entry. The 5 years of E-145 count from the last deactivation. SRS REQ-F-88. | Team | 2026-11-05 |
 | E-151 | The last Administrator | The system refuses to deactivate the last active Administrator, so the department never loses access to the Administrator screens. SRS REQ-F-88. | Team | 2026-11-05 |
+| E-152 | Date and time format | Dates and times follow the Figma wireframes: the short form of each language, in Puerto Rico time. Spanish `5 nov 2026, 8:30 a. m.`, a time alone `9:28 a. m.`, and a time from today `Hoy, 10:42 a. m.`. English `Nov 5, 2026, 8:30 AM`, `9:28 AM` and `Today, 10:42 AM`. Changes E-22, which used an ISO date with 12-hour time for both languages (`2026-10-13 3:05 PM`). SRS REQ-NF-38. | Carlos Pepin | 2026-11-06 |
 
 ## WooCommerce import
 

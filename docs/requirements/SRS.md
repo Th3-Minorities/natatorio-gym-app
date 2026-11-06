@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.12 draft, not approved
+**Version:** 0.13 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -78,6 +78,7 @@
 | Carlos J. Pepin Delgado | 2026-11-04 | Team decisions E-114 to E-126 (`team.md`), after the Athletic Activities meeting: personal staff accounts for Staff and Administrators, with no shared gym account, PIN or recovery code (REQ-F-89 and REQ-NF-48 removed; REQ-F-52, REQ-F-88, REQ-NF-10, REQ-NF-39 rewritten); check-out and a session that ends by itself after 2 hours or at a closure; one athlete roster entered by hand; no in-person registration code (REQ-F-77 removed); photo pending (new REQ-F-94); manual entries from the paper log (new REQ-F-95); student or employee on each order and refunds revoked by hand by an Administrator (E-120, rewritten: the store never shows them); new reports and an end-of-term summary (new REQ-F-96); backups on a second disk every two weeks; Rocky Linux 10 and one install command; own UPRM subdomain; every kind of data kept 5 years; store button, optional English notices, four manuals. Then E-127 and E-128: paid memberships come from the store's REST API, not from an uploaded file (REQ-F-28, F-29, F-30, F-10 rewritten; REQ-F-31 and F-32 removed; new REQ-F-97 to F-99; the import result screen becomes the Store sync screen), and the Authorization Number is a 6-character code that can include letters, unique across all orders | 0.10 |
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decisions E-140 to E-144 (`team.md`): Administrators download the athlete roster as Word or PDF (new REQ-F-100); Administrators download the statistics of any period as PDF or Excel (new REQ-F-101), and the end-of-term summary is that download with the term chosen (E-144, REQ-F-96 merged); the period is picked with buttons (day, week, month, term, year) or a free date range (REQ-F-61); a read-only REST API gives statistics with no personal data to other services (new REQ-F-102) | 0.11 |
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decisions E-145 to E-151 (`team.md`), from the review of the #13 migrations: retention without blocked database links (REQ-NF-05), void a wrong manual entry (REQ-F-95), sport copied onto each visit (REQ-F-61), student or employee on each manual grant (REQ-F-87), no names in the sync record (REQ-F-99), reactivating a staff account and keeping the last Administrator (REQ-F-88) | 0.12 |
+| Pierre Vales | 2026-11-06 | Team decision E-152 (`team.md`): dates and times follow the Figma wireframes, in the short form of each language (REQ-NF-38 rewritten) | 0.13 |
 
 ## 1. Introduction
 
@@ -482,7 +483,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 | REQ-NF-35 | Emails shall be sent in the language chosen by the User. | N/A | High | Clear | Team decision |
 | REQ-NF-36 | The page language attribute shall change together with the texts (WCAG 3.1.1). | N/A | High | Clear | Review gap |
 | REQ-NF-37 | Expiration, term boundaries and analytics (day, week, month) shall use the `America/Puerto_Rico` time zone. | N/A | High | Clear | Review gap |
-| REQ-NF-38 | Dates and times shall be shown as an ISO date plus 12-hour time with AM/PM, the same in both languages. Example: `2026-10-13 3:05 PM`. | N/A | High | Clear | Team decision |
+| REQ-NF-38 | Dates and times shall be shown in the short form of the account language, as in the wireframes, in Puerto Rico time (REQ-NF-37). Spanish: `5 nov 2026, 8:30 a. m.`; English: `Nov 5, 2026, 8:30 AM`. A time from today shows `Hoy` or `Today` instead of the date. | N/A | High | Clear | Team decision (E-22, E-152) |
 
 ## 8. Other Requirements
 
