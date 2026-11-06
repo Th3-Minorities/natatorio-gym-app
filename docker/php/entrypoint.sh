@@ -2,8 +2,10 @@
 set -eu
 
 if [ "${BOOTSTRAP_ENV:-}" = local ]; then
-    if [ ! -f vendor/autoload.php ]; then
+    # Also after a pull that changes composer.lock. Not on every start: the optimized autoload rebuild is slow on Windows.
+    if [ ! -f vendor/autoload.php ] || [ composer.lock -nt vendor/composer/installed.json ]; then
         COMPOSER_PROCESS_TIMEOUT=0 composer install --no-interaction --no-progress
+        touch vendor/composer/installed.json
     fi
 
     if [ ! -f .env ]; then

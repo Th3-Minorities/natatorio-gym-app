@@ -66,7 +66,7 @@ Step 1 sets up a fresh clone and starts the stack each day.
    docker compose --profile development up -d --build --wait
    ```
 
-   With the default `APP_ENV=local`, the app installs missing PHP packages, creates `backend/.env` and its key if needed, and runs pending migrations as `www-data` before PHP-FPM starts. Restarts keep the key and data. The first install can take several minutes. Set `APP_ENV=production` in the stack environment to skip this setup in production.
+   With the default `APP_ENV=local`, the app installs the PHP packages when they are missing or `composer.lock` changed, creates `backend/.env` and its key if needed, and runs pending migrations as `www-data` before PHP-FPM starts. Restarts keep the key and data. The first install can take several minutes. Set `APP_ENV=production` in the stack environment to skip this setup in production.
 
 2. Open <http://localhost:8080> for the PWA. Check the API at <http://localhost:8080/api/health> or run this command. You should see `{"status":"ok"}`:
 
