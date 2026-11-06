@@ -320,7 +320,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Question | CTI asks every student project for an audit log with these rules. Do we adopt them? (a) No screen, route or command edits or deletes an entry, not even for the Administrator; entries leave only by the retention rule (REQ-NF-05). (b) The Administrator searches the log by account and by date range (by person only if per-person sign-in is adopted, gym.md G-09) and exports the result to CSV or Excel. (c) The gym account's sign in and sign out are logged. User sign-ins stay out, because E-91 and REQ-NF-21 keep no IP per sign-in. |
 | Affects | REQ-NF-39; new REQ-F-93 (Proposed) |
 | Feature | 8.1 Audit |
-| Why we ask | CTI said it always asks every project for such a log. CTI did not say whether it is a condition for the VM. CTI minutes, section 3.15 (`docs/meetings/2026-10-22-cti-minuta.md`). |
+| Why we ask | CTI said it always asks every project for such a log. CTI did not say whether it is a condition for the VM. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Status | Decided |
 | Answer | Yes to all three: (a) no screen, route or command edits or deletes an entry, not even an Administrator; entries leave only by the retention rule (E-131); (b) the Administrator searches by staff account and date range and exports to CSV or Excel (REQ-F-93); (c) staff account sign in and sign out are logged. User sign-ins stay out. |
 | Answered by | Team |
@@ -333,7 +333,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Question | Which backup method do we propose to the owner? A: a second disk on the VM (agreed with whoever creates the VM, so probably in the VM request; it is not outside the VM as REQ-NF-06 asks). B: an Administrator button that downloads one file with the database and the photos (CTI's minimum, daily in the afternoon or on Fridays; the file holds all personal data and photos on a gym computer). C: a scheduled copy to a second server (needs a second server request and a stored remote password). Also: how often, who does it, the acceptable data loss, and how long copies are kept. Decide before the VM request is filed if A is chosen. |
 | Affects | REQ-NF-06 |
 | Feature | 4.3 |
-| Why we ask | CTI said where backups go is the team's decision and that the team must agree the backup and restore procedure with the owner. CTI minutes, section 3.16. |
+| Why we ask | CTI said where backups go is the team's decision and that the team must agree the backup and restore procedure with the owner. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Status | Decided (E-122) |
 | Answer | A: a second virtual disk on the same VM, asked for in the VM request. One copy every two weeks, the 2 most recent kept, plus a Download button and a restore from the panel (E-122). |
 | Answered by | Team |
@@ -346,7 +346,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Question | CTI asks the student groups it works with for an installer script (from a plain Linux machine to a running app with the first account created) and a written disaster recovery plan (what is backed up, how often, how to restore after a corrupted database, a hacked server or a hardware failure). Do we deliver both? Is restore an action inside the app or a step on the server? Do we remove the team's sudo and VPN access at delivery? |
 | Affects | REQ-F-88, REQ-NF-06, REQ-NF-23, REQ-NF-31; new REQ-NF-52 and REQ-NF-53 (Proposed) |
 | Feature | 2.5, 4.3, 6.3 |
-| Why we ask | CTI said it normally asks its groups for both. CTI did not say whether they are conditions for the VM. User and administrator manuals are asked of the director (gym.md, G-36). CTI minutes, sections 3.16 and 3.23. |
+| Why we ask | CTI said it normally asks its groups for both. CTI did not say whether they are conditions for the VM. User and administrator manuals are asked of the director (gym.md, G-36). Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Status | Partly decided (E-123) |
 | Answer | Yes to the installer: one sudo command that installs everything on Rocky Linux 10, creates the first Administrator, schedules backups and can restore a backup on a new server (E-123). Restore is also a button in the Administrator panel, from a copy already on the server (E-122). Still open: the written disaster recovery plan, and removing the team's sudo and VPN access at delivery. |
 | Answered by | Team |
@@ -359,7 +359,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Question | Which VM size do we recommend to the owner, and with what storage estimate? CTI's usual size for web apps is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The estimate uses the size of the files per person, the number of people, and how often files are added. Which cleanup options do we offer the gym and UPRM (each term, each year, or by the User)? The team sets no retention period (gym.md, G-03). |
 | Affects | REQ-NF-04, REQ-NF-05 |
 | Feature | 2.3, 4.3 |
-| Why we ask | CTI said the team defines the size and asked for a growth estimate and a cleanup plan. CTI minutes, sections 3.3 and 3.7. |
+| Why we ask | CTI said the team defines the size and asked for a growth estimate and a cleanup plan. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Status | Decided, redone on 2026-11-05 with a large margin on purpose: running out of disk is worse than asking for too much |
 | Answer | Ask for 2 processors, 8 GB of memory, a 60 GB main disk and a 40 GB second disk for backups (E-122), in the same VM request.<br><br>The numbers are rounded up on purpose. What we know: the store had 69 paid orders from January to October 2026 (read on 2026-11-04). We do not know how many athletes there are.<br><br>Main disk:<br>- People: we assume up to 500 new people a year, paid and athletes, several times what the store shows. An account and its current photo stay until 5 years after its last use (E-131), so up to 2,500 accounts; we double it to 5,000.<br>- Photos: only the current photo is kept (E-135), and the server shrinks each one to about 0.5 MB when it is uploaded (E-138): 5,000 x 0.5 MB = 2.5 GB.<br>- Database: visits, audit log, orders and daily totals stay under 1 GB for years at the real volume; we count 5 GB.<br>- Linux, containers, images and logs: 20 GB.<br>- Total about 28 GB. We ask for 60 GB, the top of CTI's usual size, so the disk is never close to full.<br><br>Second disk: the 2 most recent backups (E-122), each about 8 GB in the worst case (photos plus database), about 16 GB. We ask for 40 GB.<br><br>Memory: PostgreSQL about 1 GB, PHP and the queue worker about 1 GB, Linux about 0.5 GB, plus the nightly and backup tasks. 4 GB would be enough; we ask for 8 GB so a backup or a busy hour never runs short. Processors: the real load is a few requests a second at most, so 2 are enough. |
 | Answered by | Team |
@@ -372,7 +372,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Question | CTI suggested one field, 'registration number': paid members type the receipt number, athletes the student number, and the system looks in the current-term roster first and then in the imported orders. A remark that most likely came from CTI said the current choice of athlete or paid member is fine. Do we adopt it? Check first that a 6-digit Authorization Number cannot be mistaken for a student number, and that the 'not on the roster' message (REQ-F-76) and the lookup limits still work. |
 | Affects | REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91 |
 | Feature | 3.2, 3.3 |
-| Why we ask | CTI minutes, section 3.21. |
+| Why we ask | CTI suggested it in the meeting ([CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59)). |
 | Status | Decided: not adopted |
 | Answer | A: keep two paths. "I paid for a membership" asks only for the Authorization Number from the receipt, with a picture of where it is in the receipt email; "I am an athlete" asks only for the student number. Why: paid members are students too and have a student number, so one field invites them to type it, which looks in the wrong place and shows a confusing error. Each path asks for one number, the right one. |
 | Answered by | Team |
@@ -385,7 +385,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | Question | REQ-NF-10 puts the gym dashboard on its own address. Is that a second domain name, which needs its own domain request to CTI, or a path under the same name? |
 | Affects | REQ-NF-10 |
 | Feature | 5.1 |
-| Why we ask | CTI said each domain is a separate request filed by the owner. CTI minutes, section 3.6. |
+| Why we ask | CTI said each domain is a separate request filed by the owner. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Status | Decided (E-124) |
 | Answer | A path under the same name. The app has its own UPRM subdomain and the dashboard lives under it, so there is no second domain request (E-124). |
 | Answered by | Team |
@@ -393,7 +393,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 
 ## Decisions after the Athletic Activities meeting (2026-11-04)
 
-The team met the department on 2026-11-04 and settled the rest as a team the same day. The meeting minutes are in `docs/meetings/2026-11-04-athletics-minuta.md`; the gym's answers are in `gym.md`.
+The team met the department on 2026-11-04 and settled the rest as a team the same day. The meeting summary is in [Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/99); the gym's answers are in `gym.md`.
 
 | ID | Topic | Answer | Answered by | Date |
 |---|---|---|---|---|

@@ -8,7 +8,7 @@
 |---|---|---|---|
 | 36 | 36 | 0 | 0 |
 
-"Answered" items were answered by the team on 2026-10-13. The gym must still confirm each one. "Partly answered" items have a team note but still need the gym's answer. On 2026-11-04 the team met the department (minutes in `docs/meetings/2026-11-04-athletics-minuta.md`) and answered the rest; items marked "Athletic Activities meeting and team" mix what the department said with what the team decided after the meeting.
+"Answered" items were answered by the team on 2026-10-13. The gym must still confirm each one. "Partly answered" items have a team note but still need the gym's answer. On 2026-11-04 the team met the department (summary in [Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/99)) and answered the rest; items marked "Athletic Activities meeting and team" mix what the department said with what the team decided after the meeting.
 
 ## Running the system
 
@@ -19,7 +19,7 @@
 | Question | After December, who at the gym looks after the system: holds the PIN and the gym account password, changes them when an employee leaves, helps users with problems, and calls for help if it fails? |
 | Affects | REQ-NF-23 No routine developer access to safety data; REQ-NF-31 Uptime target and manual procedure |
 | Feature | 2.5 Assumptions and Dependencies, 6.4 Other Quality Attributes |
-| Why we ask | CTI does not manage the server or the application and has no people to adopt the project. In the CTI meeting, CTI said this is the owner's question: the owner must set a plan (for example hiring students), and part of the work after December (install, configuration, accounts, adjustments, user orientation) is his. If nobody is named, the team would run it, which conflicts with REQ-NF-23. CTI minutes, section 3.2 (`docs/meetings/2026-10-22-cti-minuta.md`). |
+| Why we ask | CTI does not manage the server or the application and has no people to adopt the project. In the CTI meeting, CTI said this is the owner's question: the owner must set a plan (for example hiring students), and part of the work after December (install, configuration, accounts, adjustments, user orientation) is his. If nobody is named, the team would run it, which conflicts with REQ-NF-23. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Answer | The two department secretaries look after the system after December. The Administrators are the two secretaries and the department director (team.md, E-114). |
 | Answered by | Athletic Activities meeting and team |
 | Date | 2026-11-04 |
@@ -69,7 +69,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Question | Should Users be able to open the app and do Check In from outside the campus network, for example on mobile data? Should the Administrator be able to limit the networks that can connect, and for which screens? |
 | Affects | REQ-NF-16 Check In usable on mobile data; REQ-NF-26 Core actions require a connection |
 | Feature | 2.3 Operating Environment |
-| Why we ask | In the CTI meeting, CTI raised it as the gym's decision. A campus-only rule would block Check In from phones on mobile data. Whether CTI's network allows outside access at all is cti.md, M-01. CTI minutes, section 3.19. |
+| Why we ask | In the CTI meeting, CTI raised it as the gym's decision. A campus-only rule would block Check In from phones on mobile data. Whether CTI's network allows outside access at all is cti.md, M-01. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Answer | Check In works from any network, including mobile data. Limiting the administration screens to some networks was not asked and is not planned. |
 | Answered by | Athletic Activities meeting and team |
 | Date | 2026-11-04 |
@@ -81,7 +81,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Question | Do you want a user manual and an administrator manual from the team? In which language? |
 | Affects | None directly |
 | Feature | 2.5 Assumptions and Dependencies |
-| Why we ask | In the CTI meeting, CTI said the owner should ask the team now for what he needs after December, for example these manuals. CTI minutes, sections 3.2 and 3.23. |
+| Why we ask | In the CTI meeting, CTI said the owner should ask the team now for what he needs after December, for example these manuals. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Answer | Yes: User, Staff, Administrator and Developer manuals, each in Spanish and English (team.md, E-126). |
 | Answered by | Athletic Activities meeting and team |
 | Date | 2026-11-04 |
@@ -169,7 +169,7 @@ Also asked in cti.md, if CTI manages the store.
 | Question | Is a photo the User takes with their own phone at registration valid, or should Staff take it? Is the first registration done by the person alone or with Staff? If the photo does not match the person at the door, what do Staff do? |
 | Affects | REQ-F-13, REQ-F-26, REQ-F-45 |
 | Feature | 3.2, 3.3, 3.8 |
-| Why we ask | In the CTI meeting, CTI first said that, if it were up to CTI, taking the photo would be a Staff task, then said the phone is fine if the director accepts it. CTI also said Staff should flag a photo that does not match, which has no design today. CTI minutes, section 3.22. |
+| Why we ask | In the CTI meeting, CTI first said that, if it were up to CTI, taking the photo would be a Staff task, then said the phone is fine if the director accepts it. CTI also said Staff should flag a photo that does not match, which has no design today. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Answer | The person takes and uploads their own photo, as they register themselves. If the photo does not match the person at the door, Staff mark the account "photo pending" (team.md, E-118). |
 | Answered by | Athletic Activities meeting and team |
 | Date | 2026-11-04 |
@@ -181,7 +181,7 @@ Also asked in cti.md, if CTI manages the store.
 | Question | Who is the technical contact for the athletic department's WordPress store? How should payments reach the app later: a file export (today), a message from WordPress, or the app asking the store? |
 | Affects | REQ-F-32 Sync with WooCommerce through the API |
 | Feature | 3.5 WooCommerce Import |
-| Why we ask | In the CTI meeting, CTI said the director is not a technical contact. The MVP stays a file import; this only blocks Stretch work. CTI minutes, section 3.10. |
+| Why we ask | In the CTI meeting, CTI said the director is not a technical contact. The MVP stays a file import; this only blocks Stretch work. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Answer | No outside contact needed: the team has access to the store. |
 | Answered by | Team |
 | Date | 2026-11-04 |
@@ -255,7 +255,7 @@ Also asked in cti.md, if CTI manages the store.
 | Question | (1) Who gives the athlete list each term (for example the registrar or the coaches), and in what format? (2) Does it carry an institutional email for each student, and a sport or only an athlete mark? (3) On what date each term is it ready? (4) When a new list arrives, what happens to people who are not on it? A: they lose athlete status (the list is final). B: they stay until someone removes them by hand, for example a graduate the gym still treats as an athlete. (5) Who tells the system that a student stopped being an athlete mid-term, and who adds one mid-term? (6) Open, from a CTI example: if another group (for example the band) gets the gym benefit, must the statistics tell them apart from athletes? |
 | Affects | REQ-F-49, REQ-F-51, REQ-F-61 (e), REQ-F-76 |
 | Feature | 3.9 Athlete Roster |
-| Why we ask | The athlete email link only works if the roster has the student's email. Athletes who try to register before the list is loaded get the 'not a registered athlete' message. In the CTI meeting, CTI said these are the gym's decisions. A person kept by hand today can only get a manual authorization, which counts as its own group in statistics, not as an athlete. CTI minutes, section 3.11. |
+| Why we ask | The athlete email link only works if the roster has the student's email. Athletes who try to register before the list is loaded get the 'not a registered athlete' message. In the CTI meeting, CTI said these are the gym's decisions. A person kept by hand today can only get a manual authorization, which counts as its own group in statistics, not as an athlete. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Answer | One roster, not one per term. Athletes stay until an Administrator removes them by hand; the secretaries remove athletes who leave. Administrators add an athlete in the middle of a term by hand (team.md, E-116). |
 | Answered by | Athletic Activities meeting and team |
 | Date | 2026-11-04 |
@@ -365,7 +365,7 @@ Also asked in cti.md, if CTI manages the store.
 | Question | (1) Is the 60-minute use per visit or per day? (2) May a person who already used 60 minutes come back the same day? A: yes, a new 60-minute session (today's design). B: no, the door shows 'already used 60 minutes today'. C: yes, and every entry is recorded. (3) If a person enters several times inside the same hour, should the statistics count each entry or one visit? (4) Open, from a CTI idea: do you want a check-out, so the app knows how many people are inside at each moment and how long each person stays? If yes, Staff would do it at the desk from one list. |
 | Affects | REQ-F-33, REQ-F-36, REQ-F-37, REQ-F-38, REQ-F-41, REQ-F-48, REQ-F-61 |
 | Feature | 3.6 Check In and Facility Session, 3.7 Gym ID and Occupancy |
-| Why we ask | Today, after the 60 minutes end, a new Check In opens a new session, there is no daily limit, and a Check In inside an active session returns that session (REQ-F-37, REQ-F-38). In the CTI meeting, CTI said that without a rule for people who come back, the 60 minutes changes nothing at the door, and that a real count of people inside needs a check-out. Nobody is asked to leave after 60 minutes; that stays outside the system. CTI minutes, section 3.13. |
+| Why we ask | Today, after the 60 minutes end, a new Check In opens a new session, there is no daily limit, and a Check In inside an active session returns that session (REQ-F-37, REQ-F-38). In the CTI meeting, CTI said that without a rule for people who come back, the 60 minutes changes nothing at the door, and that a real count of people inside needs a check-out. Nobody is asked to leave after 60 minutes; that stays outside the system. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). |
 | Answer | A person may come back the same day. The hour depends on how full the gym is and the app does not enforce it. Staff check out each person; a session nobody closes ends by itself after 2 hours with the note "closed automatically". Stepping out briefly is the same session, and each entry after a check-out counts as a visit (team.md, E-115). |
 | Answered by | Athletic Activities meeting and team |
 | Date | 2026-11-04 |
@@ -380,7 +380,7 @@ Also asked in cti.md, if CTI manages the store.
 | Affects | REQ-F-60 Store waivers and safety records |
 | Feature | 3.12 Membership and Safety Records |
 | Why we ask | The proposal stores these only if the gym needs them. Each one adds sensitive data that needs access limits and retention rules. |
-| Answer | Waivers and emergency contacts only. The system stores a waiver acceptance with full name, email and an emergency contact (name and phone). Name and email come from the payment record or the roster. No street address, no documents and no medical warnings. Staff see the waiver and emergency contact from the Staff dashboard. Open since the CTI meeting: is accepting on screen enough, or does the director need a drawn signature or a signed paper? With on-screen acceptance nothing is uploaded; only the acceptance is stored. A signature or a paper brings back document storage, size limits, a check that the file is valid, and more backup space. The director says what he needs legally. CTI minutes, section 3.22. Update 2026-11-04: accepting on screen counts as the signature. The department sends the waiver text. Athletes are not asked again each term (team.md, E-116). |
+| Answer | Waivers and emergency contacts only. The system stores a waiver acceptance with full name, email and an emergency contact (name and phone). Name and email come from the payment record or the roster. No street address, no documents and no medical warnings. Staff see the waiver and emergency contact from the Staff dashboard. Open since the CTI meeting: is accepting on screen enough, or does the director need a drawn signature or a signed paper? With on-screen acceptance nothing is uploaded; only the acceptance is stored. A signature or a paper brings back document storage, size limits, a check that the file is valid, and more backup space. The director says what he needs legally. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). Update 2026-11-04: accepting on screen counts as the signature. The department sends the waiver text. Athletes are not asked again each term (team.md, E-116). |
 | Answered by | Carlos Pepin (team), gym to confirm |
 | Date | 2026-10-13 |
 

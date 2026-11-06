@@ -106,7 +106,7 @@ Migrating between Laravel and Node (reasoned estimate, not measured): the fronte
 - SAML is only needed if authentication is external.
 - CTI asked to talk with the user (the gym) about implementation and continuity.
 - CTI did not answer whether development can use external services and migrate later.
-- Meeting with the CTI contact on 2026-10-22: minutes in `docs/meetings/2026-10-22-cti-minuta.md`. Answers are in cti.md.
+- Meeting with the CTI contact on 2026-10-22: [summary in Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). Answers are in cti.md.
 - The VM and the domain are separate tickets. The team's access from off campus needs a VPN that the owner requests (a VPN ticket or an email listing the team's emails). The owner answers for every account he authorizes.
 - Mail: CTI relays through its gateway after it authorizes the VM (cti.md, M-07).
 - The data may stay on the VM disk. Where backups go is the team's decision (cti.md, M-13, M-06).

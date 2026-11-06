@@ -54,7 +54,7 @@ All documents are in the `docs` folder.
 | What the app must do | [SRS](requirements/SRS.md) |
 | What changed since the proposal, and why | [Project context](context.md) |
 | Questions we asked and the answers we got | [The team's questions](decisions/team.md), [the gym's questions](decisions/gym.md), [CTI's questions](decisions/cti.md) |
-| Notes from meetings with the gym or CTI | [meetings folder](meetings/) |
+| Summaries of meetings with the gym or CTI | [Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/categories/announcements) |
 | The proposal and its original drawings | [capstone_proposal folder](capstone_proposal/). The `v0` folder inside is the version we submitted, kept as it was |
 | How to set up the tools we use | [setup folder](setup/) |
 | How to run the code | The [README at the top of the repository](../README.md) |
