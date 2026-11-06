@@ -79,6 +79,7 @@
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decisions E-140 to E-144 (`team.md`): Administrators download the athlete roster as Word or PDF (new REQ-F-100); Administrators download the statistics of any period as PDF or Excel (new REQ-F-101), and the end-of-term summary is that download with the term chosen (E-144, REQ-F-96 merged); the period is picked with buttons (day, week, month, term, year) or a free date range (REQ-F-61); a read-only REST API gives statistics with no personal data to other services (new REQ-F-102) | 0.11 |
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decisions E-145 to E-151 (`team.md`), from the review of the #13 migrations: retention without blocked database links (REQ-NF-05), void a wrong manual entry (REQ-F-95), sport copied onto each visit (REQ-F-61), student or employee on each manual grant (REQ-F-87), no names in the sync record (REQ-F-99), reactivating a staff account and keeping the last Administrator (REQ-F-88) | 0.12 |
 | Pierre Vales | 2026-11-06 | Team decision E-152 (`team.md`): dates and times follow the Figma wireframes, in the short form of each language (REQ-NF-38 rewritten) | 0.13 |
+| Carlos J. Pepin Delgado | 2026-11-06 | Team decision E-154 (`team.md`): API error texts live only in the PWA translation files and the API sends only a code (REQ-NF-34 rewritten) | 0.13 |
 
 ## 1. Introduction
 
@@ -479,7 +480,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
 | REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it when creating the account and can change it later in the profile preferences. Before an account exists, the welcome and User sign-in screens are in Spanish. A User whose account is in English also sees these two screens in Spanish while signed out; the account language applies after sign in. Each staff account stores its own language, changed in the account's preferences on the dashboard. The User app has no language button in the top bar. | N/A | High | Clear | Team decision (E-64, E-103, E-114) |
-| REQ-NF-34 | All frontend and backend texts, including emails and API error messages, shall be in translation files from the start. | N/A | High | Clear | Team decision |
+| REQ-NF-34 | All frontend and backend texts shall be in translation files from the start. API error texts shall live only in the PWA translation files, and the API shall send only a code. The backend shall translate what does not pass through the PWA, such as emails. | N/A | High | Clear | Team decision (E-154) |
 | REQ-NF-35 | Emails shall be sent in the language chosen by the User. | N/A | High | Clear | Team decision |
 | REQ-NF-36 | The page language attribute shall change together with the texts (WCAG 3.1.1). | N/A | High | Clear | Review gap |
 | REQ-NF-37 | Expiration, term boundaries and analytics (day, week, month) shall use the `America/Puerto_Rico` time zone. | N/A | High | Clear | Review gap |

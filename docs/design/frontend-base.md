@@ -1,13 +1,13 @@
 # Frontend base
 
-The pieces every screen of the PWA shares: design values, texts in Spanish and English, dates, buttons, fields, states and the dashboard shell. Set up in GitHub issue #97. The User app (#14) builds on the same pieces. Requirements: REQ-NF-10, REQ-NF-13, REQ-NF-14, REQ-NF-33, REQ-NF-37, REQ-NF-38.
+The pieces every screen of the PWA shares: design values, texts in Spanish and English, dates, buttons, fields, states and the dashboard shell. Set up in GitHub issue #97. The User app (#14) builds on the same pieces. Requirements: REQ-NF-10, REQ-NF-13, REQ-NF-14, REQ-NF-33, REQ-NF-34, REQ-NF-36, REQ-NF-37, REQ-NF-38.
 
 ## 1. Rules
 
 - The Figma file [MOCKUPS-GYM](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM) decides how things look. Build only what it draws. [Wireframes](wireframes.md) links each screen to its frame.
 - When Figma would change the backend, the backend comes first. Ask the team.
 - Every text goes in `src/i18n/es.ts` and `src/i18n/en.ts`, never in a component.
-- No library for routing, translations or styles (context.md, "Frontend"). Styles are plain CSS that use the design values below.
+- No routing, translation or styling library yet: plain CSS and the files in `src/i18n/`. Adding one is a team decision. Styles use the design values below.
 
 ## 2. Folders
 
@@ -41,10 +41,11 @@ const texts = useMessages()
 return <p>{texts.states.loading}</p>
 ```
 
-- Add each new text to `es.ts` and `en.ts` under the same key. TypeScript and `i18n.test.tsx` both fail when the two files differ.
-- `<I18nProvider locale={account.locale}>` gives the texts of the account language and sets `<html lang>`. Without a signed-in account it is Spanish (E-103).
-- The API answers errors in the account language too, from `backend/lang` (SelectAccountLocale).
-- To show an API error, use the code, never the server's message: `errorMessage(texts, error.code, status)`. An unknown code gets the general text. A test reads `backend/lang/*/errors.php` and fails when a backend code has no text here.
+- Add each new text to `es.ts` and `en.ts` under the same key. `i18n.test.tsx` catches any difference between the two files, and TypeScript checks every key except the error codes.
+- `<I18nProvider locale={account.locale}>` gives the texts of the account language (one language per account, E-64, also for personal staff accounts, E-114) and sets `<html lang>` (REQ-NF-36). Without a signed-in account it is Spanish (E-103).
+- The API sends an error code and no text (E-154). The texts are here, under `errors.<code>`, and the text for each rule of a `validation_failed` field is under `validation.<rule>`.
+- To show an API error, use the code: `errorMessage(texts, error.code, status)`. An unknown code gets the general `bad_request` text, or `server_error` for a 5xx status. An unknown rule gets a general "check this field" text.
+- A test reads the codes the backend can send (`backend/app`, `backend/routes`, `backend/bootstrap`) and fails when a code has no text in both files. A new backend code needs its text here in the same pull request.
 
 ## 5. Dates and times
 
@@ -110,7 +111,7 @@ Run `npm run dev` in `frontend/` and open:
 - <http://localhost:5173/component-preview.html>: every shared piece and the dates, each labeled with its Figma frame
 - <http://localhost:5173/dashboard-preview.html>: the shell as drawn in Figma. Add `?role=staff` for the Staff view.
 
-Add `?lang=en` to either one for English. The production build leaves both pages out.
+Add `?lang=en` to either one for English. In the component preview, the sample texts stay in Spanish: only the shared pieces' own texts and the dates switch with `?lang=en`. The production build leaves both pages out.
 
 ## 9. Not in this base
 

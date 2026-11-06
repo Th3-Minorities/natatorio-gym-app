@@ -46,7 +46,7 @@ Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation)
 |---|---|---|
 | Frontend | PWA with React, TypeScript and Vite (as in the proposal) | Decided |
 | Frontend hosting | Static files served by nginx inside `docker-compose`, on the same origin as the API. Vercel out of the plan | Decided |
-| Interface language | Spanish by default and English for all texts, one language per account, no language button (E-64). Texts in translation files from the start, in React and in Laravel | Decided |
+| Interface language | Spanish by default and English for all texts, one language per account, no language button (E-64). Texts in translation files from the start, in React and in Laravel. API errors are a code that the PWA translates (E-154) | Decided |
 | Backend | Laravel (PHP 8.3 or higher) | Decided |
 | Database | PostgreSQL in a container | Decided |
 | Single active session per user | PostgreSQL exclusion constraint on the session time range (`btree_gist` extension), written in SQL inside the migrations. Authorization Number and roster claims use UNIQUE constraints | Decided |

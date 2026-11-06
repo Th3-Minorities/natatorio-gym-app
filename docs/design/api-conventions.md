@@ -21,24 +21,26 @@ curl http://localhost:8080/api/health
 
 ## 2. Error format
 
-Every error from an `/api` route has this shape, whatever caused it:
+Every error from an `/api` route has this shape, whatever caused it. It carries a code and no text (E-154):
 
 ```json
 {
   "error": {
     "code": "validation_failed",
-    "message": "Algunos campos necesitan corrección.",
-    "details": { "email": ["The email field is required."] }
+    "details": { "email": ["required"], "password": ["min"] }
   }
 }
 ```
 
 | Field | Always there | Meaning |
 |---|---|---|
-| `code` | Yes | Stable, snake_case, no dots. Start with the feature when it helps: `check_in_location_denied`. The PWA decides what to do based on this, never on `message`. Once released, a code never changes meaning or name |
-| `message` | Yes | Short text for the person. For now it uses the app language (`APP_LOCALE`, Spanish by default). The language of each account comes with the language feature. Field messages in `details` are still in English until someone adds Spanish validation texts |
-| `details` | No | Extra data. For `validation_failed`, the list of messages for each field |
+| `code` | Yes | Stable, snake_case, no dots. Start with the feature when it helps: `check_in_location_denied`. The PWA decides what to do and what to show based on this. Once released, a code never changes meaning or name |
+| `details` | No | Extra data. For `validation_failed`, it maps each field to a list of rule codes in snake_case, such as `required` or `min`. It holds no text |
 | `debug` | Only with `APP_DEBUG=true` | Exception class, message and file, for developers. Never on in production |
+
+The API sends no text for the person. The PWA holds the only texts, in `frontend/src/i18n/es.ts` and `en.ts`, under `errors.<code>` and `validation.<rule>`, and shows them in the account language. If the PWA gets a code it has no text for, it shows the general `bad_request` text, or `server_error` for a 5xx status. For an unknown rule it shows a general "check this field" text.
+
+The backend translates only what does not pass through the PWA, such as emails (REQ-NF-35), using the `locale` of the account it sends to.
 
 The HTTP status still matters (401, 404, 422 and so on). The `code` says exactly which case it is.
 
@@ -57,7 +59,7 @@ The HTTP status still matters (401, 404, 422 and so on). The `code` says exactly
 | 422 | `validation_failed` | A form field is wrong. See `details` |
 | 429 | `too_many_requests` | An attempt limit was hit. The `Retry-After` header says how long to wait |
 | 503 | `service_unavailable` | The service is down for a moment |
-| 500 | `server_error` | A bug or an unexpected failure. The message never shows internals |
+| 500 | `server_error` | A bug or an unexpected failure. The response never shows internals |
 
 ### Adding a code for a feature
 
@@ -66,15 +68,16 @@ When a feature has an error the PWA must handle on its own, throw an `ApiExcepti
 ```php
 use App\Exceptions\ApiException;
 
-throw new ApiException('authorization_number_invalid', 422, __('registration.number_invalid'));
+throw new ApiException('authorization_number_invalid', 422);
 ```
 
 - Pick a code that names the case, not the screen: `authorization_number_invalid`, not `registration_error`.
-- Add the code with its text to both `backend/lang/es/errors.php` and `backend/lang/en/errors.php`. With no message in the `ApiException`, the text comes from there. Pass the code as a plain string, as the first argument. A test reads `backend/app`, `backend/routes` and `backend/bootstrap` and fails if a code is not snake_case, has no text in both files, or is not a plain string.
-- If a text is missing anyway, the person never sees the raw key `errors.<code>`: the message falls back to the general `bad_request` text (or `server_error` for a 5xx status).
+- Pass the code as a plain string, as the first argument.
+- Add the text to both `frontend/src/i18n/es.ts` and `en.ts`, under `errors.<code>`. A frontend test reads the codes in `backend/app`, `backend/routes` and `backend/bootstrap` and fails if a code has no text in both files. A backend test fails if a code is not snake_case or not a plain string.
+- A new validation rule works the same way: add `validation.<rule>` to both files.
 - `ApiException` errors are expected, so they are not written to the error log.
 - List the new code in the OpenAPI contract for that route.
-- Do not use `abort(404, 'text')` to send text to the person: the text is hidden on purpose. Use `ApiException`.
+- Do not use `abort(404, 'text')` to send text to the person: the API sends no text. Use `ApiException`.
 
 The code is in `backend/app/Exceptions/ApiErrorRenderer.php`, and the tests are in `backend/tests/Feature/ApiErrorFormatTest.php`.
 
