@@ -31,6 +31,8 @@ services:
       - ./backend:/var/www/html
       - private_photos:/var/www/private
     environment:
+      # Local setup runs before PHP-FPM. Production must set APP_ENV=production.
+      BOOTSTRAP_ENV: ${APP_ENV:-local}
       DB_CONNECTION: pgsql
       DB_HOST: db
       DB_PORT: 5432
@@ -53,7 +55,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-      start_period: 5s
+      # The first Composer install can take about 10 minutes on Windows; later starts take seconds.
+      start_period: 20m
 
   scheduler:
     image: natatorio-gym-app-php:local
@@ -62,7 +65,7 @@ services:
     # Same user as app (see above).
     user: www-data
     working_dir: /var/www/html
-    # Waits for the packages (README "First run", step 2), so the stack also starts on a fresh clone.
+    # Waits for the packages, including when CI installs them after starting the stack.
     # Started again if it ever stops, for example if it starts in the moment Composer is still writing.
     restart: unless-stopped
     # Passes SIGTERM on, so "docker compose down" does not wait 10 seconds for the kill.
