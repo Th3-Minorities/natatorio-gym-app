@@ -69,6 +69,9 @@ describe('design tokens', () => {
     ['the Administration label on its own background', 'sage-on-raised', 'hero-raised', 4.5],
     ['links on a card', 'primary', 'surface', 4.5],
     ['orange icons and marks in the sidebar', 'accent', 'hero', 3],
+    // A field's border shows where to type, so it needs 3:1 against its inside and the page (WCAG 1.4.11).
+    ['text field borders against the field', 'border-input', 'surface', 3],
+    ['text field borders against the page', 'border-input', 'background', 3],
   ])('%s meet WCAG AA contrast', (_, text, back, minimum) => {
     expect(contrast(token(text), token(back))).toBeGreaterThanOrEqual(minimum)
   })

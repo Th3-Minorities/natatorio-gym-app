@@ -28,9 +28,11 @@ All paths are inside `frontend/`.
 
 `tokens.test.ts` checks each value against Figma and checks the contrast of each text and background pair (WCAG 2.2 AA: 4.5:1 for text, 3:1 for icons). When you add a value, add its contrast pair there too.
 
-Two values are not Figma variables. `--hero-raised` is the Administration group in the sidebar, drawn as a plain color. `--sage-on-raised` is the "Administración" label on it: Figma's sage there gives 4.00:1, so it is 16% lighter to reach 4.5:1.
+Three values are not Figma variables:
 
-Not fixed yet: the border of a text field is 1.37:1 on its background, below the 3:1 that WCAG 1.4.11 asks for. It follows Figma until the design changes.
+- `--hero-raised` is the Administration group in the sidebar, drawn as a plain color.
+- `--sage-on-raised` is the "Administración" label on it. Figma's sage there gives 4.00:1, so it is 16% lighter to reach 4.5:1.
+- `--border-input` is the border of a text field. Figma's `--border` gives 1.37:1, and a field's border shows where to type, so it needs 3:1 (WCAG 1.4.11). It is a darker shade of the same olive: 3.31:1 against the field and 3.08:1 against the page. Cards, notices and outlined buttons keep `--border`, because their border is only decoration.
 
 ## 4. Texts and language
 

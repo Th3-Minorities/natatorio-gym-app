@@ -9,6 +9,9 @@
   --foreground: #25291e;
   --muted-foreground: #616653;
   --border: #d9dccb;
+  /* Text field borders. Figma uses --border (1.37:1), but a field's border shows where to type and needs
+     3:1 (WCAG 1.4.11). Same olive family, darker: 3.31:1 against the field, 3.08:1 against the page. */
+  --border-input: #8a8e7c;
   --primary: #337137;
   --primary-foreground: #ffffff;
   --hero: #204e2a;
