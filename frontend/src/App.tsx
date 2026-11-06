@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useMessages, type Messages } from './i18n'
 
 // Test page for issue #48: proves the PWA reaches the API on the same origin.
-// The texts move to translation files with the app base issue.
 type Health =
   | { kind: 'waiting' }
   | { kind: 'connected' }
@@ -28,20 +28,21 @@ async function checkHealth(): Promise<Health> {
   return { kind: 'offline' }
 }
 
-function text(health: Health): string {
+function text(health: Health, texts: Messages['health']): string {
   switch (health.kind) {
     case 'waiting':
-      return 'Comprobando la API...'
+      return texts.waiting
     case 'connected':
-      return 'API: conectada'
+      return texts.connected
     case 'error':
-      return `API: error (${health.code})`
+      return texts.error(health.code)
     case 'offline':
-      return 'API: sin conexión'
+      return texts.offline
   }
 }
 
 export default function App() {
+  const texts = useMessages().health
   const [health, setHealth] = useState<Health>({ kind: 'waiting' })
 
   useEffect(() => {
@@ -61,7 +62,7 @@ export default function App() {
 
   return (
     <main>
-      <p>{text(health)}</p>
+      <p>{text(health, texts)}</p>
     </main>
   )
 }
