@@ -8,6 +8,9 @@ export const es = {
     offline: 'API: sin conexión',
   },
 
+  // A time from today shows this word instead of the date (REQ-NF-38, E-152).
+  dates: { today: 'Hoy' },
+
   // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
   dashboard: {
     skipToContent: 'Saltar al contenido',

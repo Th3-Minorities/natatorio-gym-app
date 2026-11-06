@@ -1,5 +1,22 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Button, EmptyState, ErrorState, LoadingState, Notice, OfflineState, TextField } from '../components'
+import { useDateFormat } from '../format/dateTime'
+
+/** Dates as the screens will show them (REQ-NF-38, E-152). "Hoy" uses the real current time. */
+function Dates() {
+  const dates = useDateFormat()
+  const earlier = '2026-11-05T12:30:00Z'
+  // Read the clock once, not on every render.
+  const [justNow] = useState(() => new Date(Date.now() - 5 * 60 * 1000))
+  return (
+    <ul style={{ margin: 0, paddingLeft: 20, fontSize: 15, lineHeight: '24px' }}>
+      <li>{dates.dateTime(earlier)}</li>
+      <li>{dates.dateTime(justNow)}</li>
+      <li>{dates.date('2026-08-12T16:00:00Z')}</li>
+      <li>{dates.time('2026-11-05T13:28:00Z')}</li>
+    </ul>
+  )
+}
 
 // Development only (component-preview.html): every shared piece next to the Figma frame it comes from,
 // for checking by eye. Add ?lang=en to the address to see English.
@@ -62,6 +79,10 @@ export function ComponentPreview() {
 
       <Example figma="Sin conexión · A-08 132:3777">
         <OfflineState detail="Última actualización a las 10:42." />
+      </Example>
+
+      <Example figma="Dates · E-152 (A-08 132:3777, S-02, A-09)">
+        <Dates />
       </Example>
     </main>
   )

@@ -10,6 +10,8 @@ export const en: Messages = {
     offline: 'API: no connection',
   },
 
+  dates: { today: 'Today' },
+
   dashboard: {
     skipToContent: 'Skip to content',
     brandCampus: 'UPRM',

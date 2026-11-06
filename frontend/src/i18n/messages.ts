@@ -13,8 +13,15 @@ export function supportedLocale(locale: string | undefined): Locale {
 
 export const MessagesContext = createContext<Messages>(es)
 
+export const LocaleContext = createContext<Locale>('es')
+
 export function useMessages(): Messages {
   return useContext(MessagesContext)
+}
+
+/** The account language, for things the texts alone cannot do, like formatting dates. */
+export function useLocale(): Locale {
+  return useContext(LocaleContext)
 }
 
 /**
