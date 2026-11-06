@@ -3,7 +3,7 @@ set -eu
 
 if [ "${BOOTSTRAP_ENV:-}" = local ]; then
     if [ ! -f vendor/autoload.php ]; then
-        composer install --no-interaction --no-progress
+        COMPOSER_PROCESS_TIMEOUT=0 composer install --no-interaction --no-progress
     fi
 
     if [ ! -f .env ]; then
