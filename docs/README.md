@@ -70,6 +70,7 @@ All documents are in the `docs` folder.
 | Staff and administration tasks | [Administration flows](design/admin-flows.md) | 17 |
 | Every screen and how people move between them | [Screen map](design/screen-map.md) | 7 |
 | What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) | |
+| Where each finished wireframe is in Figma | [Wireframes](design/wireframes.md) | |
 | Rules for the code that answers the app | [API conventions](design/api-conventions.md) | |
 | Older notes moved out of the SRS | [Design notes](design/design-notes.md) | |
 
