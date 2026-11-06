@@ -44,6 +44,11 @@ describe('formatDateTime', () => {
 })
 
 describe('formatDate and formatTime', () => {
+  it('keeps a date-only value on its calendar day in Puerto Rico', () => {
+    expect(formatDate('2026-11-05', 'es')).toBe('5 nov 2026')
+    expect(formatDate('2026-11-05', 'en')).toBe('Nov 5, 2026')
+  })
+
   it('give the date or the time alone, as in Figma', () => {
     expect(formatDate('2026-08-12T16:00:00Z', 'es')).toBe('12 ago 2026')
     expect(formatDate('2026-08-12T16:00:00Z', 'en')).toBe('Aug 12, 2026')

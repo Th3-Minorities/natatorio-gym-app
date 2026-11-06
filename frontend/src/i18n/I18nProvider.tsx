@@ -7,6 +7,7 @@ export function I18nProvider({ locale, children }: { locale?: string; children: 
 
   useEffect(() => {
     document.documentElement.lang = current
+    document.title = messages[current].dashboard.brandName
   }, [current])
 
   return (

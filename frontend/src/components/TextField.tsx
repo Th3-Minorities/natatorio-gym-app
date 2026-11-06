@@ -6,7 +6,7 @@ type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
   error?: string
 }
 
-export function TextField({ label, error, id, className, ...rest }: TextFieldProps) {
+export function TextField({ label, error, id, className, 'aria-describedby': describedBy, ...rest }: TextFieldProps) {
   const generatedId = useId()
   const inputId = id ?? generatedId
   const errorId = `${inputId}-error`
@@ -17,11 +17,11 @@ export function TextField({ label, error, id, className, ...rest }: TextFieldPro
         {label}
       </label>
       <input
+        {...rest}
         id={inputId}
         className="field__input"
         aria-invalid={error ? true : undefined}
-        aria-describedby={error ? errorId : undefined}
-        {...rest}
+        aria-describedby={[describedBy, error ? errorId : undefined].filter(Boolean).join(' ') || undefined}
       />
       {error && (
         <p id={errorId} className="field__error">

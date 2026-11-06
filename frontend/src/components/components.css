@@ -160,3 +160,16 @@
   font-weight: 600;
   line-height: 29px;
 }
+
+@media (max-width: 40rem) {
+  .button {
+    white-space: normal;
+    height: auto;
+    min-height: 40px;
+    max-width: 100%;
+  }
+
+  .state__button {
+    min-width: 0;
+  }
+}

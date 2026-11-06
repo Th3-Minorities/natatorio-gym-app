@@ -2,8 +2,6 @@
 
 use App\Exceptions\ApiErrorRenderer;
 use App\Exceptions\ApiException;
-use App\Http\Middleware\SelectAccountLocale;
-use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,8 +13,6 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->api(append: [SelectAccountLocale::class]);
-        $middleware->appendToPriorityList(AuthenticatesRequests::class, SelectAccountLocale::class);
         // The API has no login page, so guests get a 401 instead of a redirect to route('login').
         $middleware->redirectGuestsTo(fn () => null);
     })
@@ -29,9 +25,6 @@ return Application::configure(basePath: dirname(__DIR__))
             if (! $request->is('api', 'api/*')) {
                 return null;
             }
-
-            // Also covers missing routes and authentication failures before route middleware.
-            SelectAccountLocale::apply($request);
 
             return ApiErrorRenderer::render($e);
         });

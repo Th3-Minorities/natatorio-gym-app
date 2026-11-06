@@ -5,7 +5,7 @@ import { expect, it } from 'vitest'
 
 // #97 security check: no user text is shown as raw HTML. React escapes text by itself, so the only ways to
 // show HTML are these. Tests run from frontend/, so src/ is right here.
-const RAW_HTML = /dangerouslySetInnerHTML|\.innerHTML\s*=|\.outerHTML\s*=|insertAdjacentHTML|document\.write\(/
+const RAW_HTML = /dangerouslySetInnerHTML|\.(inner|outer)HTML\s*\+?=|insertAdjacentHTML|document\.write|srcDoc|createContextualFragment|setHTMLUnsafe|parseFromString/
 
 function sourceFiles(folder: string): string[] {
   return readdirSync(folder).flatMap((name) => {

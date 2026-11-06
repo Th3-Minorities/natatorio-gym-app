@@ -55,7 +55,7 @@ export const en: Messages = {
     offlineLead: 'No connection. The data may have changed. Actions will be available when the connection is back.',
   },
 
-  // Keep them in sync with backend/lang/en/errors.php.
+  // The PWA owns the texts for stable API error codes (E-154).
   errors: {
     bad_request: 'The request could not be processed.',
     unauthenticated: 'Please sign in to continue.',
@@ -70,5 +70,17 @@ export const en: Messages = {
     service_unavailable: 'The service is not available right now. Try again later.',
     server_error: 'Something went wrong on our side. Try again later.',
     database_unavailable: 'The service is not available right now. Try again later.',
+  },
+
+  validation: {
+    required: 'This field is required.',
+    email: 'Enter a valid email address.',
+    min: 'The value is too short or too small.',
+    max: 'The value is too long or too large.',
+    string: 'Enter text.',
+    in: 'Select a valid option.',
+    unique: 'This value is already in use.',
+    confirmed: 'The confirmation does not match.',
+    invalid: 'Check this field.',
   },
 }

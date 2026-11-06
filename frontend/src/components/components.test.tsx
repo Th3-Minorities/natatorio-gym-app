@@ -71,6 +71,24 @@ describe('TextField', () => {
     expect(screen.getByLabelText('Correo electrónico')).not.toHaveAttribute('aria-invalid')
   })
 
+  it('keeps the caller description and the error link, even with caller aria props', () => {
+    const { rerender } = render(
+      <>
+        <p id="hint">Use your work email.</p>
+        <TextField id="email" label="Email" error="Required." aria-describedby="hint" aria-invalid={false} />
+      </>,
+    )
+
+    const field = screen.getByLabelText('Email')
+    expect(field).toHaveAttribute('aria-describedby', 'hint email-error')
+    expect(field).toHaveAccessibleDescription('Use your work email. Required.')
+    expect(field).toHaveAttribute('aria-invalid', 'true')
+
+    rerender(<TextField id="email" label="Email" aria-describedby="hint" />)
+    expect(screen.getByLabelText('Email')).toHaveAttribute('aria-describedby', 'hint')
+    expect(screen.getByLabelText('Email')).not.toHaveAttribute('aria-invalid')
+  })
+
   it('passes typing through', () => {
     const onChange = vi.fn()
     render(<TextField label="Contraseña" type="password" onChange={onChange} />)
@@ -94,6 +112,7 @@ describe('states', () => {
   it('loading is a status with the Figma title, in the account language', () => {
     const { unmount } = render(<LoadingState detail="Buscando cuentas…" />)
     expect(screen.getByRole('status')).toHaveTextContent(es.states.loading)
+    expect(screen.getByRole('status')).not.toHaveAttribute('aria-busy')
     expect(screen.getByRole('status')).toHaveTextContent('Buscando cuentas…')
     unmount()
 
@@ -109,6 +128,8 @@ describe('states', () => {
     render(<EmptyState lead="No encontramos cuentas para “Lidia Solís”." detail="Revisa el nombre." />)
 
     expect(screen.getByRole('heading', { name: es.states.empty })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(es.states.empty)
+    expect(screen.getByRole('status')).not.toHaveAttribute('aria-busy')
     expect(screen.getByText('No encontramos cuentas para “Lidia Solís”.')).toBeInTheDocument()
   })
 
@@ -117,6 +138,7 @@ describe('states', () => {
     render(<ErrorState onRetry={onRetry} />)
 
     expect(screen.getByRole('alert')).toHaveTextContent(es.states.errorTitle)
+    expect(screen.getByRole('alert')).not.toHaveAttribute('aria-busy')
     expect(screen.getByRole('alert')).toHaveTextContent(es.states.errorDetail)
     fireEvent.click(screen.getByRole('button', { name: es.states.retry }))
     expect(onRetry).toHaveBeenCalledOnce()
@@ -126,8 +148,30 @@ describe('states', () => {
     render(<OfflineState detail="Última actualización a las 10:42." />)
 
     expect(screen.getByRole('heading', { name: es.states.offlineTitle })).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(es.states.offlineTitle)
+    expect(screen.getByRole('status')).not.toHaveAttribute('aria-busy')
     expect(screen.getByText(es.states.offlineLead)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: es.states.retry })).toBeDisabled()
+  })
+
+  it('enables retry only with a connection and a retry action', () => {
+    const onRetry = vi.fn()
+    const { rerender } = render(<OfflineState onRetry={onRetry} />)
+    const retry = screen.getByRole('button', { name: es.states.retry })
+    expect(retry).toBeDisabled()
+    fireEvent.click(retry)
+    expect(onRetry).not.toHaveBeenCalled()
+
+    rerender(<OfflineState online />)
+    expect(retry).toBeDisabled()
+
+    rerender(<OfflineState online onRetry={onRetry} />)
+    expect(retry).toBeEnabled()
+    fireEvent.click(retry)
+    expect(onRetry).toHaveBeenCalledOnce()
+
+    rerender(<OfflineState online={false} onRetry={onRetry} />)
+    expect(retry).toBeDisabled()
   })
 })
 

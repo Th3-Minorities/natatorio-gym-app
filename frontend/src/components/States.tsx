@@ -18,7 +18,6 @@ function StatePanel({ title, lead, detail, action, role, kind }: PanelProps) {
     <section
       className={kind ? `state state--${kind}` : 'state'}
       role={role}
-      aria-busy={role === 'status' ? true : undefined}
     >
       <h2 className="state__title">{title}</h2>
       {lead && <p className="state__lead">{lead}</p>}
@@ -37,7 +36,7 @@ export function LoadingState({ detail }: Pick<StateProps, 'detail'>) {
 
 /** "Sin resultados", with what the screen looked for. */
 export function EmptyState({ lead, detail }: StateProps) {
-  return <StatePanel title={useMessages().states.empty} lead={lead} detail={detail} />
+  return <StatePanel role="status" title={useMessages().states.empty} lead={lead} detail={detail} />
 }
 
 /** "Error al cargar", with a button to try again. */
@@ -58,16 +57,17 @@ export function ErrorState({ onRetry }: { onRetry: () => void }) {
   )
 }
 
-/** "Sin conexión". The retry button stays, disabled, until the connection is back (Figma 132:3777). */
-export function OfflineState({ detail }: Pick<StateProps, 'detail'>) {
+/** "Sin conexión". Retry needs both a connection and an action (Figma 132:3777). */
+export function OfflineState({ detail, online, onRetry }: Pick<StateProps, 'detail'> & { online?: boolean; onRetry?: () => void }) {
   const texts = useMessages().states
   return (
     <StatePanel
+      role="status"
       title={texts.offlineTitle}
       lead={texts.offlineLead}
       detail={detail}
       action={
-        <Button className="state__button" disabled>
+        <Button className="state__button" disabled={!online || !onRetry} onClick={onRetry}>
           {texts.retry}
         </Button>
       }

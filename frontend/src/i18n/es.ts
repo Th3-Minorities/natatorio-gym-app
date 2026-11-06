@@ -57,7 +57,7 @@ export const es = {
     offlineLead: 'Sin conexión. Los datos pueden haber cambiado. Las acciones estarán disponibles al recuperar la conexión.',
   },
 
-  // Texts for the stable API error codes. Keep them in sync with backend/lang/es/errors.php.
+  // The PWA owns the texts for stable API error codes (E-154).
   errors: {
     bad_request: 'No se pudo procesar la solicitud.',
     unauthenticated: 'Inicia sesión para continuar.',
@@ -72,7 +72,19 @@ export const es = {
     service_unavailable: 'El servicio no está disponible ahora. Intenta más tarde.',
     server_error: 'Algo salió mal de nuestro lado. Intenta más tarde.',
     database_unavailable: 'El servicio no está disponible ahora. Intenta más tarde.',
-  } as Record<string, string> & { bad_request: string; server_error: string },
+  },
+
+  validation: {
+    required: 'Este campo es obligatorio.',
+    email: 'Escribe un correo electrónico válido.',
+    min: 'El valor es demasiado corto o pequeño.',
+    max: 'El valor es demasiado largo o grande.',
+    string: 'Escribe un texto.',
+    in: 'Selecciona una opción válida.',
+    unique: 'Este valor ya está en uso.',
+    confirmed: 'La confirmación no coincide.',
+    invalid: 'Revisa este campo.',
+  },
 }
 
 export type Messages = typeof es
