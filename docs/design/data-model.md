@@ -153,7 +153,7 @@ erDiagram
     bigint import_id FK "import that created the row"
     bigint academic_term_id FK "term that contains paid_at"
     varchar(100) order_reference UK
-    varchar(20) authorization_number UK "6 characters, may include letters (E-128)"
+    varchar(20) authorization_number UK "length not checked, may include letters (E-128, E-153)"
     varchar(255) name
     varchar(255) email "payment email"
     varchar(10) member_group "student or employee, from the product variation (D15)"

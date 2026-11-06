@@ -53,6 +53,8 @@ Whenever possible, all work follows this path:
 - Each issue gets its own development branch. Do not work on `main` directly.
 - Changes go in through a pull request that links the issue. At least one team member besides the author must review it before merge.
 - Document everything: the issue says what and why, the PR says what changed, and docs go in `docs/`.
+- Before adding a decision ID (E-xx) or raising the SRS version, check `main` and the open PRs and take the next free number.
+- When a decision changes something an open issue asks for, update that issue in the same PR. If the code differs from the Figma wireframe, say so in the PR.
 
 ## Issues
 
@@ -60,6 +62,7 @@ Whenever possible, all work follows this path:
 - Size: one person, about one week. Split anything bigger. Merge anything under a day into a related issue.
 - Every issue has a clear "Done when" that someone else can check.
 - Plain language. No file paths or internal document names in the issue body. Requirement IDs go in one line at the end (`Requirements: REQ-F-33, REQ-NF-11`) so work traces back to the SRS.
+- Decision IDs (E-xx) do not go in issues. Each new decision is announced as a comment on the pinned "Registro de decisiones" announcement, saying where it came from (meeting minute, review or PR).
 - One label for the feature area. Add `blocked` when the issue waits on CTI, the gym or the professor, and say who and what in the issue.
 - Members pick the issues they want, except the setup issues that every feature depends on: those go first.
 
