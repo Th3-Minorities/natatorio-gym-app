@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { ApiError } from '../api/client'
 import { Button, Notice, TextField } from '../components'
 import { useDateFormat } from '../format/dateTime'
@@ -45,6 +45,15 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
   const [waiting, setWaiting] = useState(false)
   const [offlineBlock, setOfflineBlock] = useState(() => startWith === 'offline' && !navigator.onLine)
   const [deactivatedBlock, setDeactivatedBlock] = useState(startWith === 'deactivated')
+
+  // Focus moves after the error is on screen, so a screen reader reads the field together with its error.
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const [focusRequest, setFocusRequest] = useState<{ field: 'email' | 'password'; count: number } | null>(null)
+  useEffect(() => {
+    if (!focusRequest) return
+    ;(focusRequest.field === 'email' ? emailRef : passwordRef).current?.focus()
+  }, [focusRequest])
 
   // Too many tries: open the button again at the time the server gave (REQ-F-07).
   const waitUntil = problem?.kind === 'wait' ? problem.until : null
@@ -97,7 +106,7 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
         return
       case 'validation_failed': {
         const details = error instanceof ApiError ? (error.details ?? {}) : {}
-        setFieldErrors({
+        showFieldErrors({
           email: details.email?.[0] ? fieldErrorText(texts, details.email[0]) : undefined,
           password: details.password?.[0] ? fieldErrorText(texts, details.password[0]) : undefined,
         })
@@ -108,8 +117,16 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
     }
   }
 
+  /** Shows the errors and sends focus to the first field that has one, so its error is read out (WCAG 3.3.1). */
+  function showFieldErrors(errors: FieldErrors) {
+    setFieldErrors(errors)
+    const first = errors.email ? 'email' : errors.password ? 'password' : null
+    if (first) setFocusRequest((current) => ({ field: first, count: (current?.count ?? 0) + 1 }))
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault()
+    // The button is aria-disabled, not disabled, so it keeps focus; this guard is what blocks a second submit.
     if (disabled) return
 
     const required = fieldErrorText(texts, 'required')
@@ -117,7 +134,7 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
       email: email.trim() === '' ? required : undefined,
       password: password === '' ? required : undefined,
     }
-    setFieldErrors(missing)
+    showFieldErrors(missing)
     if (missing.email || missing.password) return
 
     setProblem(null)
@@ -157,6 +174,7 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
             type="email"
             autoComplete="username"
             placeholder={t.emailPlaceholder}
+            ref={emailRef}
             value={email}
             error={fieldErrors.email}
             onChange={(event) => change('email', event.target.value)}
@@ -166,12 +184,14 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
             type="password"
             autoComplete="current-password"
             placeholder={t.passwordPlaceholder}
+            ref={passwordRef}
             value={password}
             error={fieldErrors.password}
             onChange={(event) => change('password', event.target.value)}
           />
 
-          <Button type="submit" size="large" fullWidth disabled={disabled}>
+          {/* aria-disabled, not disabled: a disabled button drops keyboard focus to the page while it is busy. */}
+          <Button type="submit" size="large" fullWidth aria-disabled={disabled || undefined}>
             {busy ? t.submitting : t.submit}
           </Button>
           <a className="button button--link button--full" href={FORGOT_PASSWORD_PATH}>

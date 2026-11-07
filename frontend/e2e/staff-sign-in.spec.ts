@@ -55,6 +55,13 @@ test('Staff do not see the Administration items', async ({ page }) => {
 test('the sign-in works with the keyboard alone', async ({ page }) => {
   await openSignIn(page)
 
+  // An empty submit sends focus to the first field with an error, so a screen reader reads it.
+  await page.getByRole('button', { name: 'Iniciar sesión' }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.getByLabel('Correo electrónico')).toBeFocused()
+
+  // Start again from a fresh page to check the Tab order from the top.
+  await openSignIn(page)
   await page.keyboard.press('Tab')
   await expect(page.getByLabel('Correo electrónico')).toBeFocused()
   await page.keyboard.type(ADMIN.email)
@@ -68,6 +75,8 @@ test('the sign-in works with the keyboard alone', async ({ page }) => {
 
   await page.keyboard.press('Shift+Tab')
   await page.keyboard.press('Enter')
+  // While it signs in, the busy button keeps focus instead of dropping it to the page.
+  await expect(page.getByRole('button', { name: 'Iniciando sesión…' })).toBeFocused()
   await expect(page.getByText(`${ADMIN.name} · Administración`)).toBeVisible()
 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()

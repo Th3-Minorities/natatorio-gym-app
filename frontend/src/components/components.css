@@ -49,7 +49,9 @@
   width: 100%;
 }
 
-.button:disabled {
+/* aria-disabled looks the same but keeps keyboard focus, for a button that is busy or blocked for a while. */
+.button:disabled,
+.button[aria-disabled='true'] {
   opacity: 0.45;
   cursor: not-allowed;
 }

@@ -1,6 +1,7 @@
-import { useId, type InputHTMLAttributes } from 'react'
+import { useId, type ComponentProps } from 'react'
 
-type TextFieldProps = InputHTMLAttributes<HTMLInputElement> & {
+// ComponentProps<'input'> includes `ref`, so a screen can move focus to the field (React 19 passes ref as a prop).
+type TextFieldProps = ComponentProps<'input'> & {
   label: string
   /** Shown under the field and read with it by screen readers (WCAG 3.3.1). */
   error?: string
