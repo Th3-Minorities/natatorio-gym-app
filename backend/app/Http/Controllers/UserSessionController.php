@@ -18,6 +18,10 @@ class UserSessionController extends Controller
 {
     public function signIn(Request $request, UserSessions $sessions): JsonResponse
     {
+        if (! $request->hasSession()) {
+            throw new ApiException('session_expired', 419);
+        }
+
         $credentials = $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
@@ -28,8 +32,8 @@ class UserSessionController extends Controller
         $user = DB::transaction(function () use ($credentials, $request, $throttle, $sessions) {
             $user = User::query()->whereRaw('lower(email) = lower(?)', [$credentials['email']])->lockForUpdate()->first();
             // A dummy hash keeps unknown accounts on the password hashing path too.
-            $hash = $user?->password ?? sprintf('$2y$%02d$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', config('hashing.bcrypt.rounds'));
-            if (! Hash::check($credentials['password'], $hash) || $user === null || $user->deleted_at !== null) {
+            $passwordMatches = Hash::check($credentials['password'], $user?->password ?? self::standInHash());
+            if ($user?->password === null || ! $passwordMatches || $user->deleted_at !== null) {
                 return null;
             }
 
@@ -52,6 +56,14 @@ class UserSessionController extends Controller
         }
 
         return response()->json($user->profile());
+    }
+
+    private static function standInHash(): string
+    {
+        static $hashes = [];
+        $configuration = serialize(config('hashing'));
+
+        return $hashes[$configuration] ??= Hash::make(Str::random(40));
     }
 
     public function signOut(Request $request): Response

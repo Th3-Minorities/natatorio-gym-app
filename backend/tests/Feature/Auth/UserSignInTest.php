@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Http\Controllers\UserSessionController;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -69,16 +70,42 @@ class UserSignInTest extends TestCase
         $this->assertGuest('web');
     }
 
+    public function test_a_user_without_a_password_cannot_sign_in_with_password_at_cost_ten(): void
+    {
+        config(['hashing.bcrypt.rounds' => 10]);
+        Hash::forgetDrivers();
+        $user = User::factory()->create(['email' => 'user@example.com', 'password' => null]);
+        $wrong = $this->signIn(password: 'wrong')->assertUnprocessable()->json();
+
+        $this->signIn(password: 'password')->assertUnprocessable()->assertExactJson($wrong);
+        $this->assertSame(['error' => ['code' => 'user_credentials_invalid']], $wrong);
+        $this->assertGuest('web');
+        $this->assertNull($user->fresh()->current_session_id);
+        $this->assertNull($user->fresh()->last_signed_in_at);
+    }
+
+    public function test_sign_in_without_a_session_returns_session_expired(): void
+    {
+        User::factory()->create(['email' => 'user@example.com']);
+
+        $this->withHeaders(['Origin' => 'https://other.example'])->postJson('/api/user/sign-in', [
+            'email' => 'user@example.com', 'password' => 'password',
+        ])->assertStatus(419)->assertExactJson(['error' => ['code' => 'session_expired']]);
+        $this->assertGuest('web');
+    }
+
     public function test_unknown_account_hash_uses_the_configured_bcrypt_cost(): void
     {
-        Hash::partialMock()->shouldReceive('check')->twice()->withArgs(function ($password, $hash) {
-            $this->assertSame(config('hashing.bcrypt.rounds'), password_get_info($hash)['options']['cost']);
-
-            return $password === 'wrong';
-        })->andReturn(false);
+        User::factory()->create(['email' => 'user@example.com']);
         foreach ([4, 12] as $rounds) {
             config(['hashing.bcrypt.rounds' => $rounds]);
-            $this->signIn('unknown@example.com', 'wrong')->assertUnprocessable();
+            Hash::forgetDrivers();
+            $wrong = $this->signIn(password: 'wrong')->assertUnprocessable()->json();
+            $this->signIn('unknown@example.com', 'wrong')->assertUnprocessable()->assertExactJson($wrong);
+            $this->assertSame(['error' => ['code' => 'user_credentials_invalid']], $wrong);
+            $hash = (new \ReflectionMethod(UserSessionController::class, 'standInHash'))->invoke(null);
+            $this->assertSame($rounds, password_get_info($hash)['options']['cost']);
+            $this->assertFalse(password_verify('password', $hash));
         }
     }
 
@@ -141,14 +168,15 @@ class UserSignInTest extends TestCase
         $this->assertAuthenticatedAs($staff, 'staff');
     }
 
-    public function test_staff_only_sessions_are_forbidden_on_every_user_route(): void
+    public function test_staff_only_sessions_are_unauthenticated_on_every_user_route(): void
     {
         foreach (['staff', 'admin'] as $role) {
             $this->actingAs(StaffAccount::factory()->create(compact('role')), 'staff')->fromThePwa();
-            $this->getJson('/api/user/me')->assertForbidden();
-            $this->postJson('/api/user/sign-out')->assertForbidden();
-            $this->deleteJson('/api/user/account')->assertForbidden();
-            $this->patchJson('/api/user/locale', ['locale' => 'en'])->assertForbidden();
+            $this->getJson('/api/user/me')->assertUnauthorized()->assertJsonPath('error.code', 'unauthenticated');
+            $this->postJson('/api/user/sign-out')->assertUnauthorized()->assertJsonPath('error.code', 'unauthenticated');
+            $this->deleteJson('/api/user/account')->assertUnauthorized()->assertJsonPath('error.code', 'unauthenticated');
+            $this->patchJson('/api/user/locale', ['locale' => 'en'])->assertUnauthorized()->assertJsonPath('error.code', 'unauthenticated');
+            $this->assertAuthenticated('staff');
         }
     }
 

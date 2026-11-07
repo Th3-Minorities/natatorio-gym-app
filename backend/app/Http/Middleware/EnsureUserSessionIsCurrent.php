@@ -17,10 +17,6 @@ class EnsureUserSessionIsCurrent
         $user = $guard->user();
 
         if (! $user instanceof User) {
-            if (Auth::guard('staff')->check()) {
-                throw new ApiException('forbidden', 403);
-            }
-
             if ($request->hasCookie($guard->getRecallerName())) {
                 throw new ApiException('user_session_replaced', 401);
             }
