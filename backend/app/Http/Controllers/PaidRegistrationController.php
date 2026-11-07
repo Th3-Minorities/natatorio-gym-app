@@ -60,7 +60,7 @@ class PaidRegistrationController extends Controller
     public function lookup(Request $request, RegistrationLookup $lookup): JsonResponse
     {
         $this->requirePrivacy($request);
-        $input = $request->validate(['authorization_number' => ['required', 'string']]);
+        $input = $request->validate(['authorization_number' => ['required', 'string', 'not_regex:/^\d{10}$/']]);
 
         return response()->json($lookup->result($lookup->find($input['authorization_number'], $request)))->header('Cache-Control', 'no-store');
     }
@@ -81,18 +81,11 @@ class PaidRegistrationController extends Controller
     {
         $this->requirePrivacy($request);
         $input = $request->validate([
-            'authorization_number' => ['required', 'string'],
+            'authorization_number' => ['required', 'string', 'not_regex:/^\d{10}$/'],
             'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(10)->uncompromised()],
             'password_confirmation' => ['required', 'string', 'max:255'],
             'photo' => [
-                'bail', 'required', 'file', 'max:10240',
-                function (string $attribute, $value, \Closure $fail): void {
-                    $mime = (new \finfo(FILEINFO_MIME_TYPE))->file($value->getPathname());
-                    if (! in_array($mime, ['image/jpeg', 'image/png', 'image/heic', 'image/heif'], true)
-                        || (in_array($mime, ['image/jpeg', 'image/png'], true) && @getimagesize($value->getPathname()) === false)) {
-                        $fail('validation.image')->translate();
-                    }
-                },
+                'bail', 'required', 'file', 'max:10240', 'mimetypes:image/jpeg,image/png,image/heic,image/heif',
             ],
             'waiver_accepted' => ['required', 'accepted'],
             'waiver_version' => ['required', 'string', Rule::in([config('registration.waiver.version')])],

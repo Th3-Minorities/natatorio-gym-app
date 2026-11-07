@@ -16,8 +16,10 @@ use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\CallsTheApiFromThePwa;
@@ -158,6 +160,52 @@ class PaidRegistrationTest extends TestCase
             ->postJson('/api/user/registration/lookup', ['authorization_number' => 'bad'])->assertTooManyRequests();
     }
 
+    public function test_ready_and_renewal_lookups_return_the_reserved_ip_attempt(): void
+    {
+        config(['registration.ip_failures' => 2]);
+        $member = $this->membership();
+        $this->acknowledge();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'bad'])->assertUnprocessable();
+        foreach (['ready', 'renewal'] as $state) {
+            if ($state === 'renewal') {
+                User::factory()->create(['email' => $member->email]);
+            }
+            for ($i = 0; $i < 3; $i++) {
+                $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'A'])
+                    ->assertOk()->assertJsonPath('state', $state);
+            }
+        }
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'bad'])->assertUnprocessable();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'bad'])->assertTooManyRequests();
+    }
+
+    public function test_ten_digits_are_rejected_before_membership_lookup_and_do_not_count_against_the_ip_limit(): void
+    {
+        config(['registration.ip_failures' => 1]);
+        $this->acknowledge();
+        $this->mock(MembershipStore::class)->shouldNotReceive('find');
+        $this->mock(RegistrationPhoto::class)->shouldNotReceive('save');
+        $queries = [];
+        DB::listen(function ($query) use (&$queries) {
+            if (str_contains($query->sql, 'imported_memberships')) {
+                $queries[] = $query->sql;
+            }
+        });
+        foreach (['1234567890', '0000000000'] as $number) {
+            $this->postJson('/api/user/registration/lookup', ['authorization_number' => $number])
+                ->assertUnprocessable()->assertExactJson(['error' => [
+                    'code' => 'validation_failed', 'details' => ['authorization_number' => ['not_regex']],
+                ]]);
+            $this->post('/api/user/registration/complete', $this->payload($number), ['Accept' => 'application/json'])
+                ->assertUnprocessable()->assertExactJson(['error' => [
+                    'code' => 'validation_failed', 'details' => ['authorization_number' => ['not_regex']],
+                ]]);
+        }
+        $this->assertSame([], $queries);
+        $this->assertSame(0, RateLimiter::attempts('registration:ip:'.hash('sha256', '127.0.0.1')));
+        $this->assertSame(0, RateLimiter::attempts('registration:global'));
+    }
+
     public function test_global_slow_mode_alerts_once_and_never_blocks_a_valid_lookup(): void
     {
         config(['registration.global_failures' => 2, 'registration.window_seconds' => 60, 'registration.slow_milliseconds' => 1]);
@@ -211,12 +259,36 @@ class PaidRegistrationTest extends TestCase
         $this->membership();
         $this->acknowledge();
         $this->mock(RegistrationPhoto::class)->shouldNotReceive('save');
-        foreach ([UploadedFile::fake()->create('huge.png', 10241, 'image/png'),
-            UploadedFile::fake()->createWithContent('photo.jpg', '<script>alert(1)</script>')] as $file) {
-            $this->post('/api/user/registration/complete', [...$this->payload(), 'photo' => $file], ['Accept' => 'application/json'])
-                ->assertUnprocessable();
+        $path = tempnam(sys_get_temp_dir(), 'registration-photo-');
+        try {
+            file_put_contents($path, '<script>alert(1)</script>');
+            foreach ([[UploadedFile::fake()->create('huge.png', 10241, 'image/png'), 'max'],
+                [new UploadedFile($path, 'photo.jpg', 'image/jpeg', null, true), 'mimetypes']] as [$file, $rule]) {
+                $this->post('/api/user/registration/complete', [...$this->payload(), 'photo' => $file], ['Accept' => 'application/json'])
+                    ->assertUnprocessable()->assertJsonPath('error.details.photo', [$rule]);
+            }
+        } finally {
+            unlink($path);
         }
         $this->assertDatabaseCount('users', 0);
+    }
+
+    public function test_corrupt_jpeg_content_fails_photo_processing_without_creating_registration_data(): void
+    {
+        $this->membership();
+        $this->acknowledge();
+        $path = tempnam(sys_get_temp_dir(), 'registration-photo-');
+        try {
+            file_put_contents($path, "\xFF\xD8\xFF\xE0\x00\x10JFIF\x00garbage");
+            $photo = new UploadedFile($path, 'photo.jpg', 'image/jpeg', null, true);
+            $this->post('/api/user/registration/complete', [...$this->payload(), 'photo' => $photo], ['Accept' => 'application/json'])
+                ->assertUnprocessable()->assertJsonPath('error.code', 'registration_photo_failed');
+        } finally {
+            unlink($path);
+        }
+        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('authorizations', 0);
+        $this->assertSame([], Storage::disk('local')->allFiles('photos'));
     }
 
     public function test_waiver_text_and_version_must_be_available_and_current(): void

@@ -29,7 +29,8 @@ class RegistrationLookup
     public function ensureAllowed(Request $request): void
     {
         $key = $this->ipKey($request->ip());
-        if (RateLimiter::tooManyAttempts($key, config('registration.ip_failures'))) {
+        $hits = RateLimiter::increment($key, config('registration.window_seconds'));
+        if ($hits > config('registration.ip_failures')) {
             $wait = RateLimiter::availableIn($key);
             throw new ThrottleRequestsException('Too many attempts.', null, ['Retry-After' => (string) max(1, $wait)]);
         }
@@ -41,7 +42,6 @@ class RegistrationLookup
     public function failed(Request $request): ApiException
     {
         $window = config('registration.window_seconds');
-        RateLimiter::hit($this->ipKey($request->ip()), $window);
         RateLimiter::hit('registration:global', $window);
         if (RateLimiter::tooManyAttempts('registration:global', config('registration.global_failures'))
             && Cache::add('registration:slow-alert', true, $window)) {
@@ -66,6 +66,7 @@ class RegistrationLookup
         if ($membership === null || ! $membership->exists || $membership->authorization_number !== $number || ! $this->available($membership)) {
             throw $this->failed($request);
         }
+        RateLimiter::decrement($this->ipKey($request->ip()), config('registration.window_seconds'));
 
         return $membership;
     }
