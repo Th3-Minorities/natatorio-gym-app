@@ -147,6 +147,25 @@ export const es = {
     loadingTitle: 'Cargando cuentas…',
     loadingText: 'Espera un momento mientras se consulta el equipo.',
     offlineText: 'Las acciones estarán disponibles al recuperar la conexión.',
+    // Invitar, Figma 100:1126, 100:1197 and 100:1231.
+    invite: 'Invitar',
+    inviteTitle: 'Invitar al equipo',
+    inviteText: 'La persona recibirá un enlace por correo para establecer su propia contraseña.',
+    fullName: 'Nombre completo',
+    email: 'Correo electrónico',
+    role: 'Rol',
+    sendInvite: 'Enviar invitación',
+    cancel: 'Cancelar',
+    emailInUseTitle: 'Este correo ya está en uso',
+    emailInUseText: (email: string) => `${email} ya pertenece a una cuenta del equipo. Usa otro correo.`,
+    fixEmail: 'Corregir correo',
+    invitedTitle: 'Invitación enviada',
+    invitedText: (firstName: string) => `${firstName} aparecerá como invitado hasta que establezca su contraseña.`,
+    // Reenviar invitación, Figma 4039:3311.
+    resend: 'Reenviar invitación',
+    resentTitle: 'Invitación reenviada',
+    resentText: (email: string, firstName: string) =>
+      `Enviamos una nueva invitación a ${email}. ${firstName} seguirá como Invitado hasta crear su contraseña.`,
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

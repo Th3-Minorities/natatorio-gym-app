@@ -183,3 +183,112 @@
     min-width: 0;
   }
 }
+
+/* Modal, Figma A-15 (100:1126, 100:1205): a 464px card on a darkened page. */
+.modal {
+  width: min(464px, calc(100vw - 2 * var(--spacing-16)));
+  max-height: calc(100vh - 2 * var(--spacing-16));
+  margin: auto;
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
+
+.modal::backdrop {
+  background: rgb(37 41 30 / 50%);
+}
+
+.modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+.modal__title,
+.modal__text {
+  margin: 0;
+}
+
+.modal__title {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.modal__title:focus {
+  outline: none;
+}
+
+.modal__text {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+/* Two or more options drawn as buttons, like Rol in A-15's invite (100:1151): the chosen one is filled green.
+   Real radio buttons underneath, so the keyboard and screen readers treat them as one choice. */
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.choice > legend {
+  padding: 0;
+  margin-bottom: var(--spacing-8);
+}
+
+.choice__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+.choice__option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 20px;
+  /* Figma's light --border, as on secondary buttons: the text, not the outline, says what it is. */
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--primary);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.choice__option input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.choice__option:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.choice__option:has(input:focus-visible) {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}

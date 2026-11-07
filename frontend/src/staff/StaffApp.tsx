@@ -13,8 +13,7 @@ import { useStaffSession, type StaffAccount } from './useStaffSession'
 
 function SignedIn({ account }: { account: StaffAccount }) {
   const session = useStaffSession()
-  const messages = useMessages()
-  const texts = messages.dashboard
+  const texts = useMessages().dashboard
   const [signOutFailed, setSignOutFailed] = useState(false)
   const [path, navigate] = useStaffPath()
   const navigation = { currentPath: path, onNavigate: navigate, staffAccounts: STAFF_TEAM_PATH }
@@ -31,18 +30,19 @@ function SignedIn({ account }: { account: StaffAccount }) {
     }
   }
 
+  const shell = {
+    account: { name: account.name, role: account.role },
+    onSignOut: signOut,
+    navigation,
+    notice: signOutFailed ? <Notice title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice> : null,
+  }
+
+  if (onTeam) return <StaffTeam shell={shell} />
+
+  const { notice, ...shellProps } = shell
   return (
     // Without a screen: no title and an empty main area. S-01, the first screen after sign-in, is #26.
-    <DashboardShell
-      account={{ name: account.name, role: account.role }}
-      onSignOut={signOut}
-      navigation={navigation}
-      title={onTeam ? messages.staffTeam.title : undefined}
-      description={onTeam ? messages.staffTeam.description : undefined}
-    >
-      {signOutFailed && <Notice title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice>}
-      {onTeam && <StaffTeam />}
-    </DashboardShell>
+    <DashboardShell {...shellProps}>{notice}</DashboardShell>
   )
 }
 

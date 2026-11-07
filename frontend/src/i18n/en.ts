@@ -133,6 +133,23 @@ export const en: Messages = {
     loadingTitle: 'Loading accounts…',
     loadingText: 'Please wait while the team loads.',
     offlineText: 'Actions will be available when the connection returns.',
+    invite: 'Invite',
+    inviteTitle: 'Invite to the team',
+    inviteText: 'The person will get an email link to set their own password.',
+    fullName: 'Full name',
+    email: 'Email',
+    role: 'Role',
+    sendInvite: 'Send invitation',
+    cancel: 'Cancel',
+    emailInUseTitle: 'This email is already in use',
+    emailInUseText: (email: string) => `${email} already belongs to a team account. Use another email.`,
+    fixEmail: 'Fix email',
+    invitedTitle: 'Invitation sent',
+    invitedText: (firstName: string) => `${firstName} will show as invited until they set their password.`,
+    resend: 'Resend invitation',
+    resentTitle: 'Invitation resent',
+    resentText: (email: string, firstName: string) =>
+      `We sent a new invitation to ${email}. ${firstName} will stay Invited until they create their password.`,
   },
 
   states: {
