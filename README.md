@@ -126,6 +126,8 @@ npm run test:e2e  # browser test through the proxy at http://localhost:8080
 
 The dev server sends `/api` to the proxy, so the stack must be up. The browser only sees one origin, which keeps login cookies working. Before the first `test:e2e`, run `npx playwright install chromium` once.
 
+To check the shared pieces and the dashboard shell against Figma, open <http://localhost:5173/component-preview.html> and <http://localhost:5173/dashboard-preview.html> on the dev server. How to use them is in the [frontend base](docs/design/frontend-base.md).
+
 GitHub runs `.github/workflows/frontend.yml` on every pull request: lint, build, page tests, and the browser test against the full stack.
 
 ## Test on a phone

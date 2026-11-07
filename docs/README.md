@@ -72,6 +72,7 @@ All documents are in the `docs` folder.
 | What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) | |
 | Where each finished wireframe is in Figma | [Wireframes](design/wireframes.md) | |
 | Rules for the code that answers the app | [API conventions](design/api-conventions.md) | |
+| Design values, texts, dates and shared pieces of the screens | [Frontend base](design/frontend-base.md) | |
 | Older notes moved out of the SRS | [Design notes](design/design-notes.md) | |
 
 Each design document ends with three lists: decisions still waiting for a yes, open questions, and which requirements each diagram covers.
@@ -86,9 +87,10 @@ The app has two halves that talk to each other. The backend (Laravel, in PHP) ke
 | The code that answers each address | `backend/app/Http/Controllers/` |
 | The data types, like a user | `backend/app/Models/` |
 | The tables in the database | `backend/database/migrations/`. Fake data for testing is in `factories/` and `seeders/` next to it |
-| Error messages in Spanish and English | `backend/lang/es/` and `backend/lang/en/` |
+| Error messages in Spanish and English | `frontend/src/i18n/` |
 | Backend tests | `backend/tests/` |
 | The screens | `frontend/src/` |
+| Rules every screen follows | [Frontend base](design/frontend-base.md) |
 | Frontend tests | Next to each screen in `frontend/src/` (`*.test.tsx`), and browser tests in `frontend/e2e/` |
 | The containers: proxy, PHP, database | `docker-compose.yml` and the `docker/` folder |
 | The checks GitHub runs on every pull request | `.github/workflows/` |
