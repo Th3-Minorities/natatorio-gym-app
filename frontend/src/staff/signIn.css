@@ -18,6 +18,8 @@
 
 /* The brand lines up with the left edge of the card below it. */
 .sign-in__column {
+  display: flex;
+  flex-direction: column;
   width: 464px;
   max-width: 100%;
 }

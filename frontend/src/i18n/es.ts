@@ -68,6 +68,9 @@ export const es = {
     // Neutral: staff accounts have no gender, so not "Administrador" or "Administradora".
     roles: { staff: 'Staff', admin: 'Administración' },
     signOut: 'Cerrar sesión',
+    // Not drawn in Figma: the sign-out could not reach the server, so the person is still signed in.
+    signOutFailedTitle: 'No se pudo cerrar sesión',
+    signOutFailedText: 'Revisa la conexión e intenta de nuevo.',
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

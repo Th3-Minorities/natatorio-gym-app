@@ -65,6 +65,8 @@ export const en: Messages = {
     },
     roles: { staff: 'Staff', admin: 'Administrator' },
     signOut: 'Sign out',
+    signOutFailedTitle: 'Could not sign out',
+    signOutFailedText: 'Check the connection and try again.',
   },
 
   states: {

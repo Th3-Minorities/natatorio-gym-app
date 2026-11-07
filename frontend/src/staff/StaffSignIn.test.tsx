@@ -191,7 +191,7 @@ describe('deactivated account (4039:4094)', () => {
 
 describe('after a sign-in ended by itself', () => {
   it('says the session ended for inactivity, with empty fields and the button ready (4039:4365)', () => {
-    render(<StaffSignIn onSignIn={async () => {}} endedBecause="timeout" />)
+    render(<StaffSignIn onSignIn={async () => {}} startWith="timeout" />)
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.timeoutTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(t.timeoutText)
@@ -200,13 +200,13 @@ describe('after a sign-in ended by itself', () => {
   })
 
   it('says the account was deactivated when it was cut off while signed in', () => {
-    render(<StaffSignIn onSignIn={async () => {}} endedBecause="deactivated" />)
+    render(<StaffSignIn onSignIn={async () => {}} startWith="deactivated" />)
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.deactivatedTitle)
   })
 
   it('shows no notice after a normal sign-out', () => {
-    render(<StaffSignIn onSignIn={async () => {}} endedBecause={null} />)
+    render(<StaffSignIn onSignIn={async () => {}} startWith={null} />)
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
