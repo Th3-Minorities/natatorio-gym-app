@@ -32,6 +32,8 @@ export const es = {
     offlineText: 'Conéctate a internet para iniciar sesión. Conservamos lo que escribiste.',
     deactivatedTitle: 'Cuenta desactivada',
     deactivatedText: 'No puedes iniciar sesión con esta cuenta. Pide a un Administrador que revise tu acceso.',
+    timeoutTitle: 'Sesión vencida',
+    timeoutText: 'Tu sesión se cerró por inactividad. Inicia sesión de nuevo.',
   },
 
   dashboard: {

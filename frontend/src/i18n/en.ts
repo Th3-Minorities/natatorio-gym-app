@@ -30,6 +30,8 @@ export const en: Messages = {
     offlineText: 'Connect to the internet to sign in. We kept what you typed.',
     deactivatedTitle: 'Account deactivated',
     deactivatedText: 'You cannot sign in with this account. Ask an Administrator to check your access.',
+    timeoutTitle: 'Session expired',
+    timeoutText: 'Your session closed after a while without activity. Sign in again.',
   },
 
   dashboard: {

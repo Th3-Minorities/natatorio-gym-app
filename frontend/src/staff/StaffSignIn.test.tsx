@@ -189,6 +189,29 @@ describe('deactivated account (4039:4094)', () => {
   })
 })
 
+describe('after a sign-in ended by itself', () => {
+  it('says the session ended for inactivity, with empty fields and the button ready (4039:4365)', () => {
+    render(<StaffSignIn onSignIn={async () => {}} endedBecause="timeout" />)
+
+    expect(screen.getByRole('alert')).toHaveTextContent(t.timeoutTitle)
+    expect(screen.getByRole('alert')).toHaveTextContent(t.timeoutText)
+    expect(screen.getByLabelText(t.email)).toHaveValue('')
+    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+  })
+
+  it('says the account was deactivated when it was cut off while signed in', () => {
+    render(<StaffSignIn onSignIn={async () => {}} endedBecause="deactivated" />)
+
+    expect(screen.getByRole('alert')).toHaveTextContent(t.deactivatedTitle)
+  })
+
+  it('shows no notice after a normal sign-out', () => {
+    render(<StaffSignIn onSignIn={async () => {}} endedBecause={null} />)
+
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
 describe('other answers', () => {
   it('shows the field rules the server sends', async () => {
     renderSignIn(failing(new ApiError('validation_failed', 422, { email: ['max'] })))

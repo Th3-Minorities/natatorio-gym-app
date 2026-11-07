@@ -6,8 +6,9 @@ import { StaffSignIn } from '../staff/StaffSignIn'
 import '../styles/base.css'
 
 // Development only: entry of signin-preview.html, N-11 with a fake sign-in, to compare each state with Figma.
-// ?state= picks the state: normal (nothing pressed), signing, wrong, wait, offline, deactivated, ok.
-// For every state but "normal" the page fills both fields and presses the button by itself.
+// ?state= picks the state: normal (nothing pressed), timeout (after a sign-in expired, nothing pressed),
+// signing, wrong, wait, offline, deactivated, ok. For the states after a press, the page fills both fields
+// and presses the button by itself.
 // ?lang=en shows English.
 const params = new URLSearchParams(window.location.search)
 const state = params.get('state') ?? 'normal'
@@ -34,7 +35,7 @@ async function fakeSignIn(): Promise<void> {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider locale={params.get('lang') ?? undefined}>
-      <StaffSignIn onSignIn={fakeSignIn} />
+      <StaffSignIn onSignIn={fakeSignIn} endedBecause={state === 'timeout' ? 'timeout' : null} />
     </I18nProvider>
   </StrictMode>,
 )
@@ -47,7 +48,7 @@ function type(selector: string, value: string) {
   input.dispatchEvent(new Event('input', { bubbles: true }))
 }
 
-if (state !== 'normal') {
+if (state !== 'normal' && state !== 'timeout') {
   setTimeout(() => {
     type('input[type=email]', 'mariel.velez@uprm.example.edu')
     type('input[type=password]', 'una contraseña')

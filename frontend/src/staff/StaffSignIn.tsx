@@ -13,6 +13,7 @@ import './signIn.css'
 const FORGOT_PASSWORD_PATH = '/staff/recuperar'
 
 type Problem =
+  | { kind: 'timeout' }
   | { kind: 'wrong' }
   | { kind: 'wait'; until: Date | null }
   | { kind: 'offline' }
@@ -21,7 +22,13 @@ type Problem =
 
 type FieldErrors = { email?: string; password?: string }
 
-export function StaffSignIn({ onSignIn }: { onSignIn: (email: string, password: string) => Promise<void> }) {
+type StaffSignInProps = {
+  onSignIn: (email: string, password: string) => Promise<void>
+  /** Why the last sign-in ended by itself: "Sesión vencida" (4039:4365) or "Cuenta desactivada" (4039:4094). */
+  endedBecause?: 'timeout' | 'deactivated' | null
+}
+
+export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps) {
   const texts = useMessages()
   const t = texts.signIn
   const dates = useDateFormat()
@@ -30,12 +37,12 @@ export function StaffSignIn({ onSignIn }: { onSignIn: (email: string, password: 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [problem, setProblem] = useState<Problem | null>(null)
+  const [problem, setProblem] = useState<Problem | null>(endedBecause ? { kind: endedBecause } : null)
   const [busy, setBusy] = useState(false)
   // What keeps the button disabled after an answer (Figma states 3942, 4018, 4094).
   const [waiting, setWaiting] = useState(false)
   const [offlineBlock, setOfflineBlock] = useState(false)
-  const [deactivatedBlock, setDeactivatedBlock] = useState(false)
+  const [deactivatedBlock, setDeactivatedBlock] = useState(endedBecause === 'deactivated')
 
   // Too many tries: open the button again at the time the server gave (REQ-F-07).
   const waitUntil = problem?.kind === 'wait' ? problem.until : null
@@ -137,6 +144,7 @@ export function StaffSignIn({ onSignIn }: { onSignIn: (email: string, password: 
           </h1>
           <p className="sign-in__description">{t.description}</p>
 
+          {problem?.kind === 'timeout' && <Notice title={t.timeoutTitle}>{t.timeoutText}</Notice>}
           {problem?.kind === 'wrong' && <Notice title={t.wrongTitle}>{t.wrongText}</Notice>}
           {problem?.kind === 'wait' && (
             <Notice title={t.waitTitle}>
