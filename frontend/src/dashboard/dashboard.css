@@ -264,3 +264,23 @@
     align-items: stretch;
   }
 }
+
+/* Menu items that open a screen (#84). Figma A-15 (100:843): the open one has a --border background and --hero text. */
+.nav__item--link {
+  color: var(--primary-foreground);
+  text-decoration: none;
+}
+
+.nav__item--link:hover {
+  background: var(--hero-raised);
+}
+
+.nav__item--current,
+.nav__item--current:hover {
+  background: var(--border);
+  color: var(--hero);
+}
+
+.nav__item--current .nav__icon {
+  color: var(--hero);
+}

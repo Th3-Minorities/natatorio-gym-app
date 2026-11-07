@@ -5,14 +5,21 @@ import { useMessages } from '../i18n'
 import { SignInLayout } from './SignInLayout'
 import { StaffSessionProvider } from './StaffSession'
 import { StaffSignIn } from './StaffSignIn'
+import { STAFF_TEAM_PATH, useStaffPath } from './staffPath'
+import { StaffTeam } from './team/StaffTeam'
 import { useStaffSession, type StaffAccount } from './useStaffSession'
 
 // The staff part of the PWA, at /staff (#16): N-11 until someone signs in, then the dashboard shell.
 
 function SignedIn({ account }: { account: StaffAccount }) {
   const session = useStaffSession()
-  const texts = useMessages().dashboard
+  const messages = useMessages()
+  const texts = messages.dashboard
   const [signOutFailed, setSignOutFailed] = useState(false)
+  const [path, navigate] = useStaffPath()
+  const navigation = { currentPath: path, onNavigate: navigate, staffAccounts: STAFF_TEAM_PATH }
+  // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
+  const onTeam = account.role === 'admin' && path === STAFF_TEAM_PATH
 
   async function signOut() {
     setSignOutFailed(false)
@@ -25,9 +32,16 @@ function SignedIn({ account }: { account: StaffAccount }) {
   }
 
   return (
-    // No title and an empty main area: S-01, the first screen after sign-in, is #26.
-    <DashboardShell account={{ name: account.name, role: account.role }} onSignOut={signOut}>
+    // Without a screen: no title and an empty main area. S-01, the first screen after sign-in, is #26.
+    <DashboardShell
+      account={{ name: account.name, role: account.role }}
+      onSignOut={signOut}
+      navigation={navigation}
+      title={onTeam ? messages.staffTeam.title : undefined}
+      description={onTeam ? messages.staffTeam.description : undefined}
+    >
       {signOutFailed && <Notice title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice>}
+      {onTeam && <StaffTeam />}
     </DashboardShell>
   )
 }

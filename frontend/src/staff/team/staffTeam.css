@@ -1,0 +1,142 @@
+/* A-15 "Cuentas del staff", Figma 100:676 ("Dashboard / A-15 content"). */
+
+.team-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 64px;
+  margin: 0;
+  padding: var(--spacing-16) var(--spacing-24);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: var(--weight-medium);
+  line-height: 32px;
+  text-align: center;
+}
+
+.team-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--spacing-4) var(--spacing-16);
+}
+
+.team-bar__title,
+.team-bar__hint {
+  margin: 0;
+}
+
+.team-bar__title {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.team-bar__hint {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.team-table {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.team-table table {
+  width: 100%;
+  /* Figma's columns: 200, 280, 125, 125 and 358 pixels. Narrower screens scroll the table, not the page. */
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 21px;
+  text-align: left;
+}
+
+.team-table th,
+.team-table td {
+  height: 52px;
+  padding: 0 var(--spacing-8);
+  vertical-align: middle;
+}
+
+.team-table th:first-child,
+.team-table td:first-child {
+  padding-left: var(--spacing-16);
+}
+
+.team-table th:last-child,
+.team-table td:last-child {
+  padding-right: var(--spacing-16);
+}
+
+.team-table th {
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-weight: var(--weight-medium);
+}
+
+.team-table td {
+  color: var(--foreground);
+}
+
+.team-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 2px var(--spacing-8);
+  border-radius: 26px;
+  font-size: 12px;
+  font-weight: var(--weight-medium);
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.team-chip--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.team-chip--invited {
+  background: var(--chip-invited);
+  color: var(--chip-invited-foreground);
+}
+
+.team-chip--deactivated {
+  background: var(--chip-off);
+  color: var(--muted-foreground);
+}
+
+.team-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+}
+
+.team-note__title,
+.team-note__text {
+  margin: 0;
+}
+
+.team-note__title {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.team-note__text {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}

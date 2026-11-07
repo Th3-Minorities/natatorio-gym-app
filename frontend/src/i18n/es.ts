@@ -131,6 +131,24 @@ export const es = {
     signOutFailedText: 'Revisa la conexión e intenta de nuevo.',
   },
 
+  // A-15, Figma 100:841 (#84).
+  staffTeam: {
+    title: 'Cuentas del staff',
+    description: 'Administra el acceso del equipo al gimnasio.',
+    summary: (active: number, invited: number) =>
+      `${active} ${active === 1 ? 'activa' : 'activas'} · ${invited} ${invited === 1 ? 'invitada' : 'invitadas'}`,
+    tableTitle: 'Equipo del gimnasio',
+    tableHint: 'Nombre, correo, rol y estado',
+    columns: { name: 'Nombre', email: 'Correo electrónico', role: 'Rol', status: 'Estado', actions: 'Acciones' },
+    status: { active: 'Activo', invited: 'Invitado', deactivated: 'Desactivado' },
+    noAccess: 'Sin acceso',
+    keptTitle: 'Las cuentas se conservan',
+    keptText: 'Al desactivar una cuenta se retira su acceso. Su registro permanece en esta lista.',
+    loadingTitle: 'Cargando cuentas…',
+    loadingText: 'Espera un momento mientras se consulta el equipo.',
+    offlineText: 'Las acciones estarán disponibles al recuperar la conexión.',
+  },
+
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
   states: {
     loading: 'Cargando',

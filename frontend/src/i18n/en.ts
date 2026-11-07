@@ -119,6 +119,22 @@ export const en: Messages = {
     signOutFailedText: 'Check the connection and try again.',
   },
 
+  staffTeam: {
+    title: 'Staff accounts',
+    description: "Manage the team's access to the gym.",
+    summary: (active: number, invited: number) => `${active} active · ${invited} invited`,
+    tableTitle: 'Gym team',
+    tableHint: 'Name, email, role and status',
+    columns: { name: 'Name', email: 'Email', role: 'Role', status: 'Status', actions: 'Actions' },
+    status: { active: 'Active', invited: 'Invited', deactivated: 'Deactivated' },
+    noAccess: 'No access',
+    keptTitle: 'Accounts are kept',
+    keptText: 'Deactivating an account removes its access. Its record stays in this list.',
+    loadingTitle: 'Loading accounts…',
+    loadingText: 'Please wait while the team loads.',
+    offlineText: 'Actions will be available when the connection returns.',
+  },
+
   states: {
     loading: 'Loading',
     empty: 'No results',
