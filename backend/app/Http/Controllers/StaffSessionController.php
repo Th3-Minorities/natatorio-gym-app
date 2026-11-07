@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 /**
  * Sign in, sign out and "who am I" for staff accounts (N-11, REQ-F-52). A plain controller
@@ -38,8 +39,11 @@ class StaffSessionController extends Controller
         // The unique index ignores case (data-model.md section 5), so the lookup does too.
         $account = StaffAccount::query()->whereRaw('lower(email) = lower(?)', [$credentials['email']])->first();
 
-        // An invited account has no password until the person sets one (#84).
-        if ($account?->password === null || ! Hash::check($credentials['password'], $account->password)) {
+        // Always one password check, also for an unknown email or an invited account with no password yet (#84):
+        // a shorter answer would tell which emails are staff accounts (docs/design/api-conventions.md, section 6).
+        $passwordMatches = Hash::check($credentials['password'], $account?->password ?? self::standInHash());
+
+        if ($account?->password === null || ! $passwordMatches) {
             $throttle->recordFailure($credentials['email'], $request->ip());
 
             throw new ApiException('staff_credentials_invalid', 422);
@@ -76,6 +80,14 @@ class StaffSessionController extends Controller
     public function me(Request $request): JsonResponse
     {
         return response()->json($this->profile($request->user('staff')));
+    }
+
+    /** A hash nobody's password matches, made with the configured cost so checking it takes as long as a real one. */
+    private static function standInHash(): string
+    {
+        static $hash = null;
+
+        return $hash ??= Hash::make(Str::random(40));
     }
 
     /** @return array{name: string, email: string, role: string, locale: string} */

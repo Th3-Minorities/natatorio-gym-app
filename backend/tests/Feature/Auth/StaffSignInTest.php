@@ -6,6 +6,7 @@ use App\Models\AuditLogEntry;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
 use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
 
@@ -80,6 +81,30 @@ class StaffSignInTest extends TestCase
             ->postJson('/api/staff/sign-in', ['email' => 'nobody@example.com', 'password' => 'password'])
             ->assertStatus(422)
             ->assertJsonPath('error.code', 'staff_credentials_invalid');
+    }
+
+    public function test_an_unknown_email_costs_the_same_password_check_as_a_real_one(): void
+    {
+        // Otherwise an unknown email answers faster, and the time tells which emails are staff accounts.
+        Hash::spy();
+
+        $this->fromThePwa()
+            ->postJson('/api/staff/sign-in', ['email' => 'nobody@example.com', 'password' => 'password'])
+            ->assertJsonPath('error.code', 'staff_credentials_invalid');
+
+        Hash::shouldHaveReceived('check')->once();
+    }
+
+    public function test_an_invited_account_costs_the_same_password_check_as_a_real_one(): void
+    {
+        StaffAccount::factory()->create(['email' => 'new@example.com', 'password' => null]);
+        Hash::spy();
+
+        $this->fromThePwa()
+            ->postJson('/api/staff/sign-in', ['email' => 'new@example.com', 'password' => 'anything'])
+            ->assertJsonPath('error.code', 'staff_credentials_invalid');
+
+        Hash::shouldHaveReceived('check')->once();
     }
 
     public function test_an_invited_account_without_a_password_cannot_sign_in(): void
