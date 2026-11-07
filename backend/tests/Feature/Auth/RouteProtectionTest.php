@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Http\Middleware\EnsureUserSessionIsCurrent;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Route as Router;
 use Illuminate\Support\Str;
@@ -18,6 +19,10 @@ class RouteProtectionTest extends TestCase
         'GET api/health',
         'GET api/sanctum/csrf-cookie',
         'POST api/staff/sign-in',
+        'POST api/user/sign-in',
+        'POST api/user/password/email',
+        'POST api/user/password/validate',
+        'POST api/user/password/reset',
     ];
 
     /** @return list<Route> */
@@ -45,6 +50,11 @@ class RouteProtectionTest extends TestCase
 
             // User routes (#15) will add their own rule here, with the User sign-in.
             $middleware = $route->gatherMiddleware();
+            if (Str::startsWith($route->uri(), 'api/user/')) {
+                $this->assertContains(EnsureUserSessionIsCurrent::class, $middleware, "{$name} has no current User session check.");
+
+                continue;
+            }
             $this->assertContains('auth:staff', $middleware, "{$name} has no sign-in check.");
             $this->assertContains('staff.active', $middleware, "{$name} has no staff.active check (E-130).");
             $this->assertNotEmpty(

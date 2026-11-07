@@ -41,7 +41,7 @@ class AccountsAndAuditTablesTest extends TestCase
     public function test_a_user_keeps_only_the_columns_the_design_lists(): void
     {
         $this->assertSame(
-            ['id', 'email', 'password', 'locale', 'current_session_id', 'last_signed_in_at', 'deleted_at', 'created_at', 'updated_at'],
+            ['id', 'email', 'password', 'locale', 'current_session_id', 'last_signed_in_at', 'deleted_at', 'created_at', 'updated_at', 'remember_token'],
             Schema::getColumnListing('users'),
         );
     }
