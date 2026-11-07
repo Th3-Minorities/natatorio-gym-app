@@ -42,12 +42,64 @@ class UserAccountTest extends TestCase
 
     public function test_deletion_is_refused_during_an_active_authorization_without_changing_any_data(): void
     {
+        Storage::fake('local');
         $user = $this->signedInUser();
         $term = AcademicTerm::factory()->create(['starts_on' => today()->subDay(), 'ends_on' => today()->addDay()]);
-        Authorization::factory()->manual()->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
+        $authorization = Authorization::factory()->manual()->create([
+            'user_id' => $user->id, 'academic_term_id' => $term->id, 'photo_path' => 'photos/active.jpg',
+        ]);
+        Storage::disk('local')->put('photos/active.jpg', 'photo');
+        $before = $authorization->fresh()->getAttributes();
         $this->deleteJson('/api/user/account')->assertConflict()->assertJsonPath('error.code', 'user_authorization_active');
         $this->assertNull($user->fresh()->deleted_at);
         $this->assertNotNull($user->fresh()->email);
+        $this->assertSame($before, $authorization->fresh()->getAttributes());
+        $this->assertDatabaseCount('pending_photo_deletions', 0);
+        Storage::disk('local')->assertExists('photos/active.jpg');
+        $this->getJson('/api/user/me')->assertOk();
+    }
+
+    public function test_profile_prefers_the_current_term_over_a_future_authorization_created_first(): void
+    {
+        $user = $this->signedInUser();
+        $next = AcademicTerm::factory()->create([
+            'name' => 'Next term', 'starts_on' => today()->addDays(2), 'ends_on' => today()->addDays(30),
+        ]);
+        $current = AcademicTerm::factory()->create([
+            'name' => 'Current term', 'starts_on' => today()->subDay(), 'ends_on' => today()->addDay(),
+        ]);
+        foreach ([$next, $current] as $term) {
+            Authorization::factory()->manual()->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
+        }
+
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('authorization.term', 'Current term');
+    }
+
+    public function test_profile_returns_no_authorization_when_only_ended_and_future_terms_exist(): void
+    {
+        $user = $this->signedInUser();
+        foreach ([
+            ['Ended term', -30, -1],
+            ['Next term', 1, 30],
+        ] as [$name, $start, $end]) {
+            $term = AcademicTerm::factory()->create([
+                'name' => $name, 'starts_on' => today()->addDays($start), 'ends_on' => today()->addDays($end),
+            ]);
+            Authorization::factory()->manual()->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
+        }
+
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('authorization', null);
+    }
+
+    public function test_profile_does_not_show_a_future_only_authorization(): void
+    {
+        $user = $this->signedInUser();
+        $term = AcademicTerm::factory()->create([
+            'starts_on' => today()->addDay(), 'ends_on' => today()->addDays(30),
+        ]);
+        Authorization::factory()->manual()->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
+
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('authorization', null);
     }
 
     public function test_a_future_authorization_is_not_treated_as_expired_for_deletion(): void
