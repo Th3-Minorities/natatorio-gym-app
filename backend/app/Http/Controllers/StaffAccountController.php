@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Models\StaffAccount;
 use App\Services\AuditLog;
+use App\Services\StaffAccountChanges;
 use App\Services\StaffInvitations;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
@@ -72,7 +73,7 @@ class StaffAccountController extends Controller
 
     public function resendInvitation(StaffAccount $account, AuditLog $log, StaffInvitations $invitations): Response
     {
-        if ($this->status($account) !== 'invited') {
+        if ($account->status() !== 'invited') {
             throw new ApiException('staff_account_not_invited', 409);
         }
 
@@ -82,18 +83,39 @@ class StaffAccountController extends Controller
         return response()->noContent();
     }
 
+    public function changeRole(Request $request, StaffAccount $account, StaffAccountChanges $changes): JsonResponse
+    {
+        $input = $request->validate(['role' => ['required', 'string', Rule::in(['staff', 'admin'])]]);
+        if ($this->isSelf($request, $account)) {
+            throw new ApiException('staff_role_own_account', 409);
+        }
+
+        return response()->json(['account' => $this->show($changes->changeRole($account, $input['role']))]);
+    }
+
+    public function deactivate(Request $request, StaffAccount $account, StaffAccountChanges $changes): JsonResponse
+    {
+        // Nobody locks themselves out; this also keeps the one acting as an active Administrator (E-151).
+        if ($this->isSelf($request, $account)) {
+            throw new ApiException('staff_deactivate_own_account', 409);
+        }
+
+        return response()->json(['account' => $this->show($changes->deactivate($account))]);
+    }
+
+    public function reactivate(StaffAccount $account, StaffAccountChanges $changes): JsonResponse
+    {
+        return response()->json(['account' => $this->show($changes->reactivate($account))]);
+    }
+
+    private function isSelf(Request $request, StaffAccount $account): bool
+    {
+        return $request->user('staff')->is($account);
+    }
+
     private function emailInUse(string $email): bool
     {
         return StaffAccount::query()->whereRaw('lower(email) = lower(?)', [$email])->exists();
-    }
-
-    private function status(StaffAccount $account): string
-    {
-        return match (true) {
-            $account->deactivated_at !== null => 'deactivated',
-            $account->password === null => 'invited',
-            default => 'active',
-        };
     }
 
     /** @return array{id: int, name: string, email: string, role: string, status: string} */
@@ -104,7 +126,7 @@ class StaffAccountController extends Controller
             'name' => $account->name,
             'email' => $account->email,
             'role' => $account->role,
-            'status' => $this->status($account),
+            'status' => $account->status(),
         ];
     }
 }

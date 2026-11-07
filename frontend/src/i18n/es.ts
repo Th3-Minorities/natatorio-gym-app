@@ -166,6 +166,10 @@ export const es = {
     staff_account_deactivated: 'Esta cuenta fue desactivada. Pide acceso a un Administrador si lo necesitas de nuevo.',
     staff_account_not_invited: 'Esta cuenta ya no está pendiente de invitación. Actualiza la lista.',
     staff_invite_link_invalid: 'Este enlace de invitación ya no se puede usar.',
+    staff_role_own_account: 'No puedes cambiar tu propio rol.',
+    staff_deactivate_own_account: 'No puedes desactivar tu propia cuenta.',
+    staff_last_administrator: 'Debe quedar al menos un Administrador activo.',
+    staff_account_status_changed: 'Esta cuenta cambió mientras la veías. Actualiza la lista.',
   },
 
   validation: {

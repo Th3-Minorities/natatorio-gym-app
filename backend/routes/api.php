@@ -34,6 +34,9 @@ Route::prefix('staff')->group(function () {
         Route::post('/accounts', [StaffAccountController::class, 'invite'])->middleware('throttle:staff.invite');
         Route::post('/accounts/{account}/invitation', [StaffAccountController::class, 'resendInvitation'])
             ->whereNumber('account')->middleware('throttle:staff.invite');
+        Route::patch('/accounts/{account}/role', [StaffAccountController::class, 'changeRole'])->whereNumber('account');
+        Route::post('/accounts/{account}/deactivate', [StaffAccountController::class, 'deactivate'])->whereNumber('account');
+        Route::post('/accounts/{account}/reactivate', [StaffAccountController::class, 'reactivate'])->whereNumber('account');
     });
 });
 

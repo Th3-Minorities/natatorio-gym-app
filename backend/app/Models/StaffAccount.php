@@ -25,4 +25,14 @@ class StaffAccount extends Authenticatable
     {
         return ['password' => 'hashed', 'deactivated_at' => 'datetime'];
     }
+
+    /** active, invited (no password yet) or deactivated, as the A-15 list shows it. */
+    public function status(): string
+    {
+        return match (true) {
+            $this->deactivated_at !== null => 'deactivated',
+            $this->password === null => 'invited',
+            default => 'active',
+        };
+    }
 }
