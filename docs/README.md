@@ -54,7 +54,7 @@ All documents are in the `docs` folder.
 | What the app must do | [SRS](requirements/SRS.md) |
 | What changed since the proposal, and why | [Project context](context.md) |
 | Questions we asked and the answers we got | [The team's questions](decisions/team.md), [the gym's questions](decisions/gym.md), [CTI's questions](decisions/cti.md) |
-| Notes from meetings with the gym or CTI | [meetings folder](meetings/) |
+| Summaries of meetings with the gym or CTI | [Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/categories/announcements) |
 | The proposal and its original drawings | [capstone_proposal folder](capstone_proposal/). The `v0` folder inside is the version we submitted, kept as it was |
 | How to set up the tools we use | [setup folder](setup/) |
 | How to run the code | The [README at the top of the repository](../README.md) |
@@ -70,7 +70,9 @@ All documents are in the `docs` folder.
 | Staff and administration tasks | [Administration flows](design/admin-flows.md) | 17 |
 | Every screen and how people move between them | [Screen map](design/screen-map.md) | 7 |
 | What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) | |
+| Where each finished wireframe is in Figma | [Wireframes](design/wireframes.md) | |
 | Rules for the code that answers the app | [API conventions](design/api-conventions.md) | |
+| Design values, texts, dates and shared pieces of the screens | [Frontend base](design/frontend-base.md) | |
 | Older notes moved out of the SRS | [Design notes](design/design-notes.md) | |
 
 Each design document ends with three lists: decisions still waiting for a yes, open questions, and which requirements each diagram covers.
@@ -85,9 +87,10 @@ The app has two halves that talk to each other. The backend (Laravel, in PHP) ke
 | The code that answers each address | `backend/app/Http/Controllers/` |
 | The data types, like a user | `backend/app/Models/` |
 | The tables in the database | `backend/database/migrations/`. Fake data for testing is in `factories/` and `seeders/` next to it |
-| Error messages in Spanish and English | `backend/lang/es/` and `backend/lang/en/` |
+| Error messages in Spanish and English | `frontend/src/i18n/` |
 | Backend tests | `backend/tests/` |
 | The screens | `frontend/src/` |
+| Rules every screen follows | [Frontend base](design/frontend-base.md) |
 | Frontend tests | Next to each screen in `frontend/src/` (`*.test.tsx`), and browser tests in `frontend/e2e/` |
 | The containers: proxy, PHP, database | `docker-compose.yml` and the `docker/` folder |
 | The checks GitHub runs on every pull request | `.github/workflows/` |

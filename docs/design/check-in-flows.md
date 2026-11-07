@@ -285,7 +285,7 @@ flowchart TD
   class N,E,Z ok
 ```
 
-- Covers REQ-F-83 and the rejection side of REQ-F-82. Times shown as ISO date plus 12-hour time in `America/Puerto_Rico` (REQ-NF-37, REQ-NF-38).
+- Covers REQ-F-83 and the rejection side of REQ-F-82. Times shown in `America/Puerto_Rico`, in the format of REQ-NF-38 (REQ-NF-37).
 - Every User sees the notice, athletes and paid members (E-76).
 
 #### Theme color during the athletes-only period

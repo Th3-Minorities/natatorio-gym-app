@@ -13,6 +13,9 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 # PHP errors go to the container logs, never to the client: production settings, plus ours.
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY app.ini "$PHP_INI_DIR/conf.d/zz-app.ini"
+COPY entrypoint.sh /usr/local/bin/app-entrypoint
+ENTRYPOINT ["sh", "/usr/local/bin/app-entrypoint"]
+CMD ["php-fpm"]
 
 # The containers run as www-data, which cannot write to its home folder. Composer keeps its cache here.
 ENV COMPOSER_HOME=/tmp/composer

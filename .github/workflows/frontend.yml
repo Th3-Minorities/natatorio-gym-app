@@ -59,7 +59,7 @@ jobs:
           docker compose exec -T app sh -c 'cp .env.example .env && php artisan key:generate'
 
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium msedge
       - run: npx playwright test
 
       - name: Container logs

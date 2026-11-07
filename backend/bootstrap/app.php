@@ -21,7 +21,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->dontReport(ApiException::class);
 
         // Every /api response uses one error format (docs/design/api-conventions.md).
-        $exceptions->render(fn (Throwable $e, Request $request) => $request->is('api', 'api/*')
-            ? ApiErrorRenderer::render($e)
-            : null);
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if (! $request->is('api', 'api/*')) {
+                return null;
+            }
+
+            return ApiErrorRenderer::render($e);
+        });
     })->create();
