@@ -156,7 +156,7 @@ You draw 3 screens.
 - [Check In flows](check-in-flows.md) 5. Staff-assisted Check In
 - [Check In flows](check-in-flows.md) 11. Staff check-out and photo pending
 - [Check In flows](check-in-flows.md) 6. Gym ID states: paid member; 7. Gym ID states: athlete
-- [Check In flows](check-in-flows.md) 8. Athletes-only notice during a session, and its part "Theme color during the athletes-only period"
+- [Check In flows](check-in-flows.md) 8. Athletes-only notice before Check In and during a session, and its part "Theme color during the athletes-only period"
 - [Check In flows](check-in-flows.md) 9. Occupancy counting (C-01 polling)
 
 #### Done when (from the issue)
@@ -365,7 +365,7 @@ The design documents hold 55 numbered diagrams. Two are removed and keep their n
 | | 5. Staff-assisted Check In | #41 |
 | | 6. Gym ID states: paid member | #41 |
 | | 7. Gym ID states: athlete | #41 |
-| | 8. Athletes-only notice during a session | #41 |
+| | 8. Athletes-only notice before Check In and during a session | #41 |
 | | 8b. Theme color during the athletes-only period | #41 |
 | | 9. Occupancy counting | #41 |
 | | 10. Staff verification of a Gym ID | #43 |

@@ -59,6 +59,39 @@ export const es = {
     install: 'Instalar app', helpPrivacy: 'Ayuda para instalar · Aviso de privacidad', languages: 'Español / English',
     gym: 'Gimnasio', checkIn: 'Check-in', navigation: 'Navegación principal',
   },
+  // U-01 Check In (Figma page "#41 Gym ID and Check in": boards 01, 04, 08, 09, 10, Atletas 02, 04, 05, 06,
+  // and the member confirmation 4104:719).
+  checkIn: {
+    ready: '¿Listo para entrenar?', review: 'Revisa lo necesario para continuar', nextAccess: 'Consulta tu próximo acceso',
+    confirmed: '¡Tu entrada quedó registrada!', member: 'Miembro', athlete: 'Atleta', student: 'Estudiante',
+    registerTitle: 'Registra tu entrada', registerText: 'Confirma tu llegada al gimnasio.',
+    hold: 'Mantén presionado para entrar', holding: 'Mantén presionado…', locationNote: 'Necesitaremos verificar tu ubicación.',
+    upcoming: 'Próximo horario exclusivo de atletas', exclusive: 'Horario exclusivo de atletas',
+    periodTime: (day: string, range: string) => `${day} · ${range}`,
+    athletesTraining: 'Ahora entrenan los atletas', exclusiveRange: (range: string) => `Horario exclusivo · ${range}`,
+    canRegister: 'Podrás registrar tu entrada', from: (time: string) => `A partir de las ${time}`,
+    membershipValid: 'Tu membresía sigue vigente.', schedules: 'Ver horarios', availableAfter: 'Check-in disponible al terminar este periodo.',
+    sessionActive: 'Sesión activa', entryRegistered: 'Entrada registrada', duration: 'Duración',
+    showCard: 'Muestra esta tarjeta al personal.', staffExit: 'El personal registra tu salida.',
+    problems: {
+      authorization: { title: 'Tu acceso no está vigente', text: 'No encontramos una autorización vigente para registrar tu entrada.', action: 'Revisar mi acceso' },
+      athleteAuthorization: {
+        title: 'Tu acceso de atleta no está vigente',
+        text: 'No encontramos una autorización de atleta vigente. Consulta con el personal para revisar tu acceso.',
+        action: 'Ver información de contacto',
+      },
+      closed: { title: 'El gimnasio está cerrado', text: 'Consulta los horarios y los avisos antes de tu próxima visita.', action: 'Ver horarios' },
+      termPhoto: { title: 'Necesitamos una foto nueva', text: 'Actualiza tu foto para el nuevo término antes de registrar tu entrada.', action: 'Actualizar foto' },
+      pendingPhoto: { title: 'Tu foto necesita actualizarse', text: 'El personal marcó tu foto como pendiente. Carga una foto nueva desde tu teléfono.', action: 'Actualizar foto' },
+      denied: { title: 'Activa el permiso de ubicación', text: 'Permite el acceso a tu ubicación en los ajustes del navegador y vuelve a intentarlo.', action: 'Ver cómo activar ubicación' },
+      unavailable: { title: 'No pudimos obtener tu ubicación', text: 'Espera un momento y vuelve a intentarlo desde el gimnasio.', action: 'Intentar de nuevo' },
+      accuracy: { title: 'Necesitamos mayor precisión', text: 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.', action: 'Intentar de nuevo' },
+      outside: { title: 'Acércate al gimnasio', text: 'Debes estar dentro del área del gimnasio para registrar tu entrada.', action: 'Intentar de nuevo' },
+      offline: { title: 'Necesitas conexión', text: 'Conéctate a internet para verificar y registrar tu entrada.', action: 'Reintentar conexión' },
+    },
+    deniedNote: 'En la PWA, abre los ajustes del sitio desde el navegador.',
+  },
+
   health: {
     waiting: 'Comprobando la API...',
     connected: 'API: conectada',
@@ -144,6 +177,15 @@ export const es = {
 
   // The PWA owns the texts for stable API error codes (E-154).
   errors: {
+    // Check In refusals (U-01). The screen shows the drawn panels; these are the same texts for other uses.
+    check_in_no_authorization: 'No encontramos una autorización vigente para registrar tu entrada.',
+    check_in_gym_closed: 'Consulta los horarios y los avisos antes de tu próxima visita.',
+    check_in_photo_required: 'Actualiza tu foto para el nuevo término antes de registrar tu entrada.',
+    check_in_photo_pending: 'El personal marcó tu foto como pendiente. Carga una foto nueva desde tu teléfono.',
+    check_in_athletes_only: 'Check-in disponible al terminar este periodo.',
+    location_required: 'Espera un momento y vuelve a intentarlo desde el gimnasio.',
+    check_in_low_accuracy: 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.',
+    check_in_outside_boundary: 'Debes estar dentro del área del gimnasio para registrar tu entrada.',
     user_credentials_invalid: 'Revisa el correo y la contraseña e intenta de nuevo.',
     user_session_replaced: 'Vuelve a iniciar sesión para usar tu cuenta aquí.',
     user_reset_link_invalid: 'Este enlace venció o ya se utilizó.',

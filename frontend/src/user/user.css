@@ -123,12 +123,12 @@
 .user-navigation a, .user-navigation-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-4); padding-top: var(--spacing-12); font-size: var(--user-nav-size); line-height: var(--user-nav-line); color: var(--muted-foreground); text-decoration: none; }
 .user-navigation a, .user-navigation-item { font-weight: var(--weight-medium); }
 .user-navigation svg { width: var(--spacing-24); height: var(--spacing-24); color: var(--hero); }
-.user-navigation [aria-current] svg { width: var(--user-navigation-account-icon-size); height: var(--user-navigation-account-icon-size); }
+.user-navigation-account svg { width: var(--user-navigation-account-icon-size); height: var(--user-navigation-account-icon-size); }
 .user-navigation [aria-current] { color: var(--hero); }
 .user-navigation i { width: var(--spacing-4); height: var(--spacing-4); border-radius: 50%; background: var(--primary); }
 .user-check-in__circle { position: absolute; top: calc(-1 * var(--spacing-24)); width: var(--user-check-in-size); height: var(--user-check-in-size); display: grid; place-items: center; border: var(--user-focus-width) solid var(--surface); border-radius: 50%; background: var(--primary); }
 .user-check-in__circle svg { width: var(--user-navigation-check-in-icon-size); height: var(--user-navigation-check-in-icon-size); color: var(--primary-foreground); transform: scaleX(-1); }
-.user-check-in > span:last-child { margin-top: calc(var(--user-navigation-account-icon-size) + var(--spacing-4)); }
+.user-check-in > span:nth-child(2) { margin-top: calc(var(--user-navigation-account-icon-size) + var(--spacing-4)); }
 .user-welcome-actions { display: flex; flex-direction: column; gap: var(--spacing-8); }
 .user-welcome-actions:last-child .user-action { font-weight: var(--weight-medium); }
 .user-welcome-actions:last-child .user-caption { color: var(--foreground); }
@@ -154,3 +154,11 @@
 .user-register { display: flex; align-items: center; justify-content: center; gap: var(--spacing-32); min-height: var(--user-touch); font-size: var(--user-label-size); color: var(--muted-foreground); }
 .user-register-action { color: var(--primary); min-height: var(--user-touch); display: flex; align-items: center; padding: 0 var(--user-input-padding); font-weight: var(--weight-medium); text-decoration: underline; }
 .user-register > span:first-child { transform: translateX(calc(-1 * var(--spacing-8))); }
+
+/* Gym destination icon, Figma 4190:575 at 24 px (navigation instance 4097:106). */
+.user-rack { position: relative; display: block; width: var(--spacing-24); height: var(--spacing-24); flex: none; }
+.user-rack img { position: absolute; display: block; max-width: none; }
+.user-rack__frame { left: 2.4375px; top: 2.4375px; }
+.user-rack__supports { left: 4.6875px; top: 9.9375px; }
+.user-rack__bar { left: 0.9375px; top: 11.0625px; }
+.user-rack__plates { left: 2.25px; top: 8.25px; }

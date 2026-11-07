@@ -4,6 +4,7 @@ import { ApiError, apiRequest } from '../api/client'
 import { Button } from '../components'
 import { useDateFormat } from '../format/dateTime'
 import { I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
+import { CheckIn } from './CheckIn'
 import { UserAccess } from './UserAccess'
 import { UserLoading, UserNotice, UserPage } from './ui'
 import { useConnection } from './useConnection'
@@ -36,7 +37,7 @@ export function UserApp() {
   const online = useConnection()
   const epoch = useRef(0)
   const offline = !online || networkFailed
-  const protectedPath = path.startsWith('/account')
+  const protectedPath = path.startsWith('/account') || path === '/check-in'
 
   const navigate = useCallback((next: string) => {
     window.history.pushState({}, '', next)
@@ -151,7 +152,7 @@ export function UserApp() {
       key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
       replaced={replaced} navigate={navigate} onSignedIn={(account) => {
         epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); setDeleted(false); navigate('/account')
-      }} /> : <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline}
+      }} /> : path === '/check-in' ? <CheckIn profile={profile} ended={ended} /> : <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline}
       retry={() => { setFailed(false); setLoading(true); void load() }} busy={busy} signOut={signOut} changeLocale={changeLocale} localeSaved={localeSaved}
       confirmation={confirmation} confirm={() => setConfirmation(true)} refused={refused} deleteAccount={deleteAccount} actionFailed={actionFailed} />}
   </div></I18nProvider>

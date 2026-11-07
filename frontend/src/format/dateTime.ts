@@ -46,10 +46,21 @@ export function formatTime(value: DateInput, locale: Locale): string {
   return format(value, locale, { hour: 'numeric', minute: '2-digit', hour12: true })
 }
 
+/** "2:00–4:00 p. m." or "2:00–4:00 PM", as drawn in the Check In notices (Figma 4097:267). */
+export function formatTimeRange(start: DateInput, end: DateInput, locale: Locale): string {
+  const range = new Intl.DateTimeFormat(INTL_LOCALE[locale], { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIME_ZONE })
+    .formatRange(toDate(start), toDate(end))
+  return plainSpaces(range).replace(/\s*–\s*/, '–')
+}
+
+/** "Hoy" or "Today" for a time from today in Puerto Rico, otherwise the short date. */
+export function formatDay(value: DateInput, locale: Locale, now: Date = new Date()): string {
+  return puertoRicoDay(value) === puertoRicoDay(now) ? messages[locale].dates.today : formatDate(value, locale)
+}
+
 /** "5 nov 2026, 8:30 a. m.", or "Hoy, 10:42 a. m." for a time from today in Puerto Rico. */
 export function formatDateTime(value: DateInput, locale: Locale, now: Date = new Date()): string {
-  const day = puertoRicoDay(value) === puertoRicoDay(now) ? messages[locale].dates.today : formatDate(value, locale)
-  return `${day}, ${formatTime(value, locale)}`
+  return `${formatDay(value, locale, now)}, ${formatTime(value, locale)}`
 }
 
 /** The three formats in the account language, for screens. */
@@ -59,5 +70,7 @@ export function useDateFormat() {
     date: (value: DateInput) => formatDate(value, locale),
     time: (value: DateInput) => formatTime(value, locale),
     dateTime: (value: DateInput, now?: Date) => formatDateTime(value, locale, now),
+    day: (value: DateInput, now?: Date) => formatDay(value, locale, now),
+    timeRange: (start: DateInput, end: DateInput) => formatTimeRange(start, end, locale),
   }
 }

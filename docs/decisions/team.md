@@ -456,6 +456,7 @@ The team settled these while building the dashboard base, after the Athletic Act
 | ID | Topic | Answer | Answered by | Date |
 |---|---|---|---|---|
 | E-158 | Faster local development | The PHP packages (`backend/vendor/`) live in a Docker volume in local development, set in `docker-compose.override.yml`, and the code stays in a normal folder. Each member keeps the clone outside OneDrive. Why: issue #100 measured four setups on Windows. With the volume, the first start took 40 s instead of 398 s and the backend tests 28 to 30 s instead of 105 to 114 s. Keeping the whole repo in WSL was close in speed but does not run as the repo is today (file owner mismatch), needs a new setup on each Windows computer, and does not apply to macOS. Cost: VS Code no longer sees the packages, so PHP autocomplete needs the copy command in the README. Production skips the override file. | Team | 2026-11-07 |
+| E-161 | Athletes-only notice before Check In | The Check In screen also shows the athletes-only notice in the 60 minutes before a period starts, even without an active session, as Figma board 04 draws it. Athletes and paid members see it. A paid member can still Check In before the period starts. The notice during an active session stays as it was. Extends E-76. SRS REQ-F-83. | Team | 2026-11-07 |
 
 ## WooCommerce import
 

@@ -53,6 +53,37 @@ export const en: Messages = {
     install: 'Install app', helpPrivacy: 'Installation help · Privacy notice', languages: 'Español / English',
     gym: 'Gym', checkIn: 'Check-in', navigation: 'Main navigation',
   },
+  checkIn: {
+    ready: 'Ready to train?', review: 'Check what you need to continue', nextAccess: 'See your next access',
+    confirmed: 'Your entry is registered!', member: 'Member', athlete: 'Athlete', student: 'Student',
+    registerTitle: 'Register your entry', registerText: 'Confirm your arrival at the gym.',
+    hold: 'Press and hold to enter', holding: 'Keep holding…', locationNote: 'We will need to verify your location.',
+    upcoming: 'Next athletes-only schedule', exclusive: 'Athletes-only schedule',
+    periodTime: (day: string, range: string) => `${day} · ${range}`,
+    athletesTraining: 'Athletes are training now', exclusiveRange: (range: string) => `Athletes-only · ${range}`,
+    canRegister: 'You can register your entry', from: (time: string) => `Starting at ${time}`,
+    membershipValid: 'Your membership is still active.', schedules: 'View schedules', availableAfter: 'Check-in available when this period ends.',
+    sessionActive: 'Active session', entryRegistered: 'Entry registered', duration: 'Duration',
+    showCard: 'Show this card to the staff.', staffExit: 'The staff registers your exit.',
+    problems: {
+      authorization: { title: 'Your access is not active', text: 'We did not find an active authorization to register your entry.', action: 'Review my access' },
+      athleteAuthorization: {
+        title: 'Your athlete access is not active',
+        text: 'We did not find an active athlete authorization. Ask the staff to review your access.',
+        action: 'View contact information',
+      },
+      closed: { title: 'The gym is closed', text: 'Check the schedules and notices before your next visit.', action: 'View schedules' },
+      termPhoto: { title: 'We need a new photo', text: 'Update your photo for the new term before registering your entry.', action: 'Update photo' },
+      pendingPhoto: { title: 'Your photo needs an update', text: 'The staff marked your photo as pending. Upload a new photo from your phone.', action: 'Update photo' },
+      denied: { title: 'Turn on location permission', text: 'Allow access to your location in the browser settings and try again.', action: 'See how to turn on location' },
+      unavailable: { title: 'We could not get your location', text: 'Wait a moment and try again from the gym.', action: 'Try again' },
+      accuracy: { title: 'We need better accuracy', text: 'The location received is not accurate enough to confirm your arrival.', action: 'Try again' },
+      outside: { title: 'Get closer to the gym', text: 'You must be inside the gym area to register your entry.', action: 'Try again' },
+      offline: { title: 'You need a connection', text: 'Connect to the internet to verify and register your entry.', action: 'Retry connection' },
+    },
+    deniedNote: 'In the PWA, open the site settings from the browser.',
+  },
+
   health: {
     waiting: 'Checking the API...',
     connected: 'API: connected',
@@ -131,6 +162,14 @@ export const en: Messages = {
 
   // The PWA owns the texts for stable API error codes (E-154).
   errors: {
+    check_in_no_authorization: 'We did not find an active authorization to register your entry.',
+    check_in_gym_closed: 'Check the schedules and notices before your next visit.',
+    check_in_photo_required: 'Update your photo for the new term before registering your entry.',
+    check_in_photo_pending: 'The staff marked your photo as pending. Upload a new photo from your phone.',
+    check_in_athletes_only: 'Check-in available when this period ends.',
+    location_required: 'Wait a moment and try again from the gym.',
+    check_in_low_accuracy: 'The location received is not accurate enough to confirm your arrival.',
+    check_in_outside_boundary: 'You must be inside the gym area to register your entry.',
     user_credentials_invalid: 'Check your email and password and try again.',
     user_session_replaced: 'Sign in again to use your account here.',
     user_reset_link_invalid: 'This link expired or has already been used.',
