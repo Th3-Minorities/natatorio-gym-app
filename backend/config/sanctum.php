@@ -18,11 +18,14 @@ return [
     |
     */
 
+    // The PWA and the API always share one address (architecture.md, D2): the dev server, the phone tunnel
+    // (a new address each run) or the app's UPRM subdomain. currentRequestHost() trusts the address the
+    // request came to, so none of them needs a list. A page on another site still gets no session.
     'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
-        '%s%s',
+        '%s%s%s',
         'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
         Sanctum::currentApplicationUrlWithPort(),
-        // Sanctum::currentRequestHost(),
+        Sanctum::currentRequestHost(),
     ))),
 
     /*

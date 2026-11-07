@@ -126,7 +126,7 @@ Set up in GitHub issue #16. Requirements: REQ-F-07, REQ-F-52, REQ-F-88, REQ-NF-1
 
 Staff and Administrators sign in with their own staff account (data-model.md, D13). Laravel keeps it on a separate guard, `staff`, on the `staff_accounts` table, so a staff sign-in and a User sign-in never mix. Staff sign-in does not use Fortify, which stays free for the User sign-in (#15).
 
-The PWA calls `GET /api/sanctum/csrf-cookie` first and then sends the `X-XSRF-TOKEN` header on every POST. Sanctum starts a cookie session only for requests from the app's own origin (`SANCTUM_STATEFUL_DOMAINS`, which defaults to `APP_URL`).
+The PWA calls `GET /api/sanctum/csrf-cookie` first and then sends the `X-XSRF-TOKEN` header on every POST. Sanctum starts a cookie session only when the page calling the API is on the same address as the API. By default (`config/sanctum.php`, `stateful`) that means the address the request came to, which covers the dev server, the phone tunnel and the UPRM subdomain, plus `APP_URL` and the usual localhost addresses. Setting `SANCTUM_STATEFUL_DOMAINS` replaces that whole list, so leave it unset. A page on another site gets no session, and its sign-in answers `419 session_expired`.
 
 | Route | Who | Answer |
 |---|---|---|

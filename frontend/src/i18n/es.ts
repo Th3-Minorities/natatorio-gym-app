@@ -94,7 +94,6 @@ export const es = {
   // A time from today shows this word instead of the date (REQ-NF-38, E-152).
   dates: { today: 'Hoy' },
 
-  // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
   // N-11, staff sign-in (Figma 4039:3721 and its states).
   signIn: {
     title: 'Iniciar sesión',
@@ -119,6 +118,7 @@ export const es = {
     timeoutText: 'Tu sesión se cerró por inactividad. Inicia sesión de nuevo.',
   },
 
+  // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
   dashboard: {
     skipToContent: 'Saltar al contenido',
     brandCampus: 'RUM',
@@ -151,6 +151,9 @@ export const es = {
     // Neutral: staff accounts have no gender, so not "Administrador" or "Administradora".
     roles: { staff: 'Staff', admin: 'Administración' },
     signOut: 'Cerrar sesión',
+    // Not drawn in Figma: the sign-out could not reach the server, so the person is still signed in.
+    signOutFailedTitle: 'No se pudo cerrar sesión',
+    signOutFailedText: 'Revisa la conexión e intenta de nuevo.',
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

@@ -28,7 +28,12 @@ class User extends Authenticatable
 
     public function profile(): array
     {
-        $authorization = $this->activeAuthorizations()->with('academicTerm')->first();
+        $authorization = Authorization::query()->select('authorizations.*')
+            ->join('academic_terms', 'academic_terms.id', '=', 'authorizations.academic_term_id')
+            ->where('authorizations.user_id', $this->id)->where('authorizations.status', 'active')
+            ->where('academic_terms.starts_on', '<=', today()->toDateString())
+            ->where('academic_terms.ends_on', '>=', today()->toDateString())
+            ->orderByDesc('academic_terms.starts_on')->with('academicTerm')->first();
         [$local, $domain] = explode('@', (string) $this->email, 2);
         $masked = mb_substr($local, 0, 1).'***'.(mb_strlen($local) > 1 ? mb_substr($local, -1) : '').'@'.$domain;
 

@@ -1,0 +1,14 @@
+# Development only. Docker Compose loads this file on its own next to docker-compose.yml.
+# Keeps the PHP packages in a Docker volume instead of the Windows folder: on Windows the tests
+# run about 3 times faster (measurements in issue #100). Production starts with
+# "docker compose -f docker-compose.yml" so this file is skipped.
+services:
+  app:
+    volumes:
+      - vendor:/var/www/html/vendor
+  scheduler:
+    volumes:
+      - vendor:/var/www/html/vendor
+
+volumes:
+  vendor:

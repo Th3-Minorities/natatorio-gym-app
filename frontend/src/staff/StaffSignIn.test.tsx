@@ -40,6 +40,20 @@ function setOnline(value: boolean) {
   Object.defineProperty(navigator, 'onLine', { configurable: true, get: () => value })
 }
 
+/**
+ * Blocked with aria-disabled, not disabled: the button keeps keyboard focus and a screen reader says it is
+ * unavailable. A truly disabled button would drop focus to the page while it is busy.
+ */
+function expectBlocked(button: HTMLElement) {
+  expect(button).toHaveAttribute('aria-disabled', 'true')
+  expect(button).toBeEnabled()
+}
+
+function expectReady(button: HTMLElement) {
+  expect(button).not.toHaveAttribute('aria-disabled')
+  expect(button).toBeEnabled()
+}
+
 afterEach(() => {
   vi.useRealTimers()
   setOnline(true)
@@ -55,7 +69,7 @@ describe('N-11', () => {
     expect(screen.getByLabelText(t.email)).toHaveAttribute('placeholder', t.emailPlaceholder)
     expect(screen.getByLabelText(t.password)).toHaveAttribute('type', 'password')
     expect(screen.getByLabelText(t.password)).toHaveAttribute('placeholder', t.passwordPlaceholder)
-    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+    expectReady(screen.getByRole('button', { name: t.submit }))
     expect(screen.getByRole('link', { name: t.forgot })).toHaveAttribute('href', '/staff/recuperar')
   })
 
@@ -95,6 +109,40 @@ describe('N-11', () => {
   })
 })
 
+describe('keyboard and screen reader users', () => {
+  it('moves focus to the first empty field, so its error is read out', async () => {
+    renderSignIn()
+
+    await act(async () => submit())
+    expect(screen.getByLabelText(t.email)).toHaveFocus()
+
+    fireEvent.change(screen.getByLabelText(t.email), { target: { value: 'mariel.velez@uprm.example.edu' } })
+    await act(async () => submit())
+    expect(screen.getByLabelText(t.password)).toHaveFocus()
+  })
+
+  it('moves focus to the field the server rejected', async () => {
+    renderSignIn(failing(new ApiError('validation_failed', 422, { password: ['max'] })))
+    fill()
+
+    await act(async () => submit())
+
+    expect(screen.getByLabelText(t.password)).toHaveFocus()
+    expect(screen.getByLabelText(t.password)).toHaveAccessibleDescription(es.validation.max)
+  })
+
+  it('keeps focus on the button while it signs in', async () => {
+    renderSignIn(pending())
+    fill()
+    const button = screen.getByRole('button', { name: t.submit })
+    button.focus()
+
+    await act(async () => fireEvent.click(button))
+
+    expect(screen.getByRole('button', { name: t.submitting })).toHaveFocus()
+  })
+})
+
 describe('signing in (4039:3798)', () => {
   it('shows the busy button, keeps both fields and does not send twice', async () => {
     const onSignIn = renderSignIn(pending())
@@ -102,7 +150,7 @@ describe('signing in (4039:3798)', () => {
 
     await act(async () => submit())
     const busy = screen.getByRole('button', { name: t.submitting })
-    expect(busy).toBeDisabled()
+    expectBlocked(busy)
     await act(async () => fireEvent.click(busy))
 
     expect(onSignIn).toHaveBeenCalledOnce()
@@ -120,7 +168,7 @@ describe('wrong email or password (4039:3871)', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.wrongTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(t.wrongText)
-    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+    expectReady(screen.getByRole('button', { name: t.submit }))
     expect(screen.getByLabelText(t.email)).toHaveValue('mariel.velez@uprm.example.edu')
   })
 })
@@ -137,10 +185,10 @@ describe('too many tries (4039:3942)', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(t.waitTitle)
     // Exactly as in Figma: one period, even though the time already ends in "m.".
     expect(screen.getByRole('alert')).toHaveTextContent(/Intenta de nuevo a las 10:45 a\. m\.$/)
-    expect(screen.getByRole('button', { name: t.submit })).toBeDisabled()
+    expectBlocked(screen.getByRole('button', { name: t.submit }))
 
     await act(() => vi.advanceTimersByTimeAsync(300_000))
-    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+    expectReady(screen.getByRole('button', { name: t.submit }))
   })
 })
 
@@ -154,12 +202,12 @@ describe('no connection (4039:4018)', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.offlineTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(t.offlineText)
-    expect(screen.getByRole('button', { name: t.submit })).toBeDisabled()
+    expectBlocked(screen.getByRole('button', { name: t.submit }))
     expect(screen.getByLabelText(t.password)).toHaveValue('una contraseña')
 
     setOnline(true)
     await act(async () => window.dispatchEvent(new Event('online')))
-    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+    expectReady(screen.getByRole('button', { name: t.submit }))
   })
 
   it('lets the person try again when the browser is online but the server did not answer', async () => {
@@ -169,7 +217,7 @@ describe('no connection (4039:4018)', () => {
     await act(async () => submit())
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.offlineTitle)
-    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+    expectReady(screen.getByRole('button', { name: t.submit }))
   })
 })
 
@@ -182,31 +230,31 @@ describe('deactivated account (4039:4094)', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.deactivatedTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(t.deactivatedText)
-    expect(screen.getByRole('button', { name: t.submit })).toBeDisabled()
+    expectBlocked(screen.getByRole('button', { name: t.submit }))
 
     fireEvent.change(screen.getByLabelText(t.email), { target: { value: 'otra@uprm.example.edu' } })
-    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+    expectReady(screen.getByRole('button', { name: t.submit }))
   })
 })
 
 describe('after a sign-in ended by itself', () => {
   it('says the session ended for inactivity, with empty fields and the button ready (4039:4365)', () => {
-    render(<StaffSignIn onSignIn={async () => {}} endedBecause="timeout" />)
+    render(<StaffSignIn onSignIn={async () => {}} startWith="timeout" />)
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.timeoutTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(t.timeoutText)
     expect(screen.getByLabelText(t.email)).toHaveValue('')
-    expect(screen.getByRole('button', { name: t.submit })).toBeEnabled()
+    expectReady(screen.getByRole('button', { name: t.submit }))
   })
 
   it('says the account was deactivated when it was cut off while signed in', () => {
-    render(<StaffSignIn onSignIn={async () => {}} endedBecause="deactivated" />)
+    render(<StaffSignIn onSignIn={async () => {}} startWith="deactivated" />)
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.deactivatedTitle)
   })
 
   it('shows no notice after a normal sign-out', () => {
-    render(<StaffSignIn onSignIn={async () => {}} endedBecause={null} />)
+    render(<StaffSignIn onSignIn={async () => {}} startWith={null} />)
 
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })

@@ -35,10 +35,10 @@ class UserAccountController extends Controller
     {
         $photos = DB::transaction(function () use ($request) {
             $user = User::query()->lockForUpdate()->findOrFail($request->user('web')->id);
+            $authorizations = Authorization::query()->where('user_id', $user->id)->lockForUpdate()->get();
             if ($user->activeAuthorizations()->exists()) {
                 throw new ApiException('user_authorization_active', 409);
             }
-            $authorizations = Authorization::query()->where('user_id', $user->id)->lockForUpdate()->get();
             $photos = $authorizations->pluck('photo_path')->filter()->unique()->values()->all();
             if ($photos !== []) {
                 DB::table('pending_photo_deletions')->insert(array_map(fn ($path) => ['path' => $path], $photos));

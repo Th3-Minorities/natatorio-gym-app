@@ -115,5 +115,5 @@ Add `?lang=en` to either one for English. In the component preview, the sample t
 
 ## 9. Not in this base
 
-- The dashboard path and its routes. The path name is still open (E-124), and #16 adds the first route with the sign-in page.
+- The dashboard routes. The dashboard lives at `/staff` (E-157), and #16 adds the first route there with the sign-in page.
 - The User app layout, its navigation, the Install button and the service worker (#14).

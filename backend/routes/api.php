@@ -35,9 +35,12 @@ Route::prefix('staff')->group(function () {
 
 Route::prefix('user')->group(function () {
     Route::post('/sign-in', [UserSessionController::class, 'signIn']);
-    Route::post('/password/email', [UserPasswordController::class, 'email'])->middleware('throttle:10,1');
-    Route::post('/password/validate', [UserPasswordController::class, 'validateLink'])->middleware('throttle:30,1');
-    Route::post('/password/reset', [UserPasswordController::class, 'reset'])->middleware('throttle:10,1');
+    Route::post('/password/email', [UserPasswordController::class, 'email'])
+        ->name('user.password.email')->middleware('throttle:user.password.email');
+    Route::post('/password/validate', [UserPasswordController::class, 'validateLink'])
+        ->name('user.password.validate')->middleware('throttle:user.password.validate');
+    Route::post('/password/reset', [UserPasswordController::class, 'reset'])
+        ->name('user.password.reset')->middleware('throttle:user.password.reset');
 
     Route::middleware(EnsureUserSessionIsCurrent::class)->group(function () {
         Route::get('/me', [UserAccountController::class, 'me']);
