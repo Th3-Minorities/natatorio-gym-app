@@ -45,7 +45,7 @@ Notes:
 - Mail is assumed available (E-61). CTI described a relay through its mail gateway once it authorizes the VM, so an external provider is probably not needed. If CTI does not authorize the VM, the team uses an external SMTP or transactional mail provider, because this is a prototype (the team's own fallback, E-61). An external provider sends student email addresses out of the CTI VM, so it needs approval (M-11).
 - Mail also carries the invitation to a new Staff member (REQ-F-88). It carries two kinds of athlete links: the athlete registration link and, since E-58, the "I am an athlete" link that a signed-in User gets at the institutional email of the roster record. Both use the same single-use link mechanism: an `email_links` table with a hash, an expiry and single use (data-model D9). Password reset links use Laravel's `password_reset_tokens` table, not `email_links`.
 - Passwords use Laravel's built-in handling. There is no external identity service (E-63). The rule is a minimum of 10 characters, no mixing rules, and a check against known compromised passwords with `Password::min(10)->uncompromised()` (E-63). That check is an external call, but only a 5-character hash prefix leaves the VM: no names, emails, photos or full password. It is not submitted to M-11 (E-98). The tests need a case where the service does not answer (#30). The same rule for staff accounts is assumed, not confirmed.
-- Staff and Administrators sign in with their own staff accounts on the dashboard, a path under the app's name with no link from the User sign-in (E-114, E-124). It is not a separate app (to confirm, E-65).
+- Staff and Administrators sign in with their own staff accounts on the dashboard, a path under the app's name with no link from the User sign-in (E-114, E-124). The path is `/staff`, a route of the same PWA, not a separate app (E-157).
 - Payments stay in WooCommerce. The system only reads orders, with a read-only key, and never talks to the payment side (REQ-F-28, REQ-F-29). The key lives only in the server's environment file, never in the database, the repository or the logs. Refunds are made in the UPR Payment Gateway portal, which the app does not reach, so an Administrator revokes a refunded membership by hand (E-120, REQ-F-87).
 
 ### 2. Containers on one host
@@ -106,7 +106,7 @@ Notes:
 - The service worker in the PWA does not cache `/api` responses, so stale data is never shown as current (`design-notes.md`, REQ-NF-26). Screens poll `/api` every 20 to 30 seconds (REQ-F-43).
 - The scheduler makes the backups, runs the store sync at least 3 times a day (REQ-F-28), closes sessions at a closure or the end of a term, and marks old sessions as expired. The backend still computes session expiry at query time, from backend time (REQ-NF-01, REQ-F-38, check-in D3).
 - Email goes out during the request. There is no queue and no worker container for now (D4). The lookup at registration also asks the store during the request (REQ-F-97), through the same lookup limits.
-- Both the User app and the gym dashboard are routes of the same PWA code (to confirm, E-65). The two proxy rules cover both (D2).
+- Both the User app and the gym dashboard are routes of the same PWA code; the dashboard is `/staff` (E-65, E-157). The two proxy rules cover both (D2).
 
 ### 3. Development on each member's PC
 
@@ -388,7 +388,7 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 5. **Real client IP for the audit log (REQ-NF-39).** If CTI puts its own proxy in front of the VM (M-01 answer C), the real IP passes two proxies, and Laravel must trust both. The trusted proxy list depends on M-01. The attempt counters keyed by IP (E-91) depend on the same list.
 6. **REQ-NF-06 frequency and recovery target.** Resolved by E-122: a backup every two weeks on a second virtual disk of the same VM, the last 2 kept; losing the whole VM loses the backups too. The database and the photos volume are copied together so they match. The written disaster recovery plan CTI asks for is still open (E-110).
 7. **An external mail provider sends data out of the VM.** If CTI does not authorize the VM on its mail gateway, the fallback provider (E-61) receives student email addresses, which needs approval (M-11). M-11 asks who approves such services. The compromised-password check (E-63) is also an external call, but it sends no student data, only a 5-character hash prefix, so it is not submitted to M-11 (E-98).
-8. **The path of the gym dashboard is not set.** Decided (E-124): the dashboard is a path under the app's own name. The path name, and whether the build is shared with the User app, are not written anywhere. The owner said "different routes" and the same-codebase part is a reading still to confirm.
+8. **The path of the gym dashboard.** Decided (E-124, E-157): the dashboard is `/staff` under the app's own name, a route of the same PWA build as the User app. Closed.
 9. **The name of the flag in D6 is not set.** D6 does not name it.
 
 ## Traceability
