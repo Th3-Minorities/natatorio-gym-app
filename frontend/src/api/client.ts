@@ -83,5 +83,10 @@ export async function apiRequest<T = unknown>(path: string, options: RequestOpti
 
   if (!response.ok) throw await toError(response)
   if (response.status === 204) return undefined as T
-  return (await response.json()) as T
+  try {
+    return (await response.json()) as T
+  } catch {
+    // A 200 that is not JSON, like the app page from a misrouted proxy, is not the API.
+    throw new ApiError('offline', response.status)
+  }
 }

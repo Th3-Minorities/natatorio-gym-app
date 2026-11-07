@@ -146,6 +146,12 @@ describe('errors', () => {
     await expect(apiRequest('/staff/me')).rejects.toMatchObject({ code: 'offline', status: 0 })
   })
 
+  it('are "offline" when a 200 answer is not JSON, like the app page from a misrouted proxy', async () => {
+    fakeFetch(() => new Response('<!doctype html><html></html>', { status: 200, headers: { 'Content-Type': 'text/html' } }))
+
+    await expect(apiRequest('/staff/me')).rejects.toMatchObject({ code: 'offline', status: 200 })
+  })
+
   it('are "offline" when the proxy answers its own HTML error page', async () => {
     fakeFetch(() => new Response('<html>502 Bad Gateway</html>', { status: 502, headers: { 'Content-Type': 'text/html' } }))
 
