@@ -27,7 +27,7 @@ Three groups are involved:
 | Proposal | The project plan we submitted at the start of the course |
 | Check In | What a person does in the app when they arrive. It only works inside the gym, and it starts a 60-minute visit |
 | Gym ID | The digital gym card the app shows. Staff look at it to let a person in |
-| Authorization Number | A 6-digit number a member gets by email when they pay for the gym. They use it to register in the app |
+| Authorization Number | A code (6 or 7 characters so far, letters allowed) a member gets by email when they pay for the gym. They type it to register in the app |
 | Roster | The list of student athletes allowed in the gym this term |
 | Term | A semester, with its start and end dates |
 | Wireframe | A simple drawing of a screen, made before building it |

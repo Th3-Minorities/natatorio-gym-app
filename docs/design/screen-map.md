@@ -4,8 +4,8 @@ This document lists every screen of the PWA, groups them by role, and draws how 
 
 Pending answers touch several screens:
 
-- Outgoing mail (CTI, M-07) is assumed available (E-61). CTI described a relay through its mail gateway once CTI authorizes the VM (M-07); SPF and DKIM are still open. If CTI does not authorize the VM, the prototype uses an external provider, which needs approval to send data off the CTI VM (M-11). N-04, N-05, N-06, N-07 and U-06 use it. N-10 and S-04, the in-person registration tool, are removed (E-117, REQ-F-77).
-- Contact number (gym, G-25). N-01, N-03, N-04, U-06, U-07 and U-08 show it.
+- Outgoing mail (CTI, M-07) is assumed available (E-61). CTI described a relay through its mail gateway once CTI authorizes the VM (M-07); SPF and DKIM are still open. If CTI does not authorize the VM, the prototype uses an external provider, which needs approval to send data off the CTI VM (M-11). N-03, N-05, N-06, N-07 and U-06 use it. N-10 and S-04, the in-person registration tool, are removed (E-117, REQ-F-77).
+- Contact number (gym, G-25). N-01, N-03, U-06, U-07 and U-08 show it.
 - Store address (gym). N-01 and N-03 have a "Buy membership" button that opens the store. It does not redirect, it shows only while a term runs, and the address is a setting (E-92, E-96, E-126).
 
 ## Diagrams
@@ -17,16 +17,14 @@ Pending answers touch several screens:
 ```mermaid
 flowchart TD
   N01["N-01 Landing<br/>Install button, public schedules<br/>and notices, store link"] --> N02["N-02 Sign in<br/>email and password"]
-  N01 --> N03["N-03 Register as paid member<br/>all steps in one page"]
-  N01 --> N04["N-04 Register as athlete<br/>student number"]
+  N01 --> N03["N-03 Register<br/>one number field, all steps in one page"]
   N01 --> N08["N-08 Privacy notice"]
   N01 --> N09["N-09 Install help"]
   N02 -->|"Forgot password"| N06["N-06 Forgot password"]
   N03 -->|"step 1"| N08
-  N04 -->|"step 1"| N08
   N03 -->|"email already has an account"| N02
-  N04 -->|"roster email already has an account"| N02
-  N04 -->|"link sent"| MAIL1(["Email with athlete link"])
+  N03 -->|"student number: roster email already has an account"| N02
+  N03 -->|"student number: link sent"| MAIL1(["Email with athlete link"])
   MAIL1 --> N05["N-05 Athlete link landing<br/>password, photo, waiver, language"]
   N06 --> MAIL2(["Email with reset link"])
   MAIL2 --> N07["N-07 Set new password"]
@@ -40,7 +38,7 @@ flowchart TD
   N11["N-11 Staff sign in<br/>own dashboard path"] -->|"correct password"| S01["S-01 Active sessions<br/>diagram 4"]
 ```
 
-**About this diagram:** Mail is assumed available (E-61). Athletes register only with the link sent to the roster email; there is no in-person code, and if the link fails they call the office at 265-3866 (E-117). N-11 sits on the gym dashboard path and has no link from N-02: Staff and Administrators reach it by typing its address (SM-5, E-124). The store button on N-01 shows while a term runs (E-126). N-04 has no store button (E-96).
+**About this diagram:** Mail is assumed available (E-61). Athletes register only with the link sent to the roster email; there is no in-person code, and if the link fails they call the office at 265-3866 (E-117). N-11 sits on the gym dashboard path and has no link from N-02: Staff and Administrators reach it by typing its address (SM-5, E-124). The store button on N-01 shows while a term runs (E-126). N-03 is the one registration screen for paid members and athletes (E-153).
 
 - N-03 and N-05 are wizards inside one page. Typed data stays in page memory until the final save and is lost on reload (REG-8, REQ-F-13). The password stays in memory only.
 - N-01 shows the schedules (C-02) and notices (C-03) before sign in. Occupancy and analytics need a sign in (SM Gap 5).
@@ -90,7 +88,7 @@ flowchart TD
   T -->|"yes"| U02["U-02 New term photo"]
   U02 -->|"saved"| U01["U-01 Check In and Gym ID"]
   T -->|"no"| U07["U-07 No-authorization home<br/>banner, Check In grayed out,<br/>status, Authorization Number field<br/>under both banners, I am an athlete, contact number,<br/>occupancy card"]
-  U07 -->|"6 characters typed, lookup passes"| U08["U-08 Renew with Authorization Number<br/>masked email, photo, confirm"]
+  U07 -->|"number sent, lookup passes"| U08["U-08 Renew with Authorization Number<br/>masked email, photo, confirm"]
   U07 -->|"lookup fails or paused"| U07
   U08 -->|"saved"| U01
   U07 --> U06["U-06 I am an athlete<br/>student number"]
@@ -159,7 +157,7 @@ flowchart TD
   S01 --> AD05["A-05 Athlete roster"]
   S01 --> AD07["A-07 Store sync<br/>last sync, counts, Sync now"]
   S01 --> AD08["A-08 Accounts: grant, revoke, delete"]
-  S01 --> AD09["A-09 Release Authorization Number"]
+  AD08 -->|"Release a number link"| AD09["A-09 Release Authorization Number"]
   S01 --> AD10["A-10 Schedules editor"]
   S01 --> AD11["A-11 Notices editor"]
   S01 --> AD12["A-12 Facility information<br/>and contact number editor"]
@@ -173,6 +171,7 @@ flowchart TD
 **About this diagram:** an Administrator signs in with their own staff account and lands on the same dashboard as Staff. The menu also shows the Administrator items, and the backend allows each action by role (REQ-F-52, E-114). There is no PIN dialog, no closing warning, no Lock button and no "Administrator mode" bar.
 
 - A-03 stays removed and the IDs A-04 to A-13 do not change (E-102). A-01, A-02 and A-14 are removed (E-114). A-15 to A-17 are new: staff accounts (REQ-F-88), backups (REQ-NF-06) and manual entries (REQ-F-95).
+- A-09 is not a menu item. It opens from a secondary link next to the search in A-08, because a release starts from a number, not from a person.
 - Every Administrator screen shows a notice when no term covers today, and every error names that reason (E-85).
 - Unsaved input on an Administrator form is no longer lost to a PIN timeout (`admin-flows.md` section 2).
 
@@ -239,7 +238,7 @@ stateDiagram-v2
 
 ## 8. Screen inventory
 
-Device: "Phone" means designed for a phone first. "Desk" means the gym mostly uses it on the front desk desktop computer, which the gym still has to confirm (G-06). Every screen works on both sizes (REQ-NF-10, one codebase). The map has 42 screens. A-03 (E-102), N-10, S-04 (E-117), N-12, A-01, A-02 and A-14 (E-114) are removed and keep their IDs. U-09 was added (E-105), and A-15 to A-17 are new (E-114, E-119, E-122).
+Device: "Phone" means designed for a phone first. "Desk" means the gym mostly uses it on the front desk desktop computer, which the gym still has to confirm (G-06). Every screen works on both sizes (REQ-NF-10, one codebase). The map has 41 screens. A-03 (E-102), N-04 (E-153), N-10, S-04 (E-117), N-12, A-01, A-02 and A-14 (E-114) are removed and keep their IDs. U-09 was added (E-105), and A-15 to A-17 are new (E-114, E-119, E-122).
 
 ### Public
 
@@ -247,14 +246,14 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 |---|---|---|---|---|---|---|
 | N-01 | Landing | Not signed in | Choose sign in or register; Install button; links to N-08 and N-09; public schedules (C-02) and notices (C-03); one line that registering needs a paid membership or a roster entry, with the contact number, and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: app shell. No connection: banner, sign in and register disabled. Install button hidden where the browser has no install event. Signed in: redirect to home. Language: always Spanish before an account exists (E-103) | Phone | REQ-NF-10, NF-33, F-66, F-91 |
 | N-02 | Sign in | User | Email and password. No link to N-11 (SM-5) | Loading: button busy. Error: wrong credentials, without saying if the email exists (SRS 3.1). Wait: "try again at TIME" (REQ-F-07). No connection: form kept, submit disabled. Special: "you signed in on another device" (REQ-F-03). Language: Spanish while signed out; the account language applies after sign in (E-103) | Phone | REQ-F-02, F-03, F-07 |
-| N-03 | Register as paid member | Not signed in | Steps: privacy notice, Authorization Number, masked email, password, photo (take it now or upload it; the screen says it cannot be changed), waiver and emergency contact, choose language (Spanish or English; it can be changed later in the account preferences), final save. A line says a paid membership is needed first, with the contact number and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: lookup after 6 characters, letters allowed (E-128); if the number is not in the app yet, the lookup asks the store right then (REQ-F-97), and if the store does not answer the message says to try again later; slow mode waits (REG-2). Error: one message for an invalid number, a claimed number and a number from an ended term, with contact number (lookup covers the current term only, REG-9); per-IP pause "try again at TIME"; photo rejected, stays on photo step with data kept in the page, lost if the page closes (REG-8). No connection: data kept in page, submit disabled. Special: "you already have an account, sign in to add it" with the masked email, for example `m***z@upr.edu`; nothing is claimed (REG-4, REG-3) | Phone | REQ-F-10, F-11, F-13, F-18, F-60, F-70, F-71, F-72, F-73, F-91, F-97, NF-24, NF-25 |
-| N-04 | Register as athlete | Not signed in | Privacy notice, student number, link sent. The language is chosen at N-05, where the account is created. A line says the athlete must be on the roster, with the contact number. No store button, because athletes do not buy (E-96); a paid member who lands here goes back to N-01 | Loading: lookup. Error: not on the roster with contact number (REQ-F-76); record claimed; link request limit (1 link every 5 minutes and 5 per day for each student number, REG-7). No connection: submit disabled. Special: "link sent to m***z@upr.edu", first and last letter before the @ (REG-3); "you already have an account, sign in to add it" with the masked email; nothing is claimed | Phone | REQ-F-15, F-73, F-76, F-91, NF-25 |
-| N-05 | Athlete link landing | Not signed in, or a User | Two modes. From an N-04 link: password, photo (take it now or upload it; the screen says it cannot be changed), waiver, choose language (Spanish or English; it can be changed later in the account preferences), one final save. No authorization exists without the photo (E-69). From a U-06 link: the photo step, then the roster record is linked to the account that asked and a confirmation (E-58) | Loading: link check. Error: link expired, already used or replaced, record claimed since (REG-6); photo rejected, back to the photo step with data kept. No connection: data kept, submit disabled. Special (U-06 mode): "record linked to the account m***z@..." with Continue when that account is signed in here, Sign in otherwise | Phone | REQ-F-13, F-15, F-60, F-80, NF-24 |
+| N-03 | Register | Not signed in | One number field for paid members and athletes (E-153). Exactly 10 digits is a student number: an athlete gets "link sent" and continues at N-05. Anything else is an Authorization Number, with no length check. Steps for a paid member: privacy notice, number, masked email, password, photo (take it now or upload it; the screen says it cannot be changed), waiver and emergency contact, choose language (Spanish or English; it can be changed later in the account preferences), final save. A line says a paid membership is needed first, with the contact number and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: lookup when the number is sent, letters allowed (E-128); if the number is not in the app yet, the lookup asks the store right then (REQ-F-97), and if the store does not answer the message says to try again later; slow mode waits (REG-2). Error: one message for an invalid number, a claimed number and a number from an ended term, with contact number (lookup covers the current term only, REG-9); a 10-digit number not on the roster: not on the roster with contact number (REQ-F-76), plus a line that the student number is only for athletes and a paid member uses the Authorization Number from the receipt email, with the picture of where it is; student number: record claimed, link request limit (1 link every 5 minutes and 5 per day for each student number, REG-7); per-IP pause "try again at TIME"; photo rejected, stays on photo step with data kept in the page, lost if the page closes (REG-8). No connection: data kept in page, submit disabled. Special: "you already have an account, sign in to add it" with the masked email, for example `m***z@upr.edu`; nothing is claimed (REG-4, REG-3); student number: "link sent to m***z@upr.edu", first and last letter before the @ (REG-3) | Phone | REQ-F-10, F-11, F-13, F-15, F-18, F-60, F-70, F-71, F-72, F-73, F-76, F-91, F-97, NF-24, NF-25 |
+| N-04 | Removed | None | N-04: removed (E-153), merged into N-03. The ID stays in this table so the other N IDs keep their numbers. The athlete steps are in N-03 and N-05 | Not a screen | Phone | REQ-F-15, F-76 (now N-03) |
+| N-05 | Athlete link landing | Not signed in, or a User | Two modes. From an N-03 link: password, photo (take it now or upload it; the screen says it cannot be changed), waiver, choose language (Spanish or English; it can be changed later in the account preferences), one final save. No authorization exists without the photo (E-69). From a U-06 link: the photo step, then the roster record is linked to the account that asked and a confirmation (E-58) | Loading: link check. Error: link expired, already used or replaced, record claimed since (REG-6); photo rejected, back to the photo step with data kept. No connection: data kept, submit disabled. Special (U-06 mode): "record linked to the account m***z@..." with Continue when that account is signed in here, Sign in otherwise | Phone | REQ-F-13, F-15, F-60, F-80, NF-24 |
 | N-06 | Forgot password | User | Ask for a reset link | Loading. Error: server error. No connection. Special: the same answer whether the email exists or not: "if that email has an account, we sent a link" (E-63) | Phone | REQ-F-06, F-75 |
 | N-07 | Set new password | User | From the reset link: new password | Loading: link check. Error: link expired or used; password rules. No connection | Phone | REQ-F-06, F-75 |
 | N-08 | Privacy notice | Everyone | Notice in Spanish and English, shown before any personal data | Loading. Error. No connection: notice is static text in the app, so it still shows. Text pending G-24 | Phone | REQ-NF-25 |
 | N-09 | Install help | Everyone | Install button in Chromium browsers; iPhone steps with Share | Special: button hidden without the install event; "already installed" when opened as the installed app. Static, works without connection | Phone | REQ-F-66 |
-| N-10 | Removed | None | N-10: removed (E-117). The ID stays in this table so the other N IDs keep their numbers. Athletes register only with the link sent to the roster email (N-04, N-05); if it fails they call the office at 265-3866 | Not a screen | Phone | REQ-F-77 (Removed) |
+| N-10 | Removed | None | N-10: removed (E-117). The ID stays in this table so the other N IDs keep their numbers. Athletes register only with the link sent to the roster email (N-03, N-05); if it fails they call the office at 265-3866 | Not a screen | Phone | REQ-F-77 (Removed) |
 | N-11 | Staff sign in | Staff, Administrator | Email and password of a staff account, on the dashboard path with no link from N-02 (SM-5, E-124) | Loading. Error: wrong credentials. Wait: REQ-F-07. No connection. Special: a deactivated account is refused (REQ-F-88) | Desk | REQ-F-07, F-52, F-88 |
 | N-12 | Removed | None | N-12: removed (E-114). There is no recovery code, so there is no screen to use it | Not a screen | Desk | REQ-F-89 (Removed) |
 
@@ -323,7 +322,7 @@ Each action of the SRS Overview role table and the screen where it happens.
 
 | Action (role table) | Screen ids |
 |---|---|
-| Register | N-03, N-04, N-05 |
+| Register | N-03, N-05 |
 | Sign in | N-02 (User), N-11 (staff account, on its own dashboard path) |
 | Check In; show the Gym ID | U-01 |
 | Renew | U-08, U-06 then N-05 (photo saved there), U-02 for a new term |
@@ -477,7 +476,7 @@ Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whol
 | REQ-F-03, F-07 | Diagram 1. Public screens; diagram 2. User with an active authorization; 8. Inventory N-02, N-11 |
 | REQ-F-06, F-75 | Diagram 1. Public screens; 8. Inventory N-06, N-07 |
 | REQ-F-09 | Diagrams 2 and 3 (U-05); 8. Inventory U-05, A-08 |
-| REQ-F-13, F-15, F-60, F-70, F-71, F-72, F-73, F-76, F-91, NF-24, NF-25 | Diagram 1. Public screens; 8. Inventory N-03, N-04, N-05 |
+| REQ-F-13, F-15, F-60, F-70, F-71, F-72, F-73, F-76, F-91, NF-24, NF-25 | Diagram 1. Public screens; 8. Inventory N-03, N-05 |
 | REQ-F-20, F-25, F-26, F-78 | Diagram 3. User with no active authorization; 8. Inventory U-02, U-06, U-08 |
 | REQ-F-80, E-58 | Diagram 3. User with no active authorization (U-06, N-05); 8. Inventory U-06, N-05, U-02; 9. Coverage (Renew) |
 | REQ-F-33, F-36, F-37, F-38, F-40, F-82, F-83, F-90, NF-11, NF-14, NF-16 | Diagram 2. User with an active authorization; 8. Inventory U-01; 11. Accessibility notes; E-74, E-75, E-76 |
@@ -492,13 +491,13 @@ Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whol
 | REQ-NF-35, NF-36 | Diagram 6. Shared screens and the app frame; 11. Accessibility notes |
 | SM-1 to SM-6, E-64, E-65, E-77 | Design decisions to confirm; diagrams 1, 2, 4, 5, 6, 7 |
 | E-63, E-64, E-66, E-67, E-68 | Diagram 3 (U-07); diagram 1 (N-01, N-06); 8. Inventory U-07, N-01, N-06, A-11, A-12, C-02, C-03, C-06; 9. Coverage; Gaps 1 to 7 |
-| E-61, E-69 to E-73, REG-8 | Diagram 1. Public screens; diagram 3. User with no active authorization; 8. Inventory N-03, N-04, N-05, U-02, U-06, U-08 |
+| E-61, E-69 to E-73, REG-8 | Diagram 1. Public screens; diagram 3. User with no active authorization; 8. Inventory N-03, N-05, U-02, U-06, U-08 |
 | E-74 to E-76, E-78 to E-81 | Diagram 2. User with an active authorization; diagram 4. Staff; 8. Inventory U-01, U-04, S-02, S-03, S-05; 11. Accessibility notes |
 | E-82 to E-90 | Diagram 5. Administrator; 8. Inventory C-05, A-04 to A-10 |
-| E-75, E-76, E-78, E-92 | Diagrams 1, 2 and 6; 8. Inventory N-01, N-03, N-04, U-01, A-13; 11. Accessibility notes; Gaps 13 |
+| E-75, E-76, E-78, E-92 | Diagrams 1, 2 and 6; 8. Inventory N-01, N-03, U-01, A-13; 11. Accessibility notes; Gaps 13 |
 | E-94 | 8. Inventory A-08; Gaps 2 |
 | E-95 | 8. Inventory A-05; 9. Coverage |
-| E-96 | Diagram 1. Public screens; 8. Inventory N-01, N-03, N-04 |
+| E-96 | Diagram 1. Public screens; 8. Inventory N-01, N-03 |
 | E-97 | Diagram 3. User with no active authorization; 8. Inventory U-07; Gaps 1 |
 | E-99 | 8. Inventory S-01 |
 | E-100 | Diagram 3. User with no active authorization; 8. Inventory U-07; Gaps 1 |
@@ -521,4 +520,5 @@ Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whol
 | E-125, E-126 | Diagram 2; 8. Inventory N-01, N-03, U-09, A-13, C-05; Gaps 13, 14 |
 | E-127 | Diagram 5. Administrator; 8. Inventory N-03, A-06 (removed), A-07; Gap 16 |
 | E-128 | 8. Inventory N-03; diagram 3 (U-07) |
+| E-153 | Diagram 1. Public screens; 8. Inventory N-03, N-04 (removed), N-05; diagram 3 (U-07) |
 | E-120 | 8. Inventory A-08 |
