@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button, TextField } from '../components'
 import { useDateFormat } from '../format/dateTime'
@@ -32,8 +32,8 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   const params = new URLSearchParams(window.location.search)
   const token = params.get('token') ?? ''
   const resetEmail = params.get('email') ?? ''
-  const compact = busy || Boolean(problem) || received || validating || !online || Object.keys(fields).length > 0
   const offline = !online || problem === 'offline'
+  const expired = problem === 'expired'
 
   useEffect(() => {
     if (!waitUntil) return
@@ -56,6 +56,10 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
     return () => { active = false }
   }, [mode, resetEmail, token])
 
+  useLayoutEffect(() => {
+    if (Object.keys(fields).length > 0) form.current?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
+  }, [fields])
+
   function handleError(error: unknown) {
     const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
     if (failure.code === 'validation_failed') {
@@ -66,10 +70,6 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
       }
       if (mode === 'reset' && failure.details?.password?.includes('confirmed')) next.password_confirmation = t.confirmationInvalid
       setFields(next)
-      // Only N-07 draws inline field errors. The other forms use their drawn rejection panel.
-      if (mode === 'sign-in') setProblem('wrong')
-      if (mode === 'recover') setProblem('server')
-      requestAnimationFrame(() => form.current?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus())
     } else if (failure.code === 'too_many_requests') {
       setProblem('wait')
       setWaitUntil(new Date(Date.now() + (failure.retryAfter ?? 60) * 1000))
@@ -100,47 +100,45 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
     finally { setBusy(false) }
   }
 
-  if (validating) return <UserPage><h1 tabIndex={-1}>{t.newPassword}</h1><UserLoading detail={t.validating} /></UserPage>
-  if (problem === 'expired') return <UserPage>
-    <h1 tabIndex={-1}>{t.expiredTitle}</h1><UserNotice title={t.expiredNotice}>{t.expiredText}</UserNotice>
-    <a className="button button--primary user-action" href="/recover-password">{t.requestAgain}</a>
-    <a className="button button--secondary user-action" href="/sign-in">{t.returnToSignIn}</a>
-  </UserPage>
-  if (received) return <UserPage>
-    <h1 tabIndex={-1}>{t.checkEmail}</h1><UserNotice title={t.received} success>{t.spam}</UserNotice><p>{t.receivedText}</p>
-    <a className="button button--primary user-action" href="/sign-in">{t.returnToSignIn}</a>
-  </UserPage>
-
-  const title = mode === 'sign-in' ? compact ? t.signIn : t.signInTitle : mode === 'recover' ? t.recover : t.newPassword
+  const title = mode === 'sign-in' ? t.signInTitle : expired ? t.expiredTitle : received ? t.checkEmail : mode === 'recover' ? t.recover : t.newPassword
   const notice = problem === 'wrong' ? [t.wrongTitle, t.wrongText]
     : problem === 'wait' && waitUntil ? [t.waitTitle, t.waitText(dates.time(waitUntil))]
     : problem === 'replaced' ? [t.replacedTitle, t.replacedText]
     : problem === 'server' && mode === 'recover' ? [t.sendErrorTitle, t.sendErrorText] : null
-  const description = mode === 'sign-in' ? t.description : mode === 'recover'
-    ? compact ? t.recoverStateDescription : t.recoverDescription : t.newDescription
+  const description = received ? t.receivedText : mode === 'sign-in' ? t.description : mode === 'recover' ? t.recoverDescription : t.newDescription
   const submitText = mode === 'sign-in' ? busy ? t.signing : t.signIn : mode === 'recover' ? busy ? t.sending : t.send : t.save
 
-  return <UserPage large={!compact} offline={offline} back={mode === 'sign-in' ? '/welcome' : '/sign-in'}>
+  // Figma 4099:2377 and 4099:2335 draw these two results without the form, in the compact layout.
+  if (expired || received) return <UserPage offline={offline} back="/sign-in">
+    <h1 tabIndex={-1}>{title}</h1>
+    {expired ? <UserNotice title={t.expiredNotice}>{t.expiredText}</UserNotice> : <UserNotice title={t.received} success>{t.spam}</UserNotice>}
+    {received && <p>{description}</p>}
+    {expired && <a className="button button--primary user-action" href="/recover-password">{t.requestAgain}</a>}
+    <a className={`button ${expired ? 'button--secondary' : 'button--primary'} user-action`} href="/sign-in">{t.returnToSignIn}</a>
+  </UserPage>
+
+  return <UserPage large offline={offline} back={mode === 'sign-in' ? '/welcome' : '/sign-in'}>
     <h1 tabIndex={-1}>{title}</h1>
     {notice && <UserNotice title={notice[0]}>{notice[1]}</UserNotice>}
+    {validating && <UserLoading detail={t.validating} />}
     <p className="user-description">{description}</p>
     <form ref={form} onSubmit={submit} noValidate aria-busy={busy} data-mode={mode}>
       {mode !== 'reset' && <TextField label={t.email} type="email" placeholder={t.emailPlaceholder} autoComplete="username"
         maxLength={255} required value={email} error={fields.email} onChange={(event) => setEmail(event.target.value)} />}
       {mode !== 'recover' && <PasswordField label={mode === 'reset' ? t.newPassword : t.password}
         placeholder={mode === 'reset' ? t.newPlaceholder : t.passwordPlaceholder} value={password} onChange={setPassword}
-        error={mode === 'reset' ? fields.password : undefined} autoComplete={mode === 'reset' ? 'new-password' : 'current-password'}
+        error={fields.password} autoComplete={mode === 'reset' ? 'new-password' : 'current-password'}
         hint={mode === 'reset' && !offline ? t.passwordHint : undefined}
         describedBy={mode === 'reset' && offline ? offlinePasswordHintId : undefined} />}
       {mode === 'reset' && <PasswordField label={t.confirmPassword} placeholder={t.confirmPlaceholder}
         value={confirmation} onChange={setConfirmation} error={fields.password_confirmation} />}
       {mode === 'sign-in' && <a className="user-forgot" href="/recover-password">{t.forgot}</a>}
       {mode === 'reset' && offline && <p id={offlinePasswordHintId} className="user-caption">{t.passwordHint}</p>}
-      <Button className="user-action" type="submit" fullWidth disabled={busy || waiting || offline}>{submitText}</Button>
+      <Button className="user-action" type="submit" fullWidth disabled={busy || waiting || offline || validating}>{submitText}</Button>
       {offline && <p className="user-caption" role="status">{t.offlineForm}</p>}
-      {mode === 'recover' && !compact && <p>{t.recoverHint}</p>}
+      {mode === 'recover' && <p>{t.recoverHint}</p>}
       {mode !== 'sign-in' && <a className="user-return" href="/sign-in">{t.returnToSignIn}</a>}
-      {mode === 'sign-in' && !compact && <div className="user-register"><span>{t.firstTime}</span><span className="user-register-action">{t.begin}</span></div>}
+      {mode === 'sign-in' && <div className="user-register"><span>{t.firstTime}</span><span className="user-register-action">{t.begin}</span></div>}
     </form>
   </UserPage>
 }

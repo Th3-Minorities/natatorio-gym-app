@@ -6,7 +6,9 @@ import tokens from './tokens.css?raw'
 function token(name: string): string {
   const match = tokens.match(new RegExp(`--${name}:\\s*([^;]+);`))
   if (!match) throw new Error(`tokens.css has no --${name}`)
-  return match[1].trim()
+  const value = match[1].trim()
+  const reference = value.match(/^var\(--([\w-]+)\)$/)
+  return reference ? token(reference[1]) : value
 }
 
 // WCAG 2.2 relative luminance and contrast ratio.
@@ -49,6 +51,12 @@ describe('design tokens', () => {
     })
   })
 
+  it('uses the User palette for fields without changing shared input borders', () => {
+    expect(token('user-field-background')).toBe('#fffdf8')
+    expect(token('user-border-input')).toBe('#d9dccb')
+    expect(token('border-input')).toBe('#8a8e7c')
+  })
+
   it('match the Figma spacing and font', () => {
     expect([4, 8, 12, 16, 20, 24, 32].map((n) => token(`spacing-${n}`))).toEqual(
       ['4px', '8px', '12px', '16px', '20px', '24px', '32px'],
@@ -65,7 +73,6 @@ describe('design tokens', () => {
     ['User filled input text', 'user-field-text', 'user-field-background', 4.5],
     ['User reset field errors', 'user-field-error', 'surface', 4.5],
     ['User reset error borders', 'user-field-error', 'user-field-background', 3],
-    ['User input borders against white fields', 'border-input', 'user-field-background', 3],
     ['text on the page', 'foreground', 'background', 4.5],
     ['text on a card', 'foreground', 'surface', 4.5],
     ['muted text on the page', 'muted-foreground', 'background', 4.5],

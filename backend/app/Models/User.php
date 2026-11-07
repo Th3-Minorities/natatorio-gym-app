@@ -34,6 +34,10 @@ class User extends Authenticatable
             ->where('academic_terms.starts_on', '<=', today()->toDateString())
             ->where('academic_terms.ends_on', '>=', today()->toDateString())
             ->orderByDesc('academic_terms.starts_on')->with('academicTerm')->first();
+        // Member or athlete comes from the current authorization, or else the latest of any term, so My account shows it with no active one.
+        $accountType = Authorization::query()->join('academic_terms', 'academic_terms.id', '=', 'authorizations.academic_term_id')
+            ->where('authorizations.user_id', $this->id)->orderByDesc('academic_terms.starts_on')
+            ->orderByDesc('authorizations.id')->value('authorizations.type');
         [$local, $domain] = explode('@', (string) $this->email, 2);
         $masked = mb_substr($local, 0, 1).'***'.(mb_strlen($local) > 1 ? mb_substr($local, -1) : '').'@'.$domain;
 
@@ -41,6 +45,7 @@ class User extends Authenticatable
             'name' => WaiverAcceptance::query()->where('user_id', $this->id)->value('full_name'),
             'email' => $masked,
             'locale' => $this->locale,
+            'account_type' => $authorization?->type ?? $accountType,
             'authorization' => $authorization === null ? null : ['type' => $authorization->type, 'term' => $authorization->academicTerm->name],
             'updated_at' => now()->toISOString(),
         ];

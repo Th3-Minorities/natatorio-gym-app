@@ -2,7 +2,7 @@ import { createContext, useContext } from 'react'
 import { en } from './en'
 import { es, type Messages } from './es'
 
-// One language per account, Spanish by default, no language button (E-64, E-114).
+// One language per account, Spanish by default (E-64, E-114). Before sign in, the welcome switch picks it (E-159).
 export type Locale = 'es' | 'en'
 
 export const messages: Record<Locale, Messages> = { es, en }
