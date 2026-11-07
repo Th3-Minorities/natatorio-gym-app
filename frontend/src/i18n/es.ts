@@ -165,6 +165,7 @@ export const es = {
     staff_session_expired: 'Tu sesión terminó tras un rato sin actividad. Inicia sesión de nuevo.',
     staff_account_deactivated: 'Esta cuenta fue desactivada. Pide acceso a un Administrador si lo necesitas de nuevo.',
     staff_account_not_invited: 'Esta cuenta ya no está pendiente de invitación. Actualiza la lista.',
+    staff_invite_link_invalid: 'Este enlace de invitación ya no se puede usar.',
   },
 
   validation: {
@@ -176,6 +177,7 @@ export const es = {
     in: 'Selecciona una opción válida.',
     unique: 'Este valor ya está en uso.',
     confirmed: 'La confirmación no coincide.',
+    password: 'Usa al menos 10 caracteres y evita contraseñas conocidas o filtradas.',
     invalid: 'Revisa este campo.',
   },
 }

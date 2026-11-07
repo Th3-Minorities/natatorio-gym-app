@@ -23,7 +23,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
-        foreach (['user.password.email' => 10, 'user.password.validate' => 30, 'user.password.reset' => 10] as $name => $limit) {
+        foreach (['user.password.email' => 10, 'user.password.validate' => 30, 'user.password.reset' => 10,
+            'staff.invitation.validate' => 30, 'staff.invitation.accept' => 10] as $name => $limit) {
             RateLimiter::for($name, fn (Request $request) => Limit::perMinute($limit)
                 ->by($request->route()->getName().'|'.$request->ip()));
         }

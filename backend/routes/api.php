@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\StaffAccountController;
+use App\Http\Controllers\StaffInvitationController;
 use App\Http\Controllers\StaffSessionController;
 use App\Http\Controllers\UserAccountController;
 use App\Http\Controllers\UserPasswordController;
@@ -17,6 +18,10 @@ Route::get('/health', HealthController::class);
 // Every staff route needs auth:staff, staff.active and a role: check; RouteProtectionTest enforces it.
 Route::prefix('staff')->group(function () {
     Route::post('/sign-in', [StaffSessionController::class, 'signIn']);
+    Route::post('/invitation/validate', [StaffInvitationController::class, 'validateLink'])
+        ->name('staff.invitation.validate')->middleware('throttle:staff.invitation.validate');
+    Route::post('/invitation/accept', [StaffInvitationController::class, 'accept'])
+        ->name('staff.invitation.accept')->middleware('throttle:staff.invitation.accept');
 
     Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);

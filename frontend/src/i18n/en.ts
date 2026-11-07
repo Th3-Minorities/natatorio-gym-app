@@ -152,6 +152,7 @@ export const en: Messages = {
     staff_session_expired: 'Your session ended after a while without activity. Sign in again.',
     staff_account_deactivated: 'This account was deactivated. Ask an Administrator if you need access again.',
     staff_account_not_invited: 'This account is no longer waiting for an invitation. Refresh the list.',
+    staff_invite_link_invalid: 'This invitation link can no longer be used.',
   },
 
   validation: {
@@ -163,6 +164,7 @@ export const en: Messages = {
     in: 'Select a valid option.',
     unique: 'This value is already in use.',
     confirmed: 'The confirmation does not match.',
+    password: 'Use at least 10 characters and avoid known or leaked passwords.',
     invalid: 'Check this field.',
   },
 }
