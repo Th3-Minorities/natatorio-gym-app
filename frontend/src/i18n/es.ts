@@ -12,6 +12,28 @@ export const es = {
   dates: { today: 'Hoy' },
 
   // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
+  // N-11, staff sign-in (Figma 4039:3721 and its states).
+  signIn: {
+    title: 'Iniciar sesión',
+    description: 'Accede con tu cuenta del equipo del gimnasio.',
+    email: 'Correo electrónico',
+    emailPlaceholder: 'nombre@ejemplo.com',
+    password: 'Contraseña',
+    passwordPlaceholder: 'Escribe tu contraseña',
+    submit: 'Iniciar sesión',
+    submitting: 'Iniciando sesión…',
+    forgot: '¿Olvidaste tu contraseña?',
+    wrongTitle: 'No pudimos iniciar sesión',
+    wrongText: 'Verifica tu correo y contraseña e intenta de nuevo.',
+    waitTitle: 'Demasiados intentos',
+    // The time ends in "a. m." or "p. m.", which already closes the sentence.
+    waitText: (time: string) => `Intenta de nuevo a las ${time.replace(/\.$/, '')}.`,
+    offlineTitle: 'Sin conexión',
+    offlineText: 'Conéctate a internet para iniciar sesión. Conservamos lo que escribiste.',
+    deactivatedTitle: 'Cuenta desactivada',
+    deactivatedText: 'No puedes iniciar sesión con esta cuenta. Pide a un Administrador que revise tu acceso.',
+  },
+
   dashboard: {
     skipToContent: 'Saltar al contenido',
     brandCampus: 'RUM',

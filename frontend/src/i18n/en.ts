@@ -12,6 +12,26 @@ export const en: Messages = {
 
   dates: { today: 'Today' },
 
+  signIn: {
+    title: 'Sign in',
+    description: 'Use your gym team account.',
+    email: 'Email',
+    emailPlaceholder: 'name@example.com',
+    password: 'Password',
+    passwordPlaceholder: 'Enter your password',
+    submit: 'Sign in',
+    submitting: 'Signing in…',
+    forgot: 'Forgot your password?',
+    wrongTitle: 'We could not sign you in',
+    wrongText: 'Check your email and password and try again.',
+    waitTitle: 'Too many tries',
+    waitText: (time: string) => `Try again at ${time}.`,
+    offlineTitle: 'No connection',
+    offlineText: 'Connect to the internet to sign in. We kept what you typed.',
+    deactivatedTitle: 'Account deactivated',
+    deactivatedText: 'You cannot sign in with this account. Ask an Administrator to check your access.',
+  },
+
   dashboard: {
     skipToContent: 'Skip to content',
     brandCampus: 'UPRM',

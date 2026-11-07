@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import { useMessages } from '../i18n'
+import { Brand } from './Brand'
 import './dashboard.css'
 
 // Figma MOCKUPS-GYM, "Dashboard / Shell" (98:5): "Swap Content slot for screen content; override page title,
@@ -78,11 +79,7 @@ export function DashboardShell({ account, onSignOut, title, description, action,
       </a>
 
       <aside className="sidebar">
-        <div className="brand">
-          <p className="brand__campus">{texts.brandCampus}</p>
-          <p className="brand__name">{texts.brandName}</p>
-          <span className="brand__accent" aria-hidden="true" />
-        </div>
+        <Brand />
 
         <nav className="nav" aria-label={texts.menu}>
           <NavSection

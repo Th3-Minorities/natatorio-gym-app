@@ -20,6 +20,8 @@
   font-weight: var(--weight-medium);
   line-height: 20px;
   white-space: nowrap;
+  /* A link drawn as a button, like "¿Olvidaste tu contraseña?" on N-11, has no underline in Figma. */
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -84,6 +86,12 @@
   font-family: var(--font-sans);
   font-size: 15px;
   line-height: 20px;
+}
+
+/* Placeholders are muted, as in Figma ("nombre@ejemplo.com" on N-11): 5.85:1 on a field, so still readable. */
+.field__input::placeholder {
+  color: var(--muted-foreground);
+  opacity: 1;
 }
 
 /* Notice */
