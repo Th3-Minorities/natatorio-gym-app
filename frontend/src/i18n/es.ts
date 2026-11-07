@@ -1,6 +1,31 @@
 // Spanish texts, the default language (context.md, "Interface language"). en.ts must have the same keys.
 
 export const es = {
+  registration: {
+    privacy: 'Aviso de privacidad', before: 'Antes de comenzar',
+    privacyIntro: 'Revisa el aviso de privacidad antes de continuar con tu registro.',
+    draft: 'BORRADOR', provisional: 'Texto provisional para el diseño.',
+    pendingNotice: 'Aquí se mostrará el aviso de privacidad aprobado por el gimnasio.',
+    pendingApproval: 'Versión final pendiente de aprobación.', continueRegistration: 'Continuar con el registro',
+    draftTitle: 'BORRADOR · Pendiente de aprobación', placeholder: 'Texto provisional para el wireframe.',
+    noticeBody: 'Aquí se mostrará el aviso de privacidad aprobado por el gimnasio, antes de recopilar datos personales.',
+    noticeSections: ['[Datos que se recopilan]', '[Finalidad y uso]', '[Retención e información de contacto]'],
+    offlineAvailable: 'El aviso está disponible sin conexión.',
+    loading: 'Cargando el aviso…', errorTitle: 'No pudimos mostrar el aviso',
+    errorDetail: 'Intenta de nuevo antes de continuar con el registro.',
+    title: 'Registro', choose: '¿Cómo tienes acceso al gimnasio? Escoge una opción.',
+    athlete: 'Soy atleta. Me registro con mi número de estudiante.',
+    paid: 'Pagué la membresía. Me registro con el número de mi recibo.',
+    paidTitle: 'Pagué la membresía', paidIntro: 'Escribe el número de autorización de tu recibo de pago.',
+    number: 'Número de autorización', numberPlaceholder: 'Ej. 12345A',
+    numberHint: '6 caracteres; puede incluir letras. Lo encuentras en la descripción del pago, en el correo del recibo.',
+    paymentDescription: 'Descripción del pago ·', receiptNumber: 'Número de autorización:', exampleNumber: '4K7Q2B',
+    paymentHelp: 'Necesitas una membresía pagada. ¿Problemas? Llama al 265-3866.', buy: 'Comprar membresía',
+    continue: 'Continuar', existing: '¿Ya tienes cuenta?', signIn: 'Inicia sesión',
+    hello: (name: string) => `¡Hola, ${name}!`, createPassword: 'Crea una contraseña',
+    passwordIntro: 'Usarás esta contraseña para iniciar sesión en tu cuenta.',
+    passwordPlaceholder: 'Escribe tu contraseña', confirmPlaceholder: 'Repite tu contraseña',
+  },
   user: {
     brand: 'RUM', brandName: 'GIMNASIO DE PESAS', back: 'Volver',
     signInTitle: 'Log in', signIn: 'Iniciar sesión', description: 'Ingresa a tu cuenta para continuar.',
@@ -141,6 +166,12 @@ export const es = {
 
   // The PWA owns the texts for stable API error codes (E-154).
   errors: {
+    registration_privacy_required: 'Revisa el aviso de privacidad antes de continuar con tu registro.',
+    registration_number_unavailable: 'Necesitas una membresía pagada. ¿Problemas? Llama al 265-3866.',
+    registration_waiver_unavailable: 'Intenta de nuevo antes de continuar con el registro.',
+    registration_photo_failed: 'Intenta de nuevo antes de continuar con el registro.',
+    registration_photo_invalid: 'Intenta de nuevo antes de continuar con el registro.',
+    registration_photo_conversion_unavailable: 'Intenta de nuevo antes de continuar con el registro.',
     user_credentials_invalid: 'Revisa el correo y la contraseña e intenta de nuevo.',
     user_session_replaced: 'Vuelve a iniciar sesión para usar tu cuenta aquí.',
     user_reset_link_invalid: 'Este enlace venció o ya se utilizó.',

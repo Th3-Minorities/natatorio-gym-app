@@ -3,6 +3,31 @@ import type { Messages } from './es'
 // English texts. Same keys as es.ts; TypeScript and i18n.test.tsx both check it.
 
 export const en: Messages = {
+  registration: {
+    privacy: 'Privacy notice', before: 'Before you begin',
+    privacyIntro: 'Review the privacy notice before continuing your registration.',
+    draft: 'DRAFT', provisional: 'Placeholder text for the design.',
+    pendingNotice: 'The gym-approved privacy notice will appear here.',
+    pendingApproval: 'Final version pending approval.', continueRegistration: 'Continue registration',
+    draftTitle: 'DRAFT · Pending approval', placeholder: 'Placeholder text for the wireframe.',
+    noticeBody: 'The gym-approved privacy notice will appear here before any personal data is collected.',
+    noticeSections: ['[Types of information collected]', '[Purpose and use]', '[Retention and contact information]'],
+    offlineAvailable: 'The notice is available offline.',
+    loading: 'Loading the notice…', errorTitle: 'We could not display the notice',
+    errorDetail: 'Try again before continuing registration.',
+    title: 'Registration', choose: 'How do you have access to the gym? Choose an option.',
+    athlete: 'I am an athlete. I register with my student number.',
+    paid: 'I paid for membership. I register with the number on my receipt.',
+    paidTitle: 'I paid for membership', paidIntro: 'Enter the authorization number on your payment receipt.',
+    number: 'Authorization number', numberPlaceholder: 'E.g. 12345A',
+    numberHint: '6 characters; may include letters. Find it in the payment description in your receipt email.',
+    paymentDescription: 'Payment description ·', receiptNumber: 'Authorization number:', exampleNumber: '4K7Q2B',
+    paymentHelp: 'You need a paid membership. Problems? Call 265-3866.', buy: 'Buy membership',
+    continue: 'Continue', existing: 'Already have an account?', signIn: 'Sign in',
+    hello: (name: string) => `Hello, ${name}!`, createPassword: 'Create a password',
+    passwordIntro: 'You will use this password to sign in to your account.',
+    passwordPlaceholder: 'Enter your password', confirmPlaceholder: 'Repeat your password',
+  },
   user: {
     brand: 'RUM', brandName: 'WEIGHT ROOM', back: 'Back',
     signInTitle: 'Log in', signIn: 'Sign in', description: 'Sign in to your account to continue.',
@@ -129,6 +154,12 @@ export const en: Messages = {
 
   // The PWA owns the texts for stable API error codes (E-154).
   errors: {
+    registration_privacy_required: 'Review the privacy notice before continuing your registration.',
+    registration_number_unavailable: 'You need a paid membership. Problems? Call 265-3866.',
+    registration_waiver_unavailable: 'Try again before continuing registration.',
+    registration_photo_failed: 'Try again before continuing registration.',
+    registration_photo_invalid: 'Try again before continuing registration.',
+    registration_photo_conversion_unavailable: 'Try again before continuing registration.',
     user_credentials_invalid: 'Check your email and password and try again.',
     user_session_replaced: 'Sign in again to use your account here.',
     user_reset_link_invalid: 'This link expired or has already been used.',
