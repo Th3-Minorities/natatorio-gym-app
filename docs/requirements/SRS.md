@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.14 draft, not approved
+**Version:** 0.15 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -79,6 +79,7 @@
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decisions E-140 to E-144 (`team.md`): Administrators download the athlete roster as Word or PDF (new REQ-F-100); Administrators download the statistics of any period as PDF or Excel (new REQ-F-101), and the end-of-term summary is that download with the term chosen (E-144, REQ-F-96 merged); the period is picked with buttons (day, week, month, term, year) or a free date range (REQ-F-61); a read-only REST API gives statistics with no personal data to other services (new REQ-F-102) | 0.11 |
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decisions E-145 to E-151 (`team.md`), from the review of the #13 migrations: retention without blocked database links (REQ-NF-05), void a wrong manual entry (REQ-F-95), sport copied onto each visit (REQ-F-61), student or employee on each manual grant (REQ-F-87), no names in the sync record (REQ-F-99), reactivating a staff account and keeping the last Administrator (REQ-F-88) | 0.12 |
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decision E-153 (`team.md`), which replaces E-112: registration is one screen with one field; exactly 10 digits is a student number (athlete registration), anything else is an Authorization Number, whose length is not checked (REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91; REQ-F-10 and the glossary no longer fix the length at 6 characters, E-128) | 0.14 |
+| Carlos J. Pepin Delgado | 2026-11-06 | Team decisions E-155 and E-156 (`team.md`): the waiver is accepted with an on-screen checkbox now, and a drawn signature is added for the Final report after research (REQ-F-60); no "15 minutes left" notice | 0.15 |
 
 ## 1. Introduction
 
@@ -347,7 +348,7 @@ Digital records that replace paper, only as Athletic Activities needs them (Prop
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-60 | When the account is created, the User shall accept a liability waiver and give an emergency contact (name and phone). The system stores them with full name and email from the payment record (paid member) or the roster (athlete). Without the waiver the account is not created. The waiver is accepted once and stays valid while the account exists, even if the text changes; the record stores which version of the text was accepted (E-134). No street address, documents or medical warnings are collected. The User can see and edit the emergency contact at any time, and Staff see the current value. The system stores what is needed to show who accepted and when; the fields are set in design. | Secondary | Medium | Clear. G-21 answered: no documents or medical warnings, and accepting on screen counts as the signature; the department sends the waiver text | Proposal:220, 466; Team decision (E-79, E-134) |
+| REQ-F-60 | When the account is created, the User shall accept a liability waiver and give an emergency contact (name and phone). The system stores them with full name and email from the payment record (paid member) or the roster (athlete). Without the waiver the account is not created. The waiver is accepted once and stays valid while the account exists, even if the text changes; the record stores which version of the text was accepted (E-134). No street address, documents or medical warnings are collected. The User can see and edit the emergency contact at any time, and Staff see the current value. The system stores what is needed to show who accepted and when; the fields are set in design. For the Final report, the User also draws a signature when accepting; how it is captured and stored is researched first (E-155). | Secondary | Medium | Clear. G-21 answered: no documents or medical warnings; the department sends the waiver text. On-screen accept now; drawn signature for the Final report (E-155) | Proposal:220, 466; Team decision (E-79, E-134, E-155) |
 
 ### 3.13 Utilization Analytics
 
