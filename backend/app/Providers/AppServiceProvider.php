@@ -24,7 +24,8 @@ class AppServiceProvider extends ServiceProvider
     {
         //
         foreach (['user.password.email' => 10, 'user.password.validate' => 30, 'user.password.reset' => 10,
-            'staff.invitation.validate' => 30, 'staff.invitation.accept' => 10] as $name => $limit) {
+            'staff.invitation.validate' => 30, 'staff.invitation.accept' => 10,
+            'staff.password.email' => 10, 'staff.password.validate' => 30, 'staff.password.reset' => 10] as $name => $limit) {
             RateLimiter::for($name, fn (Request $request) => Limit::perMinute($limit)
                 ->by($request->route()->getName().'|'.$request->ip()));
         }

@@ -153,6 +153,7 @@ export const en: Messages = {
     staff_account_deactivated: 'This account was deactivated. Ask an Administrator if you need access again.',
     staff_account_not_invited: 'This account is no longer waiting for an invitation. Refresh the list.',
     staff_invite_link_invalid: 'This invitation link can no longer be used.',
+    staff_reset_link_invalid: 'This link expired or has already been used.',
     staff_role_own_account: 'You cannot change your own role.',
     staff_deactivate_own_account: 'You cannot deactivate your own account.',
     staff_last_administrator: 'At least one active Administrator must remain.',

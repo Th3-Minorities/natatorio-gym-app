@@ -10,4 +10,13 @@ return [
         'ignore' => 'If you were not expecting this invitation, you can ignore this email.',
         'salutation' => 'RUM Weight Room',
     ],
+    'reset' => [
+        'subject' => 'Reset password',
+        'greeting' => 'Hello',
+        'description' => 'We received a request to reset the password of your gym team account.',
+        'action' => 'Reset password',
+        'expiry' => 'The link expires in 60 minutes and can only be used once. Changing it signs you out everywhere.',
+        'ignore' => 'If you did not request this change, you can ignore this email.',
+        'salutation' => 'RUM Weight Room',
+    ],
 ];

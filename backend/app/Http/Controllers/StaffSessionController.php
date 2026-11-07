@@ -59,6 +59,7 @@ class StaffSessionController extends Controller
         Auth::guard('staff')->login($account);
         $request->session()->regenerate();
         $request->session()->put(EnsureStaffSessionIsActive::LAST_ACTIVITY, now()->getTimestamp());
+        $request->session()->put(EnsureStaffSessionIsActive::PASSWORD_FINGERPRINT, $account->passwordFingerprint());
         $log->record('staff.sign_in', $account);
 
         return response()->json($this->profile($account));
