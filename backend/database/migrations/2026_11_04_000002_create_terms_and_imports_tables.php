@@ -45,7 +45,7 @@ return new class extends Migration
             $table->foreignId('import_id')->constrained()->restrictOnDelete()->comment('import that created the row');
             $table->foreignId('academic_term_id')->constrained()->restrictOnDelete()->comment('term that contains paid_at');
             $table->string('order_reference', 100)->unique()->comment('the import upserts on it (REQ-F-30)');
-            $table->string('authorization_number', 20)->unique()->comment('6 characters, may include letters, unique across all orders (D1, E-128)');
+            $table->string('authorization_number', 20)->unique()->comment('code from the payment gateway, 6 or 7 characters so far, may include letters, unique across all orders (D1, E-128, E-153)');
             $table->string('name');
             $table->string('email')->comment('payment email');
             $table->string('member_group', 10)->comment('student or employee, from the order (D15)');

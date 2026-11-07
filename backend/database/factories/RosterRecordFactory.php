@@ -15,7 +15,7 @@ class RosterRecordFactory extends Factory
     public function definition(): array
     {
         return [
-            'student_number' => fake()->unique()->numerify('802-##-####'),
+            'student_number' => fake()->unique()->numerify('802#######'),
             'name' => fake()->name(),
             'institutional_email' => fake()->unique()->userName().'@upr.example',
             'sport' => fake()->randomElement(['Swimming', 'Volleyball', 'Basketball', 'Track']),

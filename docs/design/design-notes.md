@@ -11,7 +11,7 @@ These are design or implementation choices that were in the SRS v0.4. They are n
 ## Data
 
 - The term photo is stored with the authorization, not with the account (SRS v0.4, REQ-F-26). The release of an added authorization deletes the photo with the authorization (team.md, E-57). The import undo that did the same was removed (team.md, E-127).
-- Paid memberships come from the store's REST API, not from a file (team.md, E-127). The read-only key lives only in the server's environment file. The Authorization Number is a 6-character code that can include letters, unique across all orders (team.md, E-128).
+- Paid memberships come from the store's REST API, not from a file (team.md, E-127). The read-only key lives only in the server's environment file. The Authorization Number can include letters, its length is not checked (6 and 7 characters have been seen), and it is unique across all orders (team.md, E-128, E-153).
 - There is no PIN state: Staff and Administrators have personal staff accounts (team.md, E-114), which replaced the PIN version and last-activity rules of E-56.
 - Behind the proxy, the backend reads the real client IP address from the proxy header, for the audit log (SRS v0.4, 5.3 and REQ-NF-39).
 
