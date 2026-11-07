@@ -8,6 +8,7 @@ use App\Notifications\UserPasswordReset;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
@@ -30,6 +31,27 @@ class UserPasswordResetTest extends TestCase
     private function resetBody(User $user, string $token): array
     {
         return ['email' => $user->email, 'token' => $token, 'password' => 'a plain long password', 'password_confirmation' => 'a plain long password'];
+    }
+
+    public function test_password_route_limits_are_independent_for_the_same_ip(): void
+    {
+        Cache::flush();
+        $this->freezeTime();
+        $this->fromThePwa()->withServerVariables(['REMOTE_ADDR' => '198.51.100.15']);
+
+        foreach (['email' => 10, 'validate' => 30, 'reset' => 10] as $route => $limit) {
+            for ($attempt = 0; $attempt < $limit; $attempt++) {
+                $this->postJson('/api/user/password/'.$route, [])->assertUnprocessable()
+                    ->assertJsonPath('error.code', 'validation_failed');
+            }
+            $this->postJson('/api/user/password/'.$route, [])->assertStatus(429)
+                ->assertJsonPath('error.code', 'too_many_requests')->assertHeader('Retry-After', '60');
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '198.51.100.16']);
+        foreach (['email', 'validate', 'reset'] as $route) {
+            $this->postJson('/api/user/password/'.$route, [])->assertUnprocessable();
+        }
     }
 
     public function test_reset_requests_hide_whether_the_email_exists_even_when_repeated(): void
