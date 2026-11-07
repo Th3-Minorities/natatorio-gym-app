@@ -179,7 +179,7 @@ class PaidRegistrationTest extends TestCase
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'bad'])->assertTooManyRequests();
     }
 
-    public function test_ten_digits_are_rejected_before_membership_lookup_and_do_not_count_against_the_ip_limit(): void
+    public function test_nine_digits_are_rejected_before_membership_lookup_and_do_not_count_against_the_ip_limit(): void
     {
         config(['registration.ip_failures' => 1]);
         $this->acknowledge();
@@ -191,7 +191,7 @@ class PaidRegistrationTest extends TestCase
                 $queries[] = $query->sql;
             }
         });
-        foreach (['1234567890', '0000000000'] as $number) {
+        foreach (['123456789', '802123456', '000000000'] as $number) {
             $this->postJson('/api/user/registration/lookup', ['authorization_number' => $number])
                 ->assertUnprocessable()->assertExactJson(['error' => [
                     'code' => 'validation_failed', 'details' => ['authorization_number' => ['not_regex']],
@@ -204,6 +204,16 @@ class PaidRegistrationTest extends TestCase
         $this->assertSame([], $queries);
         $this->assertSame(0, RateLimiter::attempts('registration:ip:'.hash('sha256', '127.0.0.1')));
         $this->assertSame(0, RateLimiter::attempts('registration:global'));
+    }
+
+    public function test_ten_digits_are_looked_up_as_an_authorization_number(): void
+    {
+        $this->acknowledge();
+        $this->mock(MembershipStore::class)->shouldReceive('find')->once()->with('1234567890')
+            ->andReturnUsing(fn () => $this->membership(['authorization_number' => '1234567890']));
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '1234567890'])
+            ->assertOk()->assertJsonPath('state', 'ready');
+        Http::assertNothingSent();
     }
 
     public function test_global_slow_mode_alerts_once_and_never_blocks_a_valid_lookup(): void

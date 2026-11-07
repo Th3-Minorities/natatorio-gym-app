@@ -3,7 +3,7 @@ import { GraduationCap, ReceiptText, ShieldCheck } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button, TextField } from '../components'
 import { useDateFormat } from '../format/dateTime'
-import { I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
+import { errorText, I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
 import { PasswordField, UserLoading, UserNotice, UserPage } from './ui'
 import { useConnection } from './useConnection'
 import './registration.css'
@@ -25,8 +25,9 @@ export function Registration(props: { path: string; navigate: (path: string) => 
 function RegistrationFlow({ path, navigate, setLocale }: {
   path: string; navigate: (path: string) => void; setLocale: (locale: Locale) => void
 }) {
-  const t = useMessages().registration
-  const u = useMessages().user
+  const texts = useMessages()
+  const t = texts.registration
+  const u = texts.user
   const dates = useDateFormat()
   const locale = useLocale()
   const online = useConnection()
@@ -36,17 +37,25 @@ function RegistrationFlow({ path, navigate, setLocale }: {
   const [accepted, setAccepted] = useState(false)
   const [busy, setBusy] = useState(false)
   const [number, setNumber] = useState('')
+  const [studentNumber, setStudentNumber] = useState(false)
   const [lookup, setLookup] = useState<Lookup | null>(null)
-  const [lookupFailed, setLookupFailed] = useState(false)
+  const [lookupMessage, setLookupMessage] = useState('')
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [passwordErrors, setPasswordErrors] = useState(false)
   const [waitUntil, setWaitUntil] = useState(0)
   const [waiting, setWaiting] = useState(false)
   const pending = useRef(false)
+  const lookupGeneration = useRef(0)
   const offline = !online || networkFailed
   const privacyPage = !accepted || path === '/register' || path === '/privacy'
   const passwordPage = path === '/register/password' && lookup?.state === 'ready'
+  const [previousPrivacyPage, setPreviousPrivacyPage] = useState(privacyPage)
+  if (privacyPage !== previousPrivacyPage) {
+    setPreviousPrivacyPage(privacyPage)
+    setLookupMessage('')
+    setStudentNumber(false)
+  }
 
   function loadPrivacy() {
     return apiRequest<Privacy>('/user/registration/privacy').then((notice) => {
@@ -69,6 +78,9 @@ function RegistrationFlow({ path, navigate, setLocale }: {
     const timer = setTimeout(() => setWaiting(false), Math.max(0, waitUntil - Date.now()))
     return () => clearTimeout(timer)
   }, [waiting, waitUntil])
+  useEffect(() => {
+    if (!privacyPage) return () => { lookupGeneration.current += 1 }
+  }, [privacyPage])
 
   async function continuePrivacy() {
     if (!privacy || offline || pending.current) return
@@ -77,7 +89,7 @@ function RegistrationFlow({ path, navigate, setLocale }: {
     try {
       await apiRequest('/user/registration/privacy', { method: 'POST', body: { version: privacy.version } })
       setAccepted(true)
-      navigate('/register/choose')
+      navigate('/register/identify')
     } catch (error) {
       if (error instanceof ApiError && error.code === 'offline') setNetworkFailed(true)
       else setFailed(true)
@@ -87,18 +99,31 @@ function RegistrationFlow({ path, navigate, setLocale }: {
   async function findMembership(event: FormEvent) {
     event.preventDefault()
     if (offline || waiting || pending.current || !number.trim()) return
+    setLookupMessage('')
+    if (/^\d{9}$/.test(number.trim())) { setStudentNumber(true); setLookupMessage(t.studentHint); return }
+    const generation = lookupGeneration.current
     pending.current = true
     setBusy(true)
-    setLookupFailed(false)
     try {
       const result = await apiRequest<Lookup>('/user/registration/lookup', { method: 'POST', body: { authorization_number: number } })
+      if (generation !== lookupGeneration.current) return
       setLookup(result)
       if (result.state === 'ready') { setPassword(''); setConfirmation(''); setPasswordErrors(false); navigate('/register/password') }
-      // Renewal and masked-email presentation have no registration frame yet.
+      else setLookupMessage(t.renewal(result.masked_email))
     } catch (error) {
-      if (error instanceof ApiError && error.code === 'offline') setNetworkFailed(true)
-      if (error instanceof ApiError && error.retryAfter) { setWaitUntil(Date.now() + error.retryAfter * 1000); setWaiting(true) }
-      setLookupFailed(true)
+      if (generation !== lookupGeneration.current) return
+      const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
+      if (failure.code === 'offline') {
+        setNetworkFailed(true)
+        setLookupMessage(u.offlineForm)
+      } else if (failure.status === 429) {
+        if (failure.retryAfter) { setWaitUntil(Date.now() + failure.retryAfter * 1000); setWaiting(true) }
+        else setLookupMessage(u.waitTitle)
+      } else {
+        const code = failure.status >= 500 ? 'server_error' : failure.code
+        setLookupMessage(failure.status === 422 && failure.code === 'registration_number_unavailable'
+          ? t.paymentHelp : errorText(texts, code, failure.status))
+      }
     } finally { pending.current = false; setBusy(false) }
   }
 
@@ -115,13 +140,12 @@ function RegistrationFlow({ path, navigate, setLocale }: {
   </div>
   const existing = <div className="registration-existing"><span>{t.existing}</span><a href="/sign-in">{t.signIn}</a></div>
   const lookupStatus = <div className="registration-status" role="status">
-    {waiting ? `${t.paymentHelp} ${u.waitText(dates.time(new Date(waitUntil)))}` : lookupFailed ? t.paymentHelp : ''}
+    {waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage}
   </div>
 
   if (privacyPage) {
     const compact = offline || failed || !privacy || locale === 'en' || path === '/privacy'
     return <div className={`registration ${compact ? 'registration--compact' : 'registration--privacy'}`}>
-      {lookupStatus}
       <UserPage large={!compact} offline={offline} back="/welcome">
         {compact ? <>
           <h1 tabIndex={-1}>{t.privacy}</h1>
@@ -153,9 +177,9 @@ function RegistrationFlow({ path, navigate, setLocale }: {
     </div>
   }
 
-  return <div className={`registration ${passwordPage ? 'registration--password' : 'registration--paid'}`}>
+  return <div className={`registration ${passwordPage ? 'registration--password' : 'registration--identification'}`}>
     {lookupStatus}
-    <UserPage large back={passwordPage ? '/register/paid' : path === '/register/paid' ? '/register/choose' : '/register'}>
+    <UserPage large back={passwordPage ? '/register/identify' : '/register'}>
       {passwordPage ? <>
         <div className="registration-intro"><p className="registration-greeting">{t.hello(lookup.name)}</p>
           <h1 tabIndex={-1}>{t.createPassword}</h1><p>{t.passwordIntro}</p></div>
@@ -166,14 +190,17 @@ function RegistrationFlow({ path, navigate, setLocale }: {
             error={passwordErrors && confirmation !== password ? u.confirmationInvalid : undefined} />
           <Button className="user-action" type="submit">{t.continue}</Button>
         </form>
-      </> : path === '/register/paid' ? <>
-        <div className="registration-intro"><h1 tabIndex={-1}>{t.paidTitle}</h1><p>{t.paidIntro}</p></div>
-        <form className="registration-paid-form" onSubmit={(event) => void findMembership(event)}>
+      </> : <>
+        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1><p>{t.identificationIntro}</p></div>
+        <form className="registration-identification-form" onSubmit={(event) => void findMembership(event)}>
           <div className="registration-number">
-            <TextField label={t.number} placeholder={t.numberPlaceholder} value={number} onChange={(event) => {
-              setNumber(event.target.value); setLookup(null); setLookupFailed(false)
-            }} aria-describedby="registration-number-hint" autoComplete="off" required />
-            <div className="registration-hint" id="registration-number-hint"><ReceiptText aria-hidden="true" /><p>{t.numberHint}</p></div>
+            <TextField label={t.number} placeholder={t.numberPlaceholder} value={number} readOnly={busy} onChange={(event) => {
+              setNumber(event.target.value); setLookup(null); setLookupMessage(''); setStudentNumber(false)
+            }} aria-invalid={studentNumber || undefined} aria-describedby="registration-number-hint" autoComplete="off" required />
+            <div className="registration-hints" id="registration-number-hint">
+              <div className={`registration-hint${studentNumber ? ' registration-hint--flagged' : ''}`}><GraduationCap aria-hidden="true" /><p>{t.studentHint}</p></div>
+              <div className="registration-hint"><ReceiptText aria-hidden="true" /><p>{t.numberHint}</p></div>
+            </div>
             <div className="registration-receipt"><p>{t.paymentDescription}</p><div><span>{t.receiptNumber}</span><strong>{t.exampleNumber}</strong></div></div>
             <p className="registration-help">{t.paymentHelp}</p>
             {privacy?.store_url ? <a href={privacy.store_url} target="_blank" rel="noopener noreferrer" className="button button--secondary user-action registration-buy">{t.buy}</a>
@@ -181,11 +208,6 @@ function RegistrationFlow({ path, navigate, setLocale }: {
           </div>
           <div className="registration-bottom"><Button type="submit" className="user-action" disabled={busy || offline || waiting}>{t.continue}</Button>{existing}</div>
         </form>
-      </> : <>
-        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1><p>{t.choose}</p></div>
-        <div className="registration-options"><div className="registration-option"><GraduationCap aria-hidden="true" /><span>{t.athlete}</span></div>
-          <a className="registration-option" href="/register/paid"><ReceiptText aria-hidden="true" /><span>{t.paid}</span></a></div>
-        <div className="registration-bottom registration-choose-actions">{existing}</div>
       </>}
     </UserPage>
   </div>

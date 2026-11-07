@@ -60,7 +60,7 @@ class PaidRegistrationController extends Controller
     public function lookup(Request $request, RegistrationLookup $lookup): JsonResponse
     {
         $this->requirePrivacy($request);
-        $input = $request->validate(['authorization_number' => ['required', 'string', 'not_regex:/^\d{10}$/']]);
+        $input = $request->validate(['authorization_number' => ['required', 'string', 'not_regex:/^\d{9}$/']]);
 
         return response()->json($lookup->result($lookup->find($input['authorization_number'], $request)))->header('Cache-Control', 'no-store');
     }
@@ -81,7 +81,7 @@ class PaidRegistrationController extends Controller
     {
         $this->requirePrivacy($request);
         $input = $request->validate([
-            'authorization_number' => ['required', 'string', 'not_regex:/^\d{10}$/'],
+            'authorization_number' => ['required', 'string', 'not_regex:/^\d{9}$/'],
             'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(10)->uncompromised()],
             'password_confirmation' => ['required', 'string', 'max:255'],
             'photo' => [
