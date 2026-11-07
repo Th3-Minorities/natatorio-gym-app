@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import { useMessages } from '../i18n'
+import { Brand } from './Brand'
 import './dashboard.css'
 
 // Figma MOCKUPS-GYM, "Dashboard / Shell" (98:5): "Swap Content slot for screen content; override page title,
@@ -58,7 +59,8 @@ function NavSection({ label, items, admin = false }: { label: string; items: Ite
 type DashboardShellProps = {
   account: StaffAccount
   onSignOut: () => void
-  title: string
+  /** Without a title (no screen built yet), the page still has a heading for screen readers, hidden on screen. */
+  title?: string
   description?: string
   /** The page's main button, top right. */
   action?: ReactNode
@@ -78,11 +80,7 @@ export function DashboardShell({ account, onSignOut, title, description, action,
       </a>
 
       <aside className="sidebar">
-        <div className="brand">
-          <p className="brand__campus">{texts.brandCampus}</p>
-          <p className="brand__name">{texts.brandName}</p>
-          <span className="brand__accent" aria-hidden="true" />
-        </div>
+        <Brand />
 
         <nav className="nav" aria-label={texts.menu}>
           <NavSection
@@ -133,13 +131,17 @@ export function DashboardShell({ account, onSignOut, title, description, action,
       </aside>
 
       <main className="page" id="dashboard-content" tabIndex={-1}>
-        <div className="page__top">
-          <div className="page__heading">
-            <h1 className="page__title">{title}</h1>
-            {description && <p className="page__description">{description}</p>}
+        {title ? (
+          <div className="page__top">
+            <div className="page__heading">
+              <h1 className="page__title">{title}</h1>
+              {description && <p className="page__description">{description}</p>}
+            </div>
+            {action && <div className="page__action">{action}</div>}
           </div>
-          {action && <div className="page__action">{action}</div>}
-        </div>
+        ) : (
+          <h1 className="visually-hidden">{texts.brandName}</h1>
+        )}
         <div className="page__content">{children}</div>
       </main>
     </div>

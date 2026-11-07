@@ -12,6 +12,28 @@ export const en: Messages = {
 
   dates: { today: 'Today' },
 
+  signIn: {
+    title: 'Sign in',
+    description: 'Use your gym team account.',
+    email: 'Email',
+    emailPlaceholder: 'name@example.com',
+    password: 'Password',
+    passwordPlaceholder: 'Enter your password',
+    submit: 'Sign in',
+    submitting: 'Signing in…',
+    forgot: 'Forgot your password?',
+    wrongTitle: 'We could not sign you in',
+    wrongText: 'Check your email and password and try again.',
+    waitTitle: 'Too many tries',
+    waitText: (time: string) => `Try again at ${time}.`,
+    offlineTitle: 'No connection',
+    offlineText: 'Connect to the internet to sign in. We kept what you typed.',
+    deactivatedTitle: 'Account deactivated',
+    deactivatedText: 'You cannot sign in with this account. Ask an Administrator to check your access.',
+    timeoutTitle: 'Session expired',
+    timeoutText: 'Your session closed after a while without activity. Sign in again.',
+  },
+
   dashboard: {
     skipToContent: 'Skip to content',
     brandCampus: 'UPRM',
@@ -43,6 +65,8 @@ export const en: Messages = {
     },
     roles: { staff: 'Staff', admin: 'Administrator' },
     signOut: 'Sign out',
+    signOutFailedTitle: 'Could not sign out',
+    signOutFailedText: 'Check the connection and try again.',
   },
 
   states: {
@@ -70,6 +94,9 @@ export const en: Messages = {
     service_unavailable: 'The service is not available right now. Try again later.',
     server_error: 'Something went wrong on our side. Try again later.',
     database_unavailable: 'The service is not available right now. Try again later.',
+    staff_credentials_invalid: 'The email or password is not correct.',
+    staff_session_expired: 'Your session ended after a while without activity. Sign in again.',
+    staff_account_deactivated: 'This account was deactivated. Ask an Administrator if you need access again.',
   },
 
   validation: {
