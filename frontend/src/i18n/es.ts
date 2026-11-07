@@ -139,9 +139,8 @@ export const es = {
       `${active} ${active === 1 ? 'activa' : 'activas'} · ${invited} ${invited === 1 ? 'invitada' : 'invitadas'}`,
     tableTitle: 'Equipo del gimnasio',
     tableHint: 'Nombre, correo, rol y estado',
-    columns: { name: 'Nombre', email: 'Correo electrónico', role: 'Rol', status: 'Estado', actions: 'Acciones' },
+    columns: { name: 'Nombre', email: 'Correo electrónico', role: 'Rol', status: 'Estado', account: 'Cuenta', access: 'Acceso' },
     status: { active: 'Activo', invited: 'Invitado', deactivated: 'Desactivado' },
-    noAccess: 'Sin acceso',
     keptTitle: 'Las cuentas se conservan',
     keptText: 'Al desactivar una cuenta se retira su acceso. Su registro permanece en esta lista.',
     loadingTitle: 'Cargando cuentas…',
@@ -166,6 +165,28 @@ export const es = {
     resentTitle: 'Invitación reenviada',
     resentText: (email: string, firstName: string) =>
       `Enviamos una nueva invitación a ${email}. ${firstName} seguirá como Invitado hasta crear su contraseña.`,
+    // Cambiar rol, Figma 4039:3226, 4039:3252 and 4039:3285.
+    changeRole: 'Cambiar rol',
+    currentRole: (role: string) => `Rol actual: ${role}`,
+    newRole: 'Nuevo rol',
+    roleAudit: 'Este cambio quedará registrado en el registro de auditoría.',
+    save: 'Guardar',
+    roleChangedTitle: 'Rol cambiado',
+    roleChangedText: (name: string, role: string) =>
+      `${name} ahora tiene el rol ${role}. El cambio se guardó en el registro de auditoría.`,
+    ownRoleTitle: 'No puedes cambiar tu propio rol',
+    ownRoleText: (role: string) => `Debes conservar tu rol ${role}. Pide a otro Administrador que cambie tu rol.`,
+    understood: 'Entendido',
+    // Desactivar, Figma 100:1205. Reactivar has no Figma frame (E-150).
+    deactivate: 'Desactivar',
+    deactivateTitle: (name: string) => `¿Desactivar a ${name}?`,
+    deactivateText:
+      'No podrá iniciar sesión. La cuenta se conservará con estado desactivado. Sus sesiones abiertas terminan de inmediato.',
+    deactivateConfirm: 'Desactivar cuenta',
+    reactivate: 'Reactivar',
+    // Read by screen readers only: the row itself shows the change.
+    deactivated: (name: string) => `${name} se desactivó.`,
+    reactivated: (name: string) => `${name} se reactivó.`,
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

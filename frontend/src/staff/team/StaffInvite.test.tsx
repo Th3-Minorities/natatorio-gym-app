@@ -93,7 +93,9 @@ describe('inviting a person', () => {
     fill(dialog, 'Yariel Nieves León', 'mariel@example.com')
     fireEvent.click(within(dialog).getByRole('button', { name: t.sendInvite }))
 
-    expect(await within(dialog).findByRole('heading', { name: t.emailInUseTitle })).toHaveFocus()
+    // Focus moves in an effect right after the view changes, so wait for it instead of checking at once.
+    const heading = await within(dialog).findByRole('heading', { name: t.emailInUseTitle })
+    await waitFor(() => expect(heading).toHaveFocus())
     expect(within(dialog).getByText(t.emailInUseText('mariel@example.com'))).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: t.fixEmail }))
 
@@ -116,7 +118,7 @@ describe('inviting a person', () => {
 
     expect(await within(dialog).findByText(es.validation.required)).toBeInTheDocument()
     expect(within(dialog).getByText(es.validation.email)).toBeInTheDocument()
-    expect(within(dialog).getByLabelText(t.fullName)).toHaveFocus()
+    await waitFor(() => expect(within(dialog).getByLabelText(t.fullName)).toHaveFocus())
   })
 
   it('sends only once while the request runs', async () => {

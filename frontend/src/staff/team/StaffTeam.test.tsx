@@ -56,7 +56,7 @@ describe('the staff accounts screen', () => {
     expect(within(rows[2]).getByText('mariel@example.com')).toBeInTheDocument()
     expect(within(rows[3]).getByText(es.staffTeam.status.invited)).toBeInTheDocument()
     expect(within(rows[4]).getByText(es.staffTeam.status.deactivated)).toBeInTheDocument()
-    expect(within(rows[4]).getByText(es.staffTeam.noAccess)).toBeInTheDocument()
+    expect(within(rows[4]).getByRole('button', { name: `${es.staffTeam.reactivate}, Damián Ruiz Solís` })).toBeInTheDocument()
   })
 
   it('counts active and invited accounts in the summary', async () => {

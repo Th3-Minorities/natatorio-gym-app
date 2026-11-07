@@ -149,14 +149,15 @@
   color: var(--primary);
 }
 
-.team-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-8);
+/* Row actions: small bordered buttons, 32px high, so a row stays at Figma's 52px. */
+.team-action {
+  height: 32px;
+  padding: 0 12px;
 }
 
-/* Row actions, like "Reenviar invitación" (4038:495): 36px high, 10px a side, green text. */
-.team-action {
-  height: 36px;
-  padding: 0 10px;
+/* Desactivar in red, so it stands apart from the other actions (team review, not in Figma).
+   The User app's red: 4.5:1 or more on a card (tokens.test.ts). */
+.team-action--danger {
+  border-color: var(--user-danger);
+  color: var(--user-danger);
 }

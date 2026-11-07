@@ -292,3 +292,15 @@
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
+
+/* The person a modal is about, like "Mariel Vélez Soto" in Cambiar rol (4039:3226). */
+.modal__name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.modal__text p {
+  margin: 0;
+}
