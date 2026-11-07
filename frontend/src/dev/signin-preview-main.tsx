@@ -35,7 +35,7 @@ async function fakeSignIn(): Promise<void> {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <I18nProvider locale={params.get('lang') ?? undefined}>
-      <StaffSignIn onSignIn={fakeSignIn} endedBecause={state === 'timeout' ? 'timeout' : null} />
+      <StaffSignIn onSignIn={fakeSignIn} startWith={state === 'timeout' ? 'timeout' : null} />
     </I18nProvider>
   </StrictMode>,
 )

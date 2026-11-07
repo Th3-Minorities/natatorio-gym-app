@@ -19,6 +19,15 @@ class StaffSessionTimeoutTest extends TestCase
 
     private TestResponse $last;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Only travel() moves the clock. On a slow computer the real seconds a test takes would otherwise
+        // push "1 h 59 min 59 s" past the 2-hour limit.
+        $this->freezeTime();
+    }
+
     private function signIn(StaffAccount $account): void
     {
         $this->last = $this->fromThePwa()

@@ -88,9 +88,21 @@ Note: if your database volume is older than issue #47, create the test database 
 docker compose exec db sh /docker-entrypoint-initdb.d/02-test-database.sh
 ```
 
-### Slow on Windows
+### PHP packages in a Docker volume
 
-On Windows, each API request can take 7 to 20 seconds, and the tests about a minute. The cause is Docker Desktop reading the PHP files from a Windows folder; the code itself is fast (one measurement: Laravel started in 7.8 s from the Windows folder and in 0.17 s from inside the container). A repo inside OneDrive is likely slower still. CI runs on Linux and is not affected. Possible fixes for later: turn on OPcache in the PHP image, keep `backend/vendor/` in a Docker volume, or keep the repo in the WSL file system instead of a Windows folder.
+Docker Desktop reads files from a Windows folder slowly, and likely from a macOS folder too. To make up for it, `docker-compose.override.yml` keeps the PHP packages (`backend/vendor/`) in a Docker volume instead of your folder. Docker Compose loads that file on its own, so you do not need to do anything. On Windows this cut the first start from about 6 minutes to under a minute and the backend tests from about 110 s to about 35 s.
+
+The cost: VS Code no longer sees the packages, so PHP autocomplete for Laravel classes stops working. To get it back, copy the packages to your folder. Run it again after someone changes `composer.lock`:
+
+```powershell
+docker compose cp app:/var/www/html/vendor backend/
+```
+
+The copy is only for your editor. The containers always use the volume.
+
+A repo inside OneDrive is slower still. Keep your clone in a normal folder, outside OneDrive.
+
+Production must skip the override file: start the stack there with `docker compose -f docker-compose.yml ...`.
 
 ### Everyday commands
 

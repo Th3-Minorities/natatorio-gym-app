@@ -59,7 +59,8 @@ function NavSection({ label, items, admin = false }: { label: string; items: Ite
 type DashboardShellProps = {
   account: StaffAccount
   onSignOut: () => void
-  title: string
+  /** Without a title (no screen built yet), the page still has a heading for screen readers, hidden on screen. */
+  title?: string
   description?: string
   /** The page's main button, top right. */
   action?: ReactNode
@@ -130,13 +131,17 @@ export function DashboardShell({ account, onSignOut, title, description, action,
       </aside>
 
       <main className="page" id="dashboard-content" tabIndex={-1}>
-        <div className="page__top">
-          <div className="page__heading">
-            <h1 className="page__title">{title}</h1>
-            {description && <p className="page__description">{description}</p>}
+        {title ? (
+          <div className="page__top">
+            <div className="page__heading">
+              <h1 className="page__title">{title}</h1>
+              {description && <p className="page__description">{description}</p>}
+            </div>
+            {action && <div className="page__action">{action}</div>}
           </div>
-          {action && <div className="page__action">{action}</div>}
-        </div>
+        ) : (
+          <h1 className="visually-hidden">{texts.brandName}</h1>
+        )}
         <div className="page__content">{children}</div>
       </main>
     </div>

@@ -6,7 +6,7 @@ export default defineConfig({
   testDir: './e2e',
   forbidOnly: !!process.env.CI,
   retries: 0,
-  // On Windows the API can take 7 to 20 s per request (README, "Slow on Windows").
+  // Without the vendor volume, the API on Windows can take 7 to 20 s per request (README, "PHP packages in a Docker volume").
   expect: { timeout: 30_000 },
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {

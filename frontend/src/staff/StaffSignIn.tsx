@@ -1,10 +1,9 @@
-import { useEffect, useId, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { ApiError } from '../api/client'
 import { Button, Notice, TextField } from '../components'
-import { Brand } from '../dashboard/Brand'
 import { useDateFormat } from '../format/dateTime'
 import { errorText, fieldErrorText, useMessages } from '../i18n'
-import './signIn.css'
+import { SignInLayout } from './SignInLayout'
 
 // N-11, staff sign-in, as drawn in Figma MOCKUPS-GYM (4039:3721) with its states. On the dashboard path,
 // with no link from the User sign-in (E-124). The same form for Staff and Administrators (E-114).
@@ -24,11 +23,14 @@ type FieldErrors = { email?: string; password?: string }
 
 type StaffSignInProps = {
   onSignIn: (email: string, password: string) => Promise<void>
-  /** Why the last sign-in ended by itself: "Sesión vencida" (4039:4365) or "Cuenta desactivada" (4039:4094). */
-  endedBecause?: 'timeout' | 'deactivated' | null
+  /**
+   * A notice to open with: the last sign-in ended by itself ("Sesión vencida" 4039:4365, "Cuenta desactivada"
+   * 4039:4094), or the API could not be reached when the page opened ("Sin conexión" 4039:4018).
+   */
+  startWith?: 'timeout' | 'deactivated' | 'offline' | null
 }
 
-export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps) {
+export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
   const texts = useMessages()
   const t = texts.signIn
   const dates = useDateFormat()
@@ -37,12 +39,21 @@ export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
-  const [problem, setProblem] = useState<Problem | null>(endedBecause ? { kind: endedBecause } : null)
+  const [problem, setProblem] = useState<Problem | null>(startWith ? { kind: startWith } : null)
   const [busy, setBusy] = useState(false)
   // What keeps the button disabled after an answer (Figma states 3942, 4018, 4094).
   const [waiting, setWaiting] = useState(false)
-  const [offlineBlock, setOfflineBlock] = useState(false)
-  const [deactivatedBlock, setDeactivatedBlock] = useState(endedBecause === 'deactivated')
+  const [offlineBlock, setOfflineBlock] = useState(() => startWith === 'offline' && !navigator.onLine)
+  const [deactivatedBlock, setDeactivatedBlock] = useState(startWith === 'deactivated')
+
+  // Focus moves after the error is on screen, so a screen reader reads the field together with its error.
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+  const [focusRequest, setFocusRequest] = useState<{ field: 'email' | 'password'; count: number } | null>(null)
+  useEffect(() => {
+    if (!focusRequest) return
+    ;(focusRequest.field === 'email' ? emailRef : passwordRef).current?.focus()
+  }, [focusRequest])
 
   // Too many tries: open the button again at the time the server gave (REQ-F-07).
   const waitUntil = problem?.kind === 'wait' ? problem.until : null
@@ -95,7 +106,7 @@ export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps)
         return
       case 'validation_failed': {
         const details = error instanceof ApiError ? (error.details ?? {}) : {}
-        setFieldErrors({
+        showFieldErrors({
           email: details.email?.[0] ? fieldErrorText(texts, details.email[0]) : undefined,
           password: details.password?.[0] ? fieldErrorText(texts, details.password[0]) : undefined,
         })
@@ -106,8 +117,16 @@ export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps)
     }
   }
 
+  /** Shows the errors and sends focus to the first field that has one, so its error is read out (WCAG 3.3.1). */
+  function showFieldErrors(errors: FieldErrors) {
+    setFieldErrors(errors)
+    const first = errors.email ? 'email' : errors.password ? 'password' : null
+    if (first) setFocusRequest((current) => ({ field: first, count: (current?.count ?? 0) + 1 }))
+  }
+
   async function submit(event: FormEvent) {
     event.preventDefault()
+    // The button is aria-disabled, not disabled, so it keeps focus; this guard is what blocks a second submit.
     if (disabled) return
 
     const required = fieldErrorText(texts, 'required')
@@ -115,7 +134,7 @@ export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps)
       email: email.trim() === '' ? required : undefined,
       password: password === '' ? required : undefined,
     }
-    setFieldErrors(missing)
+    showFieldErrors(missing)
     if (missing.email || missing.password) return
 
     setProblem(null)
@@ -130,15 +149,8 @@ export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps)
   }
 
   return (
-    <div className="sign-in">
-      <header className="sign-in__header">
-        <div className="sign-in__column">
-          <Brand inline />
-        </div>
-      </header>
-
-      <main className="sign-in__main">
-        <form className="sign-in__card" aria-labelledby={titleId} noValidate onSubmit={submit}>
+    <SignInLayout>
+      <form className="sign-in__card" aria-labelledby={titleId} noValidate onSubmit={submit}>
           <h1 className="sign-in__title" id={titleId}>
             {t.title}
           </h1>
@@ -162,6 +174,7 @@ export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps)
             type="email"
             autoComplete="username"
             placeholder={t.emailPlaceholder}
+            ref={emailRef}
             value={email}
             error={fieldErrors.email}
             onChange={(event) => change('email', event.target.value)}
@@ -171,19 +184,20 @@ export function StaffSignIn({ onSignIn, endedBecause = null }: StaffSignInProps)
             type="password"
             autoComplete="current-password"
             placeholder={t.passwordPlaceholder}
+            ref={passwordRef}
             value={password}
             error={fieldErrors.password}
             onChange={(event) => change('password', event.target.value)}
           />
 
-          <Button type="submit" size="large" fullWidth disabled={disabled}>
+          {/* aria-disabled, not disabled: a disabled button drops keyboard focus to the page while it is busy. */}
+          <Button type="submit" size="large" fullWidth aria-disabled={disabled || undefined}>
             {busy ? t.submitting : t.submit}
           </Button>
           <a className="button button--link button--full" href={FORGOT_PASSWORD_PATH}>
             {t.forgot}
           </a>
-        </form>
-      </main>
-    </div>
+      </form>
+    </SignInLayout>
   )
 }
