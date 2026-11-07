@@ -27,5 +27,9 @@ class AppServiceProvider extends ServiceProvider
             RateLimiter::for($name, fn (Request $request) => Limit::perMinute($limit)
                 ->by($request->route()->getName().'|'.$request->ip()));
         }
+
+        // Each invitation sends an email, so one Administrator cannot flood inboxes.
+        RateLimiter::for('staff.invite', fn (Request $request) => Limit::perMinute(10)
+            ->by('staff.invite|'.$request->user('staff')?->getAuthIdentifier()));
     }
 }

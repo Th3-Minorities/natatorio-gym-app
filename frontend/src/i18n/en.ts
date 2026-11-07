@@ -151,6 +151,7 @@ export const en: Messages = {
     staff_credentials_invalid: 'The email or password is not correct.',
     staff_session_expired: 'Your session ended after a while without activity. Sign in again.',
     staff_account_deactivated: 'This account was deactivated. Ask an Administrator if you need access again.',
+    staff_account_not_invited: 'This account is no longer waiting for an invitation. Refresh the list.',
   },
 
   validation: {

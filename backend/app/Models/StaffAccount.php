@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 /** A Staff member or Administrator with a personal account. Never deleted, only deactivated (D13). */
 #[Fillable(['name', 'email', 'password', 'role', 'locale', 'deactivated_at'])]
@@ -15,7 +16,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 class StaffAccount extends Authenticatable
 {
     /** @use HasFactory<StaffAccountFactory> */
-    use HasFactory, SavesDatesInAppTimezone;
+    use HasFactory, Notifiable, SavesDatesInAppTimezone;
 
     // The table has no remember_token column: staff sign-ins never use "remember me".
     protected $rememberTokenName = '';

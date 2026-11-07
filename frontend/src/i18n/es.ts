@@ -164,6 +164,7 @@ export const es = {
     staff_credentials_invalid: 'El correo o la contraseña no son correctos.',
     staff_session_expired: 'Tu sesión terminó tras un rato sin actividad. Inicia sesión de nuevo.',
     staff_account_deactivated: 'Esta cuenta fue desactivada. Pide acceso a un Administrador si lo necesitas de nuevo.',
+    staff_account_not_invited: 'Esta cuenta ya no está pendiente de invitación. Actualiza la lista.',
   },
 
   validation: {

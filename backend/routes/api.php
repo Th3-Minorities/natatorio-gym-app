@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\StaffAccountController;
 use App\Http\Controllers\StaffSessionController;
 use App\Http\Controllers\UserAccountController;
 use App\Http\Controllers\UserPasswordController;
@@ -20,6 +21,14 @@ Route::prefix('staff')->group(function () {
     Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);
         Route::get('/me', [StaffSessionController::class, 'me']);
+    });
+
+    // Staff accounts screen (A-15, REQ-F-88).
+    Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        Route::get('/accounts', [StaffAccountController::class, 'index']);
+        Route::post('/accounts', [StaffAccountController::class, 'invite'])->middleware('throttle:staff.invite');
+        Route::post('/accounts/{account}/invitation', [StaffAccountController::class, 'resendInvitation'])
+            ->whereNumber('account')->middleware('throttle:staff.invite');
     });
 });
 
