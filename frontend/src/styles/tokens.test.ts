@@ -58,6 +58,14 @@ describe('design tokens', () => {
 
   // Text needs 4.5:1 (WCAG 1.4.3). Icons and other non-text need 3:1 (WCAG 1.4.11).
   it.each([
+    ['User offline banner text', 'foreground', 'user-sage-soft', 4.5],
+    ['User placeholder and loading icons', 'primary', 'user-sage-soft', 3],
+    ['User destructive button text', 'primary-foreground', 'user-danger', 4.5],
+    ['User password field errors', 'user-danger', 'surface', 4.5],
+    ['User filled input text', 'user-field-text', 'user-field-background', 4.5],
+    ['User reset field errors', 'user-field-error', 'surface', 4.5],
+    ['User reset error borders', 'user-field-error', 'user-field-background', 3],
+    ['User input borders against white fields', 'border-input', 'user-field-background', 3],
     ['text on the page', 'foreground', 'background', 4.5],
     ['text on a card', 'foreground', 'surface', 4.5],
     ['muted text on the page', 'muted-foreground', 'background', 4.5],

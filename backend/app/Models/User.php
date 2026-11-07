@@ -3,20 +3,48 @@
 namespace App\Models;
 
 use App\Models\Concerns\SavesDatesInAppTimezone;
+use App\Notifications\UserPasswordReset;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /** A gym User. Deleting the account keeps the row with no personal data and deleted_at set (D2). */
 #[Fillable(['email', 'password', 'locale', 'current_session_id', 'last_signed_in_at', 'deleted_at'])]
-#[Hidden(['password'])]
+#[Hidden(['password', 'remember_token', 'current_session_id'])]
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SavesDatesInAppTimezone;
+
+    public function activeAuthorizations(): Builder
+    {
+        return Authorization::query()->where('user_id', $this->id)->where('status', 'active')
+            ->whereHas('academicTerm', fn (Builder $query) => $query->where('ends_on', '>=', today()->toDateString()));
+    }
+
+    public function profile(): array
+    {
+        $authorization = $this->activeAuthorizations()->with('academicTerm')->first();
+        [$local, $domain] = explode('@', (string) $this->email, 2);
+        $masked = mb_substr($local, 0, 1).'***'.(mb_strlen($local) > 1 ? mb_substr($local, -1) : '').'@'.$domain;
+
+        return [
+            'name' => WaiverAcceptance::query()->where('user_id', $this->id)->value('full_name'),
+            'email' => $masked,
+            'locale' => $this->locale,
+            'authorization' => $authorization === null ? null : ['type' => $authorization->type, 'term' => $authorization->academicTerm->name],
+            'updated_at' => now()->toISOString(),
+        ];
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new UserPasswordReset($token));
+    }
 
     /**
      * Get the attributes that should be cast.

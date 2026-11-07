@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\StaffSessionController;
+use App\Http\Controllers\UserAccountController;
+use App\Http\Controllers\UserPasswordController;
+use App\Http\Controllers\UserSessionController;
+use App\Http\Middleware\EnsureUserSessionIsCurrent;
 use Illuminate\Support\Facades\Route;
 
 // Every route here is served under /api (docs/design/api-conventions.md).
@@ -16,5 +20,19 @@ Route::prefix('staff')->group(function () {
     Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);
         Route::get('/me', [StaffSessionController::class, 'me']);
+    });
+});
+
+Route::prefix('user')->group(function () {
+    Route::post('/sign-in', [UserSessionController::class, 'signIn']);
+    Route::post('/password/email', [UserPasswordController::class, 'email'])->middleware('throttle:10,1');
+    Route::post('/password/validate', [UserPasswordController::class, 'validateLink'])->middleware('throttle:30,1');
+    Route::post('/password/reset', [UserPasswordController::class, 'reset'])->middleware('throttle:10,1');
+
+    Route::middleware(EnsureUserSessionIsCurrent::class)->group(function () {
+        Route::get('/me', [UserAccountController::class, 'me']);
+        Route::post('/sign-out', [UserSessionController::class, 'signOut']);
+        Route::patch('/locale', [UserAccountController::class, 'locale']);
+        Route::delete('/account', [UserAccountController::class, 'delete']);
     });
 });

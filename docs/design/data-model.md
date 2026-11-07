@@ -88,6 +88,7 @@ erDiagram
     varchar(255) password "hash, NULL after deletion"
     varchar(2) locale "es or en, asked at account creation, changed in profile preferences"
     varchar(255) current_session_id "the one session allowed in, checked on every request"
+    varchar(100) remember_token "keeps the User signed in on the one device, new on each sign-in and password reset, NULL after sign-out and deletion"
     timestamptz last_signed_in_at "NULL until the first sign-in (E-131)"
     timestamptz deleted_at "set when the account is deleted"
   }
@@ -383,13 +384,13 @@ Rules written as SQL in the migrations. Laravel's schema builder cannot express 
 
 ## 6. Deletion: what is deleted, kept or anonymized
 
-Photo files live outside the database, so no foreign key can delete them. The backend deletes the file after the transaction commits. A scheduled task removes files that no authorization points at, in case a delete failed.
+Photo files live outside the database, so no foreign key can delete them. The backend deletes the file after the transaction commits. In the same transaction that deletes the rows, it writes each photo path to `pending_photo_deletions` (columns `id` and `path`). A path leaves that table once its file is gone, and a scheduled task retries the paths still there every minute, so a failed delete is never lost. There is no queue or worker (decision D4): the task runs in the scheduler container.
 
 There is no import undo any more (E-127, REQ-F-31 Removed), so its old column is gone and the release column is now (b).
 
 | Table or data | (a) User deletes the account (REQ-F-09) | (b) Administrator releases an Authorization Number (REQ-F-74) |
 |---|---|---|
-| `users` | Row kept with no personal data: `email`, `password`, `locale`, `current_session_id` set to NULL, `deleted_at` set (decision D2). The email is free again | Kept in every release case: also when the claim created the account (E-87) and when the released authorization was the account's only one (E-106) |
+| `users` | Row kept with no personal data: `email`, `password`, `locale`, `current_session_id`, `remember_token` set to NULL, `deleted_at` set (decision D2). The email is free again | Kept in every release case: also when the claim created the account (E-87) and when the released authorization was the account's only one (E-106) |
 | `authorizations` | Deleted. Only expired or revoked ones can exist, because deletion needs no active authorization | Only the released one is deleted. Other authorizations of the same account stay (E-87) |
 | Photo files | Deleted with their authorizations | Deleted with the released authorization, row and file (E-57, E-87), also when the number was added to an existing account |
 | `waiver_acceptances` | Deleted | Kept |
