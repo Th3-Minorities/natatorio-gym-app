@@ -15,9 +15,9 @@ Desktop first. Figma page "#43 20 · Staff".
 | S-03 Person lookup and Staff-assisted Check In | [4283:1011](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4283-1011) | 4288:1088 | 4288:1105 | 4288:1135 | 4288:1160 |
 | S-05 Athlete roster, read only | [121:3383](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=121-3383) | 122:3214 | 122:3222 | 122:3280 | 122:3253 |
 
-- S-01: active sessions, Check In time and "Marcar salida". Offline notice with the last update time.
+- S-01: active sessions, Check In time and "Marcar salida". [Successful Check In](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4319-1663) shows a notice and highlights the person's row. Offline notice with the last update time.
 - S-02: person and session details, "Marcar foto pendiente" with confirmation (122:3094), and the checked-out state (4005:1486). Photo loading (122:3171) and session conflict (122:3141) are separate states.
-- S-03: person lookup, photo and authorization verification, confirmation, active-session handling and Check In results. [States](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4288-1085) include authorization, photo and schedule rejections.
+- S-03: person lookup, photo and authorization verification, confirmation and active-session handling. Successful Check In returns to S-01. [States](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4288-1085) include authorization, photo and schedule rejections.
 - S-05: read-only roster. "Check in" opens S-03 with the athlete's number. An [active session](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4265-2957) shows "Checked in" and the entry time.
 
 ## Administration screens (#45)
@@ -46,7 +46,7 @@ Desktop. Figma pages "21" to "24 · Admin".
 
 ## Staff sign in (N-11)
 
-Desktop, on the dashboard path, with no link from the User sign in. Figma page "20 · Staff".
+Desktop, on the dashboard path, with no link from the User sign in. Figma page "#43 20 · Staff".
 
 | Screen | Frame |
 |---|---|
