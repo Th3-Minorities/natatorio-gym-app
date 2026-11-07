@@ -21,6 +21,12 @@ class StaffSessionController extends Controller
 {
     public function signIn(Request $request, AuditLog $log): JsonResponse
     {
+        // Sanctum starts a cookie session only for the app's own address. A page on another site gets none,
+        // and gets a clear answer instead of a crash.
+        if (! $request->hasSession()) {
+            throw new ApiException('session_expired', 419);
+        }
+
         $credentials = $request->validate([
             'email' => ['required', 'string', 'max:255'],
             'password' => ['required', 'string', 'max:255'],
