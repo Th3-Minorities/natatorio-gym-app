@@ -24,3 +24,6 @@ ENV HOME=/tmp
 
 # Private photos live outside the code folder, in a volume PHP-FPM can write to.
 RUN mkdir -p /var/www/private && chown www-data:www-data /var/www/private
+
+# A new vendor volume (docker-compose.override.yml) copies this folder's owner, so Composer can write to it.
+RUN mkdir -p /var/www/html/vendor && chown www-data:www-data /var/www/html/vendor
