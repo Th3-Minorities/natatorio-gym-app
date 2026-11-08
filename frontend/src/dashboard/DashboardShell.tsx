@@ -27,14 +27,49 @@ import './dashboard.css'
 
 export type StaffAccount = { name: string; role: 'staff' | 'admin' }
 
-type Item = { label: string; icon: LucideIcon; accent?: boolean; strokeWidth?: number }
+type Icon = { icon: LucideIcon; accent?: boolean; strokeWidth?: number }
+
+type Item = Icon & { label: string; href?: string }
+
+/** Moves between dashboard screens without reloading. Items with an href are links; the rest are plain text. */
+export type DashboardNavigation = { currentPath: string; onNavigate: (path: string) => void; staffAccounts: string }
 
 /** Icons as drawn: 18px, line 1.5 (2 for Información and Cuentas del staff), orange only for the first two. */
-function NavIcon({ icon: Icon, accent, strokeWidth = 1.5 }: Omit<Item, 'label'>) {
+function NavIcon({ icon: Icon, accent, strokeWidth = 1.5 }: Icon) {
   return <Icon size={18} strokeWidth={strokeWidth} className={accent ? 'nav__icon nav__icon--accent' : 'nav__icon'} />
 }
 
-function NavSection({ label, items, admin = false }: { label: string; items: Item[]; admin?: boolean }) {
+function NavLink({ label, href, icon, navigation }: { label: string; href: string; icon: Icon; navigation: DashboardNavigation }) {
+  const current = navigation.currentPath === href
+  return (
+    <a
+      className={current ? 'nav__item nav__item--link nav__item--current' : 'nav__item nav__item--link'}
+      href={href}
+      aria-current={current ? 'page' : undefined}
+      onClick={(event) => {
+        // Ctrl, Cmd, Shift or a middle click opens a new tab or window, as the browser would.
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+        event.preventDefault()
+        navigation.onNavigate(href)
+      }}
+    >
+      <NavIcon {...icon} />
+      {label}
+    </a>
+  )
+}
+
+function NavSection({
+  label,
+  items,
+  admin = false,
+  navigation,
+}: {
+  label: string
+  items: Item[]
+  admin?: boolean
+  navigation?: DashboardNavigation
+}) {
   const labelId = useId()
   return (
     <div className={admin ? 'nav__section nav__section--admin' : 'nav__section'}>
@@ -42,13 +77,17 @@ function NavSection({ label, items, admin = false }: { label: string; items: Ite
         {label}
       </p>
       <ul className="nav__list" aria-labelledby={labelId}>
-        {items.map(({ label: text, ...icon }) => (
+        {items.map(({ label: text, href, ...icon }) => (
           // Plain text until the issue that builds the screen connects it (#97: no pages beyond Figma).
           <li key={text}>
-            <span className="nav__item">
-              <NavIcon {...icon} />
-              {text}
-            </span>
+            {href && navigation ? (
+              <NavLink label={text} href={href} icon={icon} navigation={navigation} />
+            ) : (
+              <span className="nav__item">
+                <NavIcon {...icon} />
+                {text}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -59,6 +98,8 @@ function NavSection({ label, items, admin = false }: { label: string; items: Ite
 type DashboardShellProps = {
   account: StaffAccount
   onSignOut: () => void
+  /** Without it, every menu item is plain text. */
+  navigation?: DashboardNavigation
   /** Without a title (no screen built yet), the page still has a heading for screen readers, hidden on screen. */
   title?: string
   description?: string
@@ -67,7 +108,15 @@ type DashboardShellProps = {
   children: ReactNode
 }
 
-export function DashboardShell({ account, onSignOut, title, description, action, children }: DashboardShellProps) {
+export function DashboardShell({
+  account,
+  onSignOut,
+  navigation,
+  title,
+  description,
+  action,
+  children,
+}: DashboardShellProps) {
   const texts = useMessages().dashboard
   const staff = texts.staffItems
   const general = texts.generalItems
@@ -104,13 +153,14 @@ export function DashboardShell({ account, onSignOut, title, description, action,
           {account.role === 'admin' && (
             <NavSection
               admin
+              navigation={navigation}
               label={texts.adminSection}
               items={[
                 { label: admin.terms, icon: Calendar },
                 { label: admin.manageAthletes, icon: ClipboardList },
                 { label: admin.storeSync, icon: RefreshCw },
                 { label: admin.accounts, icon: UserCog },
-                { label: admin.staffAccounts, icon: ShieldCheck, strokeWidth: 2 },
+                { label: admin.staffAccounts, icon: ShieldCheck, strokeWidth: 2, href: navigation?.staffAccounts },
                 { label: admin.backups, icon: Database },
                 { label: admin.manualEntries, icon: NotebookPen },
                 { label: admin.auditLog, icon: ScrollText },
@@ -134,13 +184,17 @@ export function DashboardShell({ account, onSignOut, title, description, action,
         {title ? (
           <div className="page__top">
             <div className="page__heading">
-              <h1 className="page__title">{title}</h1>
+              <h1 className="page__title" tabIndex={-1}>
+                {title}
+              </h1>
               {description && <p className="page__description">{description}</p>}
             </div>
             {action && <div className="page__action">{action}</div>}
           </div>
         ) : (
-          <h1 className="visually-hidden">{texts.brandName}</h1>
+          <h1 className="visually-hidden" tabIndex={-1}>
+            {texts.brandName}
+          </h1>
         )}
         <div className="page__content">{children}</div>
       </main>

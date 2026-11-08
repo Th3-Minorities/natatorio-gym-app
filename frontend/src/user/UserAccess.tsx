@@ -140,7 +140,7 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
       {offline && <p className="user-caption" role="status">{t.offlineForm}</p>}
       {mode === 'recover' && !compact && <p>{t.recoverHint}</p>}
       {mode !== 'sign-in' && <a className="user-return" href="/sign-in">{t.returnToSignIn}</a>}
-      {mode === 'sign-in' && !compact && <div className="user-register"><span>{t.firstTime}</span><span className="user-register-action">{t.begin}</span></div>}
+      {mode === 'sign-in' && !compact && <div className="user-register"><span>{t.firstTime}</span><a href="/register" className="user-register-action">{t.begin}</a></div>}
     </form>
   </UserPage>
 }

@@ -21,6 +21,14 @@ class AcademicTerm extends Model
         return ['starts_on' => 'date', 'ends_on' => 'date'];
     }
 
+    /** The term that includes today in Puerto Rico, if any. Terms never overlap, so there is at most one. */
+    public static function current(): ?self
+    {
+        $today = today()->toDateString();
+
+        return static::query()->where('starts_on', '<=', $today)->where('ends_on', '>=', $today)->first();
+    }
+
     /** @return HasMany<ImportedMembership, $this> */
     public function importedMemberships(): HasMany
     {

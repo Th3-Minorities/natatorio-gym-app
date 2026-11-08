@@ -42,7 +42,7 @@ return <p>{texts.states.loading}</p>
 ```
 
 - Add each new text to `es.ts` and `en.ts` under the same key. `i18n.test.tsx` catches any difference between the two files, and TypeScript checks every key except the error codes.
-- `<I18nProvider locale={account.locale}>` gives the texts of the account language (one language per account, E-64, also for personal staff accounts, E-114) and sets `<html lang>` (REQ-NF-36). Without a signed-in account it is Spanish (E-103).
+- `<I18nProvider locale={account.locale}>` gives the texts of the account language (one language per account, E-64, also for personal staff accounts, E-114) and sets `<html lang>` (REQ-NF-36). Without a signed-in account it is the language chosen on the welcome screen, Spanish by default (E-159).
 - The API sends an error code and no text (E-154). The texts are here, under `errors.<code>`, and the text for each rule of a `validation_failed` field is under `validation.<rule>`.
 - To show an API error, use the code: `errorMessage(texts, error.code, status)`. An unknown code gets the general `bad_request` text, or `server_error` for a 5xx status. An unknown rule gets a general "check this field" text.
 - A test reads the codes the backend can send (`backend/app`, `backend/routes`, `backend/bootstrap`) and fails when a code has no text in both files. A new backend code needs its text here in the same pull request.

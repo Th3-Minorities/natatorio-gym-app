@@ -19,10 +19,20 @@ class RouteProtectionTest extends TestCase
         'GET api/health',
         'GET api/sanctum/csrf-cookie',
         'POST api/staff/sign-in',
+        'POST api/staff/password/email',
+        'POST api/staff/password/validate',
+        'POST api/staff/password/reset',
+        'POST api/staff/invitation/validate',
+        'POST api/staff/invitation/accept',
         'POST api/user/sign-in',
         'POST api/user/password/email',
         'POST api/user/password/validate',
         'POST api/user/password/reset',
+        'GET api/user/registration/privacy',
+        'POST api/user/registration/privacy',
+        'POST api/user/registration/lookup',
+        'GET api/user/registration/waiver',
+        'POST api/user/registration/complete',
     ];
 
     /** @return list<Route> */
