@@ -4,19 +4,37 @@ The wireframes live in the Figma file [MOCKUPS-GYM](https://www.figma.com/design
 
 Every main frame has a note under it with its issue and the decisions it follows. The states of each screen sit below the main frame, under "Estados y acciones".
 
+## Check In and Gym ID (#41)
+
+Phone first. Figma page "#41 Gym ID and Check in". U-01 is the Check-in tab; C-01 is on Gimnasio.
+
+| Screen | Start / active | Loading | Empty | Error | No connection |
+|---|---|---|---|---|---|
+| U-01 Member | [Start](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4104-95), [Gym ID](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4104-648) | [Location](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4363-4027), [Registering](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4363-4121) | Start, no session | [Registration error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4363-4215) | [Check In](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-1789), [Gym ID](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4105-1202) |
+| U-01 Athlete | [Start](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4104-173), [Gym ID](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4104-577) | [Location](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4363-4382), [Registering](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4363-4476) | Start, no session | [Registration error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4363-4570) | [Check In](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4199-4734), [Gym ID](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4199-3897) |
+| C-01 Occupancy | [Available](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-1869) | [Loading](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-2111) | [Zero people](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-1990) | [Error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-2242) | [No connection](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-2363) |
+
+- Check In rejections: [authorization, gym closed and new-term photo](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-1274); [photo pending and location permission/availability](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-1466); [accuracy and boundary](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-1659); [athletes-only period](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4105-639). The [athlete variants](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4199-4004) continue on [permissions and location](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4199-4294) and [boundary and connection](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4199-4590).
+- Session ended: [member causes](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-1076) and [athlete causes](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4160-2520) cover Staff check-out, the two-hour close and closure. [Continue](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4390-4232) returns to Registra tu entrada; a new visit follows normal Check In.
+- [Athletes-only notices](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4105-544) include the start time. [Member](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4105-1038) and [athlete](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4199-3607) active-session variants keep the session running. [Roster removal](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4106-2491) blocks athlete access.
+- E-163: elapsed HH:MM:SS advances at most once per second without flashing. There is no countdown or term on the Gym ID. Offline, the duration stops and the last successful update time stays visible.
+- E-164: C-01 on Gimnasio shows its update time, polls every 20 to 30 seconds and hides the number on error or disconnection. Tapping it opens today's analytics. The existing [S-01 dashboard](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=121-2841) shows the desktop placement.
+
 ## Staff screens (#43)
 
-Desktop first. Figma page "20 · Staff".
+Desktop first. Figma page "#43 20 · Staff".
 
 | Screen | Frame | Loading | Empty | Error | No connection |
 |---|---|---|---|---|---|
 | S-01 Active sessions | [121:2841](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=121-2841) | 122:2957 | 122:2965 | 122:2972 | 122:2983 |
-| S-02 Person and session detail | [121:3142](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=121-3142) | 122:3171 | Not needed | 122:3141 | 122:3180 |
+| S-02 Person and session detail | [121:3142](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=121-3142) | [4228:1557](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4228-1557) | Not needed | [4228:1671](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4228-1671) | 122:3180 |
+| S-03 Person lookup and Staff-assisted Check In | [4283:1011](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4283-1011) | 4288:1088 | 4288:1105 | 4288:1135 | 4288:1160 |
 | S-05 Athlete roster, read only | [121:3383](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=121-3383) | 122:3214 | 122:3222 | 122:3280 | 122:3253 |
 
-- S-01 has a "Marcar salida" button and the Check In time on each row.
-- S-02 has "Marcar foto pendiente" and its confirmation (122:3094), plus the frame after check-out (4005:1486).
-- S-05 has no add, edit or remove controls.
+- S-01: active sessions, Check In time and "Marcar salida". [Successful Check In](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4319-1663) shows a notice and highlights the person's row. Offline notice with the last update time. [Administrator menu](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4125-6610) on page "21 · Admin · Cuentas y acceso".
+- S-02: person and session details, "Marcar foto pendiente" with confirmation (122:3094), and the checked-out state (4005:1486). Photo loading (122:3171) and session conflict (122:3141) are separate states.
+- S-03: person lookup, photo and authorization verification, confirmation and active-session handling. Successful Check In returns to S-01. [States](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4288-1085) include authorization, photo and schedule rejections. [Mark photo pending confirmation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4288-2029).
+- S-05: read-only roster. "Check in" opens S-03 with the athlete's number. An [active session](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4265-2957) shows "Entrada registrada" and the entry time.
 
 ## Administration screens (#45)
 
@@ -44,7 +62,7 @@ Desktop. Figma pages "21" to "24 · Admin".
 
 ## Staff sign in (N-11)
 
-Desktop, on the dashboard path, with no link from the User sign in. Figma page "20 · Staff".
+Desktop, on the dashboard path, with no link from the User sign in. Figma page "#43 20 · Staff".
 
 | Screen | Frame |
 |---|---|
