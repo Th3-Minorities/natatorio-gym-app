@@ -93,6 +93,40 @@ export const es = {
     timeoutText: 'Tu sesión se cerró por inactividad. Inicia sesión de nuevo.',
   },
 
+  // N-11 pages opened from an email link (#84): 4039:4170, 4039:4224, 4126:1316, 4126:1341 and 4039:4325.
+  staffAccess: {
+    forgotTitle: 'Recuperar contraseña',
+    forgotText: 'Escribe el correo de tu cuenta del equipo.',
+    email: 'Correo electrónico',
+    emailPlaceholder: 'nombre@ejemplo.com',
+    sendLink: 'Enviar enlace',
+    backToSignIn: 'Volver a iniciar sesión',
+    checkEmailTitle: 'Revisa tu correo',
+    checkEmailText: 'Si existe una cuenta del equipo con ese correo, recibirás un enlace para recuperar tu contraseña.',
+    checkSpam: 'Revisa también la carpeta de correo no deseado.',
+    createTitle: 'Crear tu contraseña',
+    createText: 'Completa tu acceso al equipo del gimnasio.',
+    createSubmit: 'Crear contraseña',
+    resetTitle: 'Restablecer contraseña',
+    resetText: 'Elige una nueva contraseña para tu cuenta del equipo.',
+    resetSubmit: 'Guardar contraseña',
+    newPassword: 'Nueva contraseña',
+    newPasswordPlaceholder: 'Escribe una contraseña',
+    confirmPassword: 'Confirmar contraseña',
+    confirmPasswordPlaceholder: 'Repite la contraseña',
+    passwordHint:
+      'Usa al menos 10 caracteres. Puedes usar una frase larga. Evita contraseñas conocidas o filtradas. Ambas contraseñas deben coincidir.',    checking: 'Revisando el enlace…',
+    expiredTitle: 'Enlace vencido o usado',
+    inviteExpiredText: 'Este enlace de invitación ya no se puede usar.',
+    inviteExpiredHelp: 'Pide a un Administrador que te envíe una nueva invitación para crear tu contraseña.',
+    // Not drawn in Figma: the reset email's link, expired or used. Same page as the invitation's.
+    resetExpiredText: 'Este enlace para recuperar tu contraseña ya no se puede usar.',
+    resetExpiredHelp: 'Pide uno nuevo con "¿Olvidaste tu contraseña?" al iniciar sesión.',
+    // Not drawn in Figma: shown on N-11 after saving, since the note says "Al guardar, vuelve al acceso del equipo".
+    savedTitle: 'Contraseña guardada',
+    savedText: 'Inicia sesión con tu nueva contraseña.',
+  },
+
   // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
   dashboard: {
     skipToContent: 'Saltar al contenido',

@@ -4,12 +4,10 @@ import { Button, Notice, TextField } from '../components'
 import { useDateFormat } from '../format/dateTime'
 import { errorText, fieldErrorText, useMessages } from '../i18n'
 import { SignInLayout } from './SignInLayout'
+import { STAFF_FORGOT_PATH, type Navigate } from './staffPath'
 
 // N-11, staff sign-in, as drawn in Figma MOCKUPS-GYM (4039:3721) with its states. On the dashboard path,
 // with no link from the User sign-in (E-124). The same form for Staff and Administrators (E-114).
-
-/** Where "¿Olvidaste tu contraseña?" goes. The page itself is #84 (Figma 4039:4170). */
-const FORGOT_PASSWORD_PATH = '/staff/recuperar'
 
 type Problem =
   | { kind: 'timeout' }
@@ -17,6 +15,7 @@ type Problem =
   | { kind: 'wait'; until: Date | null }
   | { kind: 'offline' }
   | { kind: 'deactivated' }
+  | { kind: 'saved' }
   | { kind: 'other'; code: string; status: number }
 
 type FieldErrors = { email?: string; password?: string }
@@ -27,10 +26,12 @@ type StaffSignInProps = {
    * A notice to open with: the last sign-in ended by itself ("Sesión vencida" 4039:4365, "Cuenta desactivada"
    * 4039:4094), or the API could not be reached when the page opened ("Sin conexión" 4039:4018).
    */
-  startWith?: 'timeout' | 'deactivated' | 'offline' | null
+  startWith?: 'timeout' | 'deactivated' | 'offline' | 'saved' | null
+  /** Opens "¿Olvidaste tu contraseña?" (4039:4170, #84) without reloading the page. */
+  navigate?: Navigate
 }
 
-export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
+export function StaffSignIn({ onSignIn, startWith = null, navigate }: StaffSignInProps) {
   const texts = useMessages()
   const t = texts.signIn
   const dates = useDateFormat()
@@ -165,6 +166,10 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
           )}
           {problem?.kind === 'offline' && <Notice title={t.offlineTitle}>{t.offlineText}</Notice>}
           {problem?.kind === 'deactivated' && <Notice title={t.deactivatedTitle}>{t.deactivatedText}</Notice>}
+          {/* After a new password from an email link (#84). Not drawn in Figma. */}
+          {problem?.kind === 'saved' && (
+            <Notice title={texts.staffAccess.savedTitle}>{texts.staffAccess.savedText}</Notice>
+          )}
           {problem?.kind === 'other' && (
             <Notice title={t.wrongTitle}>{errorText(texts, problem.code, problem.status)}</Notice>
           )}
@@ -194,7 +199,15 @@ export function StaffSignIn({ onSignIn, startWith = null }: StaffSignInProps) {
           <Button type="submit" size="large" fullWidth aria-disabled={disabled || undefined}>
             {busy ? t.submitting : t.submit}
           </Button>
-          <a className="button button--link button--full" href={FORGOT_PASSWORD_PATH}>
+          <a
+            className="button button--link button--full"
+            href={STAFF_FORGOT_PATH}
+            onClick={(event) => {
+              if (!navigate || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+              event.preventDefault()
+              navigate(STAFF_FORGOT_PATH)
+            }}
+          >
             {t.forgot}
           </a>
       </form>
