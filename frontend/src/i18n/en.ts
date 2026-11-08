@@ -283,6 +283,13 @@ export const en: Messages = {
     signOutFailedText: 'Check the connection and try again.',
   },
 
+  activeSessions: {
+    title: 'Active sessions',
+    description: "Check each person's photo and record their check-out when they leave the gym.",
+    inside: 'People inside now',
+    closeRule: 'Sessions close automatically 2 hours after Check In.',
+  },
+
   staffTeam: {
     title: 'Staff accounts',
     description: "Manage the team's access to the gym.",

@@ -15,6 +15,7 @@ import {
   useStaffPath,
   type Navigate,
 } from './staffPath'
+import { ActiveSessions } from './sessions/ActiveSessions'
 import { StaffTeam } from './team/StaffTeam'
 import { useStaffSession, type StaffAccount } from './useStaffSession'
 
@@ -34,7 +35,7 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     document.querySelector<HTMLElement>('#dashboard-content h1')?.focus()
   }, [path])
 
-  const navigation = { currentPath: path, onNavigate: navigate, staffAccounts: STAFF_TEAM_PATH }
+  const navigation = { currentPath: path, onNavigate: navigate, activeSessions: STAFF_PATH, staffAccounts: STAFF_TEAM_PATH }
   // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
   const onTeam = account.role === 'admin' && path === STAFF_TEAM_PATH
 
@@ -56,10 +57,12 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
   }
 
   if (onTeam) return <StaffTeam shell={shell} />
+  // S-01, the first screen after sign-in for both roles (#26).
+  if (path === STAFF_PATH) return <ActiveSessions shell={shell} />
 
   const { notice, ...shellProps } = shell
   return (
-    // Without a screen: no title and an empty main area. S-01, the first screen after sign-in, is #26.
+    // An address with no screen yet: no title and an empty main area.
     <DashboardShell {...shellProps}>{notice}</DashboardShell>
   )
 }

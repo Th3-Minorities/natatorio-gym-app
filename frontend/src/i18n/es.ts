@@ -299,6 +299,14 @@ export const es = {
     signOutFailedText: 'Revisa la conexión e intenta de nuevo.',
   },
 
+  // S-01, Figma 121:2841 (#26). The level, bar and "not current" texts come from gym (C-01, E-178).
+  activeSessions: {
+    title: 'Sesiones activas',
+    description: 'Verifica la foto de cada persona y registra su salida al dejar el gimnasio.',
+    inside: 'Personas dentro ahora',
+    closeRule: 'Las sesiones se cierran automáticamente 2 horas después del Check In.',
+  },
+
   // A-15, Figma 100:841 (#84).
   staffTeam: {
     title: 'Cuentas del staff',

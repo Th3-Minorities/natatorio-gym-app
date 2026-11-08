@@ -32,7 +32,13 @@ type Icon = { icon: LucideIcon; accent?: boolean; strokeWidth?: number }
 type Item = Icon & { label: string; href?: string }
 
 /** Moves between dashboard screens without reloading. Items with an href are links; the rest are plain text. */
-export type DashboardNavigation = { currentPath: string; onNavigate: (path: string) => void; staffAccounts: string }
+export type DashboardNavigation = {
+  currentPath: string
+  onNavigate: (path: string) => void
+  /** S-01, the dashboard home (#26). */
+  activeSessions: string
+  staffAccounts: string
+}
 
 /** Icons as drawn: 18px, line 1.5 (2 for Información and Cuentas del staff), orange only for the first two. */
 function NavIcon({ icon: Icon, accent, strokeWidth = 1.5 }: Icon) {
@@ -134,8 +140,9 @@ export function DashboardShell({
         <nav className="nav" aria-label={texts.menu}>
           <NavSection
             label={texts.staffSection}
+            navigation={navigation}
             items={[
-              { label: staff.activeSessions, icon: Activity, accent: true },
+              { label: staff.activeSessions, icon: Activity, accent: true, href: navigation?.activeSessions },
               { label: staff.searchPerson, icon: Search, accent: true },
               { label: staff.athleteRoster, icon: Users },
             ]}

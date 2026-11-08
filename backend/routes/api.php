@@ -50,6 +50,8 @@ Route::prefix('staff')->group(function () {
     Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);
         Route::get('/me', [StaffSessionController::class, 'me']);
+        // S-01 shows the same occupancy as C-01 on the User side (REQ-F-41, #26).
+        Route::get('/occupancy', OccupancyController::class);
         Route::post('/sessions/{session}/check-out', CheckOutController::class)->whereNumber('session');
     });
 
