@@ -466,6 +466,15 @@ The team settled these while building the dashboard base, after the Athletic Act
 | E-163 | Gym ID duration and return after a visit | The live indicator is elapsed session duration, HH:MM:SS, from the backend Check In time. It advances at most once per second, without flashing, and stops when the visit ends or the connection is lost. Offline, the card says it is not valid now and shows its last successful update time. The Gym ID does not show the term. After a visit, both members and athletes see the end reason and total duration; Continue returns to Registra tu entrada when access is still valid. Ending a visit does not revoke the athlete authorization. There is no separate authorized-athlete card without a session. Authorization is checked before enabling Check In; no separate Verificando acceso screen is needed. The backend still checks the current rules on submission. Refines E-75 and E-129. SRS REQ-F-40, REQ-NF-26. | Team | 2026-11-07 |
 | E-164 | User navigation and occupancy placement | The User app has Gimnasio, Check-in and Mi cuenta tabs. C-01 is on Gimnasio, separate from the U-01 Check-in screen; it remains on the Staff dashboard S-01. Tapping C-01 opens today's analytics, as before. This updates the placement in SM-1 and SM-4; it does not change the occupancy calculation or the 20 to 30 second polling interval. | Team | 2026-11-07 |
 
+## Decisions from the loose-ends review (2026-11-08)
+
+The team settled these while reviewing open items across issues, docs and pull requests.
+
+| ID | Topic | Answer | Answered by | Date |
+|---|---|---|---|---|
+| E-169 | Closures end sessions when they start | A closure ends every active session when the closure starts, not when an Administrator publishes it. A closure published for a later date or hour leaves today's sessions open until it starts. A closure that has already started when it is published ends them at once, with the publish time as their end. A closure that is already over when it is published changes nothing. The note stays "closed by closure". The end of a term still ends every active session. Why: a closure announced days ahead would otherwise send home people who are inside today. Updates E-115. SRS REQ-F-38 (c), REQ-F-55. Data model D14. | Team | 2026-11-08 |
+| E-177 | Check-out and the last visit | Staff check out only active sessions; an ended one answers 409. `GET /api/user/check-in` returns `session` only while it is active, and `last_session` (id, start, end, end reason) apart. Void sessions never appear, and a session that Staff ended early shows as checked out. The end of a term closes sessions at midnight after the term's last day. Why: Staff cannot change a visit that is already over, and the visit-ended screen needs the reason. Data model D14. | Team | 2026-11-08 |
+
 ## WooCommerce import
 
 ### E-55: Review the Export Orders example

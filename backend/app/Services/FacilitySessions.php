@@ -16,7 +16,7 @@ class FacilitySessions
     private const TERM_END = '(SELECT (academic_terms.ends_on + 1)::timestamptz FROM academic_terms
         WHERE facility_sessions.started_at::date BETWEEN academic_terms.starts_on AND academic_terms.ends_on)';
 
-    // E-168: a dated closure ends the visit when it starts, or when it is published if it had already started.
+    // E-169: a dated closure ends the visit when it starts, or when it is published if it had already started.
     // That moment (the later of starts_at and created_at) must fall in [started_at, the 2-hour expiry or term end),
     // so a visit that began during an already published closure is not ended. A closure that is over by then does not count. Weekly rows (starts_at NULL) never match.
     private const CLOSURE_START = "(SELECT MIN(closure_slots.effective_at) FROM (
