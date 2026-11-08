@@ -85,7 +85,7 @@
 | Team | 2026-11-07 | User Check In wireframes, E-163 and E-164: elapsed duration, no term on the Gym ID, normal Check In after a visit, offline update time and occupancy on Gimnasio (REQ-F-40, REQ-NF-26) | 0.18 |
 | Team | 2026-11-07 | Team decisions E-159 and E-160 (`team.md`): a Spanish / English switch on the welcome screen before sign in, replacing E-103 (REQ-NF-33); the student number has 9 digits, correcting E-153 (REQ-F-15) | 0.19 |
 | Team | 2026-11-07 | Team decision E-161 (`team.md`): the athletes-only notice also shows on the Check In screen in the 60 minutes before a period starts, without a session (REQ-F-83) | 0.20 |
-| Team | 2026-11-08 | Team decisions E-166 to E-182 (`team.md`): staff password reset by email link (REQ-F-06), Authorization Number lookup ignores letter case (REQ-F-10), Staff approve the new photo of a "photo pending" account (REQ-F-94), a closure ends sessions when it starts (REQ-F-38, REQ-F-55), time inside on the active sessions list (REQ-F-44), Staff and Administrator screens are desktop only (REQ-NF-10), emergency list of Authorization Numbers (new REQ-F-103), nginx as the proxy | 0.21 |
+| Team | 2026-11-08 | Team decisions E-166 to E-182 (`team.md`): staff password reset by email link (REQ-F-06), Authorization Number lookup ignores letter case (REQ-F-10), Staff approve the new photo of a "photo pending" account (REQ-F-94), a closure ends sessions when it starts (REQ-F-38, REQ-F-55), time inside on the active sessions list (REQ-F-44), Staff and Administrator screens are desktop only (REQ-NF-10), the offline Gym ID card is an exception to WCAG AA text contrast (REQ-NF-13), emergency list of Authorization Numbers (new REQ-F-103), nginx as the proxy | 0.21 |
 
 ## 1. Introduction
 
@@ -446,7 +446,7 @@ Screens by role follow the Overview table. Detailed screen design: design phase.
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-13 | The User, Staff and Administrator interfaces shall meet the applicable WCAG 2.2 level AA criteria. | N/A | High | Clear | Proposal:490-494 |
+| REQ-NF-13 | The User, Staff and Administrator interfaces shall meet the applicable WCAG 2.2 level AA criteria, except the offline Gym ID card, which keeps Figma's faded look and so falls below 1.4.3 text contrast (E-180). | N/A | High | Clear | Proposal:490-494 |
 | REQ-NF-14 | Gym ID states and other key states shall be shown with text or an icon, not only with color. | N/A | High | Clear | Proposal:494 |
 
 ### 6.2 Performance
