@@ -37,6 +37,7 @@ export type DashboardNavigation = {
   onNavigate: (path: string) => void
   staffAccounts: string
   terms: string
+  roster: string
 }
 
 /** Icons as drawn: 18px, line 1.5 (2 for Información and Cuentas del staff), orange only for the first two. */
@@ -162,7 +163,7 @@ export function DashboardShell({
               label={texts.adminSection}
               items={[
                 { label: admin.terms, icon: Calendar, href: navigation?.terms },
-                { label: admin.manageAthletes, icon: ClipboardList },
+                { label: admin.manageAthletes, icon: ClipboardList, href: navigation?.roster },
                 { label: admin.storeSync, icon: RefreshCw },
                 { label: admin.accounts, icon: UserCog },
                 { label: admin.staffAccounts, icon: ShieldCheck, strokeWidth: 2, href: navigation?.staffAccounts },

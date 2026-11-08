@@ -378,6 +378,66 @@ export const es = {
     saved: (name: string) => `${name} se guardó.`,
   },
 
+  // A-05 "Roster de atletas", Figma 4007:1535, 4007:1918, 4007:2301 and the states in section 170:1373 (#21).
+  roster: {
+    title: 'Roster de atletas',
+    description: 'Gestiona atletas, sus datos y su acceso al gimnasio.',
+    continuous: 'Lista continua entre términos',
+    add: 'Añadir atleta',
+    activeCount: (count: number) => `${count} ${count === 1 ? 'atleta activo' : 'atletas activos'}`,
+    search: 'Buscar atleta',
+    searchHint: 'Nombre o número de estudiante',
+    filterActive: 'Activo',
+    filterWithdrawn: 'Retirado',
+    // Not drawn: the table has no visible title, so screen readers get this one.
+    tableTitle: 'Atletas del roster',
+    columns: {
+      name: 'Nombre',
+      sport: 'Deporte',
+      studentNumber: 'Núm. estudiante',
+      email: 'Correo institucional',
+      status: 'Estado',
+      actions: 'Acciones',
+    },
+    status: { active: 'Activo', withdrawn: 'Retirado' },
+    edit: 'Editar',
+    noteTitle: 'Números de estudiante completos',
+    noteText: 'Cada atleta permanece en el roster entre términos, hasta que lo retires.',
+    loadingTitle: 'Cargando atletas…',
+    loadingText: 'Espera un momento mientras se consulta el roster.',
+    emptyTitle: 'Aún no hay atletas',
+    emptyText: 'Añade el primer atleta al roster.',
+    noMatch: (text: string) => `No encontramos atletas para “${text}”.`,
+    noMatchText: 'Revisa el nombre o el número de estudiante.',
+    // Añadir, Figma 101:1084 and 101:1150. The title before a sport is typed is not drawn.
+    addTitle: 'Añadir atleta',
+    addingTitle: (sport: string) => `Añadiendo atletas de: ${sport}`,
+    addText: 'Guarda un atleta y continúa con el próximo sin cerrar el formulario.',
+    savedNext: (name: string) => `${name} se guardó. Añade el próximo atleta.`,
+    savedChip: 'Atleta guardado',
+    sport: 'Deporte',
+    fullName: 'Nombre completo',
+    fullNameHint: 'Nombre y apellidos',
+    studentNumber: 'Número de estudiante',
+    studentNumberHint: 'Número completo',
+    email: 'Correo institucional',
+    saveAndNext: 'Guardar y añadir otro',
+    close: 'Cerrar',
+    // Editar, Figma 101:1314.
+    editTitle: 'Editar atleta',
+    editText: (name: string) => `Actualiza los datos de ${name}.`,
+    saveChanges: 'Guardar cambios',
+    cancel: 'Cancelar',
+    // Número repetido, Figma 101:1380. "Corregir número" is not drawn: the way back to the form.
+    takenTitle: 'Este número ya está en el roster',
+    takenText: (number: string, name: string) =>
+      `${number} pertenece a ${name}. Revisa el número de estudiante antes de guardar.`,
+    fixNumber: 'Corregir número',
+    // Sin conexión, Figma 101:1403.
+    offlineText: 'Recupera la conexión para guardar cambios.',
+    saved: (name: string) => `${name} se guardó.`,
+  },
+
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
   states: {
     loading: 'Cargando',
@@ -455,6 +515,7 @@ export const es = {
     confirmed: 'La confirmación no coincide.',
     password: 'Usa al menos 10 caracteres y evita contraseñas conocidas o filtradas.',
     date_format: 'Escribe una fecha válida.',
+    digits: 'Escribe el número completo, solo con dígitos.',
     invalid: 'Revisa este campo.',
   },
 }

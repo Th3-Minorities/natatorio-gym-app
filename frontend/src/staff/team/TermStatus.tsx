@@ -18,7 +18,8 @@ function termLabel(term: ActiveTerm, locale: string): string {
     : `${start} ${startYear} - ${month(term.ends_on)} ${endYear}`
 }
 
-export function TermStatus() {
+/** text: the words after the chip; A-15 says "Acceso del equipo", A-05 "Lista continua entre términos". */
+export function TermStatus({ text }: { text?: string } = {}) {
   const texts = useMessages().staffTeam
   const locale = useLocale()
   const titleId = useId()
@@ -41,7 +42,16 @@ export function TermStatus() {
   return (
     <div className="team-term">
       <span className="team-chip team-chip--invited-outline">{termLabel(term, locale)}</span>
-      <span className="team-term__text">{texts.termAccess}</span>
+      <span className="team-term__text">{text ?? texts.termAccess}</span>
     </div>
   )
+}
+
+/** Only the active term's chip, as the A-04 and A-05 modals draw it at the top (Figma 101:1737, 101:1084). */
+export function TermChip({ className }: { className?: string }) {
+  const locale = useLocale()
+  const { state } = useStaffSession()
+  const term = state.status === 'signedIn' ? state.account.active_term : null
+  if (!term) return null
+  return <span className={['team-chip team-chip--invited-outline', className].filter(Boolean).join(' ')}>{termLabel(term, locale)}</span>
 }

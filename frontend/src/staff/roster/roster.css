@@ -1,0 +1,71 @@
+/* A-05 "Roster de atletas", Figma 4007:1535. The table, chips, summary and note come from staffTeam.css. */
+
+.roster-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.roster-context > :first-child {
+  flex: 1 1 auto;
+}
+
+.roster-context__actions {
+  display: flex;
+  gap: var(--spacing-12);
+}
+
+/* Search field 480 pixels wide, then the two filter buttons, all on one line (101:413). */
+.roster-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-16) var(--spacing-24);
+}
+
+.roster-search {
+  flex: 0 1 480px;
+  min-width: 240px;
+}
+
+.roster-filter {
+  min-width: 110px;
+}
+
+/* Figma's columns: 185, 140, 155, 275, 105 and 228 pixels. */
+.roster-table {
+  min-width: 960px;
+}
+
+.roster-chip--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.roster-chip--withdrawn {
+  background: var(--chip-off);
+  color: var(--muted-foreground);
+}
+
+.roster-saved {
+  margin: 0;
+  padding: var(--spacing-16) var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 21px;
+}
+
+.roster-modal-chip {
+  align-self: flex-start;
+}
+
+.roster-dialog-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
