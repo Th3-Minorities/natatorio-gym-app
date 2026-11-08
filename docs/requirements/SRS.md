@@ -2,13 +2,13 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.18 draft, not approved
+**Version:** 0.19 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
 **Organization:** Department of Computer Science and Engineering, University of Puerto Rico at Mayagüez (UPRM)
 
-**Date:** 2026-11-07
+**Date:** 2026-11-08
 
 ## Contents
 
@@ -42,7 +42,7 @@
 | Action | User | Staff | Administrator |
 |---|---|---|---|
 | Register, sign in, Check In, show the Gym ID, renew, delete own account | Yes | No | No |
-| See schedules and notices. Anyone can see them, also without signing in (REQ-F-55) | Yes | Yes | Yes |
+| See schedules and notices (signed in; no active gym authorization required, REQ-F-55) | Yes | Yes | Yes |
 | See occupancy and facility information (signed in) | Yes | Yes | Yes |
 | See facility analytics | Yes | Yes | Yes |
 | See active sessions and verify a Gym ID | No | Yes | Yes |
@@ -83,6 +83,7 @@
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decision E-153 (`team.md`), which replaces E-112: registration is one screen with one field; exactly 10 digits is a student number (athlete registration), anything else is an Authorization Number, whose length is not checked (REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91; REQ-F-10 and the glossary no longer fix the length at 6 characters, E-128) | 0.14 |
 | Carlos J. Pepin Delgado | 2026-11-06 | Team decisions E-155 and E-156 (`team.md`): the waiver is accepted with an on-screen checkbox now, and a drawn signature is added for the Final report after research (REQ-F-60); no "15 minutes left" notice | 0.15 |
 | Viviana V Ramos Vivoni | 2026-11-07 | User Check In wireframes, E-163 and E-164: elapsed duration, no term on the Gym ID, normal Check In after a visit, offline update time and occupancy on Gimnasio (REQ-F-40, REQ-NF-26) | 0.18 |
+| Viviana V Ramos Vivoni | 2026-11-08 | Team decision E-165: remove public schedules and notices from N-01 and require sign in to read them; keep access from Gimnasio and the staff dashboard, including for Users without an active gym authorization (REQ-F-55) | 0.19 |
 
 ## 1. Introduction
 
@@ -341,7 +342,7 @@ Today rules and instructions are given in person or on paper (Proposal:218). The
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-55 | The Administrator shall be able to publish and edit, and every User shall be able to see: (a) schedules, special hours and closures; (b) athletes-only slots; (c) maintenance notices and other updates; (d) facility information: rules, towel, footwear (including the Crocs and flip-flop restriction), available machines and approved equipment instructions; (e) the gym contact number of REQ-F-73. The regular weekly schedule is written once, and special hours and closures are added for their dates. Schedules and notices are public: anyone can see them without signing in. The notice editor tells the Administrator not to put sensitive data in notices. Publishing a closure ends the active sessions at once (REQ-F-38). Occupancy and analytics need sign in (REQ-F-61). | Secondary | Medium | Clear | Proposal:104, 218; Team decision (E-66, E-90) |
+| REQ-F-55 | The Administrator shall be able to publish and edit, and every User shall be able to see: (a) schedules, special hours and closures; (b) athletes-only slots; (c) maintenance notices and other updates; (d) facility information: rules, towel, footwear (including the Crocs and flip-flop restriction), available machines and approved equipment instructions; (e) the gym contact number of REQ-F-73. The regular weekly schedule is written once, and special hours and closures are added for their dates. Schedules and notices require sign in as a User, Staff member or Administrator; a User does not need an active gym authorization to read them. They are available on Gimnasio for Users and in the staff dashboard menu, and are absent from N-01 and signed-out routes. The contact number remains available before sign in. The notice editor tells the Administrator not to put sensitive data in notices. Publishing a closure ends the active sessions at once (REQ-F-38). Occupancy and analytics need sign in (REQ-F-61). | Secondary | Medium | Clear | Proposal:104, 218; Team decision (E-66, E-90, E-165) |
 | REQ-F-58 | Texts the gym writes (rules, notices, closures, information) shall have a Spanish version and may have an English version. The English text of a notice is optional: if there is no English version, the Spanish text is shown. The team translates the initial texts and the gym approves them. | N/A | Medium | Clear | Team decision (E-126) |
 | REQ-F-59 | The User shall be able to open equipment instructions with a QR code. | Stretch | Low | Clear | Proposal:218, 307 |
 
