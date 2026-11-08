@@ -37,14 +37,15 @@ async function sendInvitation(page: Page, dialog: Locator) {
   expect(response.ok(), `POST /api/staff/accounts answered ${response.status()}: ${await response.text()}`).toBe(true)
 }
 
-/** The newest email Mailpit caught for an address, as plain text. */
-async function lastEmailTo(page: Page, address: string): Promise<string> {
+/** The newest email Mailpit caught for an address that holds a link to path, as plain text. Waits, since an older email can arrive first. */
+async function lastEmailTo(page: Page, address: string, path: string): Promise<string> {
   let text = ''
   await expect(async () => {
     const found = await (await page.request.get(`/mailpit/api/v1/search?query=${encodeURIComponent(`to:${address}`)}&limit=1`)).json()
     expect(found.messages.length).toBeGreaterThan(0)
     const message = await (await page.request.get(`/mailpit/api/v1/message/${found.messages[0].ID}`)).json()
     text = message.Text
+    expect(text).toContain(path)
   }).toPass({ timeout: 60_000 })
   return text
 }
@@ -74,7 +75,8 @@ test('an Administrator invites a person, who creates a password and signs in', a
   await expect(page.getByRole('row', { name: new RegExp(email) })).toContainText('Invitado')
 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-  await page.goto(linkIn(await lastEmailTo(page, email), '/staff/invitacion'))
+  await expect(page.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeVisible()
+  await page.goto(linkIn(await lastEmailTo(page, email, '/staff/invitacion'), '/staff/invitacion'))
   await expect(page.getByRole('heading', { level: 1, name: 'Crear tu contraseña' })).toBeVisible()
   await expect(page.getByText(name)).toBeVisible()
   await expectNoViolations(page)
@@ -90,9 +92,10 @@ test('an Administrator invites a person, who creates a password and signs in', a
   await signIn(page, email, password)
   await expect(page.getByText(`${name} · Staff`)).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeVisible()
 
   // The used link now opens "Enlace vencido o usado".
-  await page.goto(linkIn(await lastEmailTo(page, email), '/staff/invitacion'))
+  await page.goto(linkIn(await lastEmailTo(page, email, '/staff/invitacion'), '/staff/invitacion'))
   await expect(page.getByRole('heading', { level: 1, name: 'Enlace vencido o usado' })).toBeVisible()
   await expectNoViolations(page)
 
@@ -142,7 +145,8 @@ test('a forgotten password: the reset email link sets a new password', async ({ 
   await sendInvitation(page, dialog)
   await expect(page.getByRole('status').filter({ hasText: 'Invitación enviada' })).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
-  await page.goto(linkIn(await lastEmailTo(page, email), '/staff/invitacion'))
+  await expect(page.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeVisible()
+  await page.goto(linkIn(await lastEmailTo(page, email, '/staff/invitacion'), '/staff/invitacion'))
   await page.getByLabel('Nueva contraseña').fill('la primera frase larga')
   await page.getByLabel('Confirmar contraseña').fill('la primera frase larga')
   await page.getByRole('button', { name: 'Crear contraseña' }).click()
@@ -156,7 +160,7 @@ test('a forgotten password: the reset email link sets a new password', async ({ 
   await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu correo' })).toBeVisible()
   await expectNoViolations(page)
 
-  await page.goto(linkIn(await lastEmailTo(page, email), '/staff/restablecer'))
+  await page.goto(linkIn(await lastEmailTo(page, email, '/staff/restablecer'), '/staff/restablecer'))
   await expect(page.getByRole('heading', { level: 1, name: 'Restablecer contraseña' })).toBeVisible()
   await expectNoViolations(page)
   await page.getByLabel('Nueva contraseña').fill('la segunda frase larga')
