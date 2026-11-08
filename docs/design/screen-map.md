@@ -5,8 +5,8 @@ This document lists every screen of the PWA, groups them by role, and draws how 
 Pending answers touch several screens:
 
 - Outgoing mail (CTI, M-07) is assumed available (E-61). CTI described a relay through its mail gateway once CTI authorizes the VM (M-07); SPF and DKIM are still open. If CTI does not authorize the VM, the prototype uses an external provider, which needs approval to send data off the CTI VM (M-11). N-03, N-05, N-06, N-07 and U-06 use it. N-10 and S-04, the in-person registration tool, are removed (E-117, REQ-F-77).
-- Contact number (gym, G-25). N-01, N-03, U-06, U-07 and U-08 show it.
-- Store address (gym). N-01 and N-03 have a "Buy membership" button that opens the store. It does not redirect, it shows only while a term runs, and the address is a setting (E-92, E-96, E-126).
+- Contact number (gym, G-25). N-03 (number entry), U-06, U-07 and U-08 show it (E-166).
+- Store address (gym). N-03 has a "Buy membership" button at number entry that opens the store (E-166). It does not redirect, it shows only while a term runs, and the address is a setting (E-92, E-96, E-126).
 
 ## Diagrams
 
@@ -16,8 +16,8 @@ Pending answers touch several screens:
 
 ```mermaid
 flowchart TD
-  N01["N-01 Landing<br/>Install button, contact<br/>and store link"] --> N02["N-02 Sign in<br/>email and password"]
-  N01 --> N03["N-03 Register<br/>one number field, all steps in one page"]
+  N01["N-01 Landing<br/>Welcome, sign in or register"] --> N02["N-02 Sign in<br/>email and password"]
+  N01 --> N03["N-03 Register<br/>number entry, membership purchase and help<br/>all steps in one page"]
   N01 --> N08["N-08 Privacy notice"]
   N01 --> N09["N-09 Install help"]
   N02 -->|"Forgot password"| N06["N-06 Forgot password"]
@@ -38,10 +38,10 @@ flowchart TD
   N11["N-11 Staff sign in<br/>own dashboard path"] -->|"correct password"| S01["S-01 Active sessions<br/>diagram 4"]
 ```
 
-**About this diagram:** Mail is assumed available (E-61). Athletes register only with the link sent to the roster email; there is no in-person code, and if the link fails they call the office at 265-3866 (E-117). N-11 sits on the gym dashboard path and has no link from N-02: Staff and Administrators reach it by typing its address (SM-5, E-124). The store button on N-01 shows while a term runs (E-126). N-03 is the one registration screen for paid members and athletes (E-153).
+**About this diagram:** Mail is assumed available (E-61). Athletes register only with the link sent to the roster email; there is no in-person code, and if the link fails they call the office at 265-3866 (E-117). N-11 sits on the gym dashboard path and has no link from N-02: Staff and Administrators reach it by typing its address (SM-5, E-124). The store button is on the N-03 number-entry step (E-166) and shows while a term runs (E-126). N-03 is the one registration screen for paid members and athletes (E-153).
 
 - N-03 and N-05 are wizards inside one page. Typed data stays in page memory until the final save and is lost on reload (REG-8, REQ-F-13). The password stays in memory only.
-- N-01 has no schedules, notices or links to them. C-02 and C-03 require sign in and open from Gimnasio or the staff dashboard menu (E-165). The contact number, store button, privacy notice and install help remain available before sign in.
+- N-01 has no schedules, notices or links to them. C-02 and C-03 require sign in and open from Gimnasio or the staff dashboard menu (E-165). Purchase and help are on N-03 at number entry (E-166); privacy and install help remain available before sign in.
 - A signed-in person who opens N-01 goes straight to the home of diagram 2, 3 or 4.
 - N-01 and N-02 are always in Spanish, because no account exists yet. The person chooses the language when the account is created, on N-03 and N-05 (E-103).
 
@@ -247,7 +247,7 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 
 | ID | Screen | Roles | Purpose | Key states | Device | Requirements |
 |---|---|---|---|---|---|---|
-| N-01 | Landing | Not signed in | Choose sign in or register; Install button; links to N-08 and N-09; no schedules or notices (E-165); one line that registering needs a paid membership or a roster entry, with the contact number, and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: app shell. No connection: banner, sign in and register disabled. Install button hidden where the browser has no install event. Signed in: redirect to home. Language: always Spanish before an account exists (E-103) | Phone | REQ-NF-10, NF-33, F-66, F-91 |
+| N-01 | Landing | Not signed in | Choose sign in or register; Install button; links to N-08 and N-09; no schedules or notices (E-165); purchase, registration prerequisite and help contact are on the N-03 number-entry step (E-166) | Loading: app shell. No connection: banner, sign in and register disabled. Install button hidden where the browser has no install event. Signed in: redirect to home. Language: always Spanish before an account exists (E-103) | Phone | REQ-NF-10, NF-33, F-66 |
 | N-02 | Sign in | User | Email and password. No link to N-11 (SM-5) | Loading: button busy. Error: wrong credentials, without saying if the email exists (SRS 3.1). Wait: "try again at TIME" (REQ-F-07). No connection: form kept, submit disabled. Special: "you signed in on another device" (REQ-F-03). Language: Spanish while signed out; the account language applies after sign in (E-103) | Phone | REQ-F-02, F-03, F-07 |
 | N-03 | Register | Not signed in | One number field for paid members and athletes (E-153). Exactly 10 digits is a student number: an athlete gets "link sent" and continues at N-05. Anything else is an Authorization Number, with no length check. Steps for a paid member: privacy notice, number, masked email, password, photo (take it now or upload it; the screen says it cannot be changed), waiver and emergency contact, choose language (Spanish or English; it can be changed later in the account preferences), final save. A line says a paid membership is needed first, with the contact number and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: lookup when the number is sent, letters allowed (E-128); if the number is not in the app yet, the lookup asks the store right then (REQ-F-97), and if the store does not answer the message says to try again later; slow mode waits (REG-2). Error: one message for an invalid number, a claimed number and a number from an ended term, with contact number (lookup covers the current term only, REG-9); a 10-digit number not on the roster: not on the roster with contact number (REQ-F-76), plus a line that the student number is only for athletes and a paid member uses the Authorization Number from the receipt email, with the picture of where it is; student number: record claimed, link request limit (1 link every 5 minutes and 5 per day for each student number, REG-7); per-IP pause "try again at TIME"; photo rejected, stays on photo step with data kept in the page, lost if the page closes (REG-8). No connection: data kept in page, submit disabled. Special: "you already have an account, sign in to add it" with the masked email, for example `m***z@upr.edu`; nothing is claimed (REG-4, REG-3); student number: "link sent to m***z@upr.edu", first and last letter before the @ (REG-3) | Phone | REQ-F-10, F-11, F-13, F-15, F-18, F-60, F-70, F-71, F-72, F-73, F-76, F-91, F-97, NF-24, NF-25 |
 | N-04 | Removed | None | N-04: removed (E-153), merged into N-03. The ID stays in this table so the other N IDs keep their numbers. The athlete steps are in N-03 and N-05 | Not a screen | Phone | REQ-F-15, F-76 (now N-03) |
@@ -459,7 +459,7 @@ Decided (team, 2026-10-17): B (E-77), with a persistent top banner for the whole
 10. **A-03 menu screen.** Decided (E-102). A-03 is removed. A-04 to A-13 keep their IDs and the inventory marks A-03 as removed.
 11. **Same codebase for the dashboard.** Open. The dashboard runs on its own route (E-65). That it shares the codebase of the PWA (REQ-NF-10) is a reading to confirm.
 12. **Language before an account exists.** Decided (E-103). N-01 and N-02 are always in Spanish. The person chooses the language when the account is created, on N-03 and N-05.
-13. **Store address.** Open. N-01 and N-03 have a "Buy membership" button that opens the store while a term runs, with no redirect (E-126). The address is a setting, and the gym has not given it (E-92).
+13. **Store address.** Open. N-03 has a "Buy membership" button at number entry (E-166) that opens the store while a term runs, with no redirect (E-126). The address is a setting, and the gym has not given it (E-92).
 14. **A visit history screen for Users.** Decided (E-105, E-126). U-09 My visits shows the User's full history of past Check Ins, reached from U-03, kept 5 years (E-125).
 15. **Shared gym account or one sign-in per person.** Resolved by E-114: one account per person. N-11 is the staff sign-in. A-01, A-02, N-12 and A-14 are removed, and A-15 to A-17 are new.
 16. **Upload and import result screens.** Resolved by E-127. The orders come from the store's API, so the file upload (A-06) and the import history with undo are gone. A-07 keeps its ID and becomes the Store sync screen; A-06 is marked removed and no ID was renumbered.
@@ -525,4 +525,5 @@ Decided (team, 2026-10-17): B (E-77), with a persistent top banner for the whole
 | E-128 | 8. Inventory N-03; diagram 3 (U-07) |
 | E-153 | Diagram 1. Public screens; 8. Inventory N-03, N-04 (removed), N-05; diagram 3 (U-07) |
 | E-165 | Diagrams 1 and 6; 8. Inventory N-01, C-02, C-03, A-11; 9. Coverage; Gap 5 |
+| E-166 | Diagram 1; 8. Inventory N-01 and N-03; Gap 13 |
 | E-120 | 8. Inventory A-08 |

@@ -13,11 +13,11 @@
 | Questions after the CTI meeting (E-108 to E-113; E-110 is partly decided) | 6 | 5 | 1 |
 | Decisions after the Athletic Activities meeting (2026-11-04) | 38 | 38 | 0 |
 | Decisions from the dashboard base (2026-11-06) | 2 | 2 | 0 |
-| Decisions from the welcome-screen review (2026-11-08) | 1 | 1 | 0 |
+| Decisions from the welcome-screen review (2026-11-08) | 2 | 2 | 0 |
 | WooCommerce import | 1 | 1 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 151 | 142 | 9 |
+| Total | 152 | 143 | 9 |
 
 ## Scope and priorities
 
@@ -292,11 +292,11 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-89 | Deletion asked through the Administrator | The person confirms in person at the gym with identification. SRS REQ-F-09. | Team | 2026-10-19 |
 | E-90 | Regular schedules | One table: each slot repeats weekly or has a date. The regular schedule is written once, and exceptions are separate rows. SRS REQ-F-55. | Team | 2026-10-19 |
 | E-91 | Sign-in data and attempt counters | Sign-in sessions do not keep the IP address or browser. Attempt counters keyed by IP address and email are temporary and are discarded when the wait ends. SRS REQ-NF-21. | Team | 2026-10-19 |
-| E-92 | Registration needs a payment or the roster | The welcome and registration screens say up front that registering needs a paid membership or a place on the roster, with the contact number, and offer a way to the WooCommerce store. Athletes do not buy, so the store is for paid members. Open: the store address, and a button or an automatic redirect. SRS REQ-F-91 (new). | Team | 2026-10-17 |
+| E-92 | Registration needs a payment or the roster | The welcome and registration screens say up front that registering needs a paid membership or a place on the roster, with the contact number, and offer a way to the WooCommerce store. Athletes do not buy, so the store is for paid members. Open: the store address, and a button or an automatic redirect. SRS REQ-F-91 (new). Placement on Welcome is superseded by E-166; purchase and help are on the unified number-entry step. | Team | 2026-10-17 |
 | E-93 | Data model rules for the migration | Where the data model and the admin flows differ, the data model rules. PIN attempt counters live in the `cache` table. The audit log has no `pin_active` field. Imports have no uploaded-by field, because the audit log already records each import with the account and time. Removing an athlete from the roster revokes the authorization with the reason "removed from roster" instead of deleting it, so REQ-F-49 holds. SRS REQ-F-49, REQ-NF-39. | Team | 2026-10-19 |
 | E-94 | Revoked authorization and one per term | Only active authorizations count. A revoked one does not block a new grant or claim in the same term, as in the data model unique index. Changes E-68. SRS REQ-F-19, REQ-F-87. | Team | 2026-10-19 |
 | E-95 | Athlete removed from the roster by mistake | A "Reinstate" action on the athlete roster screen (A-05) makes the revoked authorization active again and writes an audit log entry. The action needs a reason, free text of at least 10 characters, as in E-86. It is refused with a message when the person already has an active authorization in that term, because the database allows one active authorization per term. SRS REQ-F-49, REQ-NF-39. | Team | 2026-10-19 |
-| E-96 | Store option on athlete registration | The athlete registration screen has no store option, because athletes do not buy. A paid member who opens it by mistake goes back to the welcome screen, which has the option. The welcome screen and the paid member registration screen offer the store; showing it only while a term runs stays Proposed (G-26). Changes E-92. SRS REQ-F-91. | Team | 2026-10-19 |
+| E-96 | Store option on athlete registration | The athlete registration screen has no store option, because athletes do not buy. A paid member who opens it by mistake goes back to the welcome screen, which has the option. The welcome screen and the paid member registration screen offer the store; showing it only while a term runs stays Proposed (G-26). Changes E-92. SRS REQ-F-91. Placement on Welcome is superseded by E-166; purchase and help are on the unified number-entry step. | Team | 2026-10-19 |
 | E-97 | Authorization Number field with no active authorization | The field shows under both banners. A person whose authorization went away with an import undo or a release can claim the number again. A number that cannot be claimed gets the same message with the contact number. Changes E-67. SRS REQ-F-23. | Team | 2026-10-19 |
 | E-98 | Compromised-password check | The check is an external call that sends no student data: only the first 5 characters of a hash of the password, with no name, email, photo or full password. The SRS describes it, and the team does not submit it for approval (cti.md, M-11). SRS 2.4, REQ-NF-51. | Team | 2026-10-19 |
 | E-99 | Staff active sessions list | For an athlete the list shows "athlete" and the Check In time, with no minutes left. Paid members keep the minutes left. Extends E-75 to Staff screens. SRS REQ-F-44. | Team | 2026-10-19 |
@@ -471,6 +471,7 @@ The team settled these while building the dashboard base, after the Athletic Act
 | ID | Topic | Answer | Answered by | Date |
 |---|---|---|---|---|
 | E-165 | Schedules and notices require sign in | Remove schedules (C-02) and notices (C-03) from the public welcome screen (N-01) and its signed-out routes. They remain available after sign in, on Gimnasio for Users and in the dashboard menu for Staff and Administrators. A User does not need an active gym authorization to read them. Reading their API data also requires sign in. The contact number, store button, privacy notice and install help remain available before sign in. Replaces only the public-access part of E-66; notice editing and its warning against sensitive data stay. Confirmed by Viviana during the #42 wireframe review. SRS role table, REQ-F-55. | Team | 2026-11-08 |
+| E-166 | Membership purchase and help on number entry | Keep Welcome (N-01) in its original layout. Put the registration prerequisite, "Buy membership" button and help number 265-3866 on the number-entry step of N-03, before the person submits a number. The prerequisite says registration needs a paid membership or a place on the athlete roster. The store opens only when the person taps the button, only during an active term; its URL remains a setting pending from the gym. The main flow is Welcome, number entry, create password, identification photo, waiver, then install help after the account is saved. Existing privacy, language and emergency-contact requirements stay. Updates only the Welcome placement in E-92 and E-96; the store rules of E-126 and the unified field of E-153 stay. Confirmed by Viviana during the #42 wireframe review. SRS REQ-F-91. | Team | 2026-11-08 |
 
 ## WooCommerce import
 
