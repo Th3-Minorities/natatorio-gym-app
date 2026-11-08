@@ -112,7 +112,7 @@ Run them from the repository root while the containers are up:
 | Create the first Administrator | `docker compose exec app php artisan staff:create-admin --name="Ana Rivera" --email="ana@example.com"` |
 | Clear a sign-in lockout | `docker compose exec app php artisan cache:clear` |
 
-The seeder is empty for now. Each feature adds its own seeder with fake data only, never real student or payment data (context.md, team rules).
+`DatabaseSeeder` calls `FakeDataSeeder`, which creates the development accounts (`admin@example.com` and a test User). Each feature adds its own seeder with fake data only, never real student or payment data (context.md, team rules).
 
 ## 5. CI
 

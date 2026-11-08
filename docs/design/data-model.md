@@ -462,6 +462,7 @@ Two copies looked like repetition but are not: `imported_memberships.name` and `
 Decided by the team on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13 to D15 on 2026-11-04, after the gym meeting (#62). The expiry and early-end rules of section 3 are decided and can be revisited.
 
 **D1. Uniqueness of the Authorization Number (E-30, G-19).** Decided (team, 2026-10-19; E-71), changed by the team on 2026-11-04 (E-128): `UNIQUE (authorization_number)` across all orders.
+- Letter case (E-167): the number is stored and compared in upper case.
 - Why: a read of all 84 store orders found no repeated value among the 69 paid ones. If the gateway ever repeats a code, the sync rejects that order and the Administrator sees it in the sync result.
 
 **D2. How an account is deleted (REQ-F-09, REQ-F-74).** Decided (team, 2026-10-19): option A, keep the `users` row with every personal column set to NULL and `deleted_at` set.
@@ -511,7 +512,7 @@ Decided by the team on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13 
 - Why: the department keeps one list, edits it by hand and removes athletes who leave. Per-term authorizations keep the per-term photo and expiry rules.
 
 **D17. Photo pending (G-34, E-118).** Decided (team, 2026-11-04): `authorizations.photo_pending_at`, set by Staff, blocks Check In until a new photo is uploaded.
-- Still open: whether the upload clears the mark by itself or Staff approve it.
+- Decided (E-168): the upload does not clear the mark; Staff approve the new photo on S-02 and approving clears `photo_pending_at`.
 
 **D18. Manual entries from the paper log (G-07, E-119).** Decided (team, 2026-11-04): a manual entry is a `facility_sessions` row with `entered_by_staff_account_id` set, the paper times and `status = 'checked_out'`. Only Administrators create them, and each writes an audit log entry.
 - Why: the same table keeps statistics in one place, and the column lets reports filter manual entries out. `manual_visit_counts` holds people without an account as counts only (E-132), so no personal data of people outside the app is stored.
