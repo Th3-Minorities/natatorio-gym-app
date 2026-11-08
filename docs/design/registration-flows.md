@@ -7,7 +7,7 @@ The diagrams use plain words only. Requirement IDs and decision codes are in the
 Two answers are still pending and touch almost every diagram:
 
 - The contact number (REQ-F-73) is 265-3866, the office's direct line (G-25).
-- The address of the store page where members pay is a setting the gym still has to give. The welcome screen and the registration screen have a "Buy membership" button that opens it while a term runs, with no redirect (E-92, E-96, E-126, E-153).
+- The address of the store page where members pay is a setting the gym still has to give. The number-entry step of N-03 has a "Buy membership" button and help number 265-3866; Welcome keeps its original layout (E-184). The button opens the store while a term runs, with no redirect (E-126, E-153).
 
 Mail is assumed available (E-61). CTI described a path: the server runs a mail service (CTI suggests Postfix) and sends through CTI's mail gateway once CTI authorizes the VM (M-07, answered in principle). The authorization is still to be requested, and SPF and DKIM were not discussed. If CTI does not authorize the VM, the fallback is an external provider, which needs approval (M-11). Every email link depends on it: athlete registration (diagram 4), "I am an athlete" (diagram 7, E-58) and password reset.
 
@@ -504,7 +504,7 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-92 (upfront line) | 1, 4; intro |
 | E-93 (roster removal revokes with a reason) | 9. Authorization states; Gap 11 |
 | E-95 (Reinstate on A-05) | 9. Authorization states; Gap 11 |
-| E-96 (store button on the welcome and paid registration screens only) | 1, 4; intro |
+| E-96 (store placement superseded by E-184) | 1, 4; intro |
 | E-97 (Authorization Number field under both banners) | 6 |
 | E-98 (compromised-password check described as an external call) | 1 (notes) |
 | E-100 ("I am an athlete" under both banners) | 6 |
@@ -517,3 +517,4 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-127 (paid memberships from the store's API; lookup asks the store) | 1 (notes), 2, 9. Authorization states |
 | E-128 (Authorization Number with letters, unique across all orders; length not checked) | 1, 2; REG-14; Gap 6 |
 | E-153 (one registration screen and field) | 1, 2, 4; REG-14 |
+| E-184 (purchase, prerequisite and help on number entry; original Welcome layout) | 1; intro |

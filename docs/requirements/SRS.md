@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.21 draft, not approved
+**Version:** 0.22 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -42,7 +42,7 @@
 | Action | User | Staff | Administrator |
 |---|---|---|---|
 | Register, sign in, Check In, show the Gym ID, renew, delete own account | Yes | No | No |
-| See schedules and notices. Anyone can see them, also without signing in (REQ-F-55) | Yes | Yes | Yes |
+| See schedules and notices (signed in; no active gym authorization required, REQ-F-55) | Yes | Yes | Yes |
 | See occupancy and facility information (signed in) | Yes | Yes | Yes |
 | See facility analytics | Yes | Yes | Yes |
 | See active sessions and verify a Gym ID | No | Yes | Yes |
@@ -86,6 +86,7 @@
 | Team | 2026-11-07 | Team decisions E-159 and E-160 (`team.md`): a Spanish / English switch on the welcome screen before sign in, replacing E-103 (REQ-NF-33); the student number has 9 digits, correcting E-153 (REQ-F-15) | 0.19 |
 | Team | 2026-11-07 | Team decision E-161 (`team.md`): the athletes-only notice also shows on the Check In screen in the 60 minutes before a period starts, without a session (REQ-F-83) | 0.20 |
 | Team | 2026-11-08 | Team decisions E-166 to E-182 (`team.md`): staff password reset by email link (REQ-F-06), Authorization Number lookup ignores letter case (REQ-F-10), Staff approve the new photo of a "photo pending" account (REQ-F-94), a closure ends sessions when it starts (REQ-F-38, REQ-F-55), time inside on the active sessions list (REQ-F-44), Staff and Administrator screens are desktop only (REQ-NF-10), the offline Gym ID card is an exception to WCAG AA text contrast (REQ-NF-13), emergency list of Authorization Numbers (new REQ-F-103), nginx as the proxy | 0.21 |
+| Team | 2026-11-08 | Team decisions E-183 and E-184 (`team.md`): schedules and notices require sign in and are no longer public (REQ-F-55); the membership purchase button, the registration prerequisite and the help number move to the number-entry step of N-03 (REQ-F-91) | 0.22 |
 
 ## 1. Introduction
 
@@ -231,7 +232,7 @@ The paid member registers with the Authorization Number, the code in the "Paymen
 | REQ-F-73 | When an Authorization Number or a student number does not match a valid record, the system shall show the contact number of someone who can help. | N/A | High | Clear. The number is 265-3866, the office's direct line (gym, G-25). The Administrator can edit it (REQ-F-55) | Team decision |
 | REQ-F-74 | An Administrator shall be able to release an Authorization Number claimed by mistake. The release removes only that authorization and its term photo. The account, its other authorizations and its history stay, also when that claim created the account. A release never deletes the account. If the released authorization was the account's only one, the account stays with no authorization: the person signs in, sees the banner of REQ-F-23 and can claim the correct number. The released number can be claimed again. | N/A | Medium | Clear | Team decision (E-52, E-57, E-87, E-106) |
 | REQ-F-75 | If someone else claimed a member's Authorization Number, the real owner shall be able to take the account back with the password reset (REQ-F-06), because the account email is the payment email. If the number was added to an account with another email (REQ-F-78), the reset does not help: the real owner contacts the gym, and the Administrator releases the number (REQ-F-74). | N/A | High | Clear. Mail assumed available (2.5, E-61) | Team decision (E-70) |
-| REQ-F-91 | The welcome screen and the registration screen shall say, before the person starts, that registering needs a paid membership or a place on the athlete roster, and shall show the contact number of REQ-F-73. The welcome screen and the registration screen shall also have a "Buy membership" button that opens the WooCommerce store. The button does not redirect the person by itself, and it shows only while a term runs. The store address is a setting. The registration screen is the same for paid members and athletes (E-153), so the button is on it too. | N/A | Medium | Pending: the store address (gym) | Team decision (E-92, E-96, E-126, E-153) |
+| REQ-F-91 | The number-entry step of the registration screen (N-03) shall say, before the person submits a number, that registering needs a paid membership or a place on the athlete roster, and shall show the contact number of REQ-F-73. This step shall also have a "Buy membership" button that opens the WooCommerce store. Welcome (N-01) keeps its original layout; the prerequisite, purchase button and help contact are on number entry. The button does not redirect the person by itself, and it shows only while a term runs and the store address is configured. The store address is a setting. Registration uses the same number-entry screen for paid members and athletes (E-153). | N/A | Medium | Pending: the store address (gym) | Team decision (E-92, E-96, E-126, E-153, E-184) |
 
 Errors not covered above: an Authorization Number from an ended term cannot be used to register (message: REQ-F-72).
 
@@ -344,7 +345,7 @@ Today rules and instructions are given in person or on paper (Proposal:218). The
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-55 | The Administrator shall be able to publish and edit, and every User shall be able to see: (a) schedules, special hours and closures; (b) athletes-only slots; (c) maintenance notices and other updates; (d) facility information: rules, towel, footwear (including the Crocs and flip-flop restriction), available machines and approved equipment instructions; (e) the gym contact number of REQ-F-73. The regular weekly schedule is written once, and special hours and closures are added for their dates. Schedules and notices are public: anyone can see them without signing in. The notice editor tells the Administrator not to put sensitive data in notices. A closure ends the active sessions when it starts, not when it is published (REQ-F-38, E-169). Occupancy and analytics need sign in (REQ-F-61). | Secondary | Medium | Clear | Proposal:104, 218; Team decision (E-66, E-90, E-169) |
+| REQ-F-55 | The Administrator shall be able to publish and edit, and every User shall be able to see: (a) schedules, special hours and closures; (b) athletes-only slots; (c) maintenance notices and other updates; (d) facility information: rules, towel, footwear (including the Crocs and flip-flop restriction), available machines and approved equipment instructions; (e) the gym contact number of REQ-F-73. The regular weekly schedule is written once, and special hours and closures are added for their dates. Schedules and notices require sign in as a User, Staff member or Administrator; a User does not need an active gym authorization to read them. They are available on Gimnasio for Users and in the staff dashboard menu, and are absent from N-01 and signed-out routes. The contact number remains available before sign in. The notice editor tells the Administrator not to put sensitive data in notices. A closure ends the active sessions when it starts, not when it is published (REQ-F-38, E-169). Occupancy and analytics need sign in (REQ-F-61). | Secondary | Medium | Clear | Proposal:104, 218; Team decision (E-66, E-90, E-169, E-183) |
 | REQ-F-58 | Texts the gym writes (rules, notices, closures, information) shall have a Spanish version and may have an English version. The English text of a notice is optional: if there is no English version, the Spanish text is shown. The team translates the initial texts and the gym approves them. | N/A | Medium | Clear | Team decision (E-126) |
 | REQ-F-59 | The User shall be able to open equipment instructions with a QR code. | Stretch | Low | Clear | Proposal:218, 307 |
 
@@ -373,7 +374,7 @@ Chrome does not always show the install prompt, and on iPhone the app is install
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-66 | The PWA shall have its own "Install" button in Chromium-based browsers and a help text for installing on iPhone. In browsers without the install event, the button does not appear. | N/A | High | Clear. To test: cookies in the installed PWA on iPhone (E-17) | Team decision |
+| REQ-F-66 | The PWA shall have its own "Install" button in Chromium-based browsers and a help text for installing on iPhone. In browsers without the install event, the button does not appear. N-09 install help opens once right after the account is created and from the "Instalar app" row in Mi cuenta (U-03). If the app is already installed, N-09 shows the installed state. Welcome has no Install button (E-165). | N/A | High | Clear. To test: cookies in the installed PWA on iPhone (E-17) | Team decision (E-165) |
 
 ## 4. Data Requirements
 
