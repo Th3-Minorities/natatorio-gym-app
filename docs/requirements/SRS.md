@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.19 draft, not approved
+**Version:** 0.20 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -84,6 +84,7 @@
 | Carlos J. Pepin Delgado | 2026-11-06 | Team decisions E-155 and E-156 (`team.md`): the waiver is accepted with an on-screen checkbox now, and a drawn signature is added for the Final report after research (REQ-F-60); no "15 minutes left" notice | 0.15 |
 | Viviana V Ramos Vivoni | 2026-11-07 | User Check In wireframes, E-163 and E-164: elapsed duration, no term on the Gym ID, normal Check In after a visit, offline update time and occupancy on Gimnasio (REQ-F-40, REQ-NF-26) | 0.18 |
 | Viviana V Ramos Vivoni | 2026-11-08 | Team decision E-165: remove public schedules and notices from N-01 and require sign in to read them; keep access from Gimnasio and the staff dashboard, including for Users without an active gym authorization (REQ-F-55) | 0.19 |
+| Viviana V Ramos Vivoni | 2026-11-08 | Team decision E-166: place membership purchase, the registration prerequisite and help contact on the N-03 number-entry step; keep the original N-01 Welcome layout (REQ-F-91) | 0.20 |
 
 ## 1. Introduction
 
@@ -229,7 +230,7 @@ The paid member registers with the Authorization Number, the code in the "Paymen
 | REQ-F-73 | When an Authorization Number or a student number does not match a valid record, the system shall show the contact number of someone who can help. | N/A | High | Clear. The number is 265-3866, the office's direct line (gym, G-25). The Administrator can edit it (REQ-F-55) | Team decision |
 | REQ-F-74 | An Administrator shall be able to release an Authorization Number claimed by mistake. The release removes only that authorization and its term photo. The account, its other authorizations and its history stay, also when that claim created the account. A release never deletes the account. If the released authorization was the account's only one, the account stays with no authorization: the person signs in, sees the banner of REQ-F-23 and can claim the correct number. The released number can be claimed again. | N/A | Medium | Clear | Team decision (E-52, E-57, E-87, E-106) |
 | REQ-F-75 | If someone else claimed a member's Authorization Number, the real owner shall be able to take the account back with the password reset (REQ-F-06), because the account email is the payment email. If the number was added to an account with another email (REQ-F-78), the reset does not help: the real owner contacts the gym, and the Administrator releases the number (REQ-F-74). | N/A | High | Clear. Mail assumed available (2.5, E-61) | Team decision (E-70) |
-| REQ-F-91 | The welcome screen and the registration screen shall say, before the person starts, that registering needs a paid membership or a place on the athlete roster, and shall show the contact number of REQ-F-73. The welcome screen and the registration screen shall also have a "Buy membership" button that opens the WooCommerce store. The button does not redirect the person by itself, and it shows only while a term runs. The store address is a setting. The registration screen is the same for paid members and athletes (E-153), so the button is on it too. | N/A | Medium | Pending: the store address (gym) | Team decision (E-92, E-96, E-126, E-153) |
+| REQ-F-91 | The number-entry step of the registration screen (N-03) shall say, before the person submits a number, that registering needs a paid membership or a place on the athlete roster, and shall show the contact number of REQ-F-73. This step shall also have a "Buy membership" button that opens the WooCommerce store. Welcome (N-01) keeps its original layout; the prerequisite, purchase button and help contact are on number entry. The button does not redirect the person by itself, and it shows only while a term runs. The store address is a setting. Registration uses the same number-entry screen for paid members and athletes (E-153). | N/A | Medium | Pending: the store address (gym) | Team decision (E-92, E-96, E-126, E-153, E-166) |
 
 Errors not covered above: an Authorization Number from an ended term cannot be used to register (message: REQ-F-72).
 
