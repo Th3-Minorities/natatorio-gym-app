@@ -436,6 +436,28 @@ export const es = {
     // Sin conexión, Figma 101:1403.
     offlineText: 'Recupera la conexión para guardar cambios.',
     saved: (name: string) => `${name} se guardó.`,
+    // Retirar, Figma 101:1221.
+    withdraw: 'Retirar',
+    withdrawTitle: (name: string) => `¿Retirar a ${name}?`,
+    withdrawText: 'El Gym ID deja de valer de inmediato. No podrá hacer nuevos Check In. Su sesión activa, si existe, permanece abierta hasta su cierre.',
+    withdrawMeta: (number: string, sport: string) => `${number} · ${sport}`,
+    withdrawConfirm: 'Retirar atleta',
+    // Read by screen readers only: the row itself shows the change.
+    withdrawn: (name: string) => `${name} se retiró del roster.`,
+    // Restituir, Figma 101:1248, 101:1285 and 101:1383.
+    reinstate: 'Restituir',
+    reinstateTitle: (name: string) => `Restituir a ${name}`,
+    reinstateText: 'Se reactivará su autorización revocada. El motivo quedará registrado en Registro de auditoría.',
+    reason: 'Motivo obligatorio',
+    reasonHint: 'Mínimo 10 caracteres.',
+    shortTitle: 'El motivo debe tener al menos 10 caracteres',
+    shortText: 'Escribe una explicación antes de restituir al atleta.',
+    reasonCount: (count: number) => `${count} / 10 caracteres mínimos`,
+    reinstateConfirm: 'Restituir',
+    reinstated: (name: string) => `${name} se restituyó.`,
+    refusedTitle: 'Ya tiene una autorización activa',
+    refusedText: (name: string, term: string) =>
+      `${name} ya tiene una autorización activa en ${term}. No se puede restituir otra.`,
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

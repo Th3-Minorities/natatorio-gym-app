@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useId, useState } from 'react'
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
 import { Button, EmptyState, ErrorState, LoadingState, OfflineState } from '../../components'
 import { DashboardShell } from '../../dashboard/DashboardShell'
@@ -9,6 +9,7 @@ import { useStaffSession } from '../useStaffSession'
 import type { ShellProps } from '../team/StaffTeam'
 import { TermStatus } from '../team/TermStatus'
 import { AthleteDialog } from './AthleteDialog'
+import { ReinstateDialog, WithdrawDialog } from './StatusDialogs'
 import '../team/staffTeam.css'
 import './roster.css'
 
@@ -31,6 +32,8 @@ type Load = { status: 'loading' } | { status: 'error' } | { status: 'offline' } 
 /** Add, or edit one athlete. */
 type Editing = { athlete: Athlete | null }
 
+type StatusChange = { kind: 'withdraw' | 'reinstate'; athlete: Athlete }
+
 /** Waits this long after the last key before it searches, so typing a number sends one request. */
 const SEARCH_DELAY = 300
 
@@ -48,9 +51,20 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Editing | null>(null)
+  const [statusChange, setStatusChange] = useState<StatusChange | null>(null)
   const [saved, setSaved] = useState('')
+  // The row whose first action gets focus once the list reloads, since the button pressed is gone.
+  const focusRow = useRef<number | null>(null)
+  const tableRef = useRef<HTMLDivElement>(null)
   const emptyId = useId()
   const searchId = useId()
+
+  useEffect(() => {
+    if (load.status !== 'ready' || focusRow.current === null) return
+    const target = tableRef.current?.querySelector<HTMLElement>(`tr[data-athlete="${focusRow.current}"] button`)
+    focusRow.current = null
+    ;(target ?? tableRef.current)?.focus()
+  }, [load])
 
   const report = useEffectEvent((error: unknown) => session.reportError(error))
   const status = filters.active && filters.withdrawn ? 'all' : filters.active ? 'active' : 'withdrawn'
@@ -98,6 +112,19 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
     setEditing({ athlete })
   }
 
+  function openStatus(kind: StatusChange['kind'], athlete: Athlete) {
+    if (!online) return
+    setSaved('')
+    setStatusChange({ kind, athlete })
+  }
+
+  function statusChanged(kind: StatusChange['kind'], athlete: Athlete) {
+    setStatusChange(null)
+    setSaved(kind === 'withdraw' ? t.withdrawn(athlete.name) : t.reinstated(athlete.name))
+    focusRow.current = athlete.id
+    setAttempt((n) => n + 1)
+  }
+
   function edited(athlete: Athlete) {
     setEditing(null)
     setSaved(t.saved(athlete.name))
@@ -122,6 +149,22 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
           onError={(error) => session.reportError(error)}
         />
       )}
+      {statusChange &&
+        (() => {
+          const Change = statusChange.kind === 'withdraw' ? WithdrawDialog : ReinstateDialog
+          return (
+            <Change
+              athlete={statusChange.athlete}
+              onClose={() => setStatusChange(null)}
+              onDone={(athlete) => statusChanged(statusChange.kind, athlete)}
+              onError={(error) => {
+                session.reportError(error)
+                // Someone else changed the athlete: show what it is now, behind the modal.
+                if (error instanceof ApiError && error.status === 409) setAttempt((n) => n + 1)
+              }}
+            />
+          )
+        })()}
       <div className="roster-context">
         <TermStatus text={t.continuous} />
         <div className="roster-context__actions">{addButton}</div>
@@ -209,10 +252,29 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
     )
   }
 
+  /** Editar and Retirar for an active athlete, Restituir for a withdrawn one (4007:2301). */
+  function actions(athlete: Athlete) {
+    const action = (label: string, onClick: () => void) => (
+      <Button
+        key={label}
+        variant="link"
+        className="team-action"
+        // The name tells the rows apart for screen readers; the visible text comes first (WCAG 2.5.3).
+        aria-label={`${label}, ${athlete.name}`}
+        aria-disabled={!online || undefined}
+        onClick={onClick}
+      >
+        {label}
+      </Button>
+    )
+    if (athlete.status === 'withdrawn') return action(t.reinstate, () => openStatus('reinstate', athlete))
+    return [action(t.edit, () => open(athlete)), action(t.withdraw, () => openStatus('withdraw', athlete))]
+  }
+
   function table(athletes: Athlete[]) {
     return (
       // Scrolls sideways on a narrow window; tabIndex lets the keyboard scroll it too (WCAG 2.1.1).
-      <div className="team-table" role="region" aria-label={t.tableTitle} tabIndex={0}>
+      <div className="team-table" role="region" aria-label={t.tableTitle} tabIndex={0} ref={tableRef}>
         <table className="roster-table" aria-label={t.tableTitle}>
           <thead>
             <tr>
@@ -226,7 +288,7 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
           </thead>
           <tbody>
             {athletes.map((athlete) => (
-              <tr key={athlete.id}>
+              <tr key={athlete.id} data-athlete={athlete.id}>
                 <td>{athlete.name}</td>
                 <td>{athlete.sport}</td>
                 <td>{athlete.student_number}</td>
@@ -235,20 +297,7 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
                   <span className={`team-chip roster-chip--${athlete.status}`}>{t.status[athlete.status]}</span>
                 </td>
                 <td>
-                  <div className="team-actions">
-                    {athlete.status === 'active' && (
-                      <Button
-                        variant="link"
-                        className="team-action"
-                        // The name tells the rows apart for screen readers; the visible text comes first (WCAG 2.5.3).
-                        aria-label={`${t.edit}, ${athlete.name}`}
-                        aria-disabled={!online || undefined}
-                        onClick={() => open(athlete)}
-                      >
-                        {t.edit}
-                      </Button>
-                    )}
-                  </div>
+                  <div className="team-actions">{actions(athlete)}</div>
                 </td>
               </tr>
             ))}
