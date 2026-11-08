@@ -66,6 +66,15 @@ export const es = {
     confirmed: '¡Tu entrada quedó registrada!', member: 'Miembro', athlete: 'Atleta', student: 'Estudiante',
     registerTitle: 'Registra tu entrada', registerText: 'Confirma tu llegada al gimnasio.',
     hold: 'Mantén presionado para entrar', holding: 'Mantén presionado…', locationNote: 'Necesitaremos verificar tu ubicación.',
+    processing: 'Estamos procesando tu Check-in',
+    locating: {
+      title: 'Obteniendo ubicación', text: 'Confirmamos tu llegada al gimnasio.', button: 'Obteniendo ubicación…',
+      hint: 'Permite la ubicación si el navegador lo solicita.',
+    },
+    registering: {
+      title: 'Registrando entrada', text: 'Guardamos la hora de tu entrada.', button: 'Registrando entrada…',
+      hint: 'Espera la confirmación antes de entrar.',
+    },
     upcoming: 'Próximo horario exclusivo de atletas', exclusive: 'Horario exclusivo de atletas',
     periodTime: (day: string, range: string) => `${day} · ${range}`,
     athletesTraining: 'Ahora entrenan los atletas', exclusiveRange: (range: string) => `Horario exclusivo · ${range}`,
@@ -83,13 +92,24 @@ export const es = {
       closed: { title: 'El gimnasio está cerrado', text: 'Consulta los horarios y los avisos antes de tu próxima visita.', action: 'Ver horarios' },
       termPhoto: { title: 'Necesitamos una foto nueva', text: 'Actualiza tu foto para el nuevo término antes de registrar tu entrada.', action: 'Actualizar foto' },
       pendingPhoto: { title: 'Tu foto necesita actualizarse', text: 'El personal marcó tu foto como pendiente. Carga una foto nueva desde tu teléfono.', action: 'Actualizar foto' },
-      denied: { title: 'Activa el permiso de ubicación', text: 'Permite el acceso a tu ubicación en los ajustes del navegador y vuelve a intentarlo.', action: 'Ver cómo activar ubicación' },
+      denied: {
+        title: 'Activa el permiso de ubicación',
+        text: 'Activa el permiso de ubicación en los ajustes del navegador. Luego pulsa Reintentar para continuar con tu Check-in.',
+        action: 'Reintentar', help: 'Ver cómo activar ubicación',
+      },
       unavailable: { title: 'No pudimos obtener tu ubicación', text: 'Espera un momento y vuelve a intentarlo desde el gimnasio.', action: 'Intentar de nuevo' },
       accuracy: { title: 'Necesitamos mayor precisión', text: 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.', action: 'Intentar de nuevo' },
       outside: { title: 'Acércate al gimnasio', text: 'Debes estar dentro del área del gimnasio para registrar tu entrada.', action: 'Intentar de nuevo' },
       offline: { title: 'Necesitas conexión', text: 'Conéctate a internet para verificar y registrar tu entrada.', action: 'Reintentar conexión' },
     },
     deniedNote: 'En la PWA, abre los ajustes del sitio desde el navegador.',
+    help: {
+      title: 'Activa tu ubicación', text: 'Sigue los pasos de tu navegador y vuelve para reintentar.',
+      ios: { name: 'iPhone · Safari', steps: ['Abre este sitio en Safari.', 'Menú de página → Configuración del sitio web.', 'Ubicación → Permitir.'] },
+      android: { name: 'Android · Chrome', steps: ['Abre este sitio en Chrome.', 'Información del sitio → Permisos.', 'Ubicación → Permitir.'] },
+      note: 'Activa también la ubicación del dispositivo. Si usas la app instalada, revisa el permiso desde el navegador.',
+      close: 'Cerrar ayuda',
+    },
   },
 
   health: {

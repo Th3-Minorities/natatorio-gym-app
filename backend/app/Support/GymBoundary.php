@@ -12,7 +12,7 @@ class GymBoundary
 
     public const GYM_LONGITUDE_PLACEHOLDER = -67.1410;
 
-    private const MAX_CENTER_DISTANCE_METERS = 50;
+    private const MAX_BOUNDARY_REACH_METERS = 50;
 
     public static function distanceMeters(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
@@ -36,15 +36,13 @@ class GymBoundary
         if (config('check_in.allow_any_boundary') && ! $production) {
             return;
         }
-        if ($production && config('check_in.radius_meters') > self::MAX_CENTER_DISTANCE_METERS) {
-            throw new RuntimeException('The Check In radius is over 50 m. Fix CHECK_IN_RADIUS_METERS.');
-        }
         $distance = self::distanceMeters(
             self::GYM_LATITUDE_PLACEHOLDER, self::GYM_LONGITUDE_PLACEHOLDER,
             config('check_in.center_latitude'), config('check_in.center_longitude'),
         );
-        if ($distance > self::MAX_CENTER_DISTANCE_METERS) {
-            throw new RuntimeException('The Check In boundary center is more than 50 m from the gym. Fix CHECK_IN_CENTER_* or, outside production, set CHECK_IN_ALLOW_ANY_BOUNDARY=true.');
+        // The farthest point of the boundary is the center distance plus the radius (REQ-NF-29).
+        if ($distance + config('check_in.radius_meters') > self::MAX_BOUNDARY_REACH_METERS) {
+            throw new RuntimeException('The Check In boundary reaches more than 50 m from the gym (center distance plus radius). Fix CHECK_IN_CENTER_* and CHECK_IN_RADIUS_METERS or, outside production, set CHECK_IN_ALLOW_ANY_BOUNDARY=true.');
         }
     }
 }

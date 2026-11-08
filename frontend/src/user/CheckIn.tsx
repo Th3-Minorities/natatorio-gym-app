@@ -4,6 +4,7 @@ import { ApiError, apiRequest } from '../api/client'
 import { useDateFormat } from '../format/dateTime'
 import { errorMessage, useMessages } from '../i18n'
 import type { UserProfile } from './UserApp'
+import { LocationHelp } from './LocationHelp'
 import { UserPage } from './ui'
 import athletesNotice from './assets/athletes-notice.svg'
 import athletesPeriod from './assets/athletes-period.svg'
@@ -36,7 +37,7 @@ const PROBLEM_ICONS: Record<Problem, LucideIcon> = {
   denied: MapPin, unavailable: MapPin, accuracy: MapPin, outside: MapPin, offline: WifiOff, failed: TriangleAlert,
 }
 // Boards 08 to 10: these causes offer "Intentar de nuevo" or "Reintentar conexión".
-const RETRYABLE: Problem[] = ['unavailable', 'accuracy', 'outside', 'offline', 'failed']
+const RETRYABLE: Problem[] = ['denied', 'unavailable', 'accuracy', 'outside', 'offline', 'failed']
 // "La pulsación de 1 segundo confirma la intención. Soltar antes cancela." (board 01 notes)
 const HOLD_MS = 1000
 
@@ -63,6 +64,8 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const [loaded, setLoaded] = useState(false)
   const [problem, setProblem] = useState<Problem | null>(null)
   const [busy, setBusy] = useState(false)
+  const [help, setHelp] = useState(false)
+  const [phase, setPhase] = useState<'locating' | 'registering' | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
 
   const refresh = useCallback(() => apiRequest<CheckInStatus>('/user/check-in').then((next) => {
@@ -78,11 +81,13 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   async function register() {
     if (!navigator.onLine) { setProblem('offline'); return }
     let position: GeolocationPosition
+    setPhase('locating')
     try { position = await locate() } catch (error) {
       setProblem((error as GeolocationPositionError).code === 1 ? 'denied' : 'unavailable')
       return
     }
     const { latitude, longitude, accuracy } = position.coords
+    setPhase('registering')
     try {
       const next = await apiRequest<CheckInStatus>('/user/check-in', { method: 'POST', body: { latitude, longitude, accuracy } })
       setStatus(next)
@@ -107,7 +112,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   async function run(action: () => Promise<void>) {
     if (busy) return
     setBusy(true)
-    try { await action() } finally { setBusy(false) }
+    try { await action() } finally { setBusy(false); setPhase(null) }
   }
 
   // Board 10 notes: a retry first asks whether the session was already created.
@@ -132,15 +137,16 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
     text: failure.until ? user.waitText(dates.time(failure.until)) : errorMessage(texts, failure.code, failure.status),
     action: t.problems.unavailable.action,
   } : problem === 'authorization' && athlete ? t.problems.athleteAuthorization : t.problems[problem]
+  const progress = phase && t[phase]
   const range = period && dates.timeRange(period.starts_at, period.ends_at)
   return <UserPage header={false} current="check-in" offline={view === 'offline'}
     className={`check-in ${athlete ? 'check-in--athlete' : 'check-in--member'} ${view === 'confirmed' ? 'check-in--confirmed' : ''}`}>
     {/* TODO(#18): a session that was already active opens the Gym ID screen, which #18 builds. */}
-    {status?.session ? <Confirmed profile={profile} athlete={athlete} startedAt={status.session.started_at} heading={heading}
+    {status?.session ? <Confirmed profile={profile} athlete={athlete} startedAt={status.session.started_at} heading={heading} period={period}
       detail={athlete ? status.sport : status.member_group === 'student' ? t.student : null} /> : <>
     <h1 ref={heading} tabIndex={-1}>{user.checkIn}</h1>
     {view !== 'loading' && <>
-      <p className="check-in-lead">{lead}</p>
+      <p className="check-in-lead">{progress ? t.processing : lead}</p>
       <Identity profile={profile} athlete={athlete} authorized={Boolean(profile?.authorization) && problem !== 'authorization'} />
     </>}
     {message && <>
@@ -151,7 +157,11 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
       </div>
       <Action href={problem === 'authorization' && !athlete ? '/account' : undefined}
         onClick={RETRYABLE.includes(problem!) ? retry : undefined} disabled={busy}>{message.action}</Action>
-      {problem === 'denied' && <p className="check-in-caption">{t.deniedNote}</p>}
+      {problem === 'denied' && <>
+        <Action secondary onClick={() => setHelp(true)}>{t.problems.denied.help}</Action>
+        <p className="check-in-caption">{t.deniedNote}</p>
+        {help && <LocationHelp onClose={() => setHelp(false)} />}
+      </>}
     </>}
     {view === 'exclusive' && period && <>
       <div className="check-in-period">
@@ -169,19 +179,25 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
     </>}
     {view === 'ready' && <>
       <div className="check-in-panel">
-        <div><h2>{t.registerTitle}</h2><p>{t.registerText}</p></div>
+        <div><h2>{progress?.title ?? t.registerTitle}</h2><p>{progress?.text ?? t.registerText}</p></div>
         <div className="check-in-panel__art"><img src={weightBench} alt="" width="142.2" height="146.062" /></div>
       </div>
-      {period && <div className="check-in-notice">
-        <img src={athletesNotice} alt="" width="26" height="26" />
-        <p>{period.state === 'active' ? t.exclusive : t.upcoming}<br />{t.periodTime(dates.day(period.starts_at), range!)}</p>
-      </div>}
-      <HoldButton busy={busy} onConfirm={() => void run(register)} />
-      <Note icon={MapPin}>{t.locationNote}</Note>
+      {period && <PeriodNotice period={period} />}
+      <HoldButton busy={busy} label={progress?.button} onConfirm={() => void run(register)} />
+      <Note icon={MapPin}>{progress?.hint ?? t.locationNote}</Note>
     </>}
     </>}
-    <div className="visually-hidden" role="status">{view === 'confirmed' ? t.confirmed : message?.title}</div>
+    <div className="visually-hidden" role="status">{view === 'confirmed' ? t.confirmed : progress?.title ?? message?.title}</div>
   </UserPage>
+}
+
+function PeriodNotice({ period }: { period: Period }) {
+  const t = useMessages().checkIn
+  const dates = useDateFormat()
+  return <div className="check-in-notice">
+    <img src={athletesNotice} alt="" width="26" height="26" />
+    <p>{period.state === 'active' ? t.exclusive : t.upcoming}<br />{t.periodTime(dates.day(period.starts_at), dates.timeRange(period.starts_at, period.ends_at))}</p>
+  </div>
 }
 
 function Icon({ icon: Svg }: { icon: LucideIcon }) {
@@ -197,10 +213,11 @@ function Note({ icon: Svg, children }: { icon: LucideIcon; children: string }) {
  * "Ver horarios" becomes a link with #28 (schedules); "Actualizar foto" with the U-02 photo screen;
  * "Ver cómo activar ubicación" with the location help screen; "Ver información de contacto" with the gym contact screen.
  */
-function Action({ href, onClick, disabled, children }: { href?: string; onClick?: () => void; disabled?: boolean; children: string }) {
-  if (href) return <a className="button check-in-action" href={href}>{children}</a>
-  if (onClick) return <button type="button" className="button check-in-action" disabled={disabled} onClick={onClick}>{children}</button>
-  return <span className="button check-in-action">{children}</span>
+function Action({ href, onClick, disabled, secondary, children }: { href?: string; onClick?: () => void; disabled?: boolean; secondary?: boolean; children: string }) {
+  const className = `button check-in-action ${secondary ? 'check-in-action--secondary' : ''}`
+  if (href) return <a className={className} href={href}>{children}</a>
+  if (onClick) return <button type="button" className={className} disabled={disabled} onClick={onClick}>{children}</button>
+  return <span className={className}>{children}</span>
 }
 
 function Identity({ profile, athlete, authorized }: { profile: UserProfile | null; athlete: boolean; authorized: boolean }) {
@@ -216,7 +233,7 @@ function Identity({ profile, athlete, authorized }: { profile: UserProfile | nul
   </div>
 }
 
-function HoldButton({ busy, onConfirm }: { busy: boolean; onConfirm: () => void }) {
+function HoldButton({ busy, label, onConfirm }: { busy: boolean; label?: string; onConfirm: () => void }) {
   const t = useMessages().checkIn
   const [holding, setHolding] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -240,19 +257,20 @@ function HoldButton({ busy, onConfirm }: { busy: boolean; onConfirm: () => void 
     else if (!event.repeat) start()
   }
 
-  const active = holding || busy
   return <button type="button" className={`check-in-hold ${holding ? 'check-in-hold--holding' : ''} ${busy ? 'check-in-hold--busy' : ''}`}
     aria-disabled={busy || undefined}
     onPointerDown={(event) => { if (event.button === 0) { event.currentTarget.setPointerCapture?.(event.pointerId); start() } }}
     onPointerUp={cancel} onPointerCancel={cancel} onLostPointerCapture={cancel} onBlur={cancel}
+    // A click with no pointer press (detail 0) comes from assistive technology, which cannot hold; the key handlers below stop the keyboard's own click.
+    onClick={(event) => { if (event.detail === 0 && !busy && !holding) onConfirm() }}
     onKeyDown={(event) => key(event, true)} onKeyUp={(event) => key(event, false)} onContextMenu={(event) => event.preventDefault()}>
-    {active ? t.holding : t.hold}
-    {active && <span className="check-in-hold__progress" aria-hidden="true" />}
+    {label ?? (holding ? t.holding : t.hold)}
+    {holding && <span className="check-in-hold__progress" aria-hidden="true" />}
   </button>
 }
 
-function Confirmed({ profile, athlete, startedAt, heading, detail }: {
-  profile: UserProfile | null; athlete: boolean; startedAt: string; heading: RefObject<HTMLHeadingElement | null>; detail?: string | null
+function Confirmed({ profile, athlete, startedAt, heading, detail, period }: {
+  profile: UserProfile | null; athlete: boolean; startedAt: string; heading: RefObject<HTMLHeadingElement | null>; detail?: string | null; period: Period | null
 }) {
   const t = useMessages().checkIn
   const user = useMessages().user
@@ -286,6 +304,7 @@ function Confirmed({ profile, athlete, startedAt, heading, detail }: {
       <Clock aria-hidden="true" />
       <p><span>{t.duration}</span><span className="check-in-duration__value">{elapsed(startedAt, now)}</span></p>
     </div>
+    {period && <PeriodNotice period={period} />}
     <p className="check-in-show">{t.showCard}</p>
     <p className="check-in-caption">{t.staffExit}</p>
   </>

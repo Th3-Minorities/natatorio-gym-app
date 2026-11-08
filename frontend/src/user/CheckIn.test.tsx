@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserApp } from './UserApp'
+import styles from './checkIn.css?raw'
 
 const member = {
   name: 'Daniel Rivera', email: 'daniel@email.com', locale: 'es',
@@ -109,6 +110,60 @@ describe('U-01 Check In', () => {
     expect(storage).not.toHaveBeenCalled()
   })
 
+  it('shows and announces the locating and registering states (4363:4027, 4363:4121)', async () => {
+    let found!: PositionCallback
+    let saved!: () => void
+    position = (success) => { found = success }
+    post = () => new Promise((resolve) => { saved = () => resolve(json({ ...idle, session }, 201)) })
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    expect(await screen.findByText('Estamos procesando tu Check-in')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Obteniendo ubicación…' })).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('heading', { name: 'Obteniendo ubicación' })).toBeInTheDocument()
+    expect(screen.getByText('Confirmamos tu llegada al gimnasio.')).toBeInTheDocument()
+    expect(screen.getByText('Permite la ubicación si el navegador lo solicita.')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Obteniendo ubicación')
+    expect(screen.getByText('Daniel Rivera')).toBeInTheDocument()
+
+    act(() => { found({ coords: { latitude: 18.2101, longitude: -67.1408, accuracy: 12 } } as GeolocationPosition) })
+    expect(await screen.findByRole('button', { name: 'Registrando entrada…' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Registrando entrada' })).toBeInTheDocument()
+    expect(screen.getByText('Guardamos la hora de tu entrada.')).toBeInTheDocument()
+    expect(screen.getByText('Espera la confirmación antes de entrar.')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('Registrando entrada')
+
+    act(() => { saved() })
+    expect(await screen.findByText('¡Tu entrada quedó registrada!', { selector: '.check-in-lead' })).toBeInTheDocument()
+  })
+
+  it('registers on a click from assistive technology but not on a quick tap', async () => {
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    const button = screen.getByRole('button', { name: 'Mantén presionado para entrar' })
+    fireEvent.click(button, { detail: 1 })
+    expect(geolocation()).not.toHaveBeenCalled()
+    fireEvent.click(button)
+    expect(await screen.findByText('¡Tu entrada quedó registrada!', { selector: '.check-in-lead' })).toBeInTheDocument()
+    expect(geolocation()).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows the athletes-only notice on the confirmation (REQ-F-83)', async () => {
+    status = { ...idle, session, athletes_period: { state: 'upcoming', ...period } }
+    await open()
+    const notice = (await screen.findByText(/Próximo horario exclusivo de atletas/)).closest('p')!
+    expect(notice).toHaveTextContent(/· 2:00–4:00 p\. m\.$/)
+    expect(screen.getByText('Sesión activa')).toBeInTheDocument()
+  })
+
+  it('shows the athletes-only notice that comes with a new Check In (REQ-F-83)', async () => {
+    post = async () => json({ ...idle, session, athletes_period: { state: 'upcoming', ...period } }, 201)
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    expect(await screen.findByText(/Próximo horario exclusivo de atletas/)).toBeInTheDocument()
+  })
+
   it('opens the confirmation without asking for location when a session is active (4199:3403)', async () => {
     status = { ...idle, account_type: 'athlete', session }
     await open()
@@ -159,15 +214,72 @@ describe('U-01 Check In', () => {
     expect(screen.getByText('Ver información de contacto')).toBeInTheDocument()
   })
 
-  it('shows a denied location permission (4106:1536)', async () => {
+  it('shows a denied location permission with retry and help (4433:4364)', async () => {
     position = (_, failure) => failure({ code: 1 } as GeolocationPositionError)
     await open()
     await screen.findByText('¿Listo para entrenar?')
     hold()
     expect(await screen.findByRole('heading', { name: 'Activa el permiso de ubicación' })).toBeInTheDocument()
-    expect(screen.getByText('Ver cómo activar ubicación')).toBeInTheDocument()
+    expect(screen.getByText('Revisa lo necesario para continuar')).toBeInTheDocument()
+    expect(screen.getByText('Activa el permiso de ubicación en los ajustes del navegador. Luego pulsa Reintentar para continuar con tu Check-in.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Ver cómo activar ubicación' })).toBeInTheDocument()
     expect(screen.getByText('En la PWA, abre los ajustes del sitio desde el navegador.')).toBeInTheDocument()
     expect(fetch).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }))
+  })
+
+  it('asks for location again and continues the Check In from the denied screen', async () => {
+    position = (_, failure) => failure({ code: 1 } as GeolocationPositionError)
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    const retry = await screen.findByRole('button', { name: 'Reintentar' })
+    position = (success) => success({ coords: { latitude: 18.2101, longitude: -67.1408, accuracy: 12 } } as GeolocationPosition)
+    fireEvent.click(retry)
+    expect(await screen.findByText('¡Tu entrada quedó registrada!', { selector: '.check-in-lead' })).toBeInTheDocument()
+  })
+
+  it('opens the location help as a modal dialog, traps Tab, closes with Escape and returns focus (4459:4335)', async () => {
+    position = (_, failure) => failure({ code: 1 } as GeolocationPositionError)
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    const opener = await screen.findByRole('button', { name: 'Ver cómo activar ubicación' })
+    opener.focus()
+    fireEvent.click(opener)
+
+    const dialog = screen.getByRole('dialog', { name: 'Activa tu ubicación' })
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(dialog).toHaveFocus()
+    expect(within(dialog).getByText('Sigue los pasos de tu navegador y vuelve para reintentar.')).toBeInTheDocument()
+    expect(within(dialog).getAllByRole('heading').map((heading) => [heading.tagName, heading.textContent])).toEqual([
+      ['H2', 'Activa tu ubicación'], ['H3', 'iPhone · Safari'], ['H3', 'Android · Chrome'],
+    ])
+    const lists = within(dialog).getAllByRole('list')
+    expect(lists.map((list) => list.tagName)).toEqual(['OL', 'OL'])
+    expect(within(lists[0]).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Abre este sitio en Safari.', 'Menú de página → Configuración del sitio web.', 'Ubicación → Permitir.',
+    ])
+    expect(within(lists[1]).getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'Abre este sitio en Chrome.', 'Información del sitio → Permisos.', 'Ubicación → Permitir.',
+    ])
+    expect(within(dialog).getByText('Activa también la ubicación del dispositivo. Si usas la app instalada, revisa el permiso desde el navegador.')).toBeInTheDocument()
+
+    const close = within(dialog).getByRole('button', { name: 'Cerrar ayuda' })
+    close.focus()
+    fireEvent.keyDown(close, { key: 'Tab' })
+    expect(dialog).toHaveFocus()
+    fireEvent.keyDown(dialog, { key: 'Tab', shiftKey: true })
+    expect(close).toHaveFocus()
+
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(opener).toHaveFocus()
+
+    fireEvent.click(opener)
+    fireEvent.click(screen.getByRole('button', { name: 'Cerrar ayuda' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(opener).toHaveFocus()
   })
 
   it.each([[2], [3]])('shows an unavailable location for geolocation error %i (4106:1597)', async (code) => {
@@ -300,5 +412,16 @@ describe('U-01 Check In', () => {
     await screen.findByText('¿Listo para entrenar?')
     hold()
     expect(await screen.findByRole('button', { name: 'Iniciar sesión' })).toBeInTheDocument()
+  })
+})
+
+describe('U-01 Check In motion', () => {
+  const reduced = styles.split('@media (prefers-reduced-motion: reduce)').slice(1).join(' ')
+
+  it('drifts the card waves with transform only and stops every animation under reduced motion', () => {
+    expect(styles).toMatch(/\.check-in-id__waves \{[^}]*animation: check-in-drift 24s linear infinite/)
+    expect(styles).toMatch(/@keyframes check-in-drift \{[^@]*transform: translateX\(-16px\)[^@]*translateX\(16px\)/)
+    expect(reduced).toMatch(/\.check-in-id__waves \{[^}]*animation: none/)
+    expect(reduced).toMatch(/\.check-in-hold__progress \{[^}]*animation: none/)
   })
 })

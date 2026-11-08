@@ -58,6 +58,15 @@ export const en: Messages = {
     confirmed: 'Your entry is registered!', member: 'Member', athlete: 'Athlete', student: 'Student',
     registerTitle: 'Register your entry', registerText: 'Confirm your arrival at the gym.',
     hold: 'Press and hold to enter', holding: 'Keep holding…', locationNote: 'We will need to verify your location.',
+    processing: 'We are processing your Check-in',
+    locating: {
+      title: 'Getting your location', text: 'We confirm your arrival at the gym.', button: 'Getting your location…',
+      hint: 'Allow location if the browser asks.',
+    },
+    registering: {
+      title: 'Registering your entry', text: 'We save the time of your entry.', button: 'Registering your entry…',
+      hint: 'Wait for the confirmation before going in.',
+    },
     upcoming: 'Next athletes-only schedule', exclusive: 'Athletes-only schedule',
     periodTime: (day: string, range: string) => `${day} · ${range}`,
     athletesTraining: 'Athletes are training now', exclusiveRange: (range: string) => `Athletes-only · ${range}`,
@@ -75,13 +84,24 @@ export const en: Messages = {
       closed: { title: 'The gym is closed', text: 'Check the schedules and notices before your next visit.', action: 'View schedules' },
       termPhoto: { title: 'We need a new photo', text: 'Update your photo for the new term before registering your entry.', action: 'Update photo' },
       pendingPhoto: { title: 'Your photo needs an update', text: 'The staff marked your photo as pending. Upload a new photo from your phone.', action: 'Update photo' },
-      denied: { title: 'Turn on location permission', text: 'Allow access to your location in the browser settings and try again.', action: 'See how to turn on location' },
+      denied: {
+        title: 'Turn on location permission',
+        text: 'Turn on location permission in the browser settings. Then press Retry to continue your Check-in.',
+        action: 'Retry', help: 'See how to turn on location',
+      },
       unavailable: { title: 'We could not get your location', text: 'Wait a moment and try again from the gym.', action: 'Try again' },
       accuracy: { title: 'We need better accuracy', text: 'The location received is not accurate enough to confirm your arrival.', action: 'Try again' },
       outside: { title: 'Get closer to the gym', text: 'You must be inside the gym area to register your entry.', action: 'Try again' },
       offline: { title: 'You need a connection', text: 'Connect to the internet to verify and register your entry.', action: 'Retry connection' },
     },
     deniedNote: 'In the PWA, open the site settings from the browser.',
+    help: {
+      title: 'Turn on your location', text: "Follow your browser's steps and come back to retry.",
+      ios: { name: 'iPhone · Safari', steps: ['Open this site in Safari.', 'Page menu → Website settings.', 'Location → Allow.'] },
+      android: { name: 'Android · Chrome', steps: ['Open this site in Chrome.', 'Site information → Permissions.', 'Location → Allow.'] },
+      note: 'Also turn on your device location. If you use the installed app, check the permission from the browser.',
+      close: 'Close help',
+    },
   },
 
   health: {

@@ -6,6 +6,7 @@ use App\Models\AcademicTerm;
 use App\Models\Authorization;
 use App\Models\FacilitySession;
 use App\Models\ScheduleSlot;
+use App\Models\StaffAccount;
 use App\Models\User;
 use App\Support\GymBoundary;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -309,6 +310,39 @@ class CheckInTest extends TestCase
             $this->postJson('/api/user/check-in', [...self::INSIDE, ...$bad])->assertUnprocessable()
                 ->assertJsonPath('error.code', 'validation_failed');
         }
+    }
+
+    public function test_injection_text_in_the_location_fields_is_a_validation_error(): void
+    {
+        $this->authorize();
+        $this->open();
+        // Six requests plus the final one stay under the throttle of 10 a minute.
+        $payloads = ["1'; DROP TABLE facility_sessions; --", '<script>alert(1)</script>'];
+        foreach (['latitude', 'longitude', 'accuracy'] as $field) {
+            foreach ($payloads as $payload) {
+                $response = $this->postJson('/api/user/check-in', [...self::INSIDE, $field => $payload]);
+
+                $response->assertUnprocessable()->assertJsonPath('error.code', 'validation_failed')
+                    ->assertJsonPath("error.details.$field.0", 'numeric');
+                $this->assertStringNotContainsString('script', $response->getContent());
+                $this->assertDatabaseCount('facility_sessions', 0);
+            }
+        }
+        // The table is still there and a clean request still works.
+        $this->postJson('/api/user/check-in', self::INSIDE)->assertCreated();
+    }
+
+    public function test_a_staff_session_is_refused_on_get_and_post(): void
+    {
+        $this->app['auth']->forgetGuards();
+        $this->flushSession();
+        $this->authorize();
+        $this->open();
+        $this->actingAs(StaffAccount::factory()->create(), 'staff')->fromThePwa();
+
+        $this->getJson('/api/user/check-in')->assertUnauthorized()->assertJsonPath('error.code', 'unauthenticated');
+        $this->postJson('/api/user/check-in', self::INSIDE)->assertUnauthorized()->assertJsonPath('error.code', 'unauthenticated');
+        $this->assertDatabaseCount('facility_sessions', 0);
     }
 
     public function test_checks_run_in_the_decided_order(): void
