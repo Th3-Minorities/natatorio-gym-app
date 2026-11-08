@@ -61,6 +61,7 @@ export const es = {
     authorization: (kind: string, term: string) => `${kind} · ${term}`,
     membership: 'Membresía', athlete: 'Atleta', manual: 'Acceso manual',
     emergency: 'Contacto de emergencia', emergencyDetail: 'Consulta o edita el nombre y teléfono.',
+    installApp: 'Instalar app', installAppDetail: 'Cómo instalar en tu teléfono',
     visits: 'Mis visitas', visitsDetail: 'Consulta tu historial de Check Ins.',
     settings: 'Ajustes', settingsDetail: 'Idioma, sesión y eliminación de cuenta.', iAmAthlete: 'Soy atleta',
     language: 'Idioma', spanish: 'Español', english: 'English',

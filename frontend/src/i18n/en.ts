@@ -57,6 +57,7 @@ export const en: Messages = {
     activeAuthorization: 'Active authorization', noAuthorization: 'No active authorization', accountAvailable: 'Your account is still available.',
     authorization: (kind: string, term: string) => `${kind} · ${term}`, membership: 'Membership', athlete: 'Athlete', manual: 'Manual access',
     emergency: 'Emergency contact', emergencyDetail: 'View or edit the name and phone number.',
+    installApp: 'Install app', installAppDetail: 'How to install on your phone',
     visits: 'My visits', visitsDetail: 'View your Check In history.', settings: 'Settings', settingsDetail: 'Language, session and account deletion.',
     iAmAthlete: 'I am an athlete', language: 'Language', spanish: 'Español', english: 'English',
     languageDetail: 'Your language is saved to your account and applies on every device.',

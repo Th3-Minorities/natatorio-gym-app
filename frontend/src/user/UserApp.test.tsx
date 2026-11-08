@@ -187,6 +187,26 @@ describe('U-03 and U-05', () => {
     expect(await screen.findByRole('heading', { name: 'Eliminar cuenta' })).toBeInTheDocument()
   })
 
+  it('shows the Instalar app row after the emergency contact, also offline, linking to N-09', async () => {
+    open('/account')
+    const row = await screen.findByRole('link', { name: /Instalar app/ })
+    expect(row).toHaveAttribute('href', '/install')
+    expect(row).toHaveTextContent('Cómo instalar en tu teléfono')
+    const rows = Array.from(document.querySelectorAll('.user-account-row')).map((node) => node.querySelector('strong')?.textContent)
+    expect(rows.indexOf('Instalar app')).toBe(rows.indexOf('Contacto de emergencia') + 1)
+    act(() => { fireEvent(window, new Event('offline')) })
+    expect(await screen.findByText('Sin conexión · Datos no actualizados')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Instalar app/ })).toHaveAttribute('href', '/install')
+  })
+
+  it('hides the Instalar app row while the account is loading or failed', async () => {
+    answer = async () => error('server_error', 500)
+    open('/account')
+    expect(screen.queryByRole('link', { name: /Instalar app/ })).toBeNull()
+    await screen.findByRole('alert')
+    expect(screen.queryByRole('link', { name: /Instalar app/ })).toBeNull()
+  })
+
   it('shows loading and account load failures with retry', async () => {
     answer = async () => error('server_error', 500)
     open('/account')

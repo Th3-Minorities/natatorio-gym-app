@@ -86,6 +86,16 @@ test('tabs switch by click and by arrow keys', () => {
   expect(screen.getByRole('tabpanel')).toHaveAttribute('tabindex', '0')
 })
 
+test('the back arrow returns to Mi cuenta in both the steps and the installed state', () => {
+  const { unmount } = show()
+  expect(screen.getByRole('link', { name: es.user.back })).toHaveAttribute('href', '/account')
+  unmount()
+  Object.defineProperty(navigator, 'standalone', { configurable: true, value: true })
+  show()
+  expect(screen.getByRole('heading', { level: 1, name: t.installedTitle })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: es.user.back })).toHaveAttribute('href', '/account')
+})
+
 test('English texts come from the account language', () => {
   vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(androidAgent)
   render(<I18nProvider locale="en"><InstallHelp /></I18nProvider>)

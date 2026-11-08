@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { UserRound } from 'lucide-react'
+import { ChevronRight, Download, UserRound } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button } from '../components'
 import { useDateFormat } from '../format/dateTime'
@@ -208,6 +208,8 @@ function AccountView({ path, profile, loading, failed, offline, retry, busy, sig
     <AccountRow title={profile.authorization ? t.activeAuthorization : t.noAuthorization}
       detail={profile.authorization ? t.authorization(profile.authorization.type === 'athlete' ? t.athlete : profile.authorization.type === 'manual' ? t.manual : t.membership, profile.authorization.term) : t.accountAvailable} />
     <AccountRow title={t.emergency} detail={t.emergencyDetail} />
+    <a className="user-account-row user-account-row--link" href="/install"><Download aria-hidden="true" />
+      <div><strong>{t.installApp}</strong><span>{t.installAppDetail}</span></div><ChevronRight aria-hidden="true" /></a>
     <AccountRow title={t.visits} detail={t.visitsDetail} />
     <a className="user-account-row" href="/account/settings"><strong>{t.settings}</strong><span>{t.settingsDetail}</span></a>
     {!profile.authorization && <span className="button button--secondary user-action">{t.iAmAthlete}</span>}
