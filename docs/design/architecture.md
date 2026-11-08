@@ -289,13 +289,13 @@ Notes:
 - The server rejects with a fixed code per cause, for example `check_in_location_denied`. The app writes the text in the account's language (E-74). REQ-F-33 gains two causes: location unavailable and new term photo needed.
 - One sign-in session per User: the valid session is stored in `users.current_session_id`, and a middleware compares it on every request. Old rows are deleted (data-model D3).
 - The `sign_in_sessions` table keeps no IP and no browser: both columns are NULL (E-91). Gym actions stay traceable through the audit log, which records IP, device and browser (REQ-NF-39).
-- Attempt counters live in the `cache` table, keyed by IP and email for sign in (E-91, E-93). They are temporary and are discarded when the wait ends. The "discarded" part is a default the owner did not object to.
+- Attempt counters live in the `cache` table, keyed by IP and email for sign in (E-91, E-93). They are temporary and are discarded when the wait ends. The "discarded" part is a default the team did not object to.
 - The database, not the PWA, guarantees one active session per User, also under simultaneous requests (REQ-F-36, REQ-NF-42). This needs PostgreSQL (M-09). The exclusion constraint ignores void rows (`WHERE status <> 'void'`), so an early end shortens the period (check-in D4).
 - Schedule and athletes-only checks use `schedule_slots` (REQ-F-33, REQ-F-82). If an athletes-only period starts shortly or while the session is open, the response carries its start time (REQ-F-83, E-161).
 
 ## Design decisions to confirm
 
-D2, D3, D4, D6 and D7 are **Decided** (owner, 2026-10-19) and can be revisited. D1, D5 and D8 are still **Proposed**. The team decides them in the PR review.
+D2, D3, D4, D6 and D7 are **Decided** (team, 2026-10-19) and can be revisited. D1, D5 and D8 are still **Proposed**. The team decides them in the PR review.
 
 ### D1: Proxy, nginx or Caddy
 
@@ -310,7 +310,7 @@ Recommendation: wait for M-03. If CTI gives the certificate, A, because it is th
 
 ### D2: All backend routes under `/api`
 
-**Status:** Decided (owner, 2026-10-19), A.
+**Status:** Decided (team, 2026-10-19), A.
 
 Laravel packages add their own paths by default: Sanctum's CSRF cookie route and Fortify's sign in, registration and password reset routes are not under `/api`.
 
@@ -321,7 +321,7 @@ Decision: A. One simple rule, and it matches the glossary ("API under `/api`"). 
 
 ### D3: How scheduled tasks run
 
-**Status:** Decided (owner, 2026-10-19), A.
+**Status:** Decided (team, 2026-10-19), A.
 
 - **A. A scheduler container** from the same image as `app`, running Laravel's scheduler loop. Same in development and production.
 - **B. Cron on the host** calling the app container every minute. Needs access to the host cron, and differs between a PC and the VM.
@@ -331,7 +331,7 @@ Decision: A. It is what `context.md` already lists as a container, and it behave
 
 ### D4: Sending email during the request or through a queue
 
-**Status:** Decided (owner, 2026-10-19), A.
+**Status:** Decided (team, 2026-10-19), A.
 
 - **A. During the request.** No extra container. If SMTP fails, the user sees an error at once and can try again. The request takes a bit longer.
 - **B. Queue in the database plus a worker container.** Fast response and retries. One more container, and failed jobs must be watched by someone.
@@ -349,7 +349,7 @@ Recommendation: A if the VM is ready in time, with B prepared as a fallback in a
 
 ### D6: How the app knows it must enforce the gym boundary
 
-**Status:** Decided (owner, 2026-10-19), C.
+**Status:** Decided (team, 2026-10-19), C.
 
 The 50 m startup check must run in production and must not block development or the demo (REQ-NF-29).
 
@@ -361,7 +361,7 @@ Decision: C. A mistake fails safe: the classroom boundary cannot reach productio
 
 ### D7: Tunnel for phone tests
 
-**Status:** Decided (owner, 2026-10-19), each member picks.
+**Status:** Decided (team, 2026-10-19), each member picks.
 
 - **A. Cloudflare Quick Tunnel.** No account, already tested (location and WebSocket work, SSE does not). The URL changes every run, so the app URL settings (and Sanctum's list of first-party domains, to confirm during setup) must change every run.
 - **B. ngrok free plan.** Fixed URL, so settings are set once. Limits of 20,000 requests and 1 GB per month (`context.md` section 5). Not tested with the app yet. One phone polling every 25 seconds uses about 144 requests per hour.
