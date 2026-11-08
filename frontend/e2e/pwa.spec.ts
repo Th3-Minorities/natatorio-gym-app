@@ -1,6 +1,8 @@
 /// <reference lib="dom" />
 import { expect, test } from '@playwright/test'
 
+test.use({ serviceWorkers: 'allow' })
+
 // Runs against the built app through the proxy: the service worker only exists in the production build.
 
 test('manifest and launcher icons are linked and served (REQ-F-66)', async ({ page }) => {
