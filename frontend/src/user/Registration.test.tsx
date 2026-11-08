@@ -141,7 +141,7 @@ it('restores the signed-out page language when leaving English privacy', async (
   fireEvent.click(await screen.findByRole('link', { name: 'Aviso de privacidad' }))
   fireEvent.click(await screen.findByRole('link', { name: 'English' }))
   fireEvent.click(screen.getByRole('link', { name: 'Back' }))
-  expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+  expect(await screen.findByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
   expect(document.documentElement.lang).toBe('es')
 })
 

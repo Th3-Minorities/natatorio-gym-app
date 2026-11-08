@@ -113,11 +113,12 @@ export const es = {
     yesDelete: 'Sí, eliminar mi cuenta', activeTitle: 'Tienes una autorización activa',
     activeText: 'Tu autorización sigue vigente. Si deseas eliminar tu cuenta, contacta al Staff del gimnasio para que revisen tu caso.',
     returnToSettings: 'Volver a Ajustes', offlineDelete: 'Conéctate para eliminar la cuenta.',
+    welcomeShort: 'Bienvenido', welcomeHint: 'Toca o desliza para continuar',
     welcome: 'Bienvenido al gimnasio', welcomeDetail: 'Tu espacio para entrenar en el RUM.', haveAccount: '¿Ya tienes cuenta?',
     gym: 'Gimnasio', checkIn: 'Check-in', navigation: 'Navegación principal',
   },
   install: {
-    title: 'Instala la app', description: 'Accede al gimnasio desde tu pantalla de inicio.', appName: 'Gimnasio RUM',
+    title: 'Instala la app', description: 'Accede al gimnasio desde tu pantalla de inicio.', appName: 'Gym RUM',
     platform: 'Plataforma', iphone: 'iPhone', android: 'Android',
     safari: 'Abre esta página en Safari.', share: 'Toca Compartir.', shareDetail: 'Puede estar dentro del menú de página.',
     addHome: 'Selecciona Agregar a Inicio.', confirmAdd: 'Confirma con Agregar.', openAsApp: 'Si aparece “Abrir como app”, déjalo activado.',

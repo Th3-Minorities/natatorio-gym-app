@@ -92,6 +92,8 @@ test.describe('User screen states at 390x844', () => {
         await expect(page.getByText('Miembro', { exact: true })).toBeVisible()
       }
       if (path === 'welcome') {
+        await expect(page.getByRole('heading', { name: 'Bienvenido', exact: true })).toBeVisible()
+        await page.getByRole('button', { name: 'Toca o desliza para continuar' }).click()
         await expect(page.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeVisible()
         await expect(page.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
         await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')

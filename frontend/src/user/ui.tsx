@@ -15,6 +15,13 @@ export function UserHeader({ back = '/sign-in' }: { back?: string }) {
   </header>
 }
 
+export function AccountHeading({ title, back, backLabel }: { title: string; back: string; backLabel: string }) {
+  return <div className="user-account-heading">
+    <a href={back} className="user-back" aria-label={backLabel}><ArrowLeft aria-hidden="true" /></a>
+    <h1 tabIndex={-1}>{title}</h1>
+  </div>
+}
+
 export function UserNotice({ title, children, success = false, informational = false }: { title: string; children: string; success?: boolean; informational?: boolean }) {
   const Icon = success ? Check : TriangleAlert
   return <div className="user-notice">{success || informational ? <div className="notice" role="status">

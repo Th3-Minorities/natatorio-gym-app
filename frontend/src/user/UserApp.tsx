@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronRight, Download, Heart, History, Settings, ShieldCheck, UserRound, type LucideIcon } from 'lucide-react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react'
+import { ArrowRight, ArrowUp, ChevronDown, ChevronRight, Download, Heart, History, Settings, ShieldCheck, UserRound, type LucideIcon } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button, LoadingState } from '../components'
 import { useDateFormat } from '../format/dateTime'
@@ -9,7 +9,7 @@ import { CheckIn } from './CheckIn'
 import { Gym } from './Gym'
 import { UserAccess } from './UserAccess'
 import { Registration } from './Registration'
-import { UserLoading, UserNotice, UserPage } from './ui'
+import { AccountHeading, UserLoading, UserNotice, UserPage } from './ui'
 import { PrivacyNoticeCard } from './PrivacyNoticeCard'
 import { storedPrivacy, storePrivacy, type Privacy } from './privacyNotice'
 import { useConnection } from './useConnection'
@@ -266,13 +266,6 @@ function DeleteConfirmation({ busy, offline, failed, onConfirm, onCancel }: {
   </dialog>
 }
 
-function AccountHeading({ title, back, backLabel }: { title: string; back: string; backLabel: string }) {
-  return <div className="user-account-heading">
-    <a href={back} className="user-back" aria-label={backLabel}><ArrowLeft aria-hidden="true" /></a>
-    <h1 tabIndex={-1}>{title}</h1>
-  </div>
-}
-
 // N-08 from My account (Figma 4468:2653). The notice texts live in the app; only the version and draft flag come from the API.
 // The last answer is kept on the device so the page still opens offline, as its caption says.
 function AccountPrivacy() {
@@ -388,14 +381,29 @@ function AccountRow({ icon: Icon, title, detail, href }: { icon: LucideIcon; tit
   return href ? <a className="user-account-row" href={href}>{content}</a> : <div className="user-account-row">{content}</div>
 }
 
+const SWIPE_UP = 30
+const TAP = 10
+
+/** N-01 starts collapsed (Figma 4078:11); a tap or a swipe up on the sheet opens it (4078:95). */
 function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (locale: Locale) => void }) {
   const t = useMessages().user
+  const [expanded, setExpanded] = useState(false)
+  const heading = useRef<HTMLHeadingElement>(null)
+  const startY = useRef<number | null>(null)
+  useEffect(() => { if (expanded) heading.current?.focus() }, [expanded])
+  const drag = expanded ? {} : {
+    onPointerDown: (event: PointerEvent<HTMLElement>) => { startY.current = event.clientY; event.currentTarget.setPointerCapture?.(event.pointerId) },
+    onPointerMove: (event: PointerEvent<HTMLElement>) => { if (startY.current !== null && startY.current - event.clientY >= SWIPE_UP) setExpanded(true) },
+    onPointerUp: (event: PointerEvent<HTMLElement>) => { if (startY.current !== null && Math.abs(startY.current - event.clientY) < TAP) setExpanded(true); startY.current = null },
+    onPointerCancel: () => { startY.current = null },
+  }
   return <div className="user-app user-welcome">
     <img className="user-welcome__illustration" src={welcomeIllustration} width={390} height={844} alt="" />
     <div className="user-welcome__brand"><strong>{t.brand}</strong><span>{t.brandName}</span><i aria-hidden="true" /></div>
-    <main className="user-welcome__sheet">
+    <main className={`user-welcome__sheet ${expanded ? '' : 'user-welcome__sheet--collapsed'}`} {...drag}>
       <span className="user-welcome__handle" aria-hidden="true" />
-      <h1 tabIndex={-1}>{t.welcome}</h1>
+      <h1 tabIndex={-1} ref={heading}>{expanded ? t.welcome : t.welcomeShort}</h1>
+      {expanded ? <>
       <p>{t.welcomeDetail}</p>
       {/* The privacy step of registration (#22) lives at /register. */}
       <a className="button button--primary user-welcome__start" href="/register">{t.begin}<ArrowRight size={16} aria-hidden="true" /></a>
@@ -405,6 +413,7 @@ function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (loca
         <span aria-hidden="true">/</span>
         <button type="button" lang="en" aria-pressed={locale === 'en'} onClick={() => chooseLocale('en')}>{t.english}</button>
       </div>
+      </> : <button type="button" className="user-welcome__hint" onClick={() => setExpanded(true)}>{t.welcomeHint}<ArrowUp size={16} aria-hidden="true" /></button>}
     </main>
   </div>
 }

@@ -212,6 +212,14 @@
   padding: var(--spacing-12) var(--spacing-24) var(--spacing-24); background: var(--background);
   border-radius: var(--user-welcome-sheet-radius) var(--user-welcome-sheet-radius) 0 0;
 }
+/* Figma 4078:11: collapsed, the sheet is 204 px with the greeting and one hint; a tap or a swipe up opens it to 416 px (4078:95). The sheet is cream here, so the hint takes the surface colour to stay visible. */
+.user-welcome__sheet--collapsed { min-height: var(--user-welcome-collapsed-height); touch-action: none; }
+@media (prefers-reduced-motion: no-preference) { .user-welcome__sheet { transition: min-height 250ms ease; } }
+.user-welcome .user-welcome__hint {
+  display: flex; align-items: center; justify-content: center; gap: var(--spacing-4); width: 100%; height: var(--user-welcome-hint-height); margin-top: auto;
+  border: 0; border-radius: var(--user-radius-10); background: var(--surface); color: var(--primary); cursor: pointer;
+  font: inherit; font-size: var(--user-label-size); line-height: var(--user-body-line); font-weight: var(--weight-medium);
+}
 .user-welcome__handle { align-self: center; width: var(--user-welcome-handle-width); height: var(--spacing-4); margin: var(--spacing-8) 0 var(--spacing-32); border-radius: var(--user-space-2); background: var(--user-handle); }
 .user-welcome__sheet h1 { margin: 0 0 var(--spacing-8); font-size: var(--spacing-32); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); }
 .user-welcome__sheet > p { margin: 0; color: var(--muted-foreground); }

@@ -18,6 +18,8 @@ beforeEach(() => {
 })
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); localStorage.clear() })
 
+const expandWelcome = () => fireEvent.click(screen.getByRole('button', { name: 'Toca o desliza para continuar' }))
+
 function open(path = '/sign-in') {
   window.history.replaceState({}, '', path)
   render(<UserApp />)
@@ -434,7 +436,7 @@ describe('U-03 and U-05', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Eliminar mi cuenta' }))
     expect(screen.getByRole('heading', { name: '¿Eliminar tu cuenta?' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Sí, eliminar mi cuenta' }))
-    expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/welcome')
     expect(screen.queryByText('Tu cuenta se eliminó')).toBeNull()
   })
@@ -454,9 +456,13 @@ describe('U-03 and U-05', () => {
 })
 
 describe('User destinations', () => {
-  it('opens the welcome screen with the Figma copy and its links', () => {
+  it('opens the welcome screen collapsed, then expands it with the Figma copy and its links', () => {
     window.history.replaceState({}, '', '/welcome')
     render(<UserEntry><p>Health page</p></UserEntry>)
+    expect(screen.getByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Comenzar' })).toBeNull()
+    expandWelcome()
+    expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toHaveFocus()
     expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.getByText('Tu espacio para entrenar en el RUM.')).toBeInTheDocument()
     expect(screen.getByText('¿Ya tienes cuenta?')).toBeInTheDocument()
@@ -468,8 +474,29 @@ describe('User destinations', () => {
     expect(screen.queryByText(/Ayuda para instalar/)).toBeNull()
   })
 
+  it('expands the welcome sheet with a tap or an upward swipe, not with a short drag', () => {
+    open('/welcome')
+    const sheet = screen.getByRole('main')
+    fireEvent.pointerDown(sheet, { clientY: 700, pointerId: 1 })
+    fireEvent.pointerMove(sheet, { clientY: 680, pointerId: 1 })
+    fireEvent.pointerUp(sheet, { clientY: 680, pointerId: 1 })
+    expect(screen.getByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
+    fireEvent.pointerDown(sheet, { clientY: 700, pointerId: 1 })
+    fireEvent.pointerMove(sheet, { clientY: 665, pointerId: 1 })
+    expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+  })
+
+  it('expands the welcome sheet with a tap on it', () => {
+    open('/welcome')
+    const sheet = screen.getByRole('main')
+    fireEvent.pointerDown(sheet, { clientY: 700, pointerId: 1 })
+    fireEvent.pointerUp(sheet, { clientY: 702, pointerId: 1 })
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toBeInTheDocument()
+  })
+
   it('keeps the language chosen on the welcome screen for every screen before sign in', async () => {
     open('/welcome')
+    expandWelcome()
     fireEvent.click(screen.getByRole('button', { name: 'English' }))
     expect(screen.getByRole('heading', { name: 'Welcome to the gym' })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('en')
@@ -482,7 +509,8 @@ describe('User destinations', () => {
     open()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
     fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
-    expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
+    expandWelcome()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
   })
 

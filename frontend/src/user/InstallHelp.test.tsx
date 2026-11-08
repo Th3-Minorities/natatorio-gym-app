@@ -12,8 +12,9 @@ const t = es.install
 const iPhoneAgent = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1'
 const androidAgent = 'Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/140.0 Mobile Safari/537.36'
 
-function show(agent = androidAgent) {
+function show(agent = androidAgent, registered = false) {
   vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(agent)
+  window.history.replaceState(null, '', registered ? '/install?registered' : '/install')
   return render(<InstallHelp />)
 }
 
@@ -25,15 +26,26 @@ function installEvent(outcome: 'accepted' | 'dismissed' = 'dismissed') {
 }
 
 beforeEach(() => { resetInstall(); window.matchMedia = vi.fn(() => ({ matches: false })) as unknown as typeof window.matchMedia })
-afterEach(() => { vi.restoreAllMocks(); Reflect.deleteProperty(navigator, 'standalone') })
+afterEach(() => { vi.restoreAllMocks(); Reflect.deleteProperty(navigator, 'standalone'); window.history.replaceState(null, '', '/') })
 
-test('iPhone opens on the Safari steps (4078:792)', () => {
+test('from Mi cuenta the iPhone steps have the top bar, the navigation and no link at the bottom (4453:2499)', () => {
   show(iPhoneAgent)
-  expect(screen.getByRole('heading', { level: 1, name: t.title })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 1, name: es.user.installApp })).toBeInTheDocument()
   expect(screen.getByRole('tab', { name: t.iphone })).toHaveAttribute('aria-selected', 'true')
   for (const step of [t.safari, t.share, t.addHome, t.confirmAdd]) expect(screen.getByText(step)).toBeInTheDocument()
   expect(screen.getByText(t.openAsApp)).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: t.continue })).toHaveAttribute('href', '/account')
+  expect(screen.queryByRole('link', { name: t.continue })).not.toBeInTheDocument()
+  expect(screen.queryByText(es.user.brand)).not.toBeInTheDocument()
+  expect(screen.getByRole('navigation', { name: es.user.navigation })).toBeInTheDocument()
+})
+
+test('right after registration the green header and the Continuar link stay (4078:792)', () => {
+  show(iPhoneAgent, true)
+  expect(screen.getByRole('heading', { level: 1, name: t.title })).toBeInTheDocument()
+  expect(screen.getByText(es.user.brand)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: t.continue })).toHaveAttribute('href', '/check-in')
+  fireEvent.click(screen.getByRole('tab', { name: t.android }))
+  expect(screen.getByRole('link', { name: t.notNow })).toHaveAttribute('href', '/check-in')
 })
 
 test('Android has no install button until the browser offers the prompt (REQ-F-66)', async () => {
@@ -46,7 +58,7 @@ test('Android has no install button until the browser offers the prompt (REQ-F-6
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: t.install })) })
   expect(prompt).toHaveBeenCalledTimes(1)
   expect(screen.queryByRole('button', { name: t.install })).not.toBeInTheDocument()
-  expect(screen.getByRole('link', { name: t.notNow })).toHaveAttribute('href', '/account')
+  expect(screen.queryByRole('link', { name: t.notNow })).not.toBeInTheDocument()
 })
 
 test('a prompt fired before N-09 opens still shows the install button', () => {
@@ -60,15 +72,25 @@ test('an accepted prompt or appinstalled shows the installed state (4078:919)', 
   show()
   installEvent('accepted')
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: t.install })) })
-  expect(screen.getByRole('heading', { level: 1, name: t.installedTitle })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 2, name: t.installedTitle })).toBeInTheDocument()
   expect(screen.getByRole('link', { name: t.continue })).toHaveAttribute('href', '/account')
 })
 
-test('opened as the installed app it shows the installed state', () => {
+test('opened as the installed app from Mi cuenta it shows only the top bar, no green header (4453:2666)', () => {
   Object.defineProperty(navigator, 'standalone', { configurable: true, value: true })
   show(iPhoneAgent)
-  expect(screen.getByRole('heading', { level: 1, name: t.installedTitle })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 1, name: es.user.installApp })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 2, name: t.installedTitle })).toBeInTheDocument()
+  expect(screen.queryByText(es.user.brand)).not.toBeInTheDocument()
   expect(screen.queryByRole('tab')).not.toBeInTheDocument()
+})
+
+test('opened as the installed app after registration it keeps the green header (4078:919)', () => {
+  Object.defineProperty(navigator, 'standalone', { configurable: true, value: true })
+  show(iPhoneAgent, true)
+  expect(screen.getByRole('heading', { level: 1, name: t.installedTitle })).toBeInTheDocument()
+  expect(screen.getByText(es.user.brand)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: t.continue })).toHaveAttribute('href', '/check-in')
 })
 
 test('tabs switch by click and by arrow keys', () => {
@@ -88,16 +110,16 @@ test('tabs switch by click and by arrow keys', () => {
 
 test('the back arrow returns to Mi cuenta in both the steps and the installed state', () => {
   const { unmount } = show()
-  expect(screen.getByRole('link', { name: es.user.back })).toHaveAttribute('href', '/account')
+  expect(screen.getByRole('link', { name: es.user.returnToAccount })).toHaveAttribute('href', '/account')
   unmount()
   Object.defineProperty(navigator, 'standalone', { configurable: true, value: true })
   show()
-  expect(screen.getByRole('heading', { level: 1, name: t.installedTitle })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: es.user.back })).toHaveAttribute('href', '/account')
+  expect(screen.getByRole('heading', { level: 2, name: t.installedTitle })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: es.user.returnToAccount })).toHaveAttribute('href', '/account')
 })
 
 test('English texts come from the account language', () => {
   vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(androidAgent)
   render(<I18nProvider locale="en"><InstallHelp /></I18nProvider>)
-  expect(screen.getByRole('heading', { level: 1, name: en.install.title })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { level: 1, name: en.user.installApp })).toBeInTheDocument()
 })
