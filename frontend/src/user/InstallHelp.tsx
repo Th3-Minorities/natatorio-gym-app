@@ -59,7 +59,7 @@ export function InstallHelp() {
     <div className="install-done">
       <span className="install-done__check"><Check aria-hidden="true" /></span>
       <Title tabIndex={-1}>{t.installedTitle}</Title><p>{t.installedText}</p><p>{t.installedHelp}</p>
-      <a href={done} className="button button--primary user-action">{t.continue}</a>
+      <a href={done} className="button button--primary user-action">{fromAccount ? messages.user.returnToAccount : t.continue}</a>
     </div>
   </>)
 

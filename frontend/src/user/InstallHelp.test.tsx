@@ -73,7 +73,8 @@ test('an accepted prompt or appinstalled shows the installed state (4078:919)', 
   installEvent('accepted')
   await act(async () => { fireEvent.click(screen.getByRole('button', { name: t.install })) })
   expect(screen.getByRole('heading', { level: 2, name: t.installedTitle })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: t.continue })).toHaveAttribute('href', '/account')
+  expect(screen.queryByRole('link', { name: t.continue })).not.toBeInTheDocument()
+  expect(screen.getAllByRole('link', { name: es.user.returnToAccount }).map((link) => link.getAttribute('href'))).toEqual(['/account', '/account'])
 })
 
 test('opened as the installed app from Mi cuenta it shows only the top bar, no green header (4453:2666)', () => {
@@ -83,6 +84,7 @@ test('opened as the installed app from Mi cuenta it shows only the top bar, no g
   expect(screen.getByRole('heading', { level: 2, name: t.installedTitle })).toBeInTheDocument()
   expect(screen.queryByText(es.user.brand)).not.toBeInTheDocument()
   expect(screen.queryByRole('tab')).not.toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: t.continue })).not.toBeInTheDocument()
 })
 
 test('opened as the installed app after registration it keeps the green header (4078:919)', () => {
@@ -115,11 +117,19 @@ test('the back arrow returns to Mi cuenta in both the steps and the installed st
   Object.defineProperty(navigator, 'standalone', { configurable: true, value: true })
   show()
   expect(screen.getByRole('heading', { level: 2, name: t.installedTitle })).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: es.user.returnToAccount })).toHaveAttribute('href', '/account')
+  expect(screen.getAllByRole('link', { name: es.user.returnToAccount }).length).toBe(2)
+  for (const link of screen.getAllByRole('link', { name: es.user.returnToAccount })) expect(link).toHaveAttribute('href', '/account')
 })
 
 test('English texts come from the account language', () => {
   vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(androidAgent)
   render(<I18nProvider locale="en"><InstallHelp /></I18nProvider>)
   expect(screen.getByRole('heading', { level: 1, name: en.user.installApp })).toBeInTheDocument()
+})
+
+test('the installed state from Mi cuenta reads Back to My account in English', () => {
+  Object.defineProperty(navigator, 'standalone', { configurable: true, value: true })
+  window.history.replaceState(null, '', '/install')
+  render(<I18nProvider locale="en"><InstallHelp /></I18nProvider>)
+  expect(screen.getAllByRole('link', { name: 'Back to My account' }).length).toBe(2)
 })
