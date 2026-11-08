@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\FacilitySessions;
 use App\Services\UserPhotoCleanup;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
@@ -11,3 +12,6 @@ Artisan::command('inspire', function () {
 
 Schedule::call(fn () => app(UserPhotoCleanup::class)->deletePending())
     ->name('delete-user-photos')->everyMinute()->withoutOverlapping();
+
+Schedule::call(fn () => app(FacilitySessions::class)->closeDue())
+    ->name('close-facility-sessions')->everyMinute()->withoutOverlapping();
