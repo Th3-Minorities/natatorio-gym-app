@@ -78,7 +78,7 @@ States of N-11: [Signing in](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi
 
 Phone first. Current Figma page: [#40 y #42 · Acceso, registro y cuenta](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-2). The old `login/signup logics` page is historical; use the links below for the current handoff. A dash means no separate frame is indexed for that state. N-11 is desktop first and is indexed under [Staff sign in](#staff-sign-in-n-11).
 
-E-165 removes schedules and notices from all signed-out flows. E-166 keeps the original Welcome layout and places the registration prerequisite, membership purchase and help number on the N-03 number-entry step. The store URL remains a pending setting; its button shows only during an active term.
+E-183 removes schedules and notices from all signed-out flows. E-184 keeps the original Welcome layout and places the registration prerequisite, membership purchase and help number on the N-03 number-entry step. The store URL remains a pending setting; its button shows only during an active term when that setting is configured. Installation follows E-165 from PR #121: once after account creation, browser only, without menu links.
 
 ### Entry, recovery, privacy and installation
 
@@ -89,13 +89,13 @@ E-165 removes schedules and notices from all signed-out flows. E-166 keeps the o
 | N-06 Forgot password | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-695) | [Sending link](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2231) | [Server error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2260), [Invalid email](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4256-1846) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2295) |
 | N-07 New password | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-732) | [Checking link](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2359) | [Invalid password](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4256-1861), [Expired or used link](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2377) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4490-3162) |
 | N-08 Privacy notice (draft) | [Before registration](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-334), [From Mi cuenta](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4468-2653) | — | — | Same static notice |
-| N-09 Install help | [Registration: iPhone](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-792), [Android](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-869), [Mi cuenta: iPhone](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4453-2499), [Android](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4453-2595) | — | — | Same static instructions |
+| N-09 Install help | [Registration: iPhone](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-792), [Android](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-869) | — | — | Same static instructions |
 
-- N-01: the offline state follows the original Welcome layout, with a full-width connection banner and both Comenzar and Iniciar sesión disabled. Both actions become available when the connection returns. Purchase and help stay on N-03 at number entry (E-166); schedules and notices require sign in (E-165).
+- N-01: the offline state follows the original Welcome layout, with a full-width connection banner and both Comenzar and Iniciar sesión disabled. Both actions become available when the connection returns. Purchase and help stay on N-03 at number entry (E-184); schedules and notices require sign in (E-183).
 - N-02: [Wait after failed attempts](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2091), [Signed in on another device](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2180). Wrong credentials use red field outlines and one generic message, without revealing whether the email has an account.
 - N-06: [Request received](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2335) gives the same answer whether or not the email has an account.
 - N-08: the text is a draft pending gym approval (G-24); it remains readable without a connection.
-- N-09: [Already installed: after registration](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-919), [From Mi cuenta](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4453-2666). Hide the direct install button when the browser has no install event; the platform instructions remain available.
+- N-09: show once after account creation, in the browser only, never inside the installed app, with no menu links (E-165, [PR #121](https://github.com/Th3-Minorities/natatorio-gym-app/pull/121)). [Already installed](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-919) is the existing install-state reference. Back, Continuar and Ahora no lead to U-03. Hide the direct install button when the browser has no install event. The former Mi cuenta installation variants are archived in Figma and excluded from this handoff.
 
 ### Account and preferences
 
@@ -116,7 +116,7 @@ These screens use Gimnasio, Check-in and Mi cuenta tabs (E-164).
 
 ## Registration handoff (#40; shared entry and installation with #42)
 
-The main sequence confirmed in E-166 is Welcome → enter number → create password → identification photo → waiver → install help after saving the account. The privacy notice is shown before collecting personal data; language choice and emergency contact remain part of registration.
+The main sequence confirmed in E-184 is Welcome → enter number → create password → identification photo → waiver → install help after saving the account. The privacy notice is shown before collecting personal data; language choice and emergency contact remain part of registration.
 
 | Step | Current frame |
 |---|---|

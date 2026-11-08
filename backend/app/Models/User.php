@@ -26,14 +26,20 @@ class User extends Authenticatable
             ->whereHas('academicTerm', fn (Builder $query) => $query->where('ends_on', '>=', today()->toDateString()));
     }
 
-    public function profile(): array
+    /** The active authorization of the term that runs today, if any. */
+    public function currentAuthorization(): ?Authorization
     {
-        $authorization = Authorization::query()->select('authorizations.*')
+        return Authorization::query()->select('authorizations.*')
             ->join('academic_terms', 'academic_terms.id', '=', 'authorizations.academic_term_id')
             ->where('authorizations.user_id', $this->id)->where('authorizations.status', 'active')
             ->where('academic_terms.starts_on', '<=', today()->toDateString())
             ->where('academic_terms.ends_on', '>=', today()->toDateString())
             ->orderByDesc('academic_terms.starts_on')->with('academicTerm')->first();
+    }
+
+    public function profile(): array
+    {
+        $authorization = $this->currentAuthorization();
         [$local, $domain] = explode('@', (string) $this->email, 2);
         $masked = mb_substr($local, 0, 1).'***'.(mb_strlen($local) > 1 ? mb_substr($local, -1) : '').'@'.$domain;
 
