@@ -232,7 +232,7 @@ stateDiagram-v2
 
 - When the session ends, the Gym ID says why: checked out, "closed automatically" or "closed by closure", with text and an icon, not only color (REQ-F-40, REQ-NF-14, E-115).
 - The live indicator shows elapsed duration from the backend Check In time, in HH:MM:SS. It advances at most once per second without flashing and stops when the visit ends or connection is lost. It is not a countdown or the current time of day. There is no code or QR (REQ-F-40, E-163, WCAG 2.2.2).
-- The Gym ID shows a tag, "Member" for a paid member, with text and an icon, and a color different from the athlete tag (E-75). The colors are the owner's choice and are not picked yet. They must not repeat the athletes-only theme color of diagram 8, so one color never means two things.
+- The Gym ID shows a tag, "Member" for a paid member, with text and an icon, and a color different from the athlete tag (E-75). The colors are the team's choice and are not picked yet. They must not repeat the athletes-only theme color of diagram 8, so one color never means two things.
 - Without a connection the app does not show a stored Gym ID as current (REQ-NF-26). It shows "not valid now", the last successful update time, and a stopped elapsed-duration indicator (E-77, E-163). A persistent banner at the top of the screen says the data is not current, with an "updated at" time. The same applies to the athlete Gym ID below.
 - If an athletes-only period starts inside the active session, the Gym ID shows a notice with its start time while the session is active. The session is never cut (REQ-F-83).
 
@@ -309,7 +309,7 @@ flowchart TD
 - The whole theme of the User app changes color, so every User sees at a glance which period it is. The Staff and Administrator dashboard does not change color (REQ-F-90).
 - Color is never the only signal (REQ-NF-14): the text notice and an icon stay (WCAG 1.4.1).
 - Without a connection the app returns to the normal color and does not claim an athletes-only period from cached schedules (REQ-F-90, REQ-NF-26).
-- The theme colors, and the colors of the Member and Athlete tags on the Gym ID, are the owner's choice and are not picked yet. They must not overlap, so one color never means two things.
+- The theme colors, and the colors of the Member and Athlete tags on the Gym ID, are the team's choice and are not picked yet. They must not overlap, so one color never means two things.
 
 ### 9. Occupancy counting
 

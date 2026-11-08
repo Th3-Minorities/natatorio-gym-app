@@ -206,7 +206,7 @@ flowchart TD
 - C-06 is a setting, not a screen, and the top bar of the User app has no language button (SM-2, E-104). The language question is asked when the account is created, and the User is told it can be changed later in the preferences of U-03. The choice is saved on the account (`users.locale`), so emails use it (REQ-NF-35).
 - Each staff account has its own language, stored on the account (`staff_accounts.locale`, data model). The control is in the account preferences on the dashboard and may also be a button in the dashboard top bar; the wireframe picks the placement (E-104, data-model D11).
 - The top bar banner stays on screen while there is no connection. Each section also shows "updated at TIME" (E-77, SM-6).
-- During the athletes-only period the whole User app changes theme color. Without a connection the app returns to the normal color, and the banner says the data is not current. The app does not claim an athletes-only period from cached schedules (E-76, REQ-NF-26). The color is the owner's choice and the text notice with an icon stays, because color cannot be the only signal (WCAG 1.4.1).
+- During the athletes-only period the whole User app changes theme color. Without a connection the app returns to the normal color, and the banner says the data is not current. The app does not claim an athletes-only period from cached schedules (E-76, REQ-NF-26). The color is the team's choice and the text notice with an icon stays, because color cannot be the only signal (WCAG 1.4.1).
 
 ### 7. Standard data states
 
