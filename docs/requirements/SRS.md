@@ -2,13 +2,13 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.15 draft, not approved
+**Version:** 0.18 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
 **Organization:** Department of Computer Science and Engineering, University of Puerto Rico at Mayagüez (UPRM)
 
-**Date:** 2026-11-05
+**Date:** 2026-11-07
 
 ## Contents
 
@@ -82,6 +82,7 @@
 | Carlos J. Pepin Delgado | 2026-11-06 | Team decision E-154 (`team.md`): API error texts live only in the PWA translation files and the API sends only a code (REQ-NF-34 rewritten) | 0.13 |
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decision E-153 (`team.md`), which replaces E-112: registration is one screen with one field; exactly 10 digits is a student number (athlete registration), anything else is an Authorization Number, whose length is not checked (REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91; REQ-F-10 and the glossary no longer fix the length at 6 characters, E-128) | 0.14 |
 | Carlos J. Pepin Delgado | 2026-11-06 | Team decisions E-155 and E-156 (`team.md`): the waiver is accepted with an on-screen checkbox now, and a drawn signature is added for the Final report after research (REQ-F-60); no "15 minutes left" notice | 0.15 |
+| Viviana V Ramos Vivoni | 2026-11-07 | User Check In wireframes, E-163 and E-164: elapsed duration, no term on the Gym ID, normal Check In after a visit, offline update time and occupancy on Gimnasio (REQ-F-40, REQ-NF-26) | 0.18 |
 
 ## 1. Introduction
 
@@ -297,7 +298,7 @@ The Gym ID is the credential the User shows (Proposal:210). Estimated occupancy 
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-F-40 | The Gym ID shall show name, photo, authorization, Check In status, a tag with text and an icon ("Athlete" or "Member") with a different color for each, and a moving clock so Staff can tell a live screen from a screenshot. The clock is the time with seconds, as text, changing at most once per second and never flashing (WCAG 2.2.2). It shows no countdown for anyone: an active session shows "Active session" and the Check In time (E-129), and when the session ends it shows why, with text and an icon: checked out, "closed automatically" or "closed by closure". It shows "Authorized athlete" and the term (for example "Authorized athlete, Fall 2026") and does not expire while the term authorization is active. It has no code or QR. | MVP | High | Clear. Tag colors: Carlos picks them | Proposal:153, 210; Team decision (E-75, E-115, E-129) |
+| REQ-F-40 | The Gym ID shall show name, photo, authorization, Check In status and a tag with text and an icon ("Athlete" or "Member"), with a different color for each. Its live indicator shall show elapsed session duration in HH:MM:SS, calculated from the backend Check In time, advancing at most once per second without flashing (WCAG 2.2.2). It shows no countdown. An active session shows "Active session" and the Check In time. When the visit ends, it shows the reason with text and an icon (checked out, "closed automatically" or "closed by closure") and the total duration, which stops advancing. Continue returns to "Registra tu entrada" when access is still valid, for both members and athletes; another entry follows the normal Check In rules. Ending a visit does not revoke an athlete's term authorization. The Gym ID does not display the term or a separate authorized-athlete card without a session. It has no code or QR. | MVP | High | Clear. Tag colors: Carlos picks them | Proposal:153, 210; Team decision (E-75, E-115, E-129, E-163) |
 | REQ-F-41 | Estimated occupancy shall equal the number of open sessions and shall be recalculated after each Check In, check-out, automatic close, closure or Staff correction. Athletes count like everyone else while their session is open. | MVP | High | Clear | Proposal:164-166, 214; Team decision (E-115) |
 | REQ-F-42 | User, Staff and Administrator screens shall show the same occupancy value, compared after each screen has updated. | MVP | High | Clear | Proposal:166, 214 |
 | REQ-F-43 | The occupancy and active session screens shall update by polling the backend every 20 to 30 seconds. | N/A | High | Clear | Team decision |
@@ -471,7 +472,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-26 | Sign in, authorization, facility sessions, the one-device rule and Gym ID verification shall require a connection. Without one, no session is created, and the app does not show a stored Gym ID or occupancy as if it were current. The app shows a banner at the top that says the data is not current. Schedules, notices, facility information and analytics already loaded stay on screen, each with the time it was last updated. Occupancy shows no number. The Gym ID says it is not valid now, and its clock stops. | N/A | High | Clear | Proposal:460; Review gap; Team decision (E-77) |
+| REQ-NF-26 | Sign in, authorization, facility sessions, the one-device rule and Gym ID verification shall require a connection. Without one, no session is created, and the app does not show a stored Gym ID or occupancy as if it were current. The app shows a banner at the top that says the data is not current. Schedules, notices, facility information and analytics already loaded stay on screen, each with the time it was last updated. Occupancy shows no number. The Gym ID says it is not valid now, shows its last successful update time, and stops its elapsed-duration indicator. | N/A | High | Clear | Proposal:460; Review gap; Team decision (E-77, E-163) |
 | REQ-NF-28 | The location boundary, the accepted accuracy and the gym coordinates shall be set with tests inside and around the gym on iPhone and Android. | N/A | High | Pending: the team measures the values | Proposal:435, 458 |
 | REQ-NF-29 | The location boundary shall be configurable per environment. In production it shall never be more than 50 meters from the gym coordinates (REQ-NF-28). The December demo runs in a separate environment with the classroom boundary. | N/A | High | Clear. The 50 meters can change after the gym is measured; the classroom must be farther than 50 meters from the gym | Review gap; Team decision |
 | REQ-NF-30 | The main flows shall pass on iPhone with Safari, Android with Chrome, and Windows with Chrome and Edge; macOS and Firefox as a secondary check. | N/A | High | Clear | Proposal:464 |
