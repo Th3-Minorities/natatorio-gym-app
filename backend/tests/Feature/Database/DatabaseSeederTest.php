@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Database;
 
+use App\Models\Authorization;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -79,6 +80,30 @@ class DatabaseSeederTest extends TestCase
         $this->assertDatabaseCount('users', 0);
         $this->assertDatabaseCount('staff_accounts', 0);
         $this->assertDatabaseCount('settings', 0);
+    }
+
+    public function test_the_denied_access_cases_have_no_current_authorization_and_the_valid_ones_do(): void
+    {
+        $this->seed();
+
+        foreach (['pago-vencido', 'atleta-removido', 'orden-cancelada', 'sin-autorizacion'] as $name) {
+            $user = User::query()->where('email', "{$name}@example.com")->firstOrFail();
+            $this->assertNull($user->currentAuthorization(), "{$name} must not have a current authorization.");
+        }
+
+        foreach (['paid', 'athlete'] as $type) {
+            $user = Authorization::query()->where('type', $type)->where('status', 'active')->firstOrFail()->user;
+            $this->assertNotNull($user->currentAuthorization(), "A {$type} user must have a current authorization.");
+        }
+    }
+
+    public function test_the_load_test_seeder_creates_no_users_in_production(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $this->artisan('db:seed', ['--class' => 'LoadTestSeeder', '--force' => true])->assertSuccessful();
+
+        $this->assertSame(0, User::query()->where('email', 'like', 'load-%')->count());
     }
 
     /** @return list<string> */

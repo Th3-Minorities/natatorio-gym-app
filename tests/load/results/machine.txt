@@ -1,0 +1,5 @@
+Host CPU: 12th Gen Intel(R) Core(TM) i7-1260P, 12 cores, 16 logical processors
+Host RAM: 15.7 GB
+Host OS: Microsoft Windows 11 Home 10.0.26200
+Docker Desktop: 16 CPUs, 7.613 GiB memory (docker info, Server Version 28.3.3; no .wslconfig limits)
+php-fpm pm: dynamic, pm.max_children = 5 (app container, /usr/local/etc/php-fpm.d/www.conf; no override in zz-docker.conf)

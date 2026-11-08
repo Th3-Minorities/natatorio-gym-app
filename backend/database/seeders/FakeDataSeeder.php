@@ -40,11 +40,13 @@ class FakeDataSeeder extends Seeder
         }
 
         $this->content();
-        [$current] = $this->terms();
+        [$current, , $past] = $this->terms();
         [$admin, $staff] = $this->staff();
         $paid = $this->paidMembers($current);
         $athletes = $this->athletes($current);
         $manual = $this->manualGrant($current);
+        $this->accessCases($current, $past);
+        $this->storeOrderCases();
         $this->links();
         $this->browserTestUser();
         $this->signInData();
@@ -71,7 +73,7 @@ class FakeDataSeeder extends Seeder
         ScheduleSlot::factory()->dated()->create();
     }
 
-    /** @return array{AcademicTerm, AcademicTerm} the term that contains today, and the next one */
+    /** @return array{AcademicTerm, AcademicTerm, AcademicTerm} the term that contains today, the next one and the one that ended */
     private function terms(): array
     {
         $current = AcademicTerm::factory()->create([
@@ -84,8 +86,13 @@ class FakeDataSeeder extends Seeder
             'starts_on' => today()->addMonth()->addDay()->toDateString(),
             'ends_on' => today()->addMonths(5)->toDateString(),
         ]);
+        $past = AcademicTerm::factory()->create([
+            'name' => 'Término pasado',
+            'starts_on' => today()->subMonths(8)->toDateString(),
+            'ends_on' => today()->subMonths(2)->subDay()->toDateString(),
+        ]);
 
-        return [$current, $next];
+        return [$current, $next, $past];
     }
 
     /** @return array{StaffAccount, StaffAccount} one Administrator and one front desk account */
@@ -140,6 +147,58 @@ class FakeDataSeeder extends Seeder
             'academic_term_id' => $term->id,
             'member_group' => 'employee',
             'photo_path' => null,
+        ]);
+    }
+
+    /**
+     * The access decision cases of objective 1 that the groups above do not cover (issue #81). Valid paid, valid athlete
+     * and the unmatched records (two unclaimed orders, one free roster record, and the browser test user, who matches
+     * nothing) already exist. Each denied case below is a User whose Check In must answer check_in_no_authorization.
+     */
+    private function accessCases(AcademicTerm $current, AcademicTerm $past): void
+    {
+        // Expired paid: a real order and authorization, but of a term that ended.
+        $expired = ImportedMembership::factory()->create([
+            'import_id' => Import::factory()->create(['file_name' => 'sync-de-prueba-pasado', 'created_count' => 1])->id,
+            'academic_term_id' => $past->id,
+            'paid_at' => today()->subMonths(5),
+        ]);
+        Authorization::factory()->paid($expired)->create(['user_id' => $this->userWithWaiver(['email' => 'pago-vencido@example.com'])->id, 'academic_term_id' => $past->id]);
+
+        // Removed athlete: the roster row stays with removed_at and the authorization is revoked (REQ-F-22).
+        $removed = RosterRecord::factory()->removed()->create();
+        Authorization::factory()->athlete($removed)->create([
+            'user_id' => $this->userWithWaiver(['email' => 'atleta-removido@example.com'])->id,
+            'academic_term_id' => $current->id,
+            'status' => 'revoked',
+            'reason' => 'removed from roster',
+        ]);
+
+        // Missing authorization: an account that finished registration steps but has no authorization at all.
+        $this->userWithWaiver(['email' => 'sin-autorizacion@example.com']);
+    }
+
+    /**
+     * Store sync outcomes (REQ-F-22, REQ-F-28, REQ-F-98, REQ-F-99). A cancelled order revokes its authorization. An order dated
+     * outside every term and an order that repeats an Authorization Number are never stored: the sync record lists them
+     * as skipped, with only the order reference and the reason (E-149).
+     */
+    private function storeOrderCases(): void
+    {
+        $import = Import::factory()->create([
+            'file_name' => 'sync-de-prueba-omitidos',
+            'revoked_count' => 1,
+            'skipped_count' => 2,
+            'result' => ['skipped' => [
+                ['order_reference' => 'WC-900001', 'reason' => 'paid date outside every term'],
+                ['order_reference' => 'WC-900002', 'reason' => 'repeated authorization number'],
+            ]],
+        ]);
+        $cancelled = ImportedMembership::factory()->create(['import_id' => $import->id, 'order_status' => 'cancelled']);
+        Authorization::factory()->paid($cancelled)->create([
+            'user_id' => $this->userWithWaiver(['email' => 'orden-cancelada@example.com'])->id,
+            'status' => 'revoked',
+            'reason' => 'order cancelled',
         ]);
     }
 
@@ -253,9 +312,10 @@ class FakeDataSeeder extends Seeder
         AuditLogEntry::factory()->count(2)->create(['staff_account_id' => $staff->id]);
     }
 
-    private function userWithWaiver(): User
+    /** @param array<string, mixed> $attributes */
+    private function userWithWaiver(array $attributes = []): User
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create($attributes);
         WaiverAcceptance::factory()->create(['user_id' => $user->id]);
 
         return $user;
