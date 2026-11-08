@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useLayoutEffect, useRef, type ReactNode } from 'react'
 
 type ModalProps = {
   /** id of the modal's heading, which names it for screen readers. */
@@ -16,7 +16,8 @@ type ModalProps = {
 export function Modal({ labelledBy, onClose, children }: ModalProps) {
   const dialog = useRef<HTMLDialogElement>(null)
 
-  useEffect(() => {
+  // A layout effect, so close() runs while the dialog is still on the page: the browser then gives focus back.
+  useLayoutEffect(() => {
     const element = dialog.current
     element?.showModal()
     return () => element?.close()
