@@ -11,6 +11,10 @@
   border-radius: var(--spacing-20);
   overflow: clip;
 }
+/* On a phone the app fills the screen; the 390 px rounded frame is only for wider screens. */
+@media (max-width: 599px) {
+  .user-app { max-width: none; border-radius: 0; }
+}
 .user-app--access { background: var(--hero); }
 .user-header {
   display: flex;
@@ -113,6 +117,9 @@
 .user-profile h2 { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
 .user-profile p { font-size: var(--user-body-size); line-height: var(--user-body-line); margin-top: var(--user-space-3); }
 .user-account-row { display: flex; flex-direction: column; gap: var(--spacing-4); width: 100%; border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-12); padding: var(--user-notice-padding); text-decoration: none; color: var(--foreground); }
+.user-account-row--link { flex-direction: row; align-items: center; gap: var(--spacing-12); }
+.user-account-row--link > div { display: flex; flex-direction: column; gap: var(--spacing-4); flex: 1; min-width: 0; }
+.user-account-row--link > svg { flex: none; width: var(--spacing-20); height: var(--spacing-20); color: var(--muted-foreground); }
 .user-account-row strong { font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
 .user-account-row span { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--muted-foreground); }
 .user-content .user-danger { background: var(--user-danger); color: var(--primary-foreground); }
