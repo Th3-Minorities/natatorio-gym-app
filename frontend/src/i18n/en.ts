@@ -333,6 +333,7 @@ export const en: Messages = {
     staff_deactivate_own_account: 'You cannot deactivate your own account.',
     staff_last_administrator: 'At least one active Administrator must remain.',
     staff_account_status_changed: 'This account changed while you were viewing it. Refresh the list.',
+    term_overlap: 'The dates overlap another term.',
   },
 
   validation: {

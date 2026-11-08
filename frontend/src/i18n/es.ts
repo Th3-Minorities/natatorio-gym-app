@@ -360,6 +360,8 @@ export const es = {
     staff_deactivate_own_account: 'No puedes desactivar tu propia cuenta.',
     staff_last_administrator: 'Debe quedar al menos un Administrador activo.',
     staff_account_status_changed: 'Esta cuenta cambió mientras la veías. Actualiza la lista.',
+    // A-04 "Solapamiento" (101:1884).
+    term_overlap: 'Las fechas coinciden con otro término.',
   },
 
   validation: {

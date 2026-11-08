@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcademicTermController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\PaidRegistrationController;
@@ -55,6 +56,13 @@ Route::prefix('staff')->group(function () {
         Route::patch('/accounts/{account}/role', [StaffAccountController::class, 'changeRole'])->whereNumber('account');
         Route::post('/accounts/{account}/deactivate', [StaffAccountController::class, 'deactivate'])->whereNumber('account');
         Route::post('/accounts/{account}/reactivate', [StaffAccountController::class, 'reactivate'])->whereNumber('account');
+    });
+
+    // Academic terms screen (A-04, REQ-F-21). No delete route: terms are never deleted (E-107).
+    Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        Route::get('/terms', [AcademicTermController::class, 'index']);
+        Route::post('/terms', [AcademicTermController::class, 'store']);
+        Route::patch('/terms/{term}', [AcademicTermController::class, 'update'])->whereNumber('term');
     });
 });
 
