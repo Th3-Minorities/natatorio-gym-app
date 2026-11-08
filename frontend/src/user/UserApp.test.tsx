@@ -231,13 +231,19 @@ describe('User destinations', () => {
     render(<UserEntry><p>Health page</p></UserEntry>)
     expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.queryByText('Health page')).toBeNull()
-    expect(screen.queryByRole('link', { name: 'Registrarme' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Registrarme' })).toHaveAttribute('href', '/register')
     expect(screen.queryByRole('link', { name: 'Instalar app' })).toBeNull()
+  })
+
+  it('shows the help line on welcome with the contact number from the API', async () => {
+    answer = async () => json({ version: 'draft', draft: true, store_url: null, contact_number: '787-555-0199' })
+    open('/welcome')
+    expect(await screen.findByText('Necesitas una membresía pagada o estar en el roster de atletas. Ayuda · 787-555-0199.')).toBeInTheDocument()
   })
 
   it('returns from sign-in to welcome', async () => {
     open()
-    expect(screen.queryByRole('link', { name: 'Comenzar' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
     fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
     expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Comenzar' })).toBeNull()

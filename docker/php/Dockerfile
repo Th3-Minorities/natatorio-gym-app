@@ -9,6 +9,13 @@ RUN apt-get update \
     && apt-get purge -y --auto-remove libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Imagick converts registration photos (JPEG, PNG, HEIC) to small JPEGs without location data (REQ-NF-24).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends $PHPIZE_DEPS libmagickwand-dev libheif1 \
+    && pecl install imagick-3.8.1 \
+    && docker-php-ext-enable imagick \
+    && rm -rf /var/lib/apt/lists/* /tmp/pear
+
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 # PHP errors go to the container logs, never to the client: production settings, plus ours.
