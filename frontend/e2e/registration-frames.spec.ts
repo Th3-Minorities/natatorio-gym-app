@@ -21,7 +21,7 @@ test.describe('paid registration screen states', () => {
         if (endpoint.endsWith('/privacy') && route.request().method() === 'GET') {
           if (scenario === 'privacy-loading') return new Promise(() => {})
           if (scenario === 'privacy-error') return route.fulfill({ status: 500, json: { error: { code: 'server_error' } } })
-          return route.fulfill({ json: { version: 'draft', draft: true, store_url: null } })
+          return route.fulfill({ json: { version: 'draft', draft: true, store_url: null, contact_number: '265-3866' } })
         }
         if (endpoint.endsWith('/lookup')) return route.fulfill({ json: { state: 'ready', name: '[Nombre]', masked_email: 'c***@upr.edu' } })
         return route.fulfill({ status: 204 })
@@ -68,7 +68,7 @@ test('paid registration stops at the last drawn step without claiming the number
   await page.route((url) => url.pathname.startsWith('/api/'), async (route) => {
     const endpoint = new URL(route.request().url()).pathname
     if (endpoint.endsWith('/csrf-cookie')) return route.fulfill({ status: 204, headers: { 'set-cookie': 'XSRF-TOKEN=test; Path=/' } })
-    if (endpoint.endsWith('/privacy') && route.request().method() === 'GET') return route.fulfill({ json: { version: 'draft', draft: true, store_url: null } })
+    if (endpoint.endsWith('/privacy') && route.request().method() === 'GET') return route.fulfill({ json: { version: 'draft', draft: true, store_url: null, contact_number: '265-3866' } })
     if (endpoint.endsWith('/lookup')) return route.fulfill({ json: { state: 'ready', name: 'María', masked_email: 'm***a@upr.edu' } })
     if (endpoint.endsWith('/complete')) completed = true
     return route.fulfill({ status: 204 })

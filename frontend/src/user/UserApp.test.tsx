@@ -235,6 +235,12 @@ describe('User destinations', () => {
     expect(screen.queryByRole('link', { name: 'Instalar app' })).toBeNull()
   })
 
+  it('shows the help line on welcome with the contact number from the API', async () => {
+    answer = async () => json({ version: 'draft', draft: true, store_url: null, contact_number: '787-555-0199' })
+    open('/welcome')
+    expect(await screen.findByText('Necesitas una membresía pagada o estar en el roster de atletas. Ayuda · 787-555-0199.')).toBeInTheDocument()
+  })
+
   it('returns from sign-in to welcome', async () => {
     open()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')

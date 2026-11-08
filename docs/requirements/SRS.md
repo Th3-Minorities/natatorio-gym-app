@@ -83,7 +83,7 @@
 | Carlos J. Pepin Delgado | 2026-11-05 | Team decision E-153 (`team.md`), which replaces E-112: registration is one screen with one field; exactly 10 digits is a student number (athlete registration), anything else is an Authorization Number, whose length is not checked (REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91; REQ-F-10 and the glossary no longer fix the length at 6 characters, E-128) | 0.14 |
 | Carlos J. Pepin Delgado | 2026-11-06 | Team decisions E-155 and E-156 (`team.md`): the waiver is accepted with an on-screen checkbox now, and a drawn signature is added for the Final report after research (REQ-F-60); no "15 minutes left" notice | 0.15 |
 | Viviana V Ramos Vivoni | 2026-11-07 | User Check In wireframes, E-163 and E-164: elapsed duration, no term on the Gym ID, normal Check In after a visit, offline update time and occupancy on Gimnasio (REQ-F-40, REQ-NF-26) | 0.18 |
-| Carlos J. Pepin Delgado | 2026-11-07 | Team decisions E-159 and E-160 (`team.md`): a Spanish / English switch on the welcome screen before sign in, replacing E-103 (REQ-NF-33); the student number has 9 digits, correcting E-153 (REQ-F-15) | 0.19 |
+| Team | 2026-11-07 | Team decisions E-159 and E-160 (`team.md`): a Spanish / English switch on the welcome screen before sign in, replacing E-103 (REQ-NF-33); the student number has 9 digits, correcting E-153 (REQ-F-15) | 0.19 |
 
 ## 1. Introduction
 
@@ -483,7 +483,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it when creating the account and can change it later in the profile preferences. Before an account exists, the welcome screen offers Spanish or English; the choice is kept on the device and applies to the screens before sign in, and it is the preselected answer when the account's language is asked. After sign in, the account language applies. | N/A | High | Clear | Team decision (E-64, E-114, E-159) |
+| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it when creating the account and can change it later in the profile preferences. Before an account exists, the welcome screen offers Spanish or English; the choice is kept on the device and applies to the screens before sign in, and it is the preselected answer when the account's language is asked. After sign in, the account language applies. Each staff account stores its own language, changed in the account's preferences on the dashboard. The User app has no language button in the top bar. | N/A | High | Clear | Team decision (E-64, E-104, E-114, E-159) |
 | REQ-NF-34 | All frontend and backend texts shall be in translation files from the start. API error texts shall live only in the PWA translation files, and the API shall send only a code. The backend shall translate what does not pass through the PWA, such as emails. | N/A | High | Clear | Team decision (E-154) |
 | REQ-NF-35 | Emails shall be sent in the language chosen by the User. | N/A | High | Clear | Team decision |
 | REQ-NF-36 | The page language attribute shall change together with the texts (WCAG 3.1.1). | N/A | High | Clear | Review gap |

@@ -20,7 +20,7 @@ export const en: Messages = {
     studentHint: 'Student: 9 digits.',
     numberHint: 'Authorization number: 6 or 7 characters, may contain letters.',
     paymentDescription: 'Payment description ·', receiptNumber: 'Authorization number:', exampleNumber: '4K7Q2B',
-    paymentHelp: 'You need a paid membership. Problems? Call 265-3866.', buy: 'Buy membership',
+    paymentHelp: (phone: string) => `You need a paid membership. Problems? Call ${phone}.`, buy: 'Buy membership',
     continue: 'Continue', existing: 'Already have an account?', signIn: 'Sign in',
     renewal: (email: string) => `You already have an account with ${email}. Sign in to add this membership.`,
     hello: (name: string) => `Hello, ${name}!`, createPassword: 'Create a password',
@@ -73,7 +73,7 @@ export const en: Messages = {
     activeText: 'The account can be deleted when you no longer have an active authorization.', returnToSettings: 'Back to Settings',
     offlineDelete: 'Connect to delete the account.', welcome: 'Welcome to the gym', deleted: 'Your account was deleted',
     deletedDetail: 'You can register again when you have access to the gym.', register: 'Register',
-    membershipHelp: 'You need a paid membership or a place on the athlete roster. Help · 265-3866.',
+    membershipHelp: (phone: string) => `You need a paid membership or a place on the athlete roster. Help · ${phone}.`,
     install: 'Install app', helpPrivacy: 'Installation help · Privacy notice', languages: 'Español / English',
     gym: 'Gym', checkIn: 'Check-in', navigation: 'Main navigation',
   },
@@ -156,7 +156,7 @@ export const en: Messages = {
   // The PWA owns the texts for stable API error codes (E-154).
   errors: {
     registration_privacy_required: 'Review the privacy notice before continuing your registration.',
-    registration_number_unavailable: 'You need a paid membership. Problems? Call 265-3866.',
+    registration_number_unavailable: 'You need a paid membership.',
     registration_waiver_unavailable: 'Try again before continuing registration.',
     registration_photo_failed: 'Try again before continuing registration.',
     registration_photo_invalid: 'Try again before continuing registration.',

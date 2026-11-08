@@ -52,18 +52,24 @@ class RegistrationLookup
         }
 
         return new ApiException('registration_number_unavailable', 422, [
-            'contact_number' => [(string) (Setting::query()->where('name', 'contact_phone')->value('value') ?? '265-3866')],
+            'contact_number' => [$this->contactNumber()],
         ]);
+    }
+
+    public function contactNumber(): string
+    {
+        return (string) (Setting::query()->where('name', 'contact_phone')->value('value') ?? '265-3866');
     }
 
     public function find(string $number, Request $request): ImportedMembership
     {
+        $number = Str::upper($number);
         $this->ensureAllowed($request);
-        $membership = ImportedMembership::query()->where('authorization_number', $number)->first();
+        $membership = ImportedMembership::query()->whereRaw('upper(authorization_number) = ?', [$number])->first();
         if ($membership === null) {
             $membership = $this->store->find($number);
         }
-        if ($membership === null || ! $membership->exists || $membership->authorization_number !== $number || ! $this->available($membership)) {
+        if ($membership === null || ! $membership->exists || Str::upper($membership->authorization_number) !== $number || ! $this->available($membership)) {
             throw $this->failed($request);
         }
         RateLimiter::decrement($this->ipKey($request->ip()), config('registration.window_seconds'));

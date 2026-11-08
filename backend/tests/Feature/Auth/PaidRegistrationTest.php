@@ -7,6 +7,7 @@ use App\Models\AcademicTerm;
 use App\Models\AuditLogEntry;
 use App\Models\Authorization;
 use App\Models\ImportedMembership;
+use App\Models\Setting;
 use App\Models\StaffAccount;
 use App\Models\User;
 use App\Models\WaiverAcceptance;
@@ -93,6 +94,30 @@ class PaidRegistrationTest extends TestCase
         $this->assertDatabaseCount('authorizations', 0);
     }
 
+    public function test_authorization_number_ignores_letter_case(): void
+    {
+        $member = $this->membership(['authorization_number' => 'AB12C3']);
+        $this->acknowledge();
+        foreach (['ab12c3', 'AB12C3', 'Ab12c3'] as $typed) {
+            $this->postJson('/api/user/registration/lookup', ['authorization_number' => $typed])
+                ->assertOk()->assertJsonPath('name', $member->name);
+        }
+        $member->update(['authorization_number' => 'cd45e6']);
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'CD45E6'])->assertOk()->assertJsonPath('name', $member->name);
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'cd45e7'])->assertUnprocessable();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => str_repeat('A', 21)])
+            ->assertUnprocessable()->assertJsonPath('error.code', 'validation_failed');
+    }
+
+    public function test_the_contact_number_comes_from_the_settings(): void
+    {
+        Setting::query()->create(['name' => 'contact_phone', 'value' => '787-555-0199']);
+        $this->acknowledge();
+        $this->getJson('/api/user/registration/privacy')->assertOk()->assertJsonPath('contact_number', '787-555-0199');
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'missing'])
+            ->assertUnprocessable()->assertJsonPath('error.details.contact_number.0', '787-555-0199');
+    }
+
     public function test_invalid_claimed_and_ended_numbers_have_identical_responses(): void
     {
         $member = $this->membership();
@@ -122,7 +147,7 @@ class PaidRegistrationTest extends TestCase
     public function test_missing_number_uses_the_store_interface_without_network(): void
     {
         $this->acknowledge();
-        $this->mock(MembershipStore::class)->shouldReceive('find')->once()->with('new')->andReturn(null);
+        $this->mock(MembershipStore::class)->shouldReceive('find')->once()->with('NEW')->andReturn(null);
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'new'])->assertUnprocessable();
         Http::assertNothingSent();
     }
@@ -130,7 +155,7 @@ class PaidRegistrationTest extends TestCase
     public function test_an_order_imported_by_the_store_adapter_is_checked_before_returning_its_masked_email(): void
     {
         $this->acknowledge();
-        $this->mock(MembershipStore::class)->shouldReceive('find')->once()->with('new')
+        $this->mock(MembershipStore::class)->shouldReceive('find')->once()->with('NEW')
             ->andReturnUsing(fn () => $this->membership(['authorization_number' => 'new']));
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => 'new'])
             ->assertOk()->assertJsonPath('masked_email', 'c***@upr.edu');
@@ -313,6 +338,16 @@ class PaidRegistrationTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
+    public function test_final_submit_answers_503_when_the_shipped_config_has_no_waiver(): void
+    {
+        $this->membership();
+        $this->acknowledge();
+        config(['registration.waiver' => (require config_path('registration.php'))['waiver']]);
+        $this->post('/api/user/registration/complete', $this->payload(), ['Accept' => 'application/json'])
+            ->assertServiceUnavailable()->assertJsonPath('error.code', 'registration_waiver_unavailable');
+        $this->assertDatabaseCount('users', 0);
+    }
+
     public function test_final_submit_rechecks_term_and_order_status(): void
     {
         $member = $this->membership();
@@ -392,7 +427,7 @@ class PaidRegistrationTest extends TestCase
             ['password', 'short'], ['password_confirmation', 'different'], ['waiver_accepted', false],
             ['waiver_version', 'old'], ['emergency_contact_name', ''], ['emergency_contact_phone', 'abc'],
             ['locale', 'fr'], ['photo', null], ['photo', 'fake.jpg'],
-            ['authorization_number', ['A']],
+            ['authorization_number', ['A']], ['authorization_number', str_repeat('A', 21)],
         ];
     }
 

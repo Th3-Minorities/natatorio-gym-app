@@ -219,11 +219,16 @@ function AccountRow({ title, detail }: { title: string; detail: string }) {
 
 function Welcome({ deleted }: { deleted: boolean }) {
   const t = useMessages().user
+  const [phone, setPhone] = useState('')
+  useEffect(() => {
+    apiRequest<{ contact_number?: string }>('/user/registration/privacy')
+      .then((notice) => setPhone(notice?.contact_number ?? '')).catch(() => undefined)
+  }, [])
   return <UserPage><h1 tabIndex={-1}>{t.welcome}</h1>
     {deleted && <UserNotice title={t.deleted} success>{t.deletedDetail}</UserNotice>}
     <div className="user-welcome-actions">
       <a className="button button--primary user-action" href="/sign-in">{t.signIn}</a>
-      <a href="/register" className="button button--secondary user-action">{t.register}</a><p className="user-caption">{t.membershipHelp}</p>
+      <a href="/register" className="button button--secondary user-action">{t.register}</a>{phone && <p className="user-caption">{t.membershipHelp(phone)}</p>}
     </div>
     <div className="user-welcome-actions"><span className="button button--primary user-action">{t.install}</span>
       <p className="user-caption">{t.helpPrivacy}</p><p className="user-caption">{t.languages}</p></div>

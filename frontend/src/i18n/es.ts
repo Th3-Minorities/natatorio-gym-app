@@ -18,7 +18,7 @@ export const es = {
     studentHint: 'Estudiante: 9 dígitos.',
     numberHint: 'Número de autorización: 6 o 7 caracteres, puede tener letras.',
     paymentDescription: 'Descripción del pago ·', receiptNumber: 'Número de autorización:', exampleNumber: '4K7Q2B',
-    paymentHelp: 'Necesitas una membresía pagada. ¿Problemas? Llama al 265-3866.', buy: 'Comprar membresía',
+    paymentHelp: (phone: string) => `Necesitas una membresía pagada. ¿Problemas? Llama al ${phone}.`, buy: 'Comprar membresía',
     continue: 'Continuar', existing: '¿Ya tienes cuenta?', signIn: 'Inicia sesión',
     renewal: (email: string) => `Ya tienes una cuenta con ${email}. Inicia sesión para añadir esta membresía.`,
     hello: (name: string) => `¡Hola, ${name}!`, createPassword: 'Crea una contraseña',
@@ -79,7 +79,7 @@ export const es = {
     activeTitle: 'Tienes una autorización activa', activeText: 'La cuenta puede eliminarse cuando ya no tengas una autorización activa.',
     returnToSettings: 'Volver a Ajustes', offlineDelete: 'Conéctate para eliminar la cuenta.',
     welcome: 'Bienvenido al gimnasio', deleted: 'Tu cuenta se eliminó', deletedDetail: 'Puedes registrarte de nuevo cuando tengas acceso al gimnasio.',
-    register: 'Registrarme', membershipHelp: 'Necesitas una membresía pagada o estar en el roster de atletas. Ayuda · 265-3866.',
+    register: 'Registrarme', membershipHelp: (phone: string) => `Necesitas una membresía pagada o estar en el roster de atletas. Ayuda · ${phone}.`,
     install: 'Instalar app', helpPrivacy: 'Ayuda para instalar · Aviso de privacidad', languages: 'Español / English',
     gym: 'Gimnasio', checkIn: 'Check-in', navigation: 'Navegación principal',
   },
@@ -169,7 +169,7 @@ export const es = {
   // The PWA owns the texts for stable API error codes (E-154).
   errors: {
     registration_privacy_required: 'Revisa el aviso de privacidad antes de continuar con tu registro.',
-    registration_number_unavailable: 'Necesitas una membresía pagada. ¿Problemas? Llama al 265-3866.',
+    registration_number_unavailable: 'Necesitas una membresía pagada.',
     registration_waiver_unavailable: 'Intenta de nuevo antes de continuar con el registro.',
     registration_photo_failed: 'Intenta de nuevo antes de continuar con el registro.',
     registration_photo_invalid: 'Intenta de nuevo antes de continuar con el registro.',

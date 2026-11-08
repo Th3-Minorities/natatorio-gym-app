@@ -25,7 +25,7 @@ use Throwable;
 
 class PaidRegistrationController extends Controller
 {
-    public function privacy(Request $request): JsonResponse
+    public function privacy(Request $request, RegistrationLookup $lookup): JsonResponse
     {
         $version = config('registration.privacy_version');
         $request->session()->put('registration_privacy_shown', $version);
@@ -33,7 +33,7 @@ class PaidRegistrationController extends Controller
         $currentTerm = AcademicTerm::query()->where('starts_on', '<=', today())->where('ends_on', '>=', today())->exists();
 
         return response()->json([
-            'version' => $version, 'draft' => $version === 'draft',
+            'version' => $version, 'draft' => $version === 'draft', 'contact_number' => $lookup->contactNumber(),
             'store_url' => $currentTerm && is_string($url) && filter_var($url, FILTER_VALIDATE_URL)
                 && in_array(strtolower(parse_url($url, PHP_URL_SCHEME) ?? ''), ['https', 'http'], true) ? $url : null,
         ])->header('Cache-Control', 'no-store');
@@ -60,7 +60,7 @@ class PaidRegistrationController extends Controller
     public function lookup(Request $request, RegistrationLookup $lookup): JsonResponse
     {
         $this->requirePrivacy($request);
-        $input = $request->validate(['authorization_number' => ['required', 'string', 'not_regex:/^\d{9}$/']]);
+        $input = $request->validate(['authorization_number' => ['required', 'string', 'max:20', 'not_regex:/^\d{9}$/']]);
 
         return response()->json($lookup->result($lookup->find($input['authorization_number'], $request)))->header('Cache-Control', 'no-store');
     }
@@ -80,8 +80,11 @@ class PaidRegistrationController extends Controller
     public function complete(Request $request, RegistrationLookup $lookup, RegistrationPhoto $photos): JsonResponse
     {
         $this->requirePrivacy($request);
+        if (! config('registration.waiver.version')) {
+            throw new ApiException('registration_waiver_unavailable', 503);
+        }
         $input = $request->validate([
-            'authorization_number' => ['required', 'string', 'not_regex:/^\d{9}$/'],
+            'authorization_number' => ['required', 'string', 'max:20', 'not_regex:/^\d{9}$/'],
             'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(10)->uncompromised()],
             'password_confirmation' => ['required', 'string', 'max:255'],
             'photo' => [
@@ -93,7 +96,7 @@ class PaidRegistrationController extends Controller
             'emergency_contact_phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9() .-]{7,30}$/', 'regex:/[0-9].*[0-9].*[0-9].*[0-9].*[0-9].*[0-9].*[0-9]/'],
             'locale' => ['required', Rule::in(['es', 'en'])],
         ]);
-        if (! config('registration.waiver.version') || ! config('registration.waiver.'.$input['locale'])) {
+        if (! config('registration.waiver.'.$input['locale'])) {
             throw new ApiException('registration_waiver_unavailable', 503);
         }
         $membership = $lookup->find($input['authorization_number'], $request);

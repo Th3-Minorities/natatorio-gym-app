@@ -8,7 +8,7 @@ import { PasswordField, UserLoading, UserNotice, UserPage } from './ui'
 import { useConnection } from './useConnection'
 import './registration.css'
 
-type Privacy = { version: string; draft: boolean; store_url: string | null }
+type Privacy = { version: string; draft: boolean; store_url: string | null; contact_number: string }
 type Lookup = { state: 'ready'; name: string; masked_email: string } | { state: 'renewal'; masked_email: string }
 
 export function Registration(props: { path: string; navigate: (path: string) => void }) {
@@ -121,8 +121,9 @@ function RegistrationFlow({ path, navigate, setLocale }: {
         else setLookupMessage(u.waitTitle)
       } else {
         const code = failure.status >= 500 ? 'server_error' : failure.code
-        setLookupMessage(failure.status === 422 && failure.code === 'registration_number_unavailable'
-          ? t.paymentHelp : errorText(texts, code, failure.status))
+        const phone = failure.details?.contact_number?.[0]
+        setLookupMessage(failure.status === 422 && failure.code === 'registration_number_unavailable' && phone
+          ? t.paymentHelp(phone) : errorText(texts, code, failure.status))
       }
     } finally { pending.current = false; setBusy(false) }
   }
@@ -194,7 +195,8 @@ function RegistrationFlow({ path, navigate, setLocale }: {
         <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1><p>{t.identificationIntro}</p></div>
         <form className="registration-identification-form" onSubmit={(event) => void findMembership(event)}>
           <div className="registration-number">
-            <TextField label={t.number} placeholder={t.numberPlaceholder} value={number} readOnly={busy} onChange={(event) => {
+            <TextField label={t.number} placeholder={t.numberPlaceholder} value={number} readOnly={busy}
+              error={studentNumber ? undefined : (waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage) || undefined} onChange={(event) => {
               setNumber(event.target.value); setLookup(null); setLookupMessage(''); setStudentNumber(false)
             }} aria-invalid={studentNumber || undefined} aria-describedby="registration-number-hint" autoComplete="off" required />
             <div className="registration-hints" id="registration-number-hint">
@@ -202,7 +204,7 @@ function RegistrationFlow({ path, navigate, setLocale }: {
               <div className="registration-hint"><ReceiptText aria-hidden="true" /><p>{t.numberHint}</p></div>
             </div>
             <div className="registration-receipt"><p>{t.paymentDescription}</p><div><span>{t.receiptNumber}</span><strong>{t.exampleNumber}</strong></div></div>
-            <p className="registration-help">{t.paymentHelp}</p>
+            {privacy && <p className="registration-help">{t.paymentHelp(privacy.contact_number)}</p>}
             {privacy?.store_url ? <a href={privacy.store_url} target="_blank" rel="noopener noreferrer" className="button button--secondary user-action registration-buy">{t.buy}</a>
               : <span role="link" aria-disabled="true" className="button button--secondary user-action registration-buy">{t.buy}</span>}
           </div>
