@@ -297,7 +297,7 @@ Notes: the data model does not store expired: it is computed from the term end d
 
 ## Design decisions to confirm
 
-REG-1, REG-2 and REG-6 are still **Proposed**; they wait on the owner. REG-3, REG-4, REG-5, REG-7, REG-8, REG-9, REG-10, REG-12, REG-13 and REG-14 are **Decided**. REG-11 was decided (E-62) and then removed by E-117. Each decided item keeps its options for the record and says which option was chosen and why. No standard was cited for the pending values because none was checked for this document.
+REG-1, REG-2 and REG-6 are still **Proposed**; they wait on the team. REG-3, REG-4, REG-5, REG-7, REG-8, REG-9, REG-10, REG-12, REG-13 and REG-14 are **Decided**. REG-11 was decided (E-62) and then removed by E-117. Each decided item keeps its options for the record and says which option was chosen and why. No standard was cited for the pending values because none was checked for this document.
 
 ### REG-1: Per-IP limit on failed Authorization Number lookups (REQ-F-71)
 
@@ -347,7 +347,7 @@ For athletes, if the roster email already has an account, the athlete signs in a
 
 ### REG-5: Where athletes enter password, photo and waiver (REQ-F-15)
 
-**Decided (E-69): B.** Only the student number before the link; the page opened from the link asks for password, photo and waiver. This follows from E-69 (everything is saved together on the link page) and the screen map draws it the same way; the owner did not answer it directly. Why: the person who sets the password is the one who reads the institutional email.
+**Decided (E-69): B.** Only the student number before the link; the page opened from the link asks for password, photo and waiver. This follows from E-69 (everything is saved together on the link page) and the screen map draws it the same way; the team did not answer it directly. Why: the person who sets the password is the one who reads the institutional email.
 
 | Option | What it means | Tradeoff |
 |---|---|---|
@@ -379,7 +379,7 @@ Recommendation: B. In every option the link is single use, a new link cancels th
 
 ### REG-8: What the user sees when the photo or the final step fails (REQ-F-13)
 
-**Decided (owner, 2026-10-17): A.** One submit at the end. On failure the person returns to the photo step with the typed data kept in the page, sees the cause and retries. Closing the page loses the data, and the number stays free. The password is kept only in page memory, never in browser storage. Why: it is the simplest option and nothing is stored on the server until the end.
+**Decided (team, 2026-10-17): A.** One submit at the end. On failure the person returns to the photo step with the typed data kept in the page, sees the cause and retries. Closing the page loses the data, and the number stays free. The password is kept only in page memory, never in browser storage. Why: it is the simplest option and nothing is stored on the server until the end.
 
 | Option | What it means | Tradeoff |
 |---|---|---|
@@ -444,7 +444,7 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 9. **Deleted authorizations and analytics.** Release (REQ-F-74) deletes authorizations. In the data model a facility session points only to the User. The paid versus athlete split in REQ-F-61 (e) then needs the facility session to keep the authorization type it was created with. Resolved in the data model: `facility_sessions.authorization_type` keeps the type.
 10. **Staff-assisted Check In for an athlete in a new term** (REQ-F-46) who has not opened the app: with REG-10 option A there is no new-term authorization or photo yet, so Staff cannot check them in. Gym to say if that is acceptable. Staff can see the athlete on the roster, which is one list across terms (E-59, E-116), but that alone does not give an authorization, and Staff do not take photos (E-118), so the athlete opens the app and uploads the new photo first.
 11. **Athlete removed from the roster by mistake** (REQ-F-49): the authorization becomes revoked with the reason "removed from roster" (E-93). Resolved (E-95): an Administrator uses a Reinstate action on A-05, which returns the revoked authorization to active, writes an audit entry and requires a reason of 10 characters or more, as in E-86 (decided). It is refused with the message "this person already has an active authorization this term" when the person already has an active authorization in that term, for example a paid number claimed after the removal (E-94, E-95); the Administrator revokes the other one by hand if needed. The athlete does not claim the record again.
-12. **Link tokens and one-time codes have no entity** in the logical data model (design-notes.md). Resolved (data-model D9, decided by the owner 2026-10-19): an email_links table stores the athlete link and the "I am an athlete" link, each with hash, expiry and single use. The in-person code that was a third type was removed by E-117.
+12. **Link tokens and one-time codes have no entity** in the logical data model (design-notes.md). Resolved (data-model D9, decided by the team 2026-10-19): an email_links table stores the athlete link and the "I am an athlete" link, each with hash, expiry and single use. The in-person code that was a third type was removed by E-117.
 13. **A manual authorization is created without a photo** (E-69, diagram 9), while registration never creates an authorization without one (E-69, E-70). The User gives the term photo before Check In. Check In stays off for it until the photo is saved.
 14. **Release of a number that was the account's only authorization** (REQ-F-74). Resolved (E-106): the account always stays, without an authorization. The person signs in, sees U-07 and can claim the correct number. Only the authorization and its term photo are deleted.
 15. **Waiver.** Resolved (G-21, 2026-11-04): (a) read and accept on screen, which counts as the signature. The department sends the waiver text. The record stores the account, the time and the version of the text accepted (E-134). Options (b) finger signature and (c) a signed paper are not used.
@@ -508,8 +508,8 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-97 (Authorization Number field under both banners) | 6 |
 | E-98 (compromised-password check described as an external call) | 1 (notes) |
 | E-100 ("I am an athlete" under both banners) | 6 |
-| REG-8 (failure returns to the photo step, owner 2026-10-17) | 1, 3 |
-| Data-model D9 (email_links table, owner 2026-10-19) | Gap 12 |
+| REG-8 (failure returns to the photo step, team 2026-10-17) | 1, 3 |
+| Data-model D9 (email_links table, team 2026-10-19) | Gap 12 |
 | E-116 (one roster; only a new photo each term) | 8. Athlete in a new term; REG-10 |
 | E-117 (no in-person code) | 4. Athlete registration by email link; 5 (removed); REG-11; Gap 12 |
 | E-118, REQ-F-94 (photo pending) | 6 (notes); 9. Authorization states |

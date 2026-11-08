@@ -141,7 +141,7 @@ You draw 2 screens.
 
 #### Open items for this issue
 
-- Colors of the "Athlete" and "Member" tags and of the athletes-only theme are the owner's choice and are not picked yet (E-75, E-76). Draw the tag with its text and icon, and write a note where the color changes. No colors in the wireframe.
+- Colors of the "Athlete" and "Member" tags and of the athletes-only theme are the team's choice and are not picked yet (E-75, E-76). Draw the tag with its text and icon, and write a note where the color changes. No colors in the wireframe.
 - The rejection texts are written later (E-74). Draw each cause with a draft text that names the cause.
 - The issue body lists 7 rejection causes. The screen map adds an eighth, "new term photo needed", which opens U-02 (drawn in #40), and a ninth, "photo pending" (E-118), which also leads to U-02. Draw both as U-01 states too.
 - The athletes-only periods themselves are not known yet (G-28). Draw the notice with a placeholder start time.
