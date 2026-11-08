@@ -304,6 +304,54 @@ export const es = {
     reactivated: (name: string) => `${name} se reactivó.`,
   },
 
+  // A-04 "Términos", Figma 101:1526, 4007:1310 and the states in section 170:1373 (#21).
+  terms: {
+    title: 'Términos',
+    description: 'Crea y ajusta las fechas de los períodos académicos.',
+    create: 'Crear término',
+    activeChip: 'Término activo',
+    noActiveChip: 'Sin término activo',
+    noActiveTitle: 'No hay un término activo hoy',
+    noActiveText: 'No se pueden crear autorizaciones nuevas. Crea o edita un término para cubrir la fecha de hoy.',
+    currentTitle: 'Término actual',
+    currentHint: 'Las fechas definen la vigencia de las autorizaciones.',
+    pastTitle: 'Términos pasados',
+    showPast: 'Ver términos pasados',
+    hidePast: 'Ocultar términos pasados',
+    columns: { name: 'Término', startsOn: 'Fecha de inicio', endsOn: 'Fecha de fin', status: 'Estado', actions: 'Acciones' },
+    // "Próximo" is not drawn in Figma: a term that starts later than today.
+    status: { active: 'Activo', upcoming: 'Próximo', past: 'Finalizado' },
+    edit: 'Editar',
+    noteTitle: 'Corrige un término editando sus fechas',
+    noteText: 'Los términos se conservan. Las autorizaciones mantienen su término y su fecha de fin sigue el nuevo cierre del término.',
+    loadingTitle: 'Cargando términos…',
+    loadingText: 'Espera un momento mientras se consultan las fechas.',
+    emptyTitle: 'Aún no hay términos',
+    emptyText: 'No hay un término activo hoy. Crea el primero para definir cuándo comienzan y terminan las autorizaciones.',
+    offlineText: 'Tus cambios siguen en el formulario. Podrás guardarlos cuando vuelva la conexión.',
+    // Crear and Editar, Figma 101:1737 and 101:1793.
+    createTitle: 'Crear término',
+    createText: 'Define un nombre y las fechas de inicio y fin.',
+    editTitle: 'Editar término',
+    name: 'Nombre del término',
+    startsOn: 'Fecha de inicio',
+    endsOn: 'Fecha de fin',
+    saveNew: 'Guardar término',
+    saveChanges: 'Guardar cambios',
+    cancel: 'Cancelar',
+    editNote: (date: string) =>
+      `Los registros fuera de estas fechas conservan su término. Las autorizaciones terminan el ${date}.`,
+    // Fecha inválida and Solapamiento, Figma 101:1850 and 101:1884.
+    orderTitle: 'Revisa el orden de las fechas',
+    orderText: 'La fecha de inicio debe ser anterior a la fecha de fin.',
+    overlapTitle: 'Las fechas coinciden con otro término',
+    overlapText: (name: string, start: string, end: string) =>
+      `Este período se solapa con ${name} (${start} - ${end}). Ajusta las fechas antes de guardar.`,
+    fixDates: 'Corregir fechas',
+    // Read by screen readers and shown above the list after a save. Not drawn in Figma.
+    saved: (name: string) => `${name} se guardó.`,
+  },
+
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
   states: {
     loading: 'Cargando',
@@ -379,6 +427,7 @@ export const es = {
     unique: 'Este valor ya está en uso.',
     confirmed: 'La confirmación no coincide.',
     password: 'Usa al menos 10 caracteres y evita contraseñas conocidas o filtradas.',
+    date_format: 'Escribe una fecha válida.',
     invalid: 'Revisa este campo.',
   },
 }

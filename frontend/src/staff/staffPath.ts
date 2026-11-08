@@ -9,6 +9,9 @@ export const STAFF_PATH = '/staff'
 /** A-15, the Administrator's staff accounts screen (#84). The proxy serves the app for it, so it opens directly. */
 export const STAFF_TEAM_PATH = '/staff/equipo'
 
+/** A-04, the Administrator's academic terms screen (#21). */
+export const STAFF_TERMS_PATH = '/staff/terminos'
+
 /** The N-11 pages for a forgotten password and the email links (#84). The emails link to the last two. */
 export const STAFF_FORGOT_PATH = '/staff/recuperar'
 export const STAFF_INVITE_PATH = '/staff/invitacion'
