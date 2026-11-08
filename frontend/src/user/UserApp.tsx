@@ -6,9 +6,10 @@ import { useDateFormat } from '../format/dateTime'
 import { I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
 import { CheckIn } from './CheckIn'
 import { UserAccess } from './UserAccess'
+import { Registration } from './Registration'
 import { UserLoading, UserNotice, UserPage } from './ui'
 import { useConnection } from './useConnection'
-import { isUserPath } from './paths'
+import { isUserPath, REGISTRATION_PATHS } from './paths'
 import './user.css'
 
 export type UserProfile = {
@@ -148,7 +149,7 @@ export function UserApp() {
   }
 
   return <I18nProvider locale={profile?.locale}><div onClick={intercept}>
-    {!protectedPath ? path === '/welcome' ? <Welcome deleted={deleted} /> : <UserAccess
+    {REGISTRATION_PATHS.includes(path) ? <Registration path={path} navigate={navigate} /> : !protectedPath ? path === '/welcome' ? <Welcome deleted={deleted} /> : <UserAccess
       key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
       replaced={replaced} navigate={navigate} onSignedIn={(account) => {
         epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); setDeleted(false); navigate('/account')
@@ -219,11 +220,16 @@ function AccountRow({ title, detail }: { title: string; detail: string }) {
 
 function Welcome({ deleted }: { deleted: boolean }) {
   const t = useMessages().user
+  const [phone, setPhone] = useState('')
+  useEffect(() => {
+    apiRequest<{ contact_number?: string }>('/user/registration/privacy')
+      .then((notice) => setPhone(notice?.contact_number ?? '')).catch(() => undefined)
+  }, [])
   return <UserPage><h1 tabIndex={-1}>{t.welcome}</h1>
     {deleted && <UserNotice title={t.deleted} success>{t.deletedDetail}</UserNotice>}
     <div className="user-welcome-actions">
       <a className="button button--primary user-action" href="/sign-in">{t.signIn}</a>
-      <span className="button button--secondary user-action">{t.register}</span><p className="user-caption">{t.membershipHelp}</p>
+      <a href="/register" className="button button--secondary user-action">{t.register}</a>{phone && <p className="user-caption">{t.membershipHelp(phone)}</p>}
     </div>
     <div className="user-welcome-actions"><span className="button button--primary user-action">{t.install}</span>
       <p className="user-caption">{t.helpPrivacy}</p><p className="user-caption">{t.languages}</p></div>

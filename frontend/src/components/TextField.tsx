@@ -21,7 +21,7 @@ export function TextField({ label, error, id, className, 'aria-describedby': des
         {...rest}
         id={inputId}
         className="field__input"
-        aria-invalid={error ? true : undefined}
+        aria-invalid={error ? true : rest['aria-invalid']}
         aria-describedby={[describedBy, error ? errorId : undefined].filter(Boolean).join(' ') || undefined}
       />
       {error && (
