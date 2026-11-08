@@ -11,7 +11,7 @@ Two answers are still pending and touch almost every diagram:
 
 Mail is assumed available (E-61). CTI described a path: the server runs a mail service (CTI suggests Postfix) and sends through CTI's mail gateway once CTI authorizes the VM (M-07, answered in principle). The authorization is still to be requested, and SPF and DKIM were not discussed. If CTI does not authorize the VM, the fallback is an external provider, which needs approval (M-11). Every email link depends on it: athlete registration (diagram 4), "I am an athlete" (diagram 7, E-58) and password reset.
 
-The welcome screen (N-01) and the sign-in screen (N-02) are always in Spanish, because no account exists yet. The person chooses the language when the account is created (E-103, E-64). After sign in, the account language applies, so a User with an English account sees these two screens in Spanish while signed out.
+Before an account exists, the welcome screen (N-01) has a Spanish / English switch, Spanish by default (E-159). The choice stays on the device and applies to every screen before sign in, and it is preselected when the language is asked at account creation (E-64). After sign in, the account language applies.
 
 ## Diagrams
 
@@ -22,8 +22,8 @@ The welcome screen (N-01) and the sign-in screen (N-02) are always in Spanish, b
 ```mermaid
 flowchart TD
   START["Open Register<br/>One field for the number<br/>First line: registering needs a paid membership<br/>or a roster entry. Buy membership button opens the store while a term runs.<br/>The store address is a setting"] --> PN["Privacy notice in Spanish and English<br/>text pending from the gym"]
-  PN -->|"Continue"| NUM["Type the number in the one field<br/>Authorization Number: any length, letters allowed<br/>Student number: exactly 10 digits"]
-  NUM --> KIND{"Exactly 10 digits?"}
+  PN -->|"Continue"| NUM["Type the number in the one field<br/>Authorization Number: any length, letters allowed<br/>Student number: exactly 9 digits"]
+  NUM --> KIND{"Exactly 9 digits?"}
   KIND -->|"yes, a student number"| ATH[["Athlete registration<br/>diagram 4"]]
   KIND -->|"no"| LK[["Authorization Number lookup<br/>diagram 2"]]
   LK -->|"invalid, claimed, ended term or not verifiable"| M1["Same message for all of them,<br/>with the contact number<br/>and a store button while a term runs"]
@@ -44,9 +44,9 @@ flowchart TD
   M1 -.->|"real owner whose number was taken"| RO["Owner takes the account back with password reset<br/>by email to the payment email.<br/>Or an Administrator releases the number"]
 ```
 
-**About this diagram:** The person is not signed in; the privacy notice (REQ-NF-25, text pending G-24) comes before any field, and password, photo, waiver and emergency contact stay in the page until the final step sends them in one request (REQ-F-13, F-17, F-60, NF-24, F-26). The screen has one field (REG-14, E-153): exactly 10 digits is a student number and continues in diagram 4; the app looks up anything else as an Authorization Number, with no length check. Messages follow REQ-F-72, F-73, F-18 (invalid or claimed), REQ-F-22 with REG-9 (an ended-term number gets the same message), REQ-F-71 (pause), REQ-F-70 with REG-3 (masking), REQ-F-78 with REG-4 (email already has an account) and REG-8 (photo failure). The first line is E-92 and the store button is E-96 and E-126; the photo step is E-69; the password rules are E-63; the language step is E-64, and the screens before it are in Spanish (E-103). The dotted path is REQ-F-75 (needs mail) and REQ-F-74.
+**About this diagram:** The person is not signed in; the privacy notice (REQ-NF-25, text pending G-24) comes before any field, and password, photo, waiver and emergency contact stay in the page until the final step sends them in one request (REQ-F-13, F-17, F-60, NF-24, F-26). The screen has one field (REG-14, E-153): exactly 9 digits is a student number and continues in diagram 4; the app looks up anything else as an Authorization Number, with no length check. Messages follow REQ-F-72, F-73, F-18 (invalid or claimed), REQ-F-22 with REG-9 (an ended-term number gets the same message), REQ-F-71 (pause), REQ-F-70 with REG-3 (masking), REQ-F-78 with REG-4 (email already has an account) and REG-8 (photo failure). The first line is E-92 and the store button is E-96 and E-126; the photo step is E-69; the password rules are E-63; the language step is E-64, and the welcome screen has a language switch, Spanish by default (E-159). The dotted path is REQ-F-75 (needs mail) and REQ-F-74.
 
-Notes: the term comes from the paid date of the order (REQ-F-22). A person who has just paid registers at once: when the number is not in the app yet, the lookup asks the store right then (diagram 2, REQ-F-97, E-127). The member never types or changes the account email (REQ-F-11). The welcome screen and the screens up to the language step are in Spanish, because the account language does not exist yet (E-103). The store button appears only while a term runs, because the store sells only then (G-26, E-126). The password rule has no mixing rules and allows at least 64 characters. NIST SP 800-63B-4 asks for at least 15 characters for single-factor passwords; the team chose 10 as a documented deviation for phone use. The compromised-password check is an external call that sends only part of a hash. SRS 2.4 and REQ-NF-51 say so (E-98), and a test must cover the case where that service does not answer (#30).
+Notes: the term comes from the paid date of the order (REQ-F-22). A person who has just paid registers at once: when the number is not in the app yet, the lookup asks the store right then (diagram 2, REQ-F-97, E-127). The member never types or changes the account email (REQ-F-11). The welcome screen and the screens up to the language step use the language chosen with the switch, Spanish by default, because the account language does not exist yet (E-159). The store button appears only while a term runs, because the store sells only then (G-26, E-126). The password rule has no mixing rules and allows at least 64 characters. NIST SP 800-63B-4 asks for at least 15 characters for single-factor passwords; the team chose 10 as a documented deviation for phone use. The compromised-password check is an external call that sends only part of a hash. SRS 2.4 and REQ-NF-51 say so (E-98), and a test must cover the case where that service does not answer (#30).
 
 Note on message M1: When a person paid but the receipt never arrived, the message also gives the procedure (call, visit, bring the receipt) in words the gym writes, with the contact number (G-25). Only Administrators add the person by hand after seeing the receipt, because desk staff change often (E-114, REQ-F-87).
 
@@ -56,7 +56,7 @@ Note on message M1: When a person paid but the receipt never arrived, the messag
 
 ```mermaid
 flowchart TD
-  IN["App sends the typed number<br/>not exactly 10 digits"] --> FMT{"Anything typed?"}
+  IN["App sends the typed number<br/>not exactly 9 digits"] --> FMT{"Anything typed?"}
   FMT -->|"no"| X0["Form error. No lookup, not counted"]
   FMT -->|"yes"| IPP{"Per-IP pause active?<br/>IPv6 counted per /64 prefix"}
   IPP -->|"yes"| X1["Reject: try again at TIME"]
@@ -83,7 +83,7 @@ flowchart TD
   P2 --> RESP
 ```
 
-**About this diagram:** Backend view of one lookup, used by diagrams 1 and 6. The PWA sends the number when the person submits the field (REQ-F-70). The app does not check the length of the number, because it can change (6 and 7 characters have been seen), and the number can include letters (E-128, E-153). Registration has one field (REG-14, E-153): a number of exactly 10 digits is a student number and goes to diagram 4, so this path only receives other numbers. The lookup reads the imported_memberships rows of the current term (REQ-F-10, E-71). When the number is not there, it asks the store right then and looks again, so a person who just paid registers at once (REQ-F-97, E-127). The ask goes through the same limits, which also protect the store (REQ-F-71, with values in REG-1 and REG-2, pending), and the alert goes to audit_log_entries (REQ-NF-39). The Authorization Number is unique across all orders (E-128).
+**About this diagram:** Backend view of one lookup, used by diagrams 1 and 6. The PWA sends the number when the person submits the field (REQ-F-70). The app does not check the length of the number, because it can change (6 and 7 characters have been seen), and the number can include letters (E-128, E-153). Registration has one field (REG-14, E-153): a number of exactly 9 digits is a student number and goes to diagram 4, so this path only receives other numbers. The lookup reads the imported_memberships rows of the current term (REQ-F-10, E-71). When the number is not there, it asks the store right then and looks again, so a person who just paid registers at once (REQ-F-97, E-127). The ask goes through the same limits, which also protect the store (REQ-F-71, with values in REG-1 and REG-2, pending), and the alert goes to audit_log_entries (REQ-NF-39). The Authorization Number is unique across all orders (E-128).
 
 Notes: a claimed number counts as a failure, so the reply and the counting look the same as for an invalid number (REQ-F-72). A number from an ended term is simply not found in the current term (E-71, REG-9). It gets the same message and counts as a failure. If the database or the store cannot answer, the lookup is denied with a "try again later" message and the contact number (REQ-F-18). It is not counted as a failed lookup. Only orders with status `completed` give access, so an order that is still pending in the store gets the same message. When two orders share a number, the lookup is denied with the contact number, and the sync skips the second order with that number (E-128). The read of 84 orders on 2026-11-04 found no repeated value among the 69 paid ones. Whether the lookup ignores letter case is not decided.
 
@@ -140,7 +140,7 @@ Notes: the photo is stored with the authorization, not the account (design-notes
 
 ```mermaid
 flowchart TD
-  START["Registration screen, diagram 1:<br/>the number typed is exactly 10 digits,<br/>so it is a student number"] --> LIM{"Link request limit hit?"}
+  START["Registration screen, diagram 1:<br/>the number typed is exactly 9 digits,<br/>so it is a student number"] --> LIM{"Link request limit hit?"}
   LIM -->|"yes"| X0["Message: try again at TIME"]
   LIM -->|"no"| R{"In the roster?"}
   R -->|"no"| X1["You do not appear as a registered athlete.<br/>Go to Athletic Activities. Contact number.<br/>The student number is only for athletes.<br/>A paid member uses the Authorization Number<br/>from the receipt email, with the picture"]
@@ -162,7 +162,7 @@ flowchart TD
   X4 --> START
 ```
 
-**About this diagram:** This link is the only way for an athlete to register: there is no in-person code, and if the link fails the athlete calls the office at 265-3866 (E-117). The student number is typed in the one registration field of diagram 1 (REG-14, E-153). Drawn with the decided option of REG-5 (E-69): only the student number is asked before the link; password, photo and waiver come after the link is opened and are saved together, so there is never an authorization without a photo (E-69; REQ-F-15, NF-25, NF-24, F-26, F-60). The language step is E-64, and the screens before it are in Spanish (E-103). The request limit is REG-7 (E-73) and the link rules are REG-6 (pending); messages follow REQ-F-76, F-73, F-18, SRS 3.3 errors and REG-4 (E-70). The first line is E-92. The link needs mail (assumed available, E-61).
+**About this diagram:** This link is the only way for an athlete to register: there is no in-person code, and if the link fails the athlete calls the office at 265-3866 (E-117). The student number is typed in the one registration field of diagram 1 (REG-14, E-153). Drawn with the decided option of REG-5 (E-69): only the student number is asked before the link; password, photo and waiver come after the link is opened and are saved together, so there is never an authorization without a photo (E-69; REQ-F-15, NF-25, NF-24, F-26, F-60). The language step is E-64, and the welcome screen has a language switch, Spanish by default (E-159). The request limit is REG-7 (E-73) and the link rules are REG-6 (pending); messages follow REQ-F-76, F-73, F-18, SRS 3.3 errors and REG-4 (E-70). The first line is E-92. The link needs mail (assumed available, E-61).
 
 Notes: the account exists only after the final step that follows opening the link (REQ-F-15). The final step checks the link again, so a link that expires while the form is open creates no account. Athletes do not buy a membership (REQ-F-25), but the registration screen is the same for both kinds of person, so the store button of diagram 1 stays on it (E-153). A paid member who types a student number gets the message of X1.
 
@@ -420,16 +420,16 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 
 ### REG-13: Language of the welcome and sign-in screens
 
-**Decided (E-103).** The welcome screen (N-01) and the sign-in screen (N-02) are always in Spanish. The person chooses the language in the language step when the account is created (E-64). After sign in, the account language applies. Why: no account, and so no language, exists before that step. A User with an English account sees these two screens in Spanish while signed out. Drawn in diagrams 1, 4 and 5.
+**Decided (E-159, replaces E-103).** The welcome screen (N-01) has a Spanish / English switch, Spanish by default. The choice stays on the device and applies to every screen before sign in. In the language step when the account is created (E-64) that choice comes preselected. After sign in, the account language applies. Drawn in diagrams 1, 4 and 5.
 
 ### REG-14: One registration number field (E-153)
 
-**Decided (E-153, 2026-11-05): B, one field.** The person types a number in one field. Exactly 10 digits is a student number: the app looks it up in the roster and continues the athlete flow (diagram 4). The app looks up anything else as an Authorization Number (diagram 2), with no length check, because the length can change (6 and 7 characters have been seen); letters stay allowed (E-128). Why: fewer screens and fewer choices. Replaces E-112, which had kept two paths earlier the same day.
+**Decided (E-153, 2026-11-05): B, one field.** The person types a number in one field. Exactly 9 digits is a student number: the app looks it up in the roster and continues the athlete flow (diagram 4). The app looks up anything else as an Authorization Number (diagram 2), with no length check, because the length can change (6 and 7 characters have been seen); letters stay allowed (E-128). Why: fewer screens and fewer choices. Replaces E-112, which had kept two paths earlier the same day.
 
 | Option | What it means | Tradeoff |
 |---|---|---|
 | A | Keep two paths (E-112, replaced): "I paid for a membership" asks for the Authorization Number, "I am an athlete" for the student number | Each path asks for one number, but there are two screens and one more choice. Paid members are students too and have a student number, so a separate path avoids a wrong number |
-| B | One field (CTI suggested it); the system tells the two kinds apart by the number: exactly 10 digits is a student number, anything else is an Authorization Number | One screen and fewer choices. No lookup in both places. A paid member may type a student number: a 10-digit number that is not on the roster gets the message of REQ-F-76 and says that the student number is only for athletes and that a paid member uses the Authorization Number from the receipt email, with the picture of where to find it. The lookup limits (REQ-F-71) cover the one field |
+| B | One field (CTI suggested it); the system tells the two kinds apart by the number: exactly 9 digits is a student number, anything else is an Authorization Number | One screen and fewer choices. No lookup in both places. A paid member may type a student number: a 9-digit number that is not on the roster gets the message of REQ-F-76 and says that the student number is only for athletes and that a paid member uses the Authorization Number from the receipt email, with the picture of where to find it. The lookup limits (REQ-F-71) cover the one field |
 
 ## Gaps and questions
 

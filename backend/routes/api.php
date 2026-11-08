@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\PaidRegistrationController;
 use App\Http\Controllers\StaffAccountController;
 use App\Http\Controllers\StaffInvitationController;
 use App\Http\Controllers\StaffPasswordController;
@@ -9,12 +10,21 @@ use App\Http\Controllers\StaffSessionController;
 use App\Http\Controllers\UserAccountController;
 use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserSessionController;
+use App\Http\Middleware\EnsureRegistrationGuest;
 use App\Http\Middleware\EnsureUserSessionIsCurrent;
 use Illuminate\Support\Facades\Route;
 
 // Every route here is served under /api (docs/design/api-conventions.md).
 
 Route::get('/health', HealthController::class);
+
+Route::prefix('user/registration')->middleware(EnsureRegistrationGuest::class)->group(function () {
+    Route::get('/privacy', [PaidRegistrationController::class, 'privacy']);
+    Route::post('/privacy', [PaidRegistrationController::class, 'acknowledge']);
+    Route::post('/lookup', [PaidRegistrationController::class, 'lookup']);
+    Route::get('/waiver', [PaidRegistrationController::class, 'waiver']);
+    Route::post('/complete', [PaidRegistrationController::class, 'complete']);
+});
 
 // Staff and Administrator sign-in on the gym dashboard (N-11, REQ-F-52).
 // Every staff route needs auth:staff, staff.active and a role: check; RouteProtectionTest enforces it.
