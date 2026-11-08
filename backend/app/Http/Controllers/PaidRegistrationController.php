@@ -6,9 +6,9 @@ use App\Exceptions\ApiException;
 use App\Models\AcademicTerm;
 use App\Models\Authorization;
 use App\Models\ImportedMembership;
-use App\Models\Setting;
 use App\Models\User;
 use App\Models\WaiverAcceptance;
+use App\Services\PrivacyNotice;
 use App\Services\RegistrationLookup;
 use App\Services\RegistrationPhoto;
 use App\Services\UserPhotoCleanup;
@@ -25,18 +25,12 @@ use Throwable;
 
 class PaidRegistrationController extends Controller
 {
-    public function privacy(Request $request, RegistrationLookup $lookup): JsonResponse
+    public function privacy(Request $request, PrivacyNotice $notice): JsonResponse
     {
-        $version = config('registration.privacy_version');
-        $request->session()->put('registration_privacy_shown', $version);
-        $url = Setting::query()->where('name', 'store_url')->value('value');
-        $currentTerm = AcademicTerm::query()->where('starts_on', '<=', today())->where('ends_on', '>=', today())->exists();
+        $payload = $notice->payload();
+        $request->session()->put('registration_privacy_shown', $payload['version']);
 
-        return response()->json([
-            'version' => $version, 'draft' => $version === 'draft', 'contact_number' => $lookup->contactNumber(),
-            'store_url' => $currentTerm && is_string($url) && filter_var($url, FILTER_VALIDATE_URL)
-                && in_array(strtolower(parse_url($url, PHP_URL_SCHEME) ?? ''), ['https', 'http'], true) ? $url : null,
-        ])->header('Cache-Control', 'no-store');
+        return response()->json($payload)->header('Cache-Control', 'no-store');
     }
 
     public function acknowledge(Request $request): Response

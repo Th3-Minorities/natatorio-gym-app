@@ -4,6 +4,7 @@ use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\PaidRegistrationController;
+use App\Http\Controllers\PrivacyNoticeController;
 use App\Http\Controllers\StaffAccountController;
 use App\Http\Controllers\StaffInvitationController;
 use App\Http\Controllers\StaffPasswordController;
@@ -18,6 +19,9 @@ use Illuminate\Support\Facades\Route;
 // Every route here is served under /api (docs/design/api-conventions.md).
 
 Route::get('/health', HealthController::class);
+
+// The privacy notice data (N-08) for any visitor or signed-in User; the registration step has its own route.
+Route::get('/privacy', [PrivacyNoticeController::class, 'show']);
 
 Route::prefix('user/registration')->middleware(EnsureRegistrationGuest::class)->group(function () {
     Route::get('/privacy', [PaidRegistrationController::class, 'privacy']);

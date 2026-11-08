@@ -1,4 +1,4 @@
-const USER_PATHS = ['/welcome', '/sign-in', '/recover-password', '/reset-password', '/account', '/account/settings', '/account/delete', '/check-in', '/install']
+const USER_PATHS = ['/welcome', '/sign-in', '/recover-password', '/reset-password', '/account', '/account/settings', '/account/delete', '/account/privacy', '/check-in', '/install']
 
 export const REGISTRATION_PATHS = ['/register', '/register/identify', '/register/password', '/privacy']
 

@@ -34,7 +34,7 @@
 .registration-existing a svg { width: var(--user-body-line); height: var(--user-body-line); margin-inline-start: var(--spacing-4); flex: none; }
 .registration .registration-identification-form { flex: 1; gap: var(--spacing-24); }
 .registration-number { display: flex; flex-direction: column; gap: var(--spacing-16); }
-.registration .field__input { border-color: var(--muted-foreground); }
+.registration .user-content .field__input { border-color: var(--muted-foreground); }
 .registration-hints { display: flex; flex-direction: column; gap: var(--spacing-12); }
 .registration-hint { display: flex; align-items: flex-start; gap: var(--spacing-12); min-height: var(--user-touch); }
 .registration-hint svg { width: var(--user-body-line); height: var(--user-body-line); color: var(--muted-foreground); flex: none; }
