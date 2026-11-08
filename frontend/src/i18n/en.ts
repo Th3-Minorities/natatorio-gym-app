@@ -297,6 +297,7 @@ export const en: Messages = {
     check_in_photo_required: 'Update your photo for the new term before registering your entry.',
     check_in_photo_pending: 'The staff marked your photo as pending. Upload a new photo from your phone.',
     check_in_athletes_only: 'Check-in available when this period ends.',
+    check_out_session_not_active: 'This visit has already ended.',
     location_required: 'Wait a moment and try again from the gym.',
     check_in_low_accuracy: 'The location received is not accurate enough to confirm your arrival.',
     check_in_outside_boundary: 'You must be inside the gym area to register your entry.',

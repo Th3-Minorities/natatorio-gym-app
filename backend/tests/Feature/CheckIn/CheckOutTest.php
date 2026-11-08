@@ -54,7 +54,7 @@ class CheckOutTest extends TestCase
 
         $this->actingAs(StaffAccount::factory()->create(), 'staff')->fromThePwa()
             ->postJson("/api/staff/sessions/{$session->id}/check-out")
-            ->assertConflict()->assertJsonPath('error.code', 'conflict');
+            ->assertConflict()->assertJsonPath('error.code', 'check_out_session_not_active');
 
         $this->assertSame($before, $session->fresh()->getAttributes());
         $this->assertDatabaseCount('audit_log_entries', 0);

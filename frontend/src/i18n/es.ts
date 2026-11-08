@@ -324,6 +324,7 @@ export const es = {
     check_in_photo_required: 'Actualiza tu foto para el nuevo término antes de registrar tu entrada.',
     check_in_photo_pending: 'El personal marcó tu foto como pendiente. Carga una foto nueva desde tu teléfono.',
     check_in_athletes_only: 'Check-in disponible al terminar este periodo.',
+    check_out_session_not_active: 'Esta visita ya terminó.',
     location_required: 'Espera un momento y vuelve a intentarlo desde el gimnasio.',
     check_in_low_accuracy: 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.',
     check_in_outside_boundary: 'Debes estar dentro del área del gimnasio para registrar tu entrada.',

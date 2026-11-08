@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\ApiException;
 use App\Models\FacilitySession;
 use App\Models\StaffAccount;
 use App\Models\User;
@@ -54,7 +55,9 @@ class FacilitySessions
             // Resolve time after obtaining the lock: waiting for another writer must not allow a late exit.
             $now = $this->databaseNow();
             $this->resolveEnd($session, $now);
-            abort_unless($session->status === 'active', 409);
+            if ($session->status !== 'active') {
+                throw new ApiException('check_out_session_not_active', 409);
+            }
 
             // Written by PostgreSQL so it rounds like started_at's default; a PHP-formatted value would truncate
             // and could land before started_at on an immediate exit.

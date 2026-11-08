@@ -47,7 +47,7 @@ class CheckOutConcurrencyTest extends TestCase
                 ->postJson("/api/staff/sessions/{$session->id}/check-out");
             $output = trim(stream_get_contents($pipes[1]));
             $this->assertSame(409, $response->getStatusCode(), "Holder said: {$output}");
-            $response->assertJsonPath('error.code', 'conflict');
+            $response->assertJsonPath('error.code', 'check_out_session_not_active');
             $result = json_decode($output, true, flags: JSON_THROW_ON_ERROR);
             $this->assertTrue($result['blocked'], 'The second request never waited for the row lock.');
             $this->assertSame(200, $result['status']);
