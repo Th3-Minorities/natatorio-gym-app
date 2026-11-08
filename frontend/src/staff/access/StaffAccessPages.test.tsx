@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { es } from '../../i18n/es'
 import { StaffApp } from '../StaffApp'
-import { apiError, callsTo, fakeApi, json } from '../team/fakeTeamApi'
+import { apiError, callsTo, fakeApi, json, offline } from '../team/fakeTeamApi'
 
 // N-11 email link pages (#84): Recuperar contraseña (4039:4170), Revisa tu correo (4039:4224),
 // Crear tu contraseña (4126:1316), Restablecer contraseña (4126:1341), Enlace vencido o usado (4039:4325).
@@ -89,6 +89,20 @@ describe('Recuperar contraseña', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(es.errors.too_many_requests)
   })
 
+  it('says there is no connection, not that the request failed', async () => {
+    at('/staff/recuperar')
+    fakeApi({ '/api/staff/me': signedOut, 'POST /api/staff/password/email': offline })
+    render(<StaffApp />)
+
+    fireEvent.change(await screen.findByLabelText(a.email), { target: { value: 'mariel@example.com' } })
+    fireEvent.click(screen.getByRole('button', { name: a.sendLink }))
+
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(es.signIn.offlineTitle)
+    expect(alert).toHaveTextContent(es.states.offlineRetryText)
+    expect(document.title).toBe(`${a.forgotTitle} · ${es.dashboard.brandName}`)
+  })
+
   it('goes back to sign-in', async () => {
     at('/staff/recuperar')
     fakeApi({ '/api/staff/me': signedOut })
@@ -113,7 +127,9 @@ describe('Crear tu contraseña, from the invitation', () => {
     })
     render(<StaffApp />)
 
-    expect(await screen.findByRole('heading', { level: 1, name: a.createTitle })).toBeInTheDocument()
+    await screen.findByLabelText(a.newPassword)
+    expect(screen.getByRole('heading', { level: 1, name: a.createTitle })).toBeInTheDocument()
+    expect(document.title).toBe(`${a.createTitle} · ${es.dashboard.brandName}`)
     expect(screen.getByText('Lucía Vega Ramos')).toBeInTheDocument()
     expect(screen.getByText(`${es.dashboard.roles.admin} · lucia@example.com`)).toBeInTheDocument()
     expect(screen.getByLabelText(a.newPassword)).toHaveAccessibleDescription(a.passwordHint)
@@ -161,7 +177,7 @@ describe('Crear tu contraseña, from the invitation', () => {
     })
     render(<StaffApp />)
 
-    await screen.findByRole('heading', { level: 1, name: a.createTitle })
+    await screen.findByLabelText(a.newPassword)
     choosePassword('corta', 'corta')
     fireEvent.click(screen.getByRole('button', { name: a.createSubmit }))
 
@@ -178,7 +194,7 @@ describe('Crear tu contraseña, from the invitation', () => {
     })
     render(<StaffApp />)
 
-    await screen.findByRole('heading', { level: 1, name: a.createTitle })
+    await screen.findByLabelText(a.newPassword)
     choosePassword(PASSWORD, 'otra cosa distinta')
     fireEvent.click(screen.getByRole('button', { name: a.createSubmit }))
 
@@ -196,7 +212,7 @@ describe('Crear tu contraseña, from the invitation', () => {
     })
     render(<StaffApp />)
 
-    await screen.findByRole('heading', { level: 1, name: a.createTitle })
+    await screen.findByLabelText(a.newPassword)
     choosePassword()
     fireEvent.click(screen.getByRole('button', { name: a.createSubmit }))
 
@@ -214,7 +230,8 @@ describe('Restablecer contraseña, from the reset email', () => {
     })
     render(<StaffApp />)
 
-    expect(await screen.findByRole('heading', { level: 1, name: a.resetTitle })).toBeInTheDocument()
+    await screen.findByLabelText(a.newPassword)
+    expect(screen.getByRole('heading', { level: 1, name: a.resetTitle })).toBeInTheDocument()
     expect(screen.getByText(a.resetText)).toBeInTheDocument()
     choosePassword()
     fireEvent.click(screen.getByRole('button', { name: a.resetSubmit }))
@@ -237,6 +254,65 @@ describe('Restablecer contraseña, from the reset email', () => {
     const heading = await screen.findByRole('heading', { level: 1, name: a.expiredTitle })
     const card = heading.closest('section') as HTMLElement
     expect(within(card).getByText(a.resetExpiredText)).toBeInTheDocument()
-    expect(within(card).getByText(a.resetExpiredHelp)).toBeInTheDocument()
+    expect(within(card).getByRole('link', { name: a.backToSignIn })).toBeInTheDocument()
+
+    // 4424:1683: "Solicitar otro enlace" opens Recuperar contraseña without reloading.
+    fireEvent.click(within(card).getByRole('link', { name: a.requestAnother }))
+    expect(window.location.pathname).toBe('/staff/recuperar')
+    expect(await screen.findByRole('heading', { level: 1, name: a.forgotTitle })).toBeInTheDocument()
+  })
+
+  it('shows the page title and "Revisando el enlace…" while the link is checked (4424:1753)', async () => {
+    at('/staff/restablecer?token=tok&email=mariel%40example.com')
+    fakeApi({
+      '/api/staff/me': signedOut,
+      'POST /api/staff/password/validate': () => new Promise<Response>(() => {}),
+    })
+    render(<StaffApp />)
+
+    const heading = await screen.findByRole('heading', { level: 1, name: a.resetTitle })
+    const card = heading.closest('section') as HTMLElement
+    expect(within(card).getByText(a.checking)).toBeInTheDocument()
+    // The text is also said by a status region that was on the page before it, so screen readers speak it once.
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(a.checking))
+    expect(card).not.toHaveAttribute('role')
+    expect(screen.queryByText(es.states.loading)).not.toBeInTheDocument()
+  })
+
+  it('shows "Error al cargar" when the link cannot be checked, and checks again with Reintentar (4424:1792)', async () => {
+    at('/staff/restablecer?token=tok&email=mariel%40example.com')
+    let answers = 0
+    fakeApi({
+      '/api/staff/me': signedOut,
+      'POST /api/staff/password/validate': () => (answers++ === 0 ? apiError('server_error', 500) : json(null, 204)),
+    })
+    render(<StaffApp />)
+
+    const heading = await screen.findByRole('heading', { level: 1, name: es.states.errorTitle })
+    const status = screen.getByRole('status')
+    expect(status).toBeEmptyDOMElement()
+    const card = heading.closest('section') as HTMLElement
+    expect(within(card).getByText(es.states.errorDetail)).toBeInTheDocument()
+    expect(within(card).getByRole('link', { name: a.backToSignIn })).toBeInTheDocument()
+
+    fireEvent.click(within(card).getByRole('button', { name: es.states.retry }))
+
+    expect(await screen.findByLabelText(a.newPassword)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: a.resetTitle })).toBeInTheDocument()
+    // The same status region stayed on the page through checking, the error and the form.
+    expect(status).toBeInTheDocument()
+    expect(status).toBeEmptyDOMElement()
+  })
+
+  it('keeps the invitation help on an expired invitation link', async () => {
+    at('/staff/invitacion?token=old')
+    fakeApi({
+      '/api/staff/me': signedOut,
+      'POST /api/staff/invitation/validate': () => apiError('staff_invite_link_invalid', 422),
+    })
+    render(<StaffApp />)
+
+    expect(await screen.findByText(a.inviteExpiredHelp)).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: a.requestAnother })).not.toBeInTheDocument()
   })
 })

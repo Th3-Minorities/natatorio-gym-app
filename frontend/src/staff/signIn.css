@@ -74,6 +74,11 @@
   outline: none;
 }
 
+/* "Revisando el enlace…" (4424:1753): the 20px refresh icon in the muted text color. */
+.sign-in__checking-icon {
+  color: var(--muted-foreground);
+}
+
 /* Who was invited, on "Crear tu contraseña" (4126:1316). */
 .sign-in__identity {
   display: flex;

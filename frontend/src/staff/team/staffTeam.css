@@ -24,8 +24,7 @@
   gap: var(--spacing-4) var(--spacing-16);
 }
 
-.team-bar__title,
-.team-bar__hint {
+.team-bar__title {
   margin: 0;
 }
 
@@ -34,12 +33,6 @@
   font-size: 16px;
   font-weight: 600;
   line-height: 24px;
-}
-
-.team-bar__hint {
-  color: var(--muted-foreground);
-  font-size: 14px;
-  line-height: 21px;
 }
 
 .team-table {
@@ -149,15 +142,50 @@
   color: var(--primary);
 }
 
-/* Row actions: small bordered buttons, 32px high, so a row stays at Figma's 52px. */
-.team-action {
-  height: 32px;
-  padding: 0 12px;
+/* The one "Acciones" column (100:841): plain green text links, no border or fill. */
+.team-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
 }
 
-/* Desactivar in red, so it stands apart from the other actions (team review, not in Figma).
-   The User app's red: 4.5:1 or more on a card (tokens.test.ts). */
-.team-action--danger {
-  border-color: var(--user-danger);
-  color: var(--user-danger);
+/* 32px high with padding, so each target is well over 24 x 24 pixels (WCAG 2.5.8). */
+.team-action {
+  height: 32px;
+  padding: 0 var(--spacing-8);
+}
+
+/* The first slot fits "Reenviar invitación", so the second action lines up down the table. */
+.team-action--first {
+  width: 10rem;
+  justify-content: flex-start;
+}
+
+/* The term chip and "Acceso del equipo" (100:841). */
+.team-term {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.team-term .team-chip {
+  align-self: center;
+}
+
+.team-term__text {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+/* The live region for banners stays on the page when empty, and takes no room in the page's spacing. */
+.team-live {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-24);
+}
+
+.team-live:empty {
+  position: absolute;
 }

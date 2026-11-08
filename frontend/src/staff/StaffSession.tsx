@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { apiRequest } from '../api/client'
+import { ApiError, apiRequest } from '../api/client'
 import { I18nProvider } from '../i18n'
 import {
   StaffSessionContext,
@@ -33,7 +33,15 @@ function sameState(a: StaffSessionState, b: StaffSessionState): boolean {
   if (a.status !== b.status) return false
   if (a.status === 'signedIn' && b.status === 'signedIn') {
     const [x, y] = [a.account, b.account]
-    return x.name === y.name && x.email === y.email && x.role === y.role && x.locale === y.locale
+    return (
+      x.name === y.name &&
+      x.email === y.email &&
+      x.role === y.role &&
+      x.locale === y.locale &&
+      x.active_term?.name === y.active_term?.name &&
+      x.active_term?.starts_on === y.active_term?.starts_on &&
+      x.active_term?.ends_on === y.active_term?.ends_on
+    )
   }
   if (a.status === 'signedOut' && b.status === 'signedOut') return a.reason === b.reason
   return true
@@ -98,6 +106,8 @@ export function StaffSessionProvider({ children }: { children: ReactNode }) {
       reportError(error) {
         const reason = endedSignIn(error)
         if (reason !== undefined) change({ status: 'signedOut', reason })
+        // The role was taken away mid-visit: ask who this is now, so the screen leaves the Administrator pages.
+        else if (error instanceof ApiError && error.code === 'forbidden') void check(true)
       },
     }),
     [state, check, change],

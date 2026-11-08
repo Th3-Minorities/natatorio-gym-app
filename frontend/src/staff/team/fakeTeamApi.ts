@@ -2,7 +2,9 @@ import { vi } from 'vitest'
 
 // Test helpers for the A-15 screens (#84). Only the test files import this module.
 
-export const lorena = { name: 'Lorena Ortiz', email: 'lorena@example.com', role: 'admin', locale: 'es' }
+export const term = { name: 'Fall 2026', starts_on: '2026-08-10', ends_on: '2026-12-18' }
+
+export const lorena = { name: 'Lorena Ortiz', email: 'lorena@example.com', role: 'admin', locale: 'es', active_term: term }
 
 export const team = [
   { id: 1, name: 'Lorena Ortiz', email: 'lorena@example.com', role: 'admin', status: 'active' },

@@ -1,10 +1,13 @@
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
-import { Button, ErrorState, LoadingState, Notice, TextField } from '../../components'
-import { errorText, fieldErrorText, useMessages } from '../../i18n'
+import { RefreshCw } from 'lucide-react'
+import { Button, TextField } from '../../components'
+import { fieldErrorText, useMessages } from '../../i18n'
+import { ProblemNotice } from '../ProblemNotice'
 import { SignInLayout } from '../SignInLayout'
-import { STAFF_PATH } from '../staffPath'
+import { STAFF_FORGOT_PATH, STAFF_PATH } from '../staffPath'
 import type { Navigate } from '../staffPath'
+import { useDocumentTitle } from '../useDocumentTitle'
 
 // The N-11 pages a staff member opens before signing in (#84): forgotten password, and the password
 // pages the invitation and reset emails link to. None of them says whether an email has an account.
@@ -61,6 +64,7 @@ export function ForgotPasswordPage({ navigate }: PageProps) {
   const emailRef = useRef<HTMLInputElement>(null)
   const busy = useRef(false)
   const [sending, setSending] = useState(false)
+  useDocumentTitle(sent ? a.checkEmailTitle : a.forgotTitle)
 
   useEffect(() => {
     if (focusEmail) emailRef.current?.focus()
@@ -109,7 +113,7 @@ export function ForgotPasswordPage({ navigate }: PageProps) {
       <form className="sign-in__card" aria-labelledby={titleId} noValidate onSubmit={send}>
         <Title id={titleId}>{a.forgotTitle}</Title>
         <p className="sign-in__description">{a.forgotText}</p>
-        {problem && <Notice title={errorText(texts, problem.code, problem.status)} />}
+        <ProblemNotice problem={problem} />
         <TextField
           ref={emailRef}
           label={a.email}
@@ -148,6 +152,24 @@ type SetPasswordProps = PageProps & {
   onSaved: () => void
 }
 
+/**
+ * N-11 around the link page, with one status region that stays on the page through every state. "Revisando el
+ * enlace…" is put in it after the page mounts, since a live region that appears with its text is often not read.
+ */
+function LinkShell({ announce, children }: { announce: string; children: ReactNode }) {
+  const region = useRef<HTMLParagraphElement>(null)
+  // The text is written into the region after it is on the page; React never renders children inside it.
+  useEffect(() => {
+    if (region.current) region.current.textContent = announce
+  }, [announce])
+  return (
+    <SignInLayout>
+      <p className="visually-hidden" role="status" ref={region} />
+      {children}
+    </SignInLayout>
+  )
+}
+
 /** The password page an email link opens, or "Enlace vencido o usado" (4039:4325) when the link no longer works. */
 export function SetPasswordPage({ kind, navigate, onSaved }: SetPasswordProps) {
   const texts = useMessages()
@@ -173,6 +195,11 @@ export function SetPasswordPage({ kind, navigate, onSaved }: SetPasswordProps) {
   const [sending, setSending] = useState(false)
 
   const { base, body: linkBody, invalidCode } = linkRequest(kind, link)
+
+  const formTitle = kind === 'invite' ? a.createTitle : a.resetTitle
+  const announce = state.status === 'checking' ? a.checking : ''
+  const pageTitle = state.status === 'expired' ? a.expiredTitle : state.status === 'failed' ? texts.states.errorTitle : formTitle
+  useDocumentTitle(pageTitle)
 
   useEffect(() => {
     if (link.token === '' || (kind === 'reset' && link.email === '')) return
@@ -238,39 +265,73 @@ export function SetPasswordPage({ kind, navigate, onSaved }: SetPasswordProps) {
 
   if (state.status === 'expired') {
     return (
-      <SignInLayout>
+      <LinkShell announce={announce}>
         <section className="sign-in__card" aria-labelledby={titleId}>
           <Title id={titleId}>{a.expiredTitle}</Title>
           <p className="sign-in__description">{kind === 'invite' ? a.inviteExpiredText : a.resetExpiredText}</p>
-          <p className="sign-in__note">{kind === 'invite' ? a.inviteExpiredHelp : a.resetExpiredHelp}</p>
+          {kind === 'invite' ? (
+            <p className="sign-in__note">{a.inviteExpiredHelp}</p>
+          ) : (
+            <PageLink
+              to={STAFF_FORGOT_PATH}
+              navigate={navigate}
+              className="button button--primary button--large button--full"
+            >
+              {a.requestAnother}
+            </PageLink>
+          )}
           <BackToSignIn navigate={navigate} />
         </section>
-      </SignInLayout>
+      </LinkShell>
     )
   }
 
-  if (state.status !== 'form') {
+  // 4424:1753: the page's own title while the link is checked.
+  if (state.status === 'checking') {
     return (
-      <SignInLayout>
-        {state.status === 'checking' ? (
-          <LoadingState detail={a.checking} />
-        ) : (
-          <ErrorState
-            onRetry={() => {
+      <LinkShell announce={announce}>
+        <section className="sign-in__card" aria-labelledby={titleId}>
+          <Title id={titleId}>{pageTitle}</Title>
+          {/* Said by the page's status region instead (LinkShell), which is on the page before the text. */}
+          <p className="sign-in__description" aria-hidden="true">
+            {a.checking}
+          </p>
+          <RefreshCw size={20} className="sign-in__checking-icon" />
+        </section>
+      </LinkShell>
+    )
+  }
+
+  // 4424:1792: the link could not be checked (server error or no connection).
+  if (state.status === 'failed') {
+    return (
+      <LinkShell announce={announce}>
+        <section className="sign-in__card" aria-labelledby={titleId}>
+          <Title id={titleId}>{texts.states.errorTitle}</Title>
+          <p className="sign-in__description" role="alert">
+            {texts.states.errorDetail}
+          </p>
+          <Button
+            size="large"
+            fullWidth
+            onClick={() => {
               setState({ status: 'checking' })
               setAttempt((n) => n + 1)
             }}
-          />
-        )}
-      </SignInLayout>
+          >
+            {texts.states.retry}
+          </Button>
+          <BackToSignIn navigate={navigate} />
+        </section>
+      </LinkShell>
     )
   }
 
   const invitee = state.invitee
   return (
-    <SignInLayout>
+    <LinkShell announce={announce}>
       <form className="sign-in__card" aria-labelledby={titleId} noValidate onSubmit={save}>
-        <Title id={titleId}>{kind === 'invite' ? a.createTitle : a.resetTitle}</Title>
+        <Title id={titleId}>{formTitle}</Title>
         <p className="sign-in__description">{kind === 'invite' ? a.createText : a.resetText}</p>
         {invitee && (
           <div className="sign-in__identity">
@@ -280,7 +341,7 @@ export function SetPasswordPage({ kind, navigate, onSaved }: SetPasswordProps) {
             </p>
           </div>
         )}
-        {problem && <Notice title={errorText(texts, problem.code, problem.status)} />}
+        <ProblemNotice problem={problem} />
         {/* A hidden username, so password managers save the new password with the right account. */}
         {(invitee?.email ?? link.email) && (
           <input type="email" autoComplete="username" value={invitee?.email ?? link.email} readOnly hidden />
@@ -315,6 +376,6 @@ export function SetPasswordPage({ kind, navigate, onSaved }: SetPasswordProps) {
           {kind === 'invite' ? a.createSubmit : a.resetSubmit}
         </Button>
       </form>
-    </SignInLayout>
+    </LinkShell>
   )
 }

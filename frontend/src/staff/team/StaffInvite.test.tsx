@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { es } from '../../i18n/es'
 import { StaffApp } from '../StaffApp'
 import { STAFF_TEAM_PATH } from '../staffPath'
-import { apiError, callsTo, fakeApi, goOffline, goOnline, json, lorena, team } from './fakeTeamApi'
+import { apiError, callsTo, fakeApi, goOffline, goOnline, json, lorena, offline, team } from './fakeTeamApi'
 
 // A-15 invite (Figma 100:1126, 100:1197, 100:1231) and resend (4039:3311), #84.
 
@@ -55,12 +55,16 @@ describe('inviting a person', () => {
     render(<StaffApp />)
 
     const dialog = await openInvite()
+    // One live region is on the page before the banner, so screen readers speak what appears in it.
+    const live = document.querySelector('.team-live')
+    expect(live).toHaveAttribute('role', 'status')
     fill(dialog, 'Yariel Nieves León', 'yariel@example.com')
     fireEvent.click(within(dialog).getByRole('radio', { name: es.dashboard.roles.admin }))
     fireEvent.click(within(dialog).getByRole('button', { name: t.sendInvite }))
 
-    const banner = await screen.findByRole('status', { name: t.invitedTitle })
+    const banner = await screen.findByRole('region', { name: t.invitedTitle })
     expect(banner).toHaveTextContent(t.invitedText('Yariel'))
+    expect(live).toContainElement(banner)
     expect(within(banner).getByText(t.status.invited)).toBeInTheDocument()
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(await screen.findByText('yariel@example.com')).toBeInTheDocument()
@@ -141,6 +145,43 @@ describe('inviting a person', () => {
     await act(async () => finish(json({ account: yariel }, 201)))
   })
 
+  it('stays open on Esc and Cancelar while the invitation is being sent', async () => {
+    let finish: (response: Response) => void = () => {}
+    fakeApi({
+      '/api/staff/me': () => json(lorena),
+      '/api/staff/accounts': () => json({ accounts: team }),
+      'POST /api/staff/accounts': () => new Promise<Response>((resolve) => (finish = resolve)),
+    })
+    render(<StaffApp />)
+
+    const dialog = await openInvite()
+    fill(dialog, 'Yariel Nieves León', 'yariel@example.com')
+    fireEvent.click(within(dialog).getByRole('button', { name: t.sendInvite }))
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
+    fireEvent.click(within(dialog).getByRole('button', { name: t.cancel }))
+
+    expect(screen.getByRole('dialog', { name: t.inviteTitle })).toBeInTheDocument()
+    await act(async () => finish(json({ account: yariel }, 201)))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('says there is no connection, not that the request failed', async () => {
+    fakeApi({
+      '/api/staff/me': () => json(lorena),
+      '/api/staff/accounts': () => json({ accounts: team }),
+      'POST /api/staff/accounts': offline,
+    })
+    render(<StaffApp />)
+
+    const dialog = await openInvite()
+    fill(dialog, 'Yariel Nieves León', 'yariel@example.com')
+    fireEvent.click(within(dialog).getByRole('button', { name: t.sendInvite }))
+
+    const alert = await within(dialog).findByRole('alert')
+    expect(alert).toHaveTextContent(es.signIn.offlineTitle)
+    expect(alert).toHaveTextContent(es.states.offlineRetryText)
+  })
+
   it('goes back to sign-in when the session ended', async () => {
     fakeApi({
       '/api/staff/me': () => json(lorena),
@@ -183,8 +224,10 @@ describe('resending an invitation', () => {
     const row = (await screen.findByText('Nayeli Lugo Paz')).closest('tr') as HTMLElement
     fireEvent.click(within(row).getByRole('button', { name: `${t.resend}, Nayeli Lugo Paz` }))
 
-    const banner = await screen.findByRole('status', { name: t.resentTitle })
+    const banner = await screen.findByRole('region', { name: t.resentTitle })
     expect(banner).toHaveTextContent(t.resentText('nayeli@example.com', 'Nayeli'))
+    expect(document.querySelector('.team-live')).toHaveAttribute('role', 'status')
+    expect(document.querySelector('.team-live')).toContainElement(banner)
     expect(callsTo(fetchMock, '/api/staff/accounts/3/invitation')).toEqual([['POST', undefined]])
   })
 

@@ -1,16 +1,18 @@
 import { useEffect, useEffectEvent, useId, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
-import { Button, ErrorState, LoadingState, Notice, OfflineState } from '../../components'
+import { Button, ErrorState, LoadingState, OfflineState } from '../../components'
 import { DashboardShell } from '../../dashboard/DashboardShell'
-import { errorText, useMessages } from '../../i18n'
+import { useMessages } from '../../i18n'
 import { useConnection } from '../../user/useConnection'
+import { ProblemNotice } from '../ProblemNotice'
+import { useDocumentTitle } from '../useDocumentTitle'
 import { useStaffSession } from '../useStaffSession'
 import { DeactivateDialog, OwnRoleDialog, RoleDialog } from './AccountDialogs'
 import { InviteDialog } from './InviteDialog'
+import { TermStatus } from './TermStatus'
 import './staffTeam.css'
 
 // A-15 "Cuentas del staff" (Figma 100:841, #84). Only Administrators reach it; the API checks the role too.
-// Not here yet: the term chip and the "no active term" banner, which need the terms of #21.
 
 export type TeamAccount = {
   id: number
@@ -45,6 +47,7 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
   const texts = useMessages()
   const t = texts.staffTeam
   const session = useStaffSession()
+  useDocumentTitle(t.title)
   const online = useConnection()
   const [load, setLoad] = useState<Load>({ status: 'loading' })
   // Each change counts up, and the effect below asks for the list again.
@@ -189,9 +192,58 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
       <p className="visually-hidden" role="status">
         {announcement}
       </p>
+      <TermStatus />
+      {banners()}
       {content()}
     </DashboardShell>
   )
+
+  /**
+   * What the screen says above the list. One live region that is always on the page, with the banners inside it
+   * and no role of their own: a live region added together with its text is often not read out (WCAG 4.1.3).
+   */
+  function banners() {
+    return (
+      <>
+        <div className="team-live" role="status">
+          {load.status === 'ready' && !online && (
+            <section className="state">
+              <h2 className="state__title">{texts.states.offlineTitle}</h2>
+              <p className="state__detail">{t.offlineText}</p>
+            </section>
+          )}
+          {banner?.kind === 'invited' && (
+            <section className="state" aria-labelledby={bannerTitleId}>
+              <h2 className="state__title" id={bannerTitleId}>
+                {t.invitedTitle}
+              </h2>
+              <p className="state__detail">{t.invitedText(firstName(banner.account.name))}</p>
+              <span className="team-chip team-chip--invited-outline">{t.status.invited}</span>
+            </section>
+          )}
+          {banner?.kind === 'roleChanged' && (
+            <section className="state" aria-labelledby={bannerTitleId}>
+              <h2 className="state__title" id={bannerTitleId}>
+                {t.roleChangedTitle}
+              </h2>
+              <p className="state__detail">
+                {t.roleChangedText(banner.account.name, texts.dashboard.roles[banner.account.role])}
+              </p>
+            </section>
+          )}
+          {banner?.kind === 'resent' && (
+            <section className="state" aria-labelledby={bannerTitleId}>
+              <h2 className="state__title" id={bannerTitleId}>
+                {t.resentTitle}
+              </h2>
+              <p className="state__detail">{t.resentText(banner.account.email, firstName(banner.account.name))}</p>
+            </section>
+          )}
+        </div>
+        {banner?.kind === 'failed' && <ProblemNotice problem={banner.error} />}
+      </>
+    )
+  }
 
   function content() {
     switch (load.status) {
@@ -209,49 +261,12 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
 
     return (
       <>
-        {!online && (
-          <section className="state" role="status">
-            <h2 className="state__title">{texts.states.offlineTitle}</h2>
-            <p className="state__detail">{t.offlineText}</p>
-          </section>
-        )}
-
-        {banner?.kind === 'failed' && <Notice title={errorText(texts, banner.error.code, banner.error.status)} />}
-        {banner?.kind === 'invited' && (
-          <section className="state" role="status" aria-labelledby={bannerTitleId}>
-            <h2 className="state__title" id={bannerTitleId}>
-              {t.invitedTitle}
-            </h2>
-            <p className="state__detail">{t.invitedText(firstName(banner.account.name))}</p>
-            <span className="team-chip team-chip--invited-outline">{t.status.invited}</span>
-          </section>
-        )}
-        {banner?.kind === 'roleChanged' && (
-          <section className="state" role="status" aria-labelledby={bannerTitleId}>
-            <h2 className="state__title" id={bannerTitleId}>
-              {t.roleChangedTitle}
-            </h2>
-            <p className="state__detail">
-              {t.roleChangedText(banner.account.name, texts.dashboard.roles[banner.account.role])}
-            </p>
-          </section>
-        )}
-        {banner?.kind === 'resent' && (
-          <section className="state" role="status" aria-labelledby={bannerTitleId}>
-            <h2 className="state__title" id={bannerTitleId}>
-              {t.resentTitle}
-            </h2>
-            <p className="state__detail">{t.resentText(banner.account.email, firstName(banner.account.name))}</p>
-          </section>
-        )}
-
         <p className="team-summary">{t.summary(active, invitedCount)}</p>
 
         <div className="team-bar">
           <h2 className="team-bar__title" id={tableTitleId}>
             {t.tableTitle}
           </h2>
-          <p className="team-bar__hint">{t.tableHint}</p>
         </div>
 
         {/* Scrolls sideways on a phone; tabIndex lets the keyboard scroll it too (WCAG 2.1.1). */}
@@ -263,9 +278,7 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
                 <th scope="col">{t.columns.email}</th>
                 <th scope="col">{t.columns.role}</th>
                 <th scope="col">{t.columns.status}</th>
-                {/* Figma has one "Acciones" column; the team split it so each action lines up down the table. */}
-                <th scope="col">{t.columns.account}</th>
-                <th scope="col">{t.columns.access}</th>
+                <th scope="col">{t.columns.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -277,9 +290,9 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
                   <td>
                     <span className={`team-chip team-chip--${account.status}`}>{t.status[account.status]}</span>
                   </td>
-                  {actions(account).map((action, column) => (
-                    <td key={column}>{action}</td>
-                  ))}
+                  <td>
+                    <div className="team-actions">{actions(account)}</div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -294,15 +307,14 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
     )
   }
 
-  /** The row's two action columns: Cuenta (Cambiar rol, Reenviar invitación or Reactivar) and Acceso (Desactivar). */
-  function actions(account: TeamAccount): [ReactNode, ReactNode] {
+  /** The row's actions, in the one "Acciones" column: plain green links, the first in a slot as wide as "Reenviar invitación". */
+  function actions(account: TeamAccount): ReactNode[] {
     const busy = blocked || busyId !== null
-    const rowAction = (label: string, onClick: () => void, disabled = blocked, danger = false) => (
+    const rowAction = (label: string, onClick: () => void, disabled = blocked, first = false) => (
       <Button
         key={label}
-        // Bordered, as the team chose over Figma's plain green text.
-        variant="secondary"
-        className={danger ? 'team-action team-action--danger' : 'team-action'}
+        variant="link"
+        className={first ? 'team-action team-action--first' : 'team-action'}
         // The name tells the rows apart for screen readers; the visible text comes first (WCAG 2.5.3).
         aria-label={`${label}, ${account.name}`}
         aria-disabled={disabled || undefined}
@@ -312,12 +324,12 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
       </Button>
     )
 
-    // Reactivar has no Figma frame: it sits where the frame shows "Sin acceso", in the same style (E-150).
-    if (account.status === 'deactivated') return [rowAction(t.reactivate, () => void reactivate(account), busy), null]
-    const deactivate = rowAction(t.deactivate, () => open('deactivate', account), blocked, true)
-    if (account.status === 'invited') return [rowAction(t.resend, () => void resend(account), busy), deactivate]
+    // Reactivar has no Figma frame: it takes the first slot, in the same link style (E-150).
+    if (account.status === 'deactivated') return [rowAction(t.reactivate, () => void reactivate(account), busy, true)]
+    const deactivate = rowAction(t.deactivate, () => open('deactivate', account), blocked)
+    if (account.status === 'invited') return [rowAction(t.resend, () => void resend(account), busy, true), deactivate]
     // Your own row: no Desactivar, and Cambiar rol explains why it cannot change (4039:3285).
-    if (account.email === myEmail) return [rowAction(t.changeRole, () => open('ownRole', account)), null]
-    return [rowAction(t.changeRole, () => open('role', account)), deactivate]
+    if (account.email === myEmail) return [rowAction(t.changeRole, () => open('ownRole', account), blocked, true)]
+    return [rowAction(t.changeRole, () => open('role', account), blocked, true), deactivate]
   }
 }

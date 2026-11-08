@@ -231,6 +231,11 @@
   line-height: 35px;
 }
 
+/* Takes focus after a menu click, so a screen reader starts from the new page; not a control. */
+.page__title:focus {
+  outline: none;
+}
+
 .page__description {
   color: var(--muted-foreground);
   font-size: 15px;

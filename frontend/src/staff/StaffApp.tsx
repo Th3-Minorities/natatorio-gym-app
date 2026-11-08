@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { LoadingState, Notice } from '../components'
 import { DashboardShell } from '../dashboard/DashboardShell'
 import { useMessages } from '../i18n'
@@ -24,6 +24,16 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
   const session = useStaffSession()
   const texts = useMessages().dashboard
   const [signOutFailed, setSignOutFailed] = useState(false)
+
+  // After a menu click the page's h1 takes focus, so a screen reader starts from the new page. Done here, not in
+  // the shell: the shell of each screen is a new one, so it never sees the path change.
+  const shownPath = useRef(path)
+  useEffect(() => {
+    if (shownPath.current === path) return
+    shownPath.current = path
+    document.querySelector<HTMLElement>('#dashboard-content h1')?.focus()
+  }, [path])
+
   const navigation = { currentPath: path, onNavigate: navigate, staffAccounts: STAFF_TEAM_PATH }
   // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
   const onTeam = account.role === 'admin' && path === STAFF_TEAM_PATH

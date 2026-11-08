@@ -184,13 +184,17 @@ export function DashboardShell({
         {title ? (
           <div className="page__top">
             <div className="page__heading">
-              <h1 className="page__title">{title}</h1>
+              <h1 className="page__title" tabIndex={-1}>
+                {title}
+              </h1>
               {description && <p className="page__description">{description}</p>}
             </div>
             {action && <div className="page__action">{action}</div>}
           </div>
         ) : (
-          <h1 className="visually-hidden">{texts.brandName}</h1>
+          <h1 className="visually-hidden" tabIndex={-1}>
+            {texts.brandName}
+          </h1>
         )}
         <div className="page__content">{children}</div>
       </main>

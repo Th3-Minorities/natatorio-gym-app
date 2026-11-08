@@ -28,11 +28,11 @@ test('an Administrator signs in, stays signed in after a reload, and signs out',
   await expect(page.getByRole('alert')).toContainText('No pudimos iniciar sesión')
 
   await signIn(page, ADMIN.email, 'password')
-  await expect(page.getByText(`${ADMIN.name} · Administración`)).toBeVisible()
+  await expect(page.getByText(`${ADMIN.name} · Administrador`)).toBeVisible()
   await expect(page.getByText('Administración', { exact: true })).toBeVisible()
 
   await page.reload()
-  await expect(page.getByText(`${ADMIN.name} · Administración`)).toBeVisible()
+  await expect(page.getByText(`${ADMIN.name} · Administrador`)).toBeVisible()
 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeVisible()
@@ -77,7 +77,7 @@ test('the sign-in works with the keyboard alone', async ({ page }) => {
   await page.keyboard.press('Enter')
   // While it signs in, the busy button keeps focus instead of dropping it to the page.
   await expect(page.getByRole('button', { name: 'Iniciando sesión…' })).toBeFocused()
-  await expect(page.getByText(`${ADMIN.name} · Administración`)).toBeVisible()
+  await expect(page.getByText(`${ADMIN.name} · Administrador`)).toBeVisible()
 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeVisible()
@@ -90,7 +90,7 @@ test('N-11 and the signed-in dashboard have no automated WCAG 2.2 AA violations'
   expect((await new AxeBuilder({ page }).withTags(wcag).analyze()).violations).toEqual([])
 
   await signIn(page, ADMIN.email, 'password')
-  await expect(page.getByText(`${ADMIN.name} · Administración`)).toBeVisible()
+  await expect(page.getByText(`${ADMIN.name} · Administrador`)).toBeVisible()
   expect((await new AxeBuilder({ page }).withTags(wcag).analyze()).violations).toEqual([])
 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()

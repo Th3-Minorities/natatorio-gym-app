@@ -7,7 +7,8 @@ import { STAFF_TEAM_PATH } from '../staffPath'
 
 // A-15 "Cuentas del staff" (Figma 100:841, #84): the Administrator's list of staff accounts at /staff/equipo.
 
-const lorena = { name: 'Lorena Ortiz', email: 'lorena@example.com', role: 'admin', locale: 'es' }
+const term = { name: 'Fall 2026', starts_on: '2026-08-10', ends_on: '2026-12-18' }
+const lorena = { name: 'Lorena Ortiz', email: 'lorena@example.com', role: 'admin', locale: 'es', active_term: term }
 const team = [
   { id: 1, name: 'Lorena Ortiz', email: 'lorena@example.com', role: 'admin', status: 'active' },
   { id: 2, name: 'Mariel Vélez Soto', email: 'mariel@example.com', role: 'staff', status: 'active' },
@@ -57,6 +58,75 @@ describe('the staff accounts screen', () => {
     expect(within(rows[3]).getByText(es.staffTeam.status.invited)).toBeInTheDocument()
     expect(within(rows[4]).getByText(es.staffTeam.status.deactivated)).toBeInTheDocument()
     expect(within(rows[4]).getByRole('button', { name: `${es.staffTeam.reactivate}, Damián Ruiz Solís` })).toBeInTheDocument()
+  })
+
+  it('shows the active term and "Acceso del equipo" above the summary (100:841)', async () => {
+    fakeApi({ '/api/staff/me': () => json(lorena), '/api/staff/accounts': () => json({ accounts: team }) })
+    render(<StaffApp />)
+
+    const chip = await screen.findByText('Agosto - diciembre 2026')
+    expect(chip).toHaveClass('team-chip--invited-outline')
+    expect(screen.getByText(es.staffTeam.termAccess)).toBeInTheDocument()
+    expect(screen.queryByText(es.staffTeam.noTermTitle)).not.toBeInTheDocument()
+    const summary = await screen.findByText('2 activas · 1 invitada')
+    expect(chip.compareDocumentPosition(summary) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('shows the term in English for an English account', async () => {
+    fakeApi({
+      '/api/staff/me': () => json({ ...lorena, locale: 'en' }),
+      '/api/staff/accounts': () => json({ accounts: team }),
+    })
+    render(<StaffApp />)
+
+    expect(await screen.findByText('August - December 2026')).toBeInTheDocument()
+    expect(screen.getByText(en.staffTeam.termAccess)).toBeInTheDocument()
+  })
+
+  it('shows the "Sin término activo" banner when no term includes today (100:1297)', async () => {
+    fakeApi({
+      '/api/staff/me': () => json({ ...lorena, active_term: null }),
+      '/api/staff/accounts': () => json({ accounts: team }),
+    })
+    render(<StaffApp />)
+
+    const banner = await screen.findByRole('region', { name: es.staffTeam.noTermTitle })
+    expect(within(banner).getByText(es.staffTeam.noTermChip)).toBeInTheDocument()
+    expect(within(banner).getByText(es.staffTeam.noTermText)).toBeInTheDocument()
+    expect(screen.queryByText(es.staffTeam.termAccess)).not.toBeInTheDocument()
+    expect(await screen.findByRole('table')).toBeInTheDocument()
+  })
+
+  it('has no hint line under "Equipo del gimnasio"', async () => {
+    fakeApi({ '/api/staff/me': () => json(lorena), '/api/staff/accounts': () => json({ accounts: team }) })
+    render(<StaffApp />)
+
+    await screen.findByRole('table')
+    expect(screen.queryByText('Nombre, correo, rol y estado')).not.toBeInTheDocument()
+  })
+
+  it('sets the tab title to the page and the brand', async () => {
+    fakeApi({ '/api/staff/me': () => json(lorena), '/api/staff/accounts': () => json({ accounts: team }) })
+    render(<StaffApp />)
+
+    await screen.findByRole('table')
+    expect(document.title).toBe(`${es.staffTeam.title} · ${es.dashboard.brandName}`)
+  })
+
+  it('leaves the Spanish title on N-11 when an English account signs out', async () => {
+    fakeApi({
+      '/api/staff/me': () => json({ ...lorena, locale: 'en' }),
+      '/api/staff/accounts': () => json({ accounts: team }),
+      '/api/staff/sign-out': () => new Response(null, { status: 204 }),
+    })
+    render(<StaffApp />)
+
+    await screen.findByRole('table')
+    expect(document.title).toBe(`${en.staffTeam.title} · ${en.dashboard.brandName}`)
+    fireEvent.click(screen.getByRole('button', { name: en.dashboard.signOut }))
+
+    expect(await screen.findByRole('heading', { level: 1, name: es.signIn.title })).toBeInTheDocument()
+    expect(document.title).toBe(es.dashboard.brandName)
   })
 
   it('counts active and invited accounts in the summary', async () => {
@@ -164,6 +234,8 @@ describe('getting to the staff accounts screen', () => {
     expect(window.location.pathname).toBe(STAFF_TEAM_PATH)
     expect(await screen.findByRole('table')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: es.dashboard.adminItems.staffAccounts })).toHaveAttribute('aria-current', 'page')
+    // A screen reader starts from the new page.
+    expect(screen.getByRole('heading', { level: 1, name: es.staffTeam.title })).toHaveFocus()
   })
 
   it('follows the browser back button', async () => {

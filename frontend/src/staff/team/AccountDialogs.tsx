@@ -1,7 +1,8 @@
-import { useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
-import { Button, Modal, Notice } from '../../components'
-import { errorText, useMessages } from '../../i18n'
+import { Button, Modal } from '../../components'
+import { useMessages } from '../../i18n'
+import { ProblemNotice } from '../ProblemNotice'
 import type { TeamAccount } from './StaffTeam'
 
 // The A-15 modals for one account (#84): change role (Figma 4039:3226), your own role (4039:3285)
@@ -17,7 +18,7 @@ type DialogProps = {
 }
 
 /** Sends one change and keeps its refusal to show inside the modal. */
-function useChange(onDone: DialogProps['onDone'], onError: DialogProps['onError']) {
+function useChange(onDone: DialogProps['onDone'], onError: DialogProps['onError'], onClose: DialogProps['onClose']) {
   const [sending, setSending] = useState(false)
   const [problem, setProblem] = useState<ApiError | null>(null)
   // The guard against a second send; the button is aria-disabled, so it keeps keyboard focus.
@@ -40,12 +41,12 @@ function useChange(onDone: DialogProps['onDone'], onError: DialogProps['onError'
     }
   }
 
-  return { sending, problem, run }
-}
+  /** Esc and Cancelar close the modal only when no change is being sent. */
+  function close() {
+    if (!busy.current) onClose()
+  }
 
-function Problem({ problem }: { problem: ApiError | null }) {
-  const texts = useMessages()
-  return problem ? <Notice title={errorText(texts, problem.code, problem.status)} /> : null
+  return { sending, problem, run, close }
 }
 
 export function RoleDialog({ account, onClose, onDone, onError }: DialogProps) {
@@ -54,15 +55,20 @@ export function RoleDialog({ account, onClose, onDone, onError }: DialogProps) {
   const titleId = useId()
   // Figma starts on the role the account does not have: that is the change being made.
   const [role, setRole] = useState<TeamAccount['role']>(account.role === 'staff' ? 'admin' : 'staff')
-  const { sending, problem, run } = useChange(onDone, onError)
+  const { sending, problem, run, close } = useChange(onDone, onError, onClose)
 
   function save(event: FormEvent) {
     event.preventDefault()
+    // The same role as now: nothing to change, so nothing is sent and no "Rol cambiado" appears.
+    if (role === account.role) {
+      close()
+      return
+    }
     void run(`/staff/accounts/${account.id}/role`, 'PATCH', { role })
   }
 
   return (
-    <Modal labelledBy={titleId} onClose={onClose}>
+    <Modal labelledBy={titleId} onClose={close}>
       <form className="modal__body" noValidate onSubmit={save}>
         <h2 className="modal__title" id={titleId}>
           {t.changeRole}
@@ -72,7 +78,7 @@ export function RoleDialog({ account, onClose, onDone, onError }: DialogProps) {
           <p>{account.email}</p>
           <p>{t.currentRole(texts.dashboard.roles[account.role])}</p>
         </div>
-        <Problem problem={problem} />
+        <ProblemNotice problem={problem} />
         <fieldset className="choice">
           <legend className="field__label">{t.newRole}</legend>
           <div className="choice__options">
@@ -89,7 +95,7 @@ export function RoleDialog({ account, onClose, onDone, onError }: DialogProps) {
           <Button type="submit" aria-disabled={sending || undefined}>
             {t.save}
           </Button>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={close}>
             {t.cancel}
           </Button>
         </div>
@@ -128,24 +134,28 @@ export function OwnRoleDialog({ account, onClose }: Pick<DialogProps, 'account' 
 export function DeactivateDialog({ account, onClose, onDone, onError }: DialogProps) {
   const t = useMessages().staffTeam
   const titleId = useId()
-  const { sending, problem, run } = useChange(onDone, onError)
+  const { sending, problem, run, close } = useChange(onDone, onError, onClose)
+  const actions = useRef<HTMLDivElement>(null)
+
+  // Cancelar first: the other button is destructive (WAI-ARIA APG). After the modal opens, so it wins over the browser's pick.
+  useEffect(() => actions.current?.querySelector<HTMLElement>('[data-initial-focus]')?.focus(), [])
 
   return (
-    <Modal labelledBy={titleId} onClose={onClose}>
+    <Modal labelledBy={titleId} onClose={close}>
       <div className="modal__body">
         <h2 className="modal__title" id={titleId}>
           {t.deactivateTitle(account.name)}
         </h2>
         <p className="modal__text">{t.deactivateText}</p>
-        <Problem problem={problem} />
-        <div className="modal__actions">
+        <ProblemNotice problem={problem} />
+        <div className="modal__actions" ref={actions}>
           <Button
             aria-disabled={sending || undefined}
             onClick={() => void run(`/staff/accounts/${account.id}/deactivate`, 'POST')}
           >
             {t.deactivateConfirm}
           </Button>
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" data-initial-focus onClick={close}>
             {t.cancel}
           </Button>
         </div>

@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
-import { Button, Modal, Notice, TextField } from '../../components'
-import { errorText, fieldErrorText, useMessages } from '../../i18n'
+import { Button, Modal, TextField } from '../../components'
+import { fieldErrorText, useMessages } from '../../i18n'
+import { ProblemNotice } from '../ProblemNotice'
 import type { TeamAccount } from './StaffTeam'
 
 // "Invitar al equipo" (Figma 100:1126) and its "Este correo ya está en uso" view (100:1231), #84.
@@ -85,13 +86,18 @@ export function InviteDialog({ onClose, onInvited, onError }: InviteDialogProps)
     }
   }
 
+  /** Esc and Cancelar close the dialog only when no invitation is being sent. */
+  function close() {
+    if (!busy.current) onClose()
+  }
+
   function fixEmail() {
     setView('form')
     setFocus((current) => ({ to: 'email', count: current.count + 1 }))
   }
 
   return (
-    <Modal labelledBy={titleId} onClose={onClose}>
+    <Modal labelledBy={titleId} onClose={close}>
       {view === 'emailInUse' ? (
         <div className="modal__body">
           <h2 className="modal__title" id={titleId} ref={inUseRef} tabIndex={-1}>
@@ -118,7 +124,7 @@ export function InviteDialog({ onClose, onInvited, onError }: InviteDialogProps)
             {t.inviteTitle}
           </h2>
           <p className="modal__text">{t.inviteText}</p>
-          {problem && <Notice title={errorText(texts, problem.code, problem.status)} />}
+          <ProblemNotice problem={problem} />
           <TextField
             ref={nameRef}
             label={t.fullName}
@@ -160,7 +166,7 @@ export function InviteDialog({ onClose, onInvited, onError }: InviteDialogProps)
             <Button type="submit" aria-disabled={sending || undefined}>
               {t.sendInvite}
             </Button>
-            <Button variant="secondary" onClick={onClose}>
+            <Button variant="secondary" onClick={close}>
               {t.cancel}
             </Button>
           </div>

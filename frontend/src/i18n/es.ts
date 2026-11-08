@@ -115,13 +115,14 @@ export const es = {
     confirmPassword: 'Confirmar contraseña',
     confirmPasswordPlaceholder: 'Repite la contraseña',
     passwordHint:
-      'Usa al menos 10 caracteres. Puedes usar una frase larga. Evita contraseñas conocidas o filtradas. Ambas contraseñas deben coincidir.',    checking: 'Revisando el enlace…',
+      'Usa al menos 10 caracteres. Puedes usar una frase larga. Evita contraseñas conocidas o filtradas. Ambas contraseñas deben coincidir.',
+    checking: 'Revisando el enlace…',
     expiredTitle: 'Enlace vencido o usado',
     inviteExpiredText: 'Este enlace de invitación ya no se puede usar.',
     inviteExpiredHelp: 'Pide a un Administrador que te envíe una nueva invitación para crear tu contraseña.',
-    // Not drawn in Figma: the reset email's link, expired or used. Same page as the invitation's.
+    // The reset email's link, expired or used (4424:1683). The invitation's has its own help text.
     resetExpiredText: 'Este enlace para recuperar tu contraseña ya no se puede usar.',
-    resetExpiredHelp: 'Pide uno nuevo con "¿Olvidaste tu contraseña?" al iniciar sesión.',
+    requestAnother: 'Solicitar otro enlace',
     // Not drawn in Figma: shown on N-11 after saving, since the note says "Al guardar, vuelve al acceso del equipo".
     savedTitle: 'Contraseña guardada',
     savedText: 'Inicia sesión con tu nueva contraseña.',
@@ -157,8 +158,7 @@ export const es = {
       manualEntries: 'Entradas manuales',
       auditLog: 'Registro de auditoría',
     },
-    // Neutral: staff accounts have no gender, so not "Administrador" or "Administradora".
-    roles: { staff: 'Staff', admin: 'Administración' },
+    roles: { staff: 'Staff', admin: 'Administrador' },
     signOut: 'Cerrar sesión',
     // Not drawn in Figma: the sign-out could not reach the server, so the person is still signed in.
     signOutFailedTitle: 'No se pudo cerrar sesión',
@@ -172,14 +172,18 @@ export const es = {
     summary: (active: number, invited: number) =>
       `${active} ${active === 1 ? 'activa' : 'activas'} · ${invited} ${invited === 1 ? 'invitada' : 'invitadas'}`,
     tableTitle: 'Equipo del gimnasio',
-    tableHint: 'Nombre, correo, rol y estado',
-    columns: { name: 'Nombre', email: 'Correo electrónico', role: 'Rol', status: 'Estado', account: 'Cuenta', access: 'Acceso' },
+    columns: { name: 'Nombre', email: 'Correo electrónico', role: 'Rol', status: 'Estado', actions: 'Acciones' },
     status: { active: 'Activo', invited: 'Invitado', deactivated: 'Desactivado' },
     keptTitle: 'Las cuentas se conservan',
     keptText: 'Al desactivar una cuenta se retira su acceso. Su registro permanece en esta lista.',
     loadingTitle: 'Cargando cuentas…',
     loadingText: 'Espera un momento mientras se consulta el equipo.',
     offlineText: 'Las acciones estarán disponibles al recuperar la conexión.',
+    // Term chip and banner, Figma 100:841 and 100:1297.
+    termAccess: 'Acceso del equipo',
+    noTermChip: 'Sin término activo',
+    noTermTitle: 'No hay un término activo hoy',
+    noTermText: 'Configura las fechas en Términos. No se pueden crear autorizaciones nuevas.',
     // Invitar, Figma 100:1126, 100:1197 and 100:1231.
     invite: 'Invitar',
     inviteTitle: 'Invitar al equipo',
@@ -231,6 +235,7 @@ export const es = {
     errorDetail: 'No pudimos cargar los datos. Inténtalo de nuevo.',
     retry: 'Reintentar',
     offlineTitle: 'Sin conexión',
+    offlineRetryText: 'Revisa la conexión e intenta de nuevo.',
     offlineLead: 'Sin conexión. Los datos pueden haber cambiado. Las acciones estarán disponibles al recuperar la conexión.',
   },
 
