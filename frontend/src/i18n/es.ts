@@ -458,6 +458,25 @@ export const es = {
     refusedTitle: 'Ya tiene una autorización activa',
     refusedText: (name: string, term: string) =>
       `${name} ya tiene una autorización activa en ${term}. No se puede restituir otra.`,
+    // Descargar roster, Figma 4039:2032 and 4039:2077 (E-140).
+    download: 'Descargar roster',
+    downloadTitle: 'Descargar roster',
+    downloadText: 'Elige el formato del roster completo.',
+    format: 'Formato',
+    word: 'Word (.docx)',
+    pdf: 'PDF (.pdf)',
+    wholeTitle: 'Roster completo',
+    wholeText:
+      'Todos los atletas, activos y retirados, sin aplicar los filtros de la tabla. Incluye nombre, deporte, número de estudiante y correo institucional.',
+    downloadConfirm: 'Descargar',
+    preparingTitle: 'Preparando archivo',
+    preparingText: (format: string) =>
+      `Estamos preparando el roster completo en ${format}. La descarga comenzará cuando el archivo esté listo.`,
+    wordName: 'Word',
+    pdfName: 'PDF',
+    preparing: 'Preparando archivo…',
+    // Not drawn: said after the browser receives the file.
+    downloaded: 'Se descargó el roster.',
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

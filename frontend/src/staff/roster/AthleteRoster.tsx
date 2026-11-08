@@ -9,6 +9,7 @@ import { useStaffSession } from '../useStaffSession'
 import type { ShellProps } from '../team/StaffTeam'
 import { TermStatus } from '../team/TermStatus'
 import { AthleteDialog } from './AthleteDialog'
+import { DownloadDialog } from './DownloadDialog'
 import { ReinstateDialog, WithdrawDialog } from './StatusDialogs'
 import '../team/staffTeam.css'
 import './roster.css'
@@ -52,6 +53,7 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Editing | null>(null)
   const [statusChange, setStatusChange] = useState<StatusChange | null>(null)
+  const [downloading, setDownloading] = useState(false)
   const [saved, setSaved] = useState('')
   // The row whose first action gets focus once the list reloads, since the button pressed is gone.
   const focusRow = useRef<number | null>(null)
@@ -165,9 +167,32 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
             />
           )
         })()}
+      {downloading && (
+        <DownloadDialog
+          onClose={() => setDownloading(false)}
+          onDownloaded={() => {
+            setDownloading(false)
+            setSaved(t.downloaded)
+          }}
+          onError={(error) => session.reportError(error)}
+        />
+      )}
       <div className="roster-context">
         <TermStatus text={t.continuous} />
-        <div className="roster-context__actions">{addButton}</div>
+        <div className="roster-context__actions">
+          <Button
+            variant="secondary"
+            aria-disabled={!online || undefined}
+            onClick={() => {
+              if (!online) return
+              setSaved('')
+              setDownloading(true)
+            }}
+          >
+            {t.download}
+          </Button>
+          {addButton}
+        </div>
       </div>
       {/* One live region that is always on the page: a region added together with its text is often not read (WCAG 4.1.3). */}
       <div className="team-live" role="status">

@@ -91,3 +91,36 @@
   color: var(--foreground);
   font-weight: var(--weight-medium);
 }
+
+/* "Formato" with Word and PDF side by side, then "Roster completo" (4039:2032). */
+.roster-format,
+.roster-whole {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.roster-format .field__label,
+.roster-whole__title,
+.roster-whole__text {
+  margin: 0;
+}
+
+.roster-format__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+.roster-whole__title {
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 22px;
+}
+
+.roster-whole__text {
+  color: var(--foreground);
+  font-size: 15px;
+  line-height: 22px;
+}

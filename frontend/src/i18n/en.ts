@@ -417,6 +417,23 @@ export const en: Messages = {
     refusedTitle: 'They already have an active authorization',
     refusedText: (name: string, term: string) =>
       `${name} already has an active authorization in ${term}. Another one cannot be reinstated.`,
+    download: 'Download roster',
+    downloadTitle: 'Download roster',
+    downloadText: 'Choose the format of the whole roster.',
+    format: 'Format',
+    word: 'Word (.docx)',
+    pdf: 'PDF (.pdf)',
+    wholeTitle: 'Whole roster',
+    wholeText:
+      'Every athlete, active and withdrawn, without the table filters. It has the name, sport, student number and institutional email.',
+    downloadConfirm: 'Download',
+    preparingTitle: 'Preparing the file',
+    preparingText: (format: string) =>
+      `We are preparing the whole roster in ${format}. The download starts when the file is ready.`,
+    wordName: 'Word',
+    pdfName: 'PDF',
+    preparing: 'Preparing the file…',
+    downloaded: 'The roster was downloaded.',
   },
 
   states: {

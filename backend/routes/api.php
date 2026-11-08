@@ -8,6 +8,7 @@ use App\Http\Controllers\OccupancyController;
 use App\Http\Controllers\PaidRegistrationController;
 use App\Http\Controllers\PrivacyNoticeController;
 use App\Http\Controllers\RosterController;
+use App\Http\Controllers\RosterDownloadController;
 use App\Http\Controllers\StaffAccountController;
 use App\Http\Controllers\StaffInvitationController;
 use App\Http\Controllers\StaffPasswordController;
@@ -78,6 +79,8 @@ Route::prefix('staff')->group(function () {
         Route::get('/roster', [RosterController::class, 'index']);
     });
     Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        // The whole roster as Word or PDF (REQ-F-100); Staff cannot download it (E-140).
+        Route::get('/roster/download', RosterDownloadController::class);
         Route::post('/roster', [RosterController::class, 'store']);
         Route::patch('/roster/{athlete}', [RosterController::class, 'update'])->whereNumber('athlete');
         Route::post('/roster/{athlete}/withdraw', [RosterController::class, 'withdraw'])->whereNumber('athlete');
