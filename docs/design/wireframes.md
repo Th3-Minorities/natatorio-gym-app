@@ -76,6 +76,8 @@ States of N-11: signing in 4039:3798, wrong email or password 4039:3871, wait af
 
 ## Phone screens drawn so far (#40, #42)
 
+E-165 (2026-11-08) removes schedules and notices from N-01 and all signed-out flows. Keep their signed-in access from Gimnasio and the staff dashboard. Any Figma frames or welcome links that still show public access to C-02 or C-03 are outdated and need to be removed; they are not part of the required #42 welcome flow. Contact, membership purchase, privacy and install help remain available before sign in.
+
 Figma page "login/signup logics". These issues stay open: the screens below are only part of their scope.
 
 | Screen | Frame |
