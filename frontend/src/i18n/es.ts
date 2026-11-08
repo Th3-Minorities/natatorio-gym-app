@@ -59,6 +59,16 @@ export const es = {
     install: 'Instalar app', helpPrivacy: 'Ayuda para instalar · Aviso de privacidad', languages: 'Español / English',
     gym: 'Gimnasio', checkIn: 'Check-in', navigation: 'Navegación principal',
   },
+  install: {
+    title: 'Instala la app', description: 'Accede al gimnasio desde tu pantalla de inicio.', appName: 'Gimnasio RUM',
+    platform: 'Plataforma', iphone: 'iPhone', android: 'Android',
+    safari: 'Abre esta página en Safari.', share: 'Toca Compartir.', shareDetail: 'Puede estar dentro del menú de página.',
+    addHome: 'Selecciona Agregar a Inicio.', confirmAdd: 'Confirma con Agregar.', openAsApp: 'Si aparece “Abrir como app”, déjalo activado.',
+    handy: 'Ten la app a mano', install: 'Instalar app', chromeTitle: 'También puedes hacerlo desde Chrome',
+    chromeSteps: ['1. Abre el menú ⋮.', '2. Toca Instalar y crear acceso directo.', '3. Elige Instalar y confirma.'],
+    installedTitle: '¡Todo listo!', installedText: 'Ya estás usando la app instalada.', installedHelp: 'Puedes abrirla desde tu pantalla de inicio.',
+    continue: 'Continuar', notNow: 'Ahora no',
+  },
   health: {
     waiting: 'Comprobando la API...',
     connected: 'API: conectada',

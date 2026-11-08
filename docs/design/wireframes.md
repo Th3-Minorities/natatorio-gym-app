@@ -71,4 +71,4 @@ Figma page "login/signup logics". These issues stay open: the screens below are 
 | N-06 Forgot password | [179:6186](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6186) |
 | N-07 Set new password | [179:6199](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6199) |
 | N-08 Privacy notice (draft text) | [179:6122](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6122) |
-| N-09 Install help | [179:6242](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6242) |
+| N-09 Install help | [4078:792](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-792) iPhone, 4078:869 Android, 4078:919 already installed |

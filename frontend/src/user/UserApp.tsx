@@ -4,6 +4,7 @@ import { ApiError, apiRequest } from '../api/client'
 import { Button } from '../components'
 import { useDateFormat } from '../format/dateTime'
 import { I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
+import { InstallHelp } from './InstallHelp'
 import { UserAccess } from './UserAccess'
 import { UserLoading, UserNotice, UserPage } from './ui'
 import { useConnection } from './useConnection'
@@ -147,7 +148,7 @@ export function UserApp() {
   }
 
   return <I18nProvider locale={profile?.locale}><div onClick={intercept}>
-    {!protectedPath ? path === '/welcome' ? <Welcome deleted={deleted} /> : <UserAccess
+    {path === '/install' ? <InstallHelp /> : !protectedPath ? path === '/welcome' ? <Welcome deleted={deleted} /> : <UserAccess
       key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
       replaced={replaced} navigate={navigate} onSignedIn={(account) => {
         epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); setDeleted(false); navigate('/account')

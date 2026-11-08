@@ -85,4 +85,19 @@
   --user-weight-bold: 700;
   --user-weight-extra-bold: 800;
   --user-disabled-opacity: 0.55;
+  /* N-09 install help (Figma 4078:792, 4078:869, 4078:919). */
+  --install-icon-size: 56px;
+  --install-icon-radius: 14px;
+  --install-name-size: 17px;
+  --install-detail-size: 13px;
+  --install-detail-line: 18px;
+  --install-step-size: 28px;
+  --install-step-border: 1.5px;
+  --install-step-line-opacity: 0.65;
+  --install-tab-height: 36px;
+  --install-handy-size: 20px;
+  --install-handy-height: 64px;
+  --install-handy-icon: 48px;
+  --install-done-size: 72px;
+  --install-done-icon: 44px;
 }

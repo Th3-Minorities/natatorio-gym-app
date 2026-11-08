@@ -16,10 +16,10 @@ Pending answers touch several screens:
 
 ```mermaid
 flowchart TD
-  N01["N-01 Landing<br/>Install button, public schedules<br/>and notices, store link"] --> N02["N-02 Sign in<br/>email and password"]
+  N01["N-01 Landing<br/>public schedules<br/>and notices, store link"] --> N02["N-02 Sign in<br/>email and password"]
   N01 --> N03["N-03 Register<br/>one number field, all steps in one page"]
   N01 --> N08["N-08 Privacy notice"]
-  N01 --> N09["N-09 Install help"]
+  N03 -->|"account created, browser only (E-165)"| N09["N-09 Install help"]
   N02 -->|"Forgot password"| N06["N-06 Forgot password"]
   N03 -->|"step 1"| N08
   N03 -->|"email already has an account"| N02
@@ -60,7 +60,6 @@ flowchart TD
   U01 -->|"More tab"| MORE["More menu"]
   MORE --> C04["C-04 Facility information"]
   MORE --> U03["U-03 Account<br/>includes the language choice"]
-  MORE --> N09["N-09 Install help"]
   MORE --> N08["N-08 Privacy notice"]
   U03 --> U04["U-04 Emergency contact"]
   U03 --> U09["U-09 My visits<br/>own past Check Ins"]
@@ -100,7 +99,7 @@ flowchart TD
   N05 -->|"not signed in here"| N02["N-02 Sign in"]
   N02 -->|"after sign in"| U01
   U07 -->|"Hours, Notices, Stats tabs"| SH["C-02, C-03, C-05"]
-  U07 -->|"More tab"| MORE["More menu: C-04, U-03,<br/>N-08, N-09"]
+  U07 -->|"More tab"| MORE["More menu: C-04, U-03,<br/>N-08"]
   MORE --> U05["U-05 Delete account<br/>allowed here"]
 ```
 
@@ -194,7 +193,6 @@ flowchart TD
   NAV --> C03["C-03 Notices"]
   NAV --> C04["C-04 Facility information"]
   NAV --> C05
-  NAV --> N09["N-09 Install help"]
 ```
 
 **About this diagram:** The navigation component is SM-1; the language choice is SM-2; the banner is SM-6.
@@ -244,7 +242,7 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 
 | ID | Screen | Roles | Purpose | Key states | Device | Requirements |
 |---|---|---|---|---|---|---|
-| N-01 | Landing | Not signed in | Choose sign in or register; Install button; links to N-08 and N-09; public schedules (C-02) and notices (C-03); one line that registering needs a paid membership or a roster entry, with the contact number, and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: app shell. No connection: banner, sign in and register disabled. Install button hidden where the browser has no install event. Signed in: redirect to home. Language: always Spanish before an account exists (E-103) | Phone | REQ-NF-10, NF-33, F-66, F-91 |
+| N-01 | Landing | Not signed in | Choose sign in or register; link to N-08 (no Install button and no N-09 link, E-165); public schedules (C-02) and notices (C-03); one line that registering needs a paid membership or a roster entry, with the contact number, and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: app shell. No connection: banner, sign in and register disabled. Signed in: redirect to home. Language: always Spanish before an account exists (E-103) | Phone | REQ-NF-10, NF-33, F-91 |
 | N-02 | Sign in | User | Email and password. No link to N-11 (SM-5) | Loading: button busy. Error: wrong credentials, without saying if the email exists (SRS 3.1). Wait: "try again at TIME" (REQ-F-07). No connection: form kept, submit disabled. Special: "you signed in on another device" (REQ-F-03). Language: Spanish while signed out; the account language applies after sign in (E-103) | Phone | REQ-F-02, F-03, F-07 |
 | N-03 | Register | Not signed in | One number field for paid members and athletes (E-153). Exactly 10 digits is a student number: an athlete gets "link sent" and continues at N-05. Anything else is an Authorization Number, with no length check. Steps for a paid member: privacy notice, number, masked email, password, photo (take it now or upload it; the screen says it cannot be changed), waiver and emergency contact, choose language (Spanish or English; it can be changed later in the account preferences), final save. A line says a paid membership is needed first, with the contact number and a "Buy membership" button that opens the store (no redirect, only while a term runs; the address is a setting, E-126) | Loading: lookup when the number is sent, letters allowed (E-128); if the number is not in the app yet, the lookup asks the store right then (REQ-F-97), and if the store does not answer the message says to try again later; slow mode waits (REG-2). Error: one message for an invalid number, a claimed number and a number from an ended term, with contact number (lookup covers the current term only, REG-9); a 10-digit number not on the roster: not on the roster with contact number (REQ-F-76), plus a line that the student number is only for athletes and a paid member uses the Authorization Number from the receipt email, with the picture of where it is; student number: record claimed, link request limit (1 link every 5 minutes and 5 per day for each student number, REG-7); per-IP pause "try again at TIME"; photo rejected, stays on photo step with data kept in the page, lost if the page closes (REG-8). No connection: data kept in page, submit disabled. Special: "you already have an account, sign in to add it" with the masked email, for example `m***z@upr.edu`; nothing is claimed (REG-4, REG-3); student number: "link sent to m***z@upr.edu", first and last letter before the @ (REG-3) | Phone | REQ-F-10, F-11, F-13, F-15, F-18, F-60, F-70, F-71, F-72, F-73, F-76, F-91, F-97, NF-24, NF-25 |
 | N-04 | Removed | None | N-04: removed (E-153), merged into N-03. The ID stays in this table so the other N IDs keep their numbers. The athlete steps are in N-03 and N-05 | Not a screen | Phone | REQ-F-15, F-76 (now N-03) |
@@ -252,7 +250,7 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 | N-06 | Forgot password | User | Ask for a reset link | Loading. Error: server error. No connection. Special: the same answer whether the email exists or not: "if that email has an account, we sent a link" (E-63) | Phone | REQ-F-06, F-75 |
 | N-07 | Set new password | User | From the reset link: new password | Loading: link check. Error: link expired or used; password rules. No connection | Phone | REQ-F-06, F-75 |
 | N-08 | Privacy notice | Everyone | Notice in Spanish and English, shown before any personal data | Loading. Error. No connection: notice is static text in the app, so it still shows. Text pending G-24 | Phone | REQ-NF-25 |
-| N-09 | Install help | Everyone | Install button in Chromium browsers; iPhone steps with Share | Special: button hidden without the install event; "already installed" when opened as the installed app. Static, works without connection | Phone | REQ-F-66 |
+| N-09 | Install help | Everyone | Install button in Chromium browsers; iPhone steps with Share. Shown once right after the account is created, only in the browser (E-165) | Special: button hidden without the install event; "already installed" when opened as the installed app. Static, works without connection | Phone | REQ-F-66 |
 | N-10 | Removed | None | N-10: removed (E-117). The ID stays in this table so the other N IDs keep their numbers. Athletes register only with the link sent to the roster email (N-03, N-05); if it fails they call the office at 265-3866 | Not a screen | Phone | REQ-F-77 (Removed) |
 | N-11 | Staff sign in | Staff, Administrator | Email and password of a staff account, on the dashboard path with no link from N-02 (SM-5, E-124) | Loading. Error: wrong credentials. Wait: REQ-F-07. No connection. Special: a deactivated account is refused (REQ-F-88) | Desk | REQ-F-07, F-52, F-88 |
 | N-12 | Removed | None | N-12: removed (E-114). There is no recovery code, so there is no screen to use it | Not a screen | Desk | REQ-F-89 (Removed) |
@@ -384,7 +382,7 @@ All six are decided. Carlos Pepin, the owner, answered them in the design review
 
 | Option | What it means | Tradeoff |
 |---|---|---|
-| A | Bottom tab bar: Home (U-01 or U-07), Hours (C-02), Notices (C-03), Stats (C-05), More (C-04, U-03, N-08, N-09). On wide screens the same items as a side menu | One tap to every common screen, reachable with the thumb. Five tabs is the practical limit; anything new goes in More |
+| A | Bottom tab bar: Home (U-01 or U-07), Hours (C-02), Notices (C-03), Stats (C-05), More (C-04, U-03, N-08). On wide screens the same items as a side menu | One tap to every common screen, reachable with the thumb. Five tabs is the practical limit; anything new goes in More |
 | B | Menu button that opens a list | Room for any number of items. Every screen except home needs two taps, and items are hidden from people who do not open the menu |
 | C | Home with tiles, no persistent navigation | Simple home. Back to home between every screen; more taps |
 
@@ -469,7 +467,7 @@ Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whol
 | REQ-F-52 | Diagram 4. Staff; diagram 5. Administrator; 8. Inventory N-11, S-01, A-03 (removed), A-15; 9. Coverage; SM-3 |
 | REQ-F-55 | Diagram 6. Shared screens and the app frame; 8. Inventory C-02, C-03, C-04, A-10, A-11, A-12; 9. Coverage |
 | REQ-F-61 | Diagram 6. Shared screens and the app frame; diagram 7. Standard data states; 8. Inventory C-05; 9. Coverage |
-| REQ-F-66 | Diagram 1. Public screens (N-01, N-09); 8. Inventory N-01, N-09 |
+| REQ-F-66 | Diagram 1. Public screens (N-09); 8. Inventory N-09 |
 | REQ-NF-10 | 8. Inventory (Device column); 10. Phone and front desk; SM-1 |
 | REQ-NF-13 | 11. Accessibility notes |
 | REQ-NF-33 | Diagram 6. Shared screens and the app frame (C-06); 8. Inventory C-06; 11. Accessibility notes; SM-2 |

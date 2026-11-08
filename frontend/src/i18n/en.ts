@@ -53,6 +53,16 @@ export const en: Messages = {
     install: 'Install app', helpPrivacy: 'Installation help · Privacy notice', languages: 'Español / English',
     gym: 'Gym', checkIn: 'Check-in', navigation: 'Main navigation',
   },
+  install: {
+    title: 'Install the app', description: 'Reach the gym from your home screen.', appName: 'Gimnasio RUM',
+    platform: 'Platform', iphone: 'iPhone', android: 'Android',
+    safari: 'Open this page in Safari.', share: 'Tap Share.', shareDetail: 'It may be inside the page menu.',
+    addHome: 'Choose Add to Home Screen.', confirmAdd: 'Confirm with Add.', openAsApp: 'If “Open as Web App” appears, leave it on.',
+    handy: 'Keep the app at hand', install: 'Install app', chromeTitle: 'You can also do it from Chrome',
+    chromeSteps: ['1. Open the ⋮ menu.', '2. Tap Install or Add to Home screen.', '3. Choose Install and confirm.'],
+    installedTitle: 'All set!', installedText: 'You are using the installed app.', installedHelp: 'You can open it from your home screen.',
+    continue: 'Continue', notNow: 'Not now',
+  },
   health: {
     waiting: 'Checking the API...',
     connected: 'API: connected',
