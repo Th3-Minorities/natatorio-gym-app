@@ -1,11 +1,12 @@
-import { useEffect, type ReactNode } from 'react'
+import { useLayoutEffect, type ReactNode } from 'react'
 import { LocaleContext, MessagesContext, messages, supportedLocale } from './messages'
 
 /** Gives the texts of the account language to the screens and sets the page language (REQ-NF-33). */
 export function I18nProvider({ locale, children }: { locale?: string; children: ReactNode }) {
   const current = supportedLocale(locale)
 
-  useEffect(() => {
+  // A layout effect, so a screen's own tab title (useDocumentTitle) is set after this one and is not overwritten.
+  useLayoutEffect(() => {
     document.documentElement.lang = current
     document.title = messages[current].dashboard.brandName
   }, [current])

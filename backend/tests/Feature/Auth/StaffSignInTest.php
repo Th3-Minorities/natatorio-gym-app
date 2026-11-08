@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\AcademicTerm;
 use App\Models\AuditLogEntry;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
@@ -22,7 +24,7 @@ class StaffSignInTest extends TestCase
         $this->fromThePwa()
             ->postJson('/api/staff/sign-in', ['email' => 'luis@example.com', 'password' => 'password'])
             ->assertOk()
-            ->assertExactJson(['name' => 'Luis Ortiz', 'email' => 'luis@example.com', 'role' => 'staff', 'locale' => 'en']);
+            ->assertExactJson(['name' => 'Luis Ortiz', 'email' => 'luis@example.com', 'role' => 'staff', 'locale' => 'en', 'active_term' => null]);
 
         $this->assertAuthenticatedAs($staff, 'staff');
     }
@@ -169,7 +171,7 @@ class StaffSignInTest extends TestCase
             ->fromThePwa()
             ->getJson('/api/staff/me')
             ->assertOk()
-            ->assertExactJson(['name' => 'Ana Rivera', 'email' => 'ana@example.com', 'role' => 'admin', 'locale' => 'es']);
+            ->assertExactJson(['name' => 'Ana Rivera', 'email' => 'ana@example.com', 'role' => 'admin', 'locale' => 'es', 'active_term' => null]);
     }
 
     public function test_who_am_i_needs_a_staff_sign_in(): void
@@ -182,6 +184,56 @@ class StaffSignInTest extends TestCase
             ->fromThePwa()
             ->getJson('/api/staff/me')
             ->assertUnauthorized();
+    }
+
+    public function test_the_session_answers_carry_the_term_that_includes_today(): void
+    {
+        AcademicTerm::factory()->create(['name' => 'Spring', 'starts_on' => today()->subMonths(5), 'ends_on' => today()->subMonths(2)]);
+        AcademicTerm::factory()->create(['name' => 'Fall', 'starts_on' => today()->subMonth(), 'ends_on' => today()]);
+        AcademicTerm::factory()->create(['name' => 'Next', 'starts_on' => today()->addDay(), 'ends_on' => today()->addMonths(4)]);
+        $staff = StaffAccount::factory()->create(['email' => 'luis@example.com']);
+        $term = ['name' => 'Fall', 'starts_on' => today()->subMonth()->toDateString(), 'ends_on' => today()->toDateString()];
+
+        $this->fromThePwa()->postJson('/api/staff/sign-in', ['email' => 'luis@example.com', 'password' => 'password'])
+            ->assertOk()->assertJsonPath('active_term', $term);
+        $this->actingAs($staff, 'staff')->fromThePwa()->getJson('/api/staff/me')
+            ->assertOk()->assertJsonPath('active_term', $term);
+    }
+
+    public function test_the_term_is_null_when_none_includes_today(): void
+    {
+        AcademicTerm::factory()->create(['starts_on' => today()->subMonths(5), 'ends_on' => today()->subDay()]);
+        AcademicTerm::factory()->create(['starts_on' => today()->addDay(), 'ends_on' => today()->addMonths(4)]);
+
+        $this->actingAs(StaffAccount::factory()->admin()->create(), 'staff')->fromThePwa()->getJson('/api/staff/me')
+            ->assertOk()->assertJsonPath('active_term', null);
+    }
+
+    public function test_the_term_ends_at_midnight_in_puerto_rico_not_in_utc(): void
+    {
+        AcademicTerm::factory()->create(['name' => 'Fall', 'starts_on' => '2026-08-17', 'ends_on' => '2026-12-11']);
+        $admin = StaffAccount::factory()->admin()->create();
+        // A sign-in from before the time travel would be idle for too long, so each moment starts a new one.
+        $meAt = function (string $utc) use ($admin) {
+            $this->travelTo(Carbon::parse($utc, 'UTC'));
+            $this->flushSession();
+
+            return $this->actingAs($admin, 'staff')->fromThePwa()->getJson('/api/staff/me')->assertOk();
+        };
+
+        // 02:00 UTC on 12 Dec is 10:00 PM on 11 Dec in Puerto Rico (UTC-4, no daylight saving): still the last day.
+        $meAt('2026-12-12 02:00:00')->assertJsonPath('active_term.name', 'Fall');
+        // 04:00 UTC is midnight in Puerto Rico: the term is over.
+        $meAt('2026-12-12 04:00:00')->assertJsonPath('active_term', null);
+    }
+
+    public function test_the_term_is_not_shown_without_a_staff_sign_in(): void
+    {
+        AcademicTerm::factory()->create(['starts_on' => today()->subMonth(), 'ends_on' => today()->addMonth()]);
+
+        $this->fromThePwa()->getJson('/api/staff/me')->assertUnauthorized()->assertJsonMissingPath('active_term');
+        $this->actingAs(User::factory()->create(), 'web')->fromThePwa()->getJson('/api/staff/me')
+            ->assertUnauthorized()->assertJsonMissingPath('active_term');
     }
 
     public function test_sign_out_ends_the_staff_sign_in_and_is_logged(): void

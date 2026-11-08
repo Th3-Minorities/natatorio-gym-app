@@ -2,6 +2,9 @@
 
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\StaffAccountController;
+use App\Http\Controllers\StaffInvitationController;
+use App\Http\Controllers\StaffPasswordController;
 use App\Http\Controllers\StaffSessionController;
 use App\Http\Controllers\UserAccountController;
 use App\Http\Controllers\UserPasswordController;
@@ -17,10 +20,31 @@ Route::get('/health', HealthController::class);
 // Every staff route needs auth:staff, staff.active and a role: check; RouteProtectionTest enforces it.
 Route::prefix('staff')->group(function () {
     Route::post('/sign-in', [StaffSessionController::class, 'signIn']);
+    Route::post('/password/email', [StaffPasswordController::class, 'email'])
+        ->name('staff.password.email')->middleware('throttle:staff.password.email');
+    Route::post('/password/validate', [StaffPasswordController::class, 'validateLink'])
+        ->name('staff.password.validate')->middleware('throttle:staff.password.validate');
+    Route::post('/password/reset', [StaffPasswordController::class, 'reset'])
+        ->name('staff.password.reset')->middleware('throttle:staff.password.reset');
+    Route::post('/invitation/validate', [StaffInvitationController::class, 'validateLink'])
+        ->name('staff.invitation.validate')->middleware('throttle:staff.invitation.validate');
+    Route::post('/invitation/accept', [StaffInvitationController::class, 'accept'])
+        ->name('staff.invitation.accept')->middleware('throttle:staff.invitation.accept');
 
     Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);
         Route::get('/me', [StaffSessionController::class, 'me']);
+    });
+
+    // Staff accounts screen (A-15, REQ-F-88).
+    Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        Route::get('/accounts', [StaffAccountController::class, 'index']);
+        Route::post('/accounts', [StaffAccountController::class, 'invite'])->middleware('throttle:staff.invite');
+        Route::post('/accounts/{account}/invitation', [StaffAccountController::class, 'resendInvitation'])
+            ->whereNumber('account')->middleware('throttle:staff.invite');
+        Route::patch('/accounts/{account}/role', [StaffAccountController::class, 'changeRole'])->whereNumber('account');
+        Route::post('/accounts/{account}/deactivate', [StaffAccountController::class, 'deactivate'])->whereNumber('account');
+        Route::post('/accounts/{account}/reactivate', [StaffAccountController::class, 'reactivate'])->whereNumber('account');
     });
 });
 

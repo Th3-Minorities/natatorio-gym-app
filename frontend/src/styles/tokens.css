@@ -22,6 +22,10 @@
   --sage-on-raised: #c5c89f;
   --accent: #fa9500;
   --sage: #babd8d;
+  /* Status chips of A-15 (100:676), drawn as plain colors in Figma, not variables. */
+  --chip-invited: #f9edce;
+  --chip-invited-foreground: #694708;
+  --chip-off: #eaece4;
 
   /* Spacing */
   --spacing-4: 4px;

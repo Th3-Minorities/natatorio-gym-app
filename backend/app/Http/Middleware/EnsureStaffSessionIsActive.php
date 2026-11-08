@@ -23,6 +23,8 @@ class EnsureStaffSessionIsActive
 
     public const AUTO_REFRESH_HEADER = 'X-Auto-Refresh';
 
+    public const PASSWORD_FINGERPRINT = 'staff_password_fingerprint';
+
     private const IDLE_LIMITS = ['staff' => 2 * 60 * 60, 'admin' => 20 * 60];
 
     public function __construct(private AuditLog $log) {}
@@ -39,6 +41,16 @@ class EnsureStaffSessionIsActive
             $this->signOut($request);
 
             throw new ApiException('staff_account_deactivated', 401);
+        }
+
+        // The password changed since this sign-in, for example by a reset: it ends with no message.
+        $fingerprint = $session->get(self::PASSWORD_FINGERPRINT);
+        if ($fingerprint === null) {
+            $session->put(self::PASSWORD_FINGERPRINT, $account->passwordFingerprint());
+        } elseif (! hash_equals($account->passwordFingerprint(), (string) $fingerprint)) {
+            $this->signOut($request);
+
+            throw new ApiException('unauthenticated', 401);
         }
 
         $lastActivity = (int) $session->get(self::LAST_ACTIVITY, $now);
@@ -60,7 +72,7 @@ class EnsureStaffSessionIsActive
     private function signOut(Request $request): void
     {
         Auth::guard('staff')->logout();
-        $request->session()->forget(self::LAST_ACTIVITY);
+        $request->session()->forget([self::LAST_ACTIVITY, self::PASSWORD_FINGERPRINT]);
         $request->session()->regenerate(destroy: true);
         $request->session()->regenerateToken();
     }
