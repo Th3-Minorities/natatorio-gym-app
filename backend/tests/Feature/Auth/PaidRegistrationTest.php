@@ -338,11 +338,22 @@ class PaidRegistrationTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
-    public function test_final_submit_answers_503_when_the_shipped_config_has_no_waiver(): void
+    public function test_shipped_config_has_the_draft_waiver_in_both_languages(): void
+    {
+        $waiver = (require config_path('registration.php'))['waiver'];
+        $this->assertSame('borrador-2026-11-08', $waiver['version']);
+        $this->assertLessThanOrEqual(20, strlen($waiver['version']));
+        $this->assertStringStartsWith("Relevo de responsabilidad\n\n", $waiver['es']);
+        $this->assertStringStartsWith("Release of liability\n\n", $waiver['en']);
+        $this->assertCount(5, explode("\n\n", $waiver['es']));
+        $this->assertCount(5, explode("\n\n", $waiver['en']));
+    }
+
+    public function test_final_submit_answers_503_when_the_config_has_no_waiver(): void
     {
         $this->membership();
         $this->acknowledge();
-        config(['registration.waiver' => (require config_path('registration.php'))['waiver']]);
+        config(['registration.waiver' => ['version' => null, 'es' => null, 'en' => null]]);
         $this->post('/api/user/registration/complete', $this->payload(), ['Accept' => 'application/json'])
             ->assertServiceUnavailable()->assertJsonPath('error.code', 'registration_waiver_unavailable');
         $this->assertDatabaseCount('users', 0);
