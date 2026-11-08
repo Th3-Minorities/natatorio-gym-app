@@ -170,6 +170,8 @@ Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function 
 
 `RouteProtectionTest` fails when an `/api` route lacks these checks and is not on its list of public routes. Add a route to that list only when anyone may call it without signing in.
 
+Schedules and notices (C-02 and C-03) require a signed-in User or staff account (E-165, REQ-F-55). Their read routes do not belong on the public-route list. A User does not need an active gym authorization to read them; staff reads follow the checks above.
+
 ### Audit log
 
 Gym features write entries with `App\Services\AuditLog`:
