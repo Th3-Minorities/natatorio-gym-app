@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\ApiException;
 use App\Models\Authorization;
 use App\Models\ImportedMembership;
+use App\Models\RosterRecord;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
@@ -54,7 +55,7 @@ class RegistrationLookup
         return (int) $cache->increment($key);
     }
 
-    public function failed(Request $request): ApiException
+    public function failed(Request $request, string $code = 'registration_number_unavailable'): ApiException
     {
         $window = config('registration.window_seconds');
         RateLimiter::hit('registration:global', $window);
@@ -66,7 +67,7 @@ class RegistrationLookup
             ]);
         }
 
-        return new ApiException('registration_number_unavailable', 422, [
+        return new ApiException($code, 422, [
             'contact_number' => [$this->contactNumber()],
         ]);
     }
@@ -90,6 +91,22 @@ class RegistrationLookup
         RateLimiter::decrement($this->ipKey($request->ip()), config('registration.window_seconds'));
 
         return $membership;
+    }
+
+    /** A 9-digit number is a student number: the athlete must be on the roster and not claimed yet (REQ-F-15). */
+    public function findStudent(string $number, Request $request): RosterRecord
+    {
+        $this->ensureAllowed($request);
+        $record = RosterRecord::query()->where('student_number', $number)->whereNull('removed_at')->first();
+        if ($record === null) {
+            throw $this->failed($request, 'student_not_on_roster');
+        }
+        if (Authorization::query()->where('roster_record_id', $record->id)->exists()) {
+            throw $this->failed($request, 'roster_record_claimed');
+        }
+        RateLimiter::decrement($this->ipKey($request->ip()), config('registration.window_seconds'));
+
+        return $record;
     }
 
     public function available(ImportedMembership $membership): bool
