@@ -362,6 +362,8 @@ export const es = {
     staff_account_status_changed: 'Esta cuenta cambió mientras la veías. Actualiza la lista.',
     // A-04 "Solapamiento" (101:1884).
     term_overlap: 'Las fechas coinciden con otro término.',
+    // A-05 "Número repetido" (101:1380).
+    roster_student_number_taken: 'Este número ya está en el roster.',
   },
 
   validation: {

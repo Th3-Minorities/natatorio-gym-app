@@ -4,6 +4,7 @@ use App\Http\Controllers\AcademicTermController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\PaidRegistrationController;
+use App\Http\Controllers\RosterController;
 use App\Http\Controllers\StaffAccountController;
 use App\Http\Controllers\StaffInvitationController;
 use App\Http\Controllers\StaffPasswordController;
@@ -63,6 +64,15 @@ Route::prefix('staff')->group(function () {
         Route::get('/terms', [AcademicTermController::class, 'index']);
         Route::post('/terms', [AcademicTermController::class, 'store']);
         Route::patch('/terms/{term}', [AcademicTermController::class, 'update'])->whereNumber('term');
+    });
+
+    // Athlete roster: Staff read the active athletes (E-59); Administrators add and edit them on A-05 (REQ-F-49).
+    Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
+        Route::get('/roster', [RosterController::class, 'index']);
+    });
+    Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        Route::post('/roster', [RosterController::class, 'store']);
+        Route::patch('/roster/{athlete}', [RosterController::class, 'update'])->whereNumber('athlete');
     });
 });
 

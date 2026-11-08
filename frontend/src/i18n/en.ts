@@ -334,6 +334,7 @@ export const en: Messages = {
     staff_last_administrator: 'At least one active Administrator must remain.',
     staff_account_status_changed: 'This account changed while you were viewing it. Refresh the list.',
     term_overlap: 'The dates overlap another term.',
+    roster_student_number_taken: 'This number is already on the roster.',
   },
 
   validation: {
