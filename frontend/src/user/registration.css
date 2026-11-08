@@ -1,0 +1,65 @@
+.registration .user-content { gap: var(--spacing-24); padding-bottom: var(--spacing-24); }
+.registration .user-app--large .user-content { gap: var(--spacing-24); }
+.registration .user-app { min-height: 100dvh; }
+.registration .user-content > .registration-bottom { flex-shrink: 0; }
+.registration-intro { display: flex; flex-direction: column; gap: var(--spacing-12); }
+.registration-intro p { font-size: var(--user-body-size); line-height: var(--user-body-line); }
+.registration-shield { width: var(--spacing-32); height: var(--spacing-32); color: var(--muted-foreground); }
+.registration--privacy .user-content h1 { font-size: var(--user-brand-size); line-height: var(--user-account-title-line); }
+.registration-notice {
+  display: flex; flex-direction: column; gap: var(--spacing-20); height: 316px;
+  border: var(--user-border-width) solid var(--border); border-radius: var(--user-notice-padding); padding: var(--spacing-16);
+}
+.registration-notice-heading { display: flex; align-items: center; gap: var(--spacing-8); padding-bottom: var(--spacing-16); border-bottom: var(--user-border-width) solid var(--border); }
+.registration-notice-heading h2 { font-size: var(--spacing-16); line-height: var(--spacing-24); font-weight: var(--user-weight-semibold); flex: 1; }
+.registration-notice-heading > span {
+  display: grid; place-items: center; width: 94px; height: var(--spacing-24);
+  color: var(--muted-foreground); background: var(--background); border: var(--user-border-width) solid var(--border);
+  border-radius: var(--spacing-24); font-size: var(--spacing-12); line-height: var(--spacing-16);
+}
+.registration-notice p { font-size: var(--user-label-size); line-height: var(--spacing-20); }
+.registration-bottom { margin-top: auto; min-height: calc(var(--spacing-24) * 4 + var(--spacing-4)); display: flex; flex-direction: column; gap: var(--spacing-8); }
+.registration-privacy-actions { min-height: calc(var(--spacing-24) * 4 + var(--spacing-8)); }
+.registration-privacy-actions > .user-action { background: var(--user-field-background); color: var(--foreground); border: var(--user-border-width) solid var(--border); }
+.registration-notice-heading a { color: inherit; text-decoration: none; }
+.registration-languages { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--primary); }
+.registration-languages a { display: inline-flex; align-items: center; min-height: var(--user-touch); color: inherit; text-decoration: none; }
+.registration--compact .user-content { gap: var(--spacing-16); padding-bottom: var(--spacing-20); }
+.registration--compact .registration-languages { margin-block: calc(-1 * var(--spacing-12)); }
+.registration-sections { display: flex; flex-direction: column; gap: var(--spacing-24); }
+.registration-existing { display: flex; align-items: center; justify-content: center; min-height: var(--user-touch); font-size: var(--registration-caption-size); line-height: var(--spacing-20); color: var(--muted-foreground); }
+.registration-existing > span { width: 150px; }
+.registration-existing a { display: flex; align-items: center; min-height: var(--user-touch); padding-inline: var(--user-input-padding); color: var(--primary); font-size: var(--user-label-size); font-weight: var(--weight-medium); text-decoration: underline; }
+.registration-existing--store > span { width: auto; }
+.registration-existing a svg { width: var(--user-body-line); height: var(--user-body-line); margin-inline-start: var(--spacing-4); flex: none; }
+.registration .registration-identification-form { flex: 1; gap: var(--spacing-24); }
+.registration-number { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.registration .user-content .field__input { border-color: var(--muted-foreground); }
+.registration-hints { display: flex; flex-direction: column; gap: var(--spacing-12); }
+.registration-hint { display: flex; align-items: flex-start; gap: var(--spacing-12); min-height: var(--user-touch); }
+.registration-hint svg { width: var(--user-body-line); height: var(--user-body-line); color: var(--muted-foreground); flex: none; }
+.registration-hint p { font-size: var(--user-label-size); line-height: var(--spacing-20); }
+.registration .registration-number .field { gap: var(--spacing-8); }
+.registration-hint--flagged svg, .registration-hint--flagged p { color: var(--user-danger); }
+.registration .registration-number .field__input[aria-invalid="true"] { border-color: var(--user-danger); }
+.registration-help { font-size: var(--registration-caption-size); line-height: var(--spacing-20); }
+.registration-receipt { border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-12); padding: var(--spacing-12); display: flex; flex-direction: column; gap: var(--user-space-6); }
+.registration-receipt p { font-size: var(--registration-caption-size); line-height: var(--spacing-20); }
+.registration-receipt > div { display: flex; align-items: center; gap: var(--spacing-8); font-size: var(--registration-caption-size); line-height: var(--spacing-20); color: var(--muted-foreground); }
+.registration-receipt span { width: 178px; }
+.registration-receipt strong { padding: var(--spacing-4) var(--spacing-8); border-radius: var(--user-space-6); background: var(--primary); color: var(--primary-foreground); font-size: var(--user-label-size); font-weight: var(--weight-normal); }
+.registration .user-app .user-content .registration-buy { min-height: calc(var(--spacing-20) * 2); padding-block: var(--spacing-8); opacity: 1; }
+.registration .registration-greeting { font-size: var(--spacing-20); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); color: var(--primary); }
+.registration--password .user-app--large .user-content { gap: var(--spacing-32); }
+.registration--password h1 { max-width: var(--user-skeleton-short); }
+.registration--password .user-password .field__input { border-color: var(--border); }
+.registration--password .user-password__toggle.button { top: var(--spacing-32); right: 0; }
+.registration--password .user-password__toggle svg { transform: translateX(var(--spacing-4)); stroke-width: 3; }
+.registration--password .user-content .field__error { display: block; }
+.registration--password .user-content .user-password .user-caption { font-size: var(--user-label-size); }
+.registration { --registration-caption-size: 13px; }
+.registration-status {
+  position: absolute; width: var(--user-border-width); height: var(--user-border-width);
+  padding: 0; margin: calc(-1 * var(--user-border-width)); overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
+}

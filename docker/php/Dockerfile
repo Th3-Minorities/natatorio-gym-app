@@ -2,11 +2,19 @@ FROM composer:2.8.12 AS composer
 
 FROM php:8.3.36-fpm-bookworm
 
+# git lets Composer fall back to cloning a package when GitHub fails to serve its zip.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev libpq5 unzip \
+    && apt-get install -y --no-install-recommends libpq-dev libpq5 unzip git \
     && docker-php-ext-install pdo_pgsql \
     && apt-get purge -y --auto-remove libpq-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Imagick converts registration photos (JPEG, PNG, HEIC) to small JPEGs without location data (REQ-NF-24).
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends $PHPIZE_DEPS libmagickwand-dev libheif1 \
+    && pecl install imagick-3.8.1 \
+    && docker-php-ext-enable imagick \
+    && rm -rf /var/lib/apt/lists/* /tmp/pear
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 

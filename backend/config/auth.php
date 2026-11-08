@@ -111,6 +111,14 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+
+        // Staff resets (#84). Own table: a User and a staff account may share an email.
+        'staff_accounts' => [
+            'provider' => 'staff_accounts',
+            'table' => 'staff_password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
     ],
 
     /*

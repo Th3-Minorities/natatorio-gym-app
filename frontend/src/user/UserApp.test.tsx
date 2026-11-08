@@ -16,7 +16,7 @@ beforeEach(() => {
   Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
   document.cookie = 'XSRF-TOKEN=test'
 })
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); localStorage.clear() })
+afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); localStorage.clear() })
 
 function open(path = '/sign-in') {
   window.history.replaceState({}, '', path)
@@ -264,6 +264,56 @@ describe('U-03 and U-05', () => {
     expect(await screen.findByRole('heading', { name: 'Eliminar cuenta' })).toBeInTheDocument()
   })
 
+  it('lists the rows in the Figma order, also offline, and links Instalar app, Privacidad and Ajustes', async () => {
+    open('/account')
+    await screen.findByRole('link', { name: /Instalar app/ })
+    const rows = () => Array.from(document.querySelectorAll('.user-account-row')).map((node) => node.querySelector('strong')?.textContent)
+    expect(rows()).toEqual(['Mis visitas', 'Contacto de emergencia', 'Instalar app', 'Privacidad', 'Ajustes'])
+    const links = () => ({
+      install: screen.getByRole('link', { name: /Instalar app/ }).getAttribute('href'),
+      privacy: screen.getByRole('link', { name: /Privacidad/ }).getAttribute('href'),
+      settings: screen.getByRole('link', { name: /Ajustes/ }).getAttribute('href'),
+    })
+    expect(links()).toEqual({ install: '/install', privacy: '/account/privacy', settings: '/account/settings' })
+    expect(screen.getByRole('link', { name: /Instalar app/ })).toHaveTextContent('Cómo instalar en tu teléfono')
+    expect(screen.getByRole('link', { name: /Privacidad/ })).toHaveTextContent('Consulta el aviso de privacidad')
+    act(() => { fireEvent(window, new Event('offline')) })
+    expect(await screen.findByText('Sin conexión · Datos no actualizados')).toBeInTheDocument()
+    expect(links()).toEqual({ install: '/install', privacy: '/account/privacy', settings: '/account/settings' })
+  })
+
+  it('hides the account rows while the account is loading or failed', async () => {
+    answer = async () => error('server_error', 500)
+    open('/account')
+    expect(screen.queryByRole('link', { name: /Instalar app/ })).toBeNull()
+    await screen.findByRole('alert')
+    expect(screen.queryByRole('link', { name: /Instalar app/ })).toBeNull()
+  })
+
+  it('shows own email in full, as the server sends it (E-179)', async () => {
+    answer = async () => json({ ...account, email: 'maria.rodriguez@upr.edu' })
+    open('/account')
+    expect(await screen.findByText('maria.rodriguez@upr.edu')).toBeInTheDocument()
+  })
+
+  it('shows "Desliza para ver más" only while rows are hidden below the list', async () => {
+    const heights = { scrollHeight: 500, clientHeight: 300 }
+    vi.spyOn(HTMLElement.prototype, 'scrollHeight', 'get').mockImplementation(() => heights.scrollHeight)
+    vi.spyOn(HTMLElement.prototype, 'clientHeight', 'get').mockImplementation(() => heights.clientHeight)
+    open('/account')
+    expect(await screen.findByText('Desliza para ver más')).toBeInTheDocument()
+    const list = document.querySelector('.user-account-scroll') as HTMLElement
+    list.scrollTop = 200
+    fireEvent.scroll(list)
+    expect(screen.queryByText('Desliza para ver más')).toBeNull()
+  })
+
+  it('has no scroll hint when every row fits', async () => {
+    open('/account')
+    await screen.findByRole('link', { name: /Instalar app/ })
+    expect(screen.queryByText('Desliza para ver más')).toBeNull()
+  })
+
   it('shows the account type even without an active authorization', async () => {
     answer = async () => json({ ...account, account_type: 'paid' })
     open('/account')
@@ -335,6 +385,36 @@ describe('U-03 and U-05', () => {
     expect(await screen.findByText(account.name)).toBeInTheDocument()
   })
 
+  it('shows U-03 offline without saved data as Figma draws it and loads once the connection returns', async () => {
+    answer = async () => { throw new TypeError('network') }
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    open('/account')
+    expect(await screen.findByText('Sin datos guardados')).toBeInTheDocument()
+    expect(screen.getByText('Conéctate para cargar tu cuenta.')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent(/^Sin conexión$/)
+    expect(screen.queryByText('Sin conexión · Datos no actualizados')).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Mi cuenta' })).toBeInTheDocument()
+    expect(screen.queryByText('No pudimos cargar tu cuenta')).toBeNull()
+    expect(document.querySelector('.user-avatar')).toBeNull()
+    expect(document.querySelector('.user-account-row')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeDisabled()
+    expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('aria-current', 'page')
+    answer = async () => json(account)
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    act(() => { fireEvent(window, new Event('online')) })
+    expect(await screen.findByText(account.name)).toBeInTheDocument()
+    expect(screen.queryByText('Sin datos guardados')).toBeNull()
+  })
+
+  it('lets the person retry by hand when the server cannot be reached while the browser is online', async () => {
+    answer = async () => { throw new TypeError('network') }
+    open('/account')
+    expect(await screen.findByText('Sin datos guardados')).toBeInTheDocument()
+    answer = async () => json(account)
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(await screen.findByText(account.name)).toBeInTheDocument()
+  })
+
   it('shows the other-device state when a protected request rejects the session', async () => {
     answer = async () => error('user_session_replaced', 401)
     open('/account')
@@ -377,6 +457,8 @@ describe('User destinations', () => {
     expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
     expect(screen.getByRole('button', { name: 'Español' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.queryByText('Health page')).toBeNull()
+    expect(screen.queryByText('Instalar app')).toBeNull()
+    expect(screen.queryByText(/Ayuda para instalar/)).toBeNull()
   })
 
   it('keeps the language chosen on the welcome screen for every screen before sign in', async () => {
@@ -391,6 +473,7 @@ describe('User destinations', () => {
 
   it('returns from sign-in to welcome', async () => {
     open()
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
     fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
     expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
@@ -399,7 +482,8 @@ describe('User destinations', () => {
   it('keeps account destinations without screens as non-links', async () => {
     open('/account')
     await screen.findByRole('heading', { name: 'Mi cuenta' })
-    for (const name of ['Gimnasio', 'Check-in', 'Soy atleta']) expect(screen.queryByRole('link', { name })).toBeNull()
+    for (const name of ['Gimnasio', 'Soy atleta']) expect(screen.queryByRole('link', { name })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Check-in' })).toHaveAttribute('href', '/check-in')
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('href', '/account')
   })
 
@@ -414,5 +498,68 @@ describe('User destinations', () => {
     const password = await screen.findByLabelText('Nueva contraseña')
     fireEvent(window, new Event('offline'))
     expect(password).toHaveAccessibleDescription('Usa al menos 10 caracteres.')
+  })
+})
+
+describe('N-08 from My account', () => {
+  const notice = { version: 'draft', draft: true, store_url: null, contact_number: '265-3866' }
+  const withNotice = (body: unknown) => {
+    answer = async (path) => path.endsWith('/api/privacy') ? json(body) : path.endsWith('/me') ? json(account) : new Response(null, { status: 204 })
+  }
+  const noNetwork = () => { answer = async () => { throw new TypeError('network down') } }
+
+  it('opens from the Privacidad row and shows the Figma frame with the BORRADOR badge', async () => {
+    withNotice(notice)
+    open('/account')
+    fireEvent.click(await screen.findByRole('link', { name: /Privacidad/ }))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Aviso de privacidad' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/account/privacy')
+    expect(screen.getByText('Se muestra en el idioma de tu cuenta.')).toBeInTheDocument()
+    const card = await screen.findByRole('region', { name: 'Aviso de privacidad' })
+    expect(card).toHaveTextContent('BORRADOR')
+    expect(card).toHaveTextContent('Texto provisional para el diseño.')
+    expect(card.querySelector('a')).toBeNull()
+    expect(screen.getByText('Este aviso también está disponible sin conexión.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.queryByRole('button')).toBeNull()
+    expect(fetch).toHaveBeenCalledWith('/api/privacy', expect.anything())
+  })
+
+  it('hides the badge when the notice is not a draft and keeps the answer on the device', async () => {
+    withNotice({ ...notice, version: '2026-12-01', draft: false })
+    open('/account/privacy')
+    await screen.findByRole('region', { name: 'Aviso de privacidad' })
+    expect(screen.queryByText('BORRADOR')).toBeNull()
+    expect(JSON.parse(localStorage.getItem('privacy-notice') ?? 'null')).toMatchObject({ version: '2026-12-01', draft: false })
+  })
+
+  it('goes back to My account with the arrow', async () => {
+    withNotice(notice)
+    open('/account/privacy')
+    fireEvent.click(await screen.findByRole('link', { name: 'Volver a Mi cuenta' }))
+    expect(await screen.findByRole('heading', { name: 'Mi cuenta' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/account')
+  })
+
+  it('shows the last saved notice when offline, even without the account', async () => {
+    localStorage.setItem('privacy-notice', JSON.stringify({ ...notice, version: '2026-12-01', draft: false }))
+    noNetwork()
+    open('/account/privacy')
+    expect(await screen.findByRole('region', { name: 'Aviso de privacidad' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1, name: 'Aviso de privacidad' })).toBeInTheDocument()
+    expect(screen.queryByText('BORRADOR')).toBeNull()
+    expect(screen.getByText('Este aviso también está disponible sin conexión.')).toBeInTheDocument()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.queryByText(/^Sin conexión/)).toBeNull()
+  })
+
+  it('shows the draft frame when offline with nothing saved or with a damaged copy', async () => {
+    localStorage.setItem('privacy-notice', '{not json')
+    noNetwork()
+    open('/account/privacy')
+    expect(await screen.findByRole('region', { name: 'Aviso de privacidad' })).toHaveTextContent('BORRADOR')
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.queryByText(/^Sin conexión/)).toBeNull()
   })
 })

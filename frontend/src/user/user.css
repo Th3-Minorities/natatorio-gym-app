@@ -31,6 +31,8 @@
 .user-brand strong { font-size: var(--user-brand-size); line-height: var(--user-brand-line); font-weight: var(--user-weight-extra-bold); }
 .user-brand span { font-size: var(--user-brand-caption); line-height: var(--spacing-12); font-weight: var(--user-weight-semibold); }
 .user-top { height: var(--spacing-12); flex: none; }
+/* Figma 4468:2653 starts the heading 24 px from the top, with no spacer above the content. */
+.user-app--privacy .user-top { display: none; }
 .user-content {
   display: flex;
   flex: 1;
@@ -111,11 +113,16 @@
 .user-account-heading .user-back { color: var(--hero); }
 .user-account-heading .user-back:focus-visible { outline-color: var(--hero); }
 .user-offline + .user-content > .user-account-heading { margin-top: calc(-1 * var(--spacing-8)); }
+.user-account-intro { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.user-offline + .user-content > .user-account-intro { margin-top: calc(-1 * var(--spacing-8)); }
 .user-account-overview { display: flex; flex-direction: column; gap: var(--spacing-16); }
 .user-account-overview .user-account-title { color: var(--hero); }
 .user-offline + .user-content > .user-account-overview { margin-top: calc(-1 * var(--spacing-8)); }
 .user-profile { position: relative; display: flex; align-items: flex-start; gap: var(--spacing-16); min-height: 150px; padding-bottom: var(--spacing-24); }
 .user-profile__waves { position: absolute; top: 0; left: calc(-1 * var(--spacing-24)); width: calc(100% + 2 * var(--spacing-24)); height: 154px; opacity: .85; fill: none; stroke: var(--sage); stroke-linecap: round; pointer-events: none; }
+/* Figma 4568:3019 "Cabecera sin datos": a 100 px header, with the wave starting 9 px above it. */
+.user-profile--empty { min-height: 100px; padding-bottom: 0; }
+.user-profile--empty .user-profile__waves { top: -45px; }
 .user-avatar { position: relative; display: grid; place-items: center; width: var(--user-avatar-size); height: var(--user-avatar-size); margin-top: var(--user-space-3); border-radius: 50%; background: var(--sage); color: var(--hero); flex: none; }
 .user-profile__details { position: relative; min-width: 0; }
 .user-profile__identity { min-height: 104px; }
@@ -128,6 +135,19 @@
 .user-account-row__text strong { font-size: var(--spacing-16); line-height: var(--user-body-line); font-weight: var(--user-weight-semibold); }
 .user-account-row__text > span { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--muted-foreground); }
 .user-account-row__chevron { color: var(--hero); flex: none; }
+.user-account-scroll { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.user-account-scroll > * { flex: none; }
+.user-content .user-scroll-hint { display: flex; align-items: center; justify-content: center; gap: var(--spacing-8); font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+.user-content .user-scroll-hint { margin-top: calc(-1 * var(--spacing-8)); }
+.user-scroll-hint svg { color: var(--foreground); }
+/* A tall phone keeps the title and profile fixed and scrolls only the rows, as Figma draws it. A short or zoomed screen scrolls the whole page. */
+@media (min-height: 700px) {
+  .user-app--overview { height: 100dvh; }
+  .user-app--overview .user-content { min-height: 0; }
+  .user-app--overview .user-content > .user-account-overview { flex: 1 1 0; min-height: 0; margin-bottom: calc(-1 * var(--spacing-12)); }
+  .user-account-overview > :not(.user-account-scroll) { flex: none; }
+  .user-account-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+}
 .user-content .user-danger { background: var(--user-danger); color: var(--primary-foreground); }
 .user-content .user-danger-outline { border-color: var(--user-danger); color: var(--user-danger); }
 .user-delete-dialog {
@@ -147,12 +167,12 @@
 .user-navigation a, .user-navigation-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-4); padding-top: var(--spacing-12); font-size: var(--user-nav-size); line-height: var(--user-nav-line); color: var(--muted-foreground); text-decoration: none; }
 .user-navigation a, .user-navigation-item { font-weight: var(--weight-medium); }
 .user-navigation svg { width: var(--spacing-24); height: var(--spacing-24); color: var(--hero); }
-.user-navigation [aria-current] svg { width: var(--user-navigation-account-icon-size); height: var(--user-navigation-account-icon-size); }
+.user-navigation-account svg { width: var(--user-navigation-account-icon-size); height: var(--user-navigation-account-icon-size); }
 .user-navigation [aria-current] { color: var(--hero); }
 .user-navigation i { width: var(--spacing-4); height: var(--spacing-4); border-radius: 50%; background: var(--primary); }
 .user-check-in__circle { position: absolute; top: calc(-1 * var(--spacing-24)); width: var(--user-check-in-size); height: var(--user-check-in-size); display: grid; place-items: center; border: var(--user-focus-width) solid var(--surface); border-radius: 50%; background: var(--primary); }
 .user-check-in__circle svg { width: var(--user-navigation-check-in-icon-size); height: var(--user-navigation-check-in-icon-size); color: var(--primary-foreground); transform: scaleX(-1); }
-.user-check-in > span:last-child { margin-top: calc(var(--user-navigation-account-icon-size) + var(--spacing-4)); }
+.user-check-in > span:nth-child(2) { margin-top: calc(var(--user-navigation-account-icon-size) + var(--spacing-4)); }
 
 /* Access screens keep the same large layout in every state. */
 .user-app--large .user-header { height: var(--user-large-header-height); }
@@ -223,3 +243,11 @@
 .user-profile__placeholders > :nth-child(3) { width: 66px; height: 22px; border-radius: 11px; }
 .user-account-row--loading .user-placeholder:nth-child(1) { width: 160px; max-width: 100%; height: 18px; }
 .user-account-row--loading .user-placeholder:nth-child(2) { width: 195px; max-width: 100%; height: var(--spacing-12); }
+
+/* Gym destination icon, Figma 4190:575 at 24 px (navigation instance 4097:106). */
+.user-rack { position: relative; display: block; width: var(--spacing-24); height: var(--spacing-24); flex: none; }
+.user-rack img { position: absolute; display: block; max-width: none; }
+.user-rack__frame { left: 2.4375px; top: 2.4375px; }
+.user-rack__supports { left: 4.6875px; top: 9.9375px; }
+.user-rack__bar { left: 0.9375px; top: 11.0625px; }
+.user-rack__plates { left: 2.25px; top: 8.25px; }

@@ -37,6 +37,7 @@ class UserAccountTest extends TestCase
         $term = AcademicTerm::factory()->create(['starts_on' => today()->subDay(), 'ends_on' => today()->addDay()]);
         Authorization::factory()->manual()->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
         $this->getJson('/api/user/me')->assertOk()->assertJsonPath('name', 'María Rodríguez')
+            ->assertJsonPath('email', $user->email)
             ->assertJsonPath('authorization.term', $term->name)->assertJsonPath('authorization.type', 'manual');
     }
 

@@ -2,14 +2,17 @@
 
 namespace Tests\Feature\Database;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
 
 /** The seeder fills every data model table with fake data that follows every rule (issue #13). */
 class DatabaseSeederTest extends TestCase
 {
-    use RefreshDatabase;
+    use CallsTheApiFromThePwa, RefreshDatabase;
 
     /** The data model tables; Laravel's framework tables (cache, jobs, password_reset_tokens) stay empty. */
     private const TABLES = [
@@ -52,6 +55,30 @@ class DatabaseSeederTest extends TestCase
 
         // The office's direct line, from the gym meeting (#62 question 24). Not personal data.
         $this->assertSame('265-3866', DB::table('settings')->where('name', 'contact_phone')->value('value'));
+    }
+
+    public function test_it_seeds_the_browser_test_user_outside_production(): void
+    {
+        $this->seed();
+
+        $email = env('E2E_USER_EMAIL', 'user@example.com');
+        $password = env('E2E_USER_PASSWORD', 'test-user-password-129');
+        $user = User::query()->where('email', $email)->firstOrFail();
+
+        $this->assertTrue(Hash::check($password, $user->password));
+        $this->fromThePwa()->postJson('/api/user/sign-in', compact('email', 'password'))->assertOk();
+        $this->assertAuthenticatedAs($user, 'web');
+    }
+
+    public function test_it_does_not_seed_fake_data_in_production(): void
+    {
+        $this->app->detectEnvironment(fn () => 'production');
+
+        $this->artisan('db:seed', ['--force' => true])->assertSuccessful();
+
+        $this->assertDatabaseCount('users', 0);
+        $this->assertDatabaseCount('staff_accounts', 0);
+        $this->assertDatabaseCount('settings', 0);
     }
 
     /** @return list<string> */

@@ -100,6 +100,7 @@ erDiagram
     varchar(10) role "staff or admin"
     varchar(2) locale "es or en, changed in the account's preferences"
     timestamptz deactivated_at "NULL while access is allowed, set when the person leaves"
+    int session_epoch "0 at first, +1 on each deactivation; a sign-in made before it ends, even after a reactivation"
   }
   staff_password_reset_tokens {
     varchar(255) email PK "email of the staff account"
@@ -194,12 +195,12 @@ Notes:
 - **Expiry** is not stored. An authorization is current when `status = 'active'` and today in `America/Puerto_Rico` is on or before the term's `ends_on` (REQ-F-22, REQ-NF-01). Editing a term never blocks: records keep their term and authorization, and the end date follows the term's new `ends_on` (E-88). A revoke (REQ-F-87) sets `status = 'revoked'` and keeps the claim, so the number is not freed. Reinstate on A-05 sets the status back to `active` (E-95).
 - **Removing an athlete from the roster (REQ-F-49, E-93, D16)** sets `roster_records.removed_at` and revokes the current authorization: `status = 'revoked'` and `reason = 'removed from roster'`. Nothing is deleted by cascade. The Gym ID stops being valid at once, the current session keeps counting, and no new Check In is allowed. The roster record stays claimed by that authorization.
 - **Reinstate (E-95).** The Administrator can return a revoked authorization to active on A-05, for example after removing an athlete by mistake. The action needs a reason, required and free text of 10 characters or more, the same rule as a manual grant and a revoke (E-86), and writes an audit log entry. Reinstate is refused with a message when the person already has an active authorization in that term: the unique index of section 5 rejects it (E-94), and the Administrator revokes the other authorization by hand if needed.
-- **One active authorization per User and term (E-68, E-94).** Only active authorizations count: a revoked one does not block a new grant or claim in the same term. This is the owner's decision (E-94). A partial unique index enforces it (section 5). A manual grant for a person who already has an active one is rejected.
+- **One active authorization per User and term (E-68, E-94).** Only active authorizations count: a revoked one does not block a new grant or claim in the same term. This is the team's decision (E-94). A partial unique index enforces it (section 5). A manual grant for a person who already has an active one is rejected.
 - **Authorization Number (E-128, D1).** The number is unique across all orders, not only per term (this replaces the per-term rule of E-71). The registration lookup reads only the orders of the current term, so a number from an ended term gets the same answer as an invalid or claimed one. If the gateway ever repeats a code, the sync rejects the second order and the Administrator sees it in the sync result.
 - **`created_account`** is set when registration created the account in the same step as the claim (REQ-F-13). Release keeps the account in every case (E-87, E-106), so the column does not drive a deletion and no rule reads it now. Whether to keep the column is to confirm. If it stays, it cannot be derived from "first authorization", because a release can delete the first one.
 - **Sync result (E-84, E-127).** `created_count`, `updated_count`, `revoked_count` and `skipped_count` hold the counts, and `imports.result` lists only the skipped orders, each with its order reference and the reason (REQ-F-28, REQ-F-99, E-149), so the Administrator reopens the result later from A-07. The counts are stored once, in the columns (section 8). No row holds a name or an email (E-149); each sync record is deleted 5 years after it was created (E-131). A sync record has no uploaded-by or uploaded-at column: the audit log records who pressed "Sync now" and when (REQ-NF-39, E-93).
 - **Name (D7).** The name on the Gym ID and in Staff search is `waiver_acceptances.full_name`, written once at registration. It does not depend on the order or the roster, so a change to either does not erase it.
-- **Language (E-64).** One language per account. A User picks it at account creation and changes it in profile preferences. Each staff account has its own language in `staff_accounts.locale` (D11). Before an account exists, the app shows Spanish on N-01 and N-02 (E-103); that needs no column.
+- **Language (E-64).** One language per account. A User picks it at account creation and changes it in profile preferences. Each staff account has its own language in `staff_accounts.locale` (D11). Before an account exists, the app uses the language chosen with the switch on N-01, kept on the device (E-159); that needs no column.
 - **Emailed links (REQ-F-15, E-58, D9).** Athlete registration and "I am an athlete" use the same link: a random token sent to the roster record's `institutional_email`. `email_links` stores only the hash of the token. A link works once, before `expires_at`; using it sets `used_at`. For "I am an athlete" (`purpose = 'athlete_link'`), the claim (an `athlete` authorization) is created only when the link is opened, not when the student number is entered. Link requests are limited with a counter in the `cache` table. The athlete sets the password, photo and waiver on the link page, after the link is opened (E-69), so no pending registration table is needed. Outgoing mail is assumed (E-61). There is no in-person code (E-117).
 - **Terms are never deleted (E-107).** A term created by mistake is fixed by editing its dates (E-88). No delete action exists for `academic_terms`.
 - **Staff read the roster (E-59).** Staff search the `roster_records` without `removed_at` by name or student number, read only. No table change: who may write stays a backend permission rule. Student numbers are shown in full to Staff and the Administrator (E-81).
@@ -279,8 +280,8 @@ Notes:
 
 - **When a session is active.** "Active" depends on time and on status. The constraint in section 5 uses the time range `tstzrange(started_at, LEAST(COALESCE(ended_at, ends_at), ends_at), '[)')` and skips void rows with `WHERE (status <> 'void')`. An expired session stops blocking by itself once `ends_at` passes, because its range is in the past. Ending early or checking out before `ends_at` sets `ended_at`, which cuts the range short. A check-out after `ends_at` does not stretch the range, so it never blocks a new Check In the person made in the meantime. PostgreSQL does not allow `now()` in a constraint condition (context.md section 2), and the time range avoids needing it.
 - **Why `ends_at` is stored.** `timestamptz + interval` is not immutable in PostgreSQL, so it cannot appear in an index expression. `ends_at` is a plain column, checked with `CHECK (ends_at = started_at + interval '2 hours')` (D14).
-- **`status = 'expired'`** is written by the scheduled cleanup task, but every read also compares `ends_at` with the database `now()` (REQ-F-38, REQ-NF-01). A late task never changes a result. Decided, revisable (owner, 2026-10-19; check-in-flows D3).
-- **Early end.** The exclusion constraint uses `WHERE (status <> 'void')`, and an early end shortens the period through `ended_at`. Decided, revisable (owner, 2026-10-19; check-in-flows D4).
+- **`status = 'expired'`** is written by the scheduled cleanup task, but every read also compares `ends_at` with the database `now()` (REQ-F-38, REQ-NF-01). A late task never changes a result. Decided, revisable (team, 2026-10-19; check-in-flows D3).
+- **Early end.** The exclusion constraint uses `WHERE (status <> 'void')`, and an early end shortens the period through `ended_at`. Decided, revisable (team, 2026-10-19; check-in-flows D4).
 - **Check-out (D14, E-115).** Staff mark each person's exit from the front desk: `status = 'checked_out'`, `ended_at` is the time of the exit and `checked_out_by_staff_account_id` is who marked it. A check-out writes no audit log entry (E-129). This is the routine way a session ends; `ended_early` stays for corrections, so statistics can tell them apart. A session nobody checks out ends by itself at `ends_at`, 2 hours after the Check In; the app shows it as "closed automatically" (`status = 'expired'`). There is no daily limit: a person may Check In again the same day after a session ends, and each such entry counts as a visit.
 - **Closure (D14, E-115).** When a closure is published or the term ends, every active session gets `status = 'closed'` and `ended_at` set to that moment. The app shows "closed by closure".
 - **Manual entries (D18, E-119).** After an outage, an Administrator enters each paper log entry with the person and the times. The row has `entered_by_staff_account_id` set, `started_at` and `ended_at` from the paper, and `status = 'checked_out'`. It writes an audit log entry. A wrong one is voided (`status = 'void'`), not deleted (E-146). Statistics count it and can filter it out by `entered_by_staff_account_id IS NOT NULL`. People without an account go in `manual_visit_counts` as a number of visits for a time block, with no names (E-132); they count in visit totals and not in distinct people.
@@ -371,7 +372,7 @@ Rules written as SQL in the migrations. Laravel's schema builder cannot express 
 | One account per email | `users` | `CREATE UNIQUE INDEX ON users (lower(email))`. Deleted accounts have NULL email, which never collides | REQ-F-01, REQ-F-11, REQ-F-78 |
 | An authorization has the source its type says | `authorizations` | `CHECK ((type = 'paid' AND imported_membership_id IS NOT NULL AND roster_record_id IS NULL) OR (type = 'athlete' AND roster_record_id IS NOT NULL AND imported_membership_id IS NULL) OR (type = 'manual' AND imported_membership_id IS NULL AND roster_record_id IS NULL))` | REQ-F-19, REQ-F-87 |
 | Authorization values | `authorizations` | `CHECK (type IN ('paid','athlete','manual'))`, `CHECK (status IN ('active','revoked'))` | REQ-F-19, REQ-F-87 |
-| One active authorization per User and term | `authorizations` | `CREATE UNIQUE INDEX ON authorizations (user_id, academic_term_id) WHERE (status = 'active')`. Only active authorizations count (owner's decision, E-94), so a revoked one does not block a new grant or claim. A manual grant that would break it is rejected | REQ-F-19, REQ-F-80 (E-68, E-94) |
+| One active authorization per User and term | `authorizations` | `CREATE UNIQUE INDEX ON authorizations (user_id, academic_term_id) WHERE (status = 'active')`. Only active authorizations count (the team's decision, E-94), so a revoked one does not block a new grant or claim. A manual grant that would break it is rejected | REQ-F-19, REQ-F-80 (E-68, E-94) |
 | A manual grant has a reason | `authorizations` | `CHECK (type <> 'manual' OR reason IS NOT NULL)`. The reason is required, free text of 10 characters or more (E-86); the backend checks the length and writes the reason to the audit log | REQ-F-87 |
 | One waiver per account | `waiver_acceptances` | `UNIQUE (user_id)` | REQ-F-60 |
 | One staff account per email | `staff_accounts` | `CREATE UNIQUE INDEX ON staff_accounts (lower(email))`. Separate from `users`, so the same email may have a User account too (D13) | REQ-F-52 (D13) |
@@ -458,41 +459,41 @@ Two copies looked like repetition but are not: `imported_memberships.name` and `
 
 ## Design decisions
 
-Decided by the owner on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13 to D15 on 2026-11-04, after the gym meeting (#62). The expiry and early-end rules of section 3 are decided and can be revisited.
+Decided by the team on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13 to D15 on 2026-11-04, after the gym meeting (#62). The expiry and early-end rules of section 3 are decided and can be revisited.
 
-**D1. Uniqueness of the Authorization Number (E-30, G-19).** Decided (owner, 2026-10-19; E-71), changed by the team on 2026-11-04 (E-128): `UNIQUE (authorization_number)` across all orders.
+**D1. Uniqueness of the Authorization Number (E-30, G-19).** Decided (team, 2026-10-19; E-71), changed by the team on 2026-11-04 (E-128): `UNIQUE (authorization_number)` across all orders.
 - Why: a read of all 84 store orders found no repeated value among the 69 paid ones. If the gateway ever repeats a code, the sync rejects that order and the Administrator sees it in the sync result.
 
-**D2. How an account is deleted (REQ-F-09, REQ-F-74).** Decided (owner, 2026-10-19): option A, keep the `users` row with every personal column set to NULL and `deleted_at` set.
+**D2. How an account is deleted (REQ-F-09, REQ-F-74).** Decided (team, 2026-10-19): option A, keep the `users` row with every personal column set to NULL and `deleted_at` set.
 - Why: sessions keep their `user_id`, so Check In counts and distinct people do not change, and no extra table is needed.
 - Releasing an Authorization Number never deletes the account, also when it was the only authorization (E-106).
 
-**D3. One sign-in session per User (REQ-F-03).** Decided (owner, 2026-10-19): option B, `users.current_session_id` plus a middleware that checks it on every request, and old rows are deleted.
+**D3. One sign-in session per User (REQ-F-03).** Decided (team, 2026-10-19): option B, `users.current_session_id` plus a middleware that checks it on every request, and old rows are deleted.
 - Why: the last sign-in always wins, also when two happen at once.
 
-**D4. IP address and user agent in `sign_in_sessions` (REQ-NF-21).** Decided (owner, 2026-10-19; E-91): option B, Laravel's database session handler is extended to write NULL in both columns.
+**D4. IP address and user agent in `sign_in_sessions` (REQ-NF-21).** Decided (team, 2026-10-19; E-91): option B, Laravel's database session handler is extended to write NULL in both columns.
 - Why: REQ-NF-21 lists neither, and the gym does not need to see where a User signed in. Gym actions stay traceable through the audit log, which records IP, device and browser (REQ-NF-39).
 
 **D5. Where the PIN state and last person activity live (REQ-NF-48).** Replaced by D13 (2026-11-04): with personal staff accounts there is no PIN, so there is no PIN state to store.
 
 **D6. Photos when an import is undone (REQ-F-31).** Decided (E-57): option A, the photo (row and file) is deleted with the authorization on release; accounts stay. The undo part is gone: there is no import undo (E-127, REQ-F-31 Removed).
 
-**D7. Where the User's name comes from (REQ-F-40, REQ-F-45).** Decided (owner, 2026-10-19): option A, `waiver_acceptances.full_name`.
+**D7. Where the User's name comes from (REQ-F-40, REQ-F-45).** Decided (team, 2026-10-19): option A, `waiver_acceptances.full_name`.
 - Why: it is written once at registration and does not depend on the order or roster, so a change to either does not erase it.
 
-**D8. How regular hours repeat (REQ-F-55, REQ-F-33).** Decided (owner, 2026-10-19; E-90): option A, one table where a slot is weekly (weekday and local times) or dated (start and end).
+**D8. How regular hours repeat (REQ-F-55, REQ-F-33).** Decided (team, 2026-10-19; E-90): option A, one table where a slot is weekly (weekday and local times) or dated (start and end).
 - Why: the regular schedule is written once and exceptions are separate rows. Regular hours and athletes-only slots can be weekly; special hours and closures are dated. Summer hours that differ would need a term link later (G-28 is pending).
 
-**D9. How emailed links are stored (REQ-F-15, E-58).** Decided (owner, 2026-10-19): option A, an `email_links` table with the token hash, expiry and single use.
+**D9. How emailed links are stored (REQ-F-15, E-58).** Decided (team, 2026-10-19): option A, an `email_links` table with the token hash, expiry and single use.
 - Why: a signed URL can be opened many times until it expires, so it is not single use. There is no in-person code (E-117).
 
-**D10. How the User sees their past visits (E-105).** Decided (owner, 2026-10-20): the My visits screen (U-09) reads the existing `facility_sessions` rows.
+**D10. How the User sees their past visits (E-105).** Decided (team, 2026-10-20): the My visits screen (U-09) reads the existing `facility_sessions` rows.
 - Why: the table already holds each Check In with its User and time, so no table or column is added.
 - How far back: the full history (E-126); rows are kept 5 years (E-125).
 
-**D11. Language of the gym dashboard (E-104).** Decided (owner, 2026-10-20), updated by D13 (2026-11-04): each staff account has its own language in `staff_accounts.locale`, changed in that account's preferences. N-01 and N-02 in Spanish before an account exists (E-103) needs no change.
+**D11. Language of the gym dashboard (E-104).** Decided (team, 2026-10-20), updated by D13 (2026-11-04): each staff account has its own language in `staff_accounts.locale`, changed in that account's preferences. The language before an account exists (E-159) needs no change.
 
-**D12. Terms are never deleted (E-107).** Decided (owner, 2026-10-20): no term deletion. A term created by mistake is fixed by editing its dates (E-88).
+**D12. Terms are never deleted (E-107).** Decided (team, 2026-10-20): no term deletion. A term created by mistake is fixed by editing its dates (E-88).
 
 **D13. Personal accounts for Staff and Administrators (G-09, #62 questions 1 to 3).** Decided (team, 2026-11-04), after the gym meeting: option B, one account per person and no PIN, in a separate `staff_accounts` table with a `role` of `staff` or `admin`.
 - Why: the audit log must say who did what. A separate table keeps User rules (one device, deletion and anonymizing) apart from staff rules, matches the dashboard's own sign-in page (REQ-NF-10), and lets a student employee have a User account and a staff account with the same email.

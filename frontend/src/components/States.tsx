@@ -29,9 +29,10 @@ function StatePanel({ title, lead, detail, action, role, kind }: PanelProps) {
 
 type StateProps = { lead?: ReactNode; detail?: ReactNode }
 
-/** "Cargando", with what is loading, like "Buscando cuentas…". */
-export function LoadingState({ detail }: Pick<StateProps, 'detail'>) {
-  return <StatePanel role="status" title={useMessages().states.loading} detail={detail} />
+/** "Cargando", with what is loading, like "Buscando cuentas…". Some screens name it, like A-15's "Cargando cuentas…". */
+export function LoadingState({ title, detail }: Pick<StateProps, 'detail'> & { title?: string }) {
+  const loading = useMessages().states.loading
+  return <StatePanel role="status" title={title ?? loading} detail={detail} />
 }
 
 /** "Sin resultados", with what the screen looked for. */

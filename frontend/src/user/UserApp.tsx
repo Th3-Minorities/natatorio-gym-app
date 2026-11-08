@@ -1,14 +1,19 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { ArrowLeft, ArrowRight, ChevronRight, Heart, History, Settings, UserRound, type LucideIcon } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ChevronDown, ChevronRight, Download, Heart, History, Settings, ShieldCheck, UserRound, type LucideIcon } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button, LoadingState } from '../components'
 import { useDateFormat } from '../format/dateTime'
 import { I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
+import { InstallHelp } from './InstallHelp'
+import { CheckIn } from './CheckIn'
 import { UserAccess } from './UserAccess'
-import { UserNotice, UserPage } from './ui'
+import { Registration } from './Registration'
+import { UserLoading, UserNotice, UserPage } from './ui'
+import { PrivacyNoticeCard } from './PrivacyNoticeCard'
+import { storedPrivacy, storePrivacy, type Privacy } from './privacyNotice'
 import { useConnection } from './useConnection'
 import { storedLocale, storeLocale } from './deviceLocale'
-import { isUserPath } from './paths'
+import { isUserPath, REGISTRATION_PATHS } from './paths'
 import welcomeIllustration from './assets/welcome-illustration.svg'
 import './user.css'
 
@@ -40,7 +45,7 @@ export function UserApp() {
   const online = useConnection()
   const epoch = useRef(0)
   const offline = !online || networkFailed
-  const protectedPath = path.startsWith('/account')
+  const protectedPath = path.startsWith('/account') || path === '/check-in'
 
   const navigate = useCallback((next: string) => {
     window.history.pushState({}, '', next)
@@ -160,19 +165,19 @@ export function UserApp() {
   }
 
   return <I18nProvider locale={profile?.locale ?? deviceLocale}><div onClick={intercept}>
-    {!protectedPath ? path === '/welcome' ? <Welcome locale={deviceLocale} chooseLocale={chooseLocale} /> : <UserAccess
+    {path === '/install' ? <InstallHelp /> : REGISTRATION_PATHS.includes(path) ? <Registration path={path} navigate={navigate} /> : !protectedPath ? path === '/welcome' ? <Welcome locale={deviceLocale} chooseLocale={chooseLocale} /> : <UserAccess
       key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
       replaced={replaced} navigate={navigate} onSignedIn={(account) => {
         epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); navigate('/account')
-      }} /> : <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline}
+      }} /> : path === '/check-in' ? <CheckIn profile={profile} ended={ended} /> : <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline} disconnected={!online}
       retry={() => { setFailed(false); setLoading(true); void load() }} busy={busy} signOut={signOut} changeLocale={changeLocale} localeSaved={localeSaved}
       confirmation={confirmation} confirm={() => setConfirmation(true)} cancelConfirmation={() => { setConfirmation(false); setActionFailed(false) }}
       refused={refused} deleteAccount={deleteAccount} actionFailed={actionFailed} />}
   </div></I18nProvider>
 }
 
-function AccountView({ path, profile, loading, failed, offline, retry, busy, signOut, changeLocale, localeSaved, confirmation, confirm, cancelConfirmation, refused, deleteAccount, actionFailed }: {
-  path: string; profile: UserProfile | null; loading: boolean; failed: boolean; offline: boolean; retry: () => void;
+function AccountView({ path, profile, loading, failed, offline, disconnected, retry, busy, signOut, changeLocale, localeSaved, confirmation, confirm, cancelConfirmation, refused, deleteAccount, actionFailed }: {
+  path: string; profile: UserProfile | null; loading: boolean; failed: boolean; offline: boolean; disconnected: boolean; retry: () => void;
   busy: boolean; signOut: () => void; changeLocale: (locale: Locale) => void; localeSaved: boolean;
   confirmation: boolean; confirm: () => void; cancelConfirmation: () => void; refused: boolean; deleteAccount: () => void; actionFailed: boolean
 }) {
@@ -181,7 +186,15 @@ function AccountView({ path, profile, loading, failed, offline, retry, busy, sig
   const locale = useLocale()
   const showDeleteConfirmation = path === '/account/delete' && profile && !profile.authorization && !refused && confirmation
   let content
+  let overview = false
   if (loading && !profile) content = <AccountLoading />
+  else if (path === '/account/privacy' && (profile || offline)) content = <AccountPrivacy />
+  else if (offline && !profile) content = <div className="user-account-overview user-account-empty">
+    <h1 className="user-account-title" tabIndex={-1}>{t.account}</h1>
+    <div className="user-profile user-profile--empty"><ProfileWaves /></div>
+    <UserNotice title={t.noSavedData}>{t.noSavedDataDetail}</UserNotice>
+    <Button className="user-action" disabled={disconnected} onClick={retry}>{t.retry}</Button>
+  </div>
   else if (failed || !profile) content = <><h1 className="user-account-title" tabIndex={-1}>{t.account}</h1>
     <UserNotice title={t.accountError}>{t.accountErrorText}</UserNotice><Button className="user-action" onClick={retry}>{t.retry}</Button></>
   else if (path === '/account/delete') content = refused || profile.authorization ? <>
@@ -213,8 +226,8 @@ function AccountView({ path, profile, loading, failed, offline, retry, busy, sig
     {offline ? <span className="button button--secondary user-action user-danger-outline" role="link" aria-disabled="true">{t.deleteAccount}</span>
       : <a className="button button--secondary user-action user-danger-outline" href="/account/delete">{t.deleteAccount}</a>}
   </>
-  else content = <AccountOverview profile={profile} offline={offline} />
-  return <UserPage header={false} offline={offline && Boolean(profile)}>{content}
+  else { content = <AccountOverview profile={profile} offline={offline} />; overview = true }
+  return <UserPage header={false} offline={offline && path !== '/account/privacy'} offlineText={offline && !profile ? t.offlineBanner : undefined} className={overview ? 'user-app--overview' : path === '/account/privacy' ? 'user-app--privacy' : ''}>{content}
     {showDeleteConfirmation && <DeleteConfirmation busy={busy} offline={offline} failed={actionFailed} onConfirm={deleteAccount} onCancel={cancelConfirmation} />}
     {actionFailed && !showDeleteConfirmation && <p className="user-caption" role="alert">{errors.server_error}</p>}
   </UserPage>
@@ -257,11 +270,53 @@ function AccountHeading({ title, back, backLabel }: { title: string; back: strin
   </div>
 }
 
+// N-08 from My account (Figma 4468:2653). The notice texts live in the app; only the version and draft flag come from the API.
+// The last answer is kept on the device so the page still opens offline, as its caption says.
+function AccountPrivacy() {
+  const { user: t, registration } = useMessages()
+  const [notice, setNotice] = useState<Privacy | null>(storedPrivacy)
+  const [settled, setSettled] = useState(false)
+  useEffect(() => {
+    let current = true
+    const load = () => apiRequest<Privacy>('/privacy').then((fresh) => {
+      if (!current) return
+      storePrivacy(fresh)
+      setNotice(fresh)
+    }).catch(() => { /* Offline or failed: the saved notice, or the draft frame, stays. */ }).finally(() => { if (current) setSettled(true) })
+    void load()
+    window.addEventListener('online', load)
+    return () => { current = false; window.removeEventListener('online', load) }
+  }, [])
+
+  return <>
+    <div className="user-account-intro">
+      <AccountHeading title={registration.privacy} back="/account" backLabel={t.returnToAccount} />
+      <p>{t.privacyAccountLanguage}</p>
+    </div>
+    {notice || settled ? <>
+      <PrivacyNoticeCard draft={notice?.draft ?? true} />
+      <p className="user-caption">{t.privacyOfflineCaption}</p>
+    </> : <UserLoading detail={registration.loading} />}
+  </>
+}
+
 function AccountOverview({ profile, offline }: { profile: UserProfile; offline: boolean }) {
   const t = useMessages().user
   const dates = useDateFormat()
   const { authorization, account_type: type } = profile
   const badge = type && Object.hasOwn(t.accountTypes, type) ? t.accountTypes[type] : null
+  const list = useRef<HTMLDivElement>(null)
+  const [more, setMore] = useState(false)
+  // Figma draws "Desliza para ver más" under a list that scrolls; it shows only while rows are still hidden below.
+  const measure = useCallback(() => {
+    const element = list.current
+    if (element) setMore(element.scrollHeight - element.scrollTop - element.clientHeight > 1)
+  }, [])
+  useLayoutEffect(() => {
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [measure, offline, authorization])
 
   return <div className="user-account-overview">
     <h1 className="user-account-title" tabIndex={-1}>{t.account}</h1>
@@ -278,10 +333,15 @@ function AccountOverview({ profile, offline }: { profile: UserProfile; offline: 
       </div>
     </div>
     {offline && <p className="user-caption">{t.stale(dates.time(profile.updated_at))}</p>}
-    <AccountRow icon={Heart} title={t.emergency} detail={t.emergencyDetail} />
-    <AccountRow icon={History} title={t.visits} detail={t.visitsDetail} />
-    <AccountRow icon={Settings} title={t.settings} detail={t.settingsDetail} href="/account/settings" />
-    {!authorization && <span className="button button--secondary user-action">{t.iAmAthlete}</span>}
+    <div className="user-account-scroll" ref={list} onScroll={measure}>
+      <AccountRow icon={History} title={t.visits} detail={t.visitsDetail} />
+      <AccountRow icon={Heart} title={t.emergency} detail={t.emergencyDetail} />
+      <AccountRow icon={Download} title={t.installApp} detail={t.installAppDetail} href="/install" />
+      <AccountRow icon={ShieldCheck} title={t.privacyRow} detail={t.privacyRowDetail} href="/account/privacy" />
+      <AccountRow icon={Settings} title={t.settings} detail={t.settingsDetail} href="/account/settings" />
+      {!authorization && <span className="button button--secondary user-action">{t.iAmAthlete}</span>}
+    </div>
+    {more && <p className="user-scroll-hint" aria-hidden="true">{t.scrollForMore}<ChevronDown size={16} absoluteStrokeWidth /></p>}
   </div>
 }
 

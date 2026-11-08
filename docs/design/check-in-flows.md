@@ -40,6 +40,7 @@ flowchart TD
 
 **About this diagram:** Location is asked only when a new session must be created (REQ-F-37), so every check that does not need location runs first; the order and its reasons are in D1. Each rejection maps to one message key: `check_in_offline`, `check_in_no_authorization`, `check_in_photo_required`, `check_in_photo_pending`, `check_in_gym_closed`, `check_in_athletes_only` (full list in D5).
 
+- Authorization is checked before enabling the Check In button. The wireframe has no separate "Verificando acceso" screen; its visible loading states are location and submission. The backend checks below and the final submission checks remain required (E-163).
 - "No connection" is detected on the phone: the request fails or times out. There is no offline Check In (REQ-NF-26, SRS 2.4).
 - The athlete photo check comes from REQ-F-26. A paid member uploads the photo at registration and renewal, so in practice only athletes get the "new term photo needed" rejection.
 - Photo pending (REQ-F-94, E-118): Staff mark an account when its photo does not match the person. Check In is refused, also the Staff-assisted one, until the person uploads a new photo from their phone. Whether the upload clears the mark by itself or Staff approve it is open.
@@ -82,7 +83,7 @@ flowchart TD
 - Location comes from the browser Geolocation API (REQ-NF-11). The permission state is read before asking where the browser allows it; otherwise the error of the position request tells denied, unavailable or timeout apart.
 - The phone checks accuracy and boundary only to answer fast. The backend repeats every check except the location permission and is the only one that decides. The client is never trusted for authorization. Location is a condition, not proof of presence (SRS 3.6).
 - Coordinates travel once in the Check In request and are not stored. Only the result of the location check may be stored on the session (REQ-NF-03). The boundary, accuracy threshold and gym coordinates come from environment configuration (REQ-NF-28, REQ-NF-29).
-- The 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting (architecture D6, Decided (owner, 2026-10-19), open to revision).
+- The 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting (architecture D6, Decided (team, 2026-10-19), open to revision).
 
 ### 3. Successful Check In
 
@@ -131,7 +132,7 @@ sequenceDiagram
 **About this diagram:** Step 3 is the one-device rule (REQ-F-03). The exclusion constraint is the final guard of REQ-F-36 and depends on CTI accepting PostgreSQL (M-09). The 200 answer follows REQ-F-37.
 
 - Steps 13 to 24 are the single protected operation: re-check, look for an active session and create one, in one transaction. The read in step 16 gives a clean answer in the normal case. Under simultaneous requests both reads can see nothing, so the constraint decides (REQ-NF-42 tests this).
-- Backend time is the database clock `now()` (REQ-NF-01). The response carries server time, so the Gym ID clock does not trust the phone's own clock. The Gym ID shows no countdown for anyone: an active session shows "Active session" and the Check In time (E-129).
+- Backend time is the database clock `now()` (REQ-NF-01). The response carries server time, so the elapsed duration uses the backend Check In time and does not trust the phone's own clock (E-163). The Gym ID shows no countdown for anyone: an active session shows "Active session" and the Check In time (E-129).
 
 ### 4. Facility session states
 
@@ -205,7 +206,7 @@ flowchart TD
 
 - Location is not checked: Staff are at the desk, so the person is in the gym. Every other rule of the User Check In applies (REQ-F-46), including the athletes-only rejection for paid members (REQ-F-82).
 - Staff can only read the roster here; adding, editing, removing or importing roster records stays with the Administrator (E-59).
-- "Check In this athlete" on the roster screen (S-05) opens the assisted Check In screen (S-03) with the student number already filled in (E-81). Staff and Administrators always see the student number in full, on every screen they use.
+- "Check in" on the roster screen (S-05) opens the assisted Check In screen (S-03) with the student number already filled in (E-81). Staff and Administrators always see the student number in full, on every screen they use.
 - The assisted session goes through the same protected operation as diagram 3, so the exclusion constraint also guards it. A connection is required (REQ-NF-26). The audit log entry follows REQ-NF-39.
 - Decided (E-118, REQ-F-94): when the photo does not match the person, Staff mark the account "photo pending" (diagram 11). Check In stays off until the person uploads a new photo from their phone. Staff do not take photos. Whether the new photo clears the mark by itself or Staff approve it is open.
 
@@ -216,23 +217,23 @@ flowchart TD
 ```mermaid
 stateDiagram-v2
   state "No session, Check In button" as pm_none
-  state "Active with Member tag, name, photo, authorization, Active session and the Check In time, clock" as pm_active
+  state "Active with Member tag, name, photo, authorization, Active session and the Check In time, elapsed duration" as pm_active
   state "Ended, shown with text and icon" as pm_expired
-  state "No connection, not valid now, clock stopped" as pm_offline
+  state "No connection, not valid now, duration stopped" as pm_offline
 
   [*] --> pm_none
   pm_none --> pm_active : valid Check In
   pm_active --> pm_expired : checked out, closed automatically after 2 hours, or closed by closure
   pm_active --> pm_expired : Staff end early or void
-  pm_expired --> pm_active : new valid Check In
+  pm_expired --> pm_none : Continue, resolve current access before enabling Check In
   pm_active --> pm_offline : poll fails
   pm_offline --> pm_active : poll succeeds
 ```
 
 - When the session ends, the Gym ID says why: checked out, "closed automatically" or "closed by closure", with text and an icon, not only color (REQ-F-40, REQ-NF-14, E-115).
-- The clock runs on the phone while the Gym ID is live, so Staff can tell a live screen from a screenshot. There is no code or QR (REQ-F-40). It shows the time with seconds as text, changes at most once per second and never flashes (E-75, WCAG 2.2.2).
-- The Gym ID shows a tag, "Member" for a paid member, with text and an icon, and a color different from the athlete tag (E-75). The colors are the owner's choice and are not picked yet. They must not repeat the athletes-only theme color of diagram 8, so one color never means two things.
-- Without a connection the app does not show a stored Gym ID as current (REQ-NF-26). It shows "not valid now" and the clock stops (E-77). A persistent banner at the top of the screen says the data is not current, with an "updated at" time. The same applies to the athlete Gym ID below.
+- The live indicator shows elapsed duration from the backend Check In time, in HH:MM:SS. It advances at most once per second without flashing and stops when the visit ends or connection is lost. It is not a countdown or the current time of day. There is no code or QR (REQ-F-40, E-163, WCAG 2.2.2).
+- The Gym ID shows a tag, "Member" for a paid member, with text and an icon, and a color different from the athlete tag (E-75). The colors are the team's choice and are not picked yet. They must not repeat the athletes-only theme color of diagram 8, so one color never means two things.
+- Without a connection the app does not show a stored Gym ID as current (REQ-NF-26). It shows "not valid now", the last successful update time, and a stopped elapsed-duration indicator (E-77, E-163). A persistent banner at the top of the screen says the data is not current, with an "updated at" time. The same applies to the athlete Gym ID below.
 - If an athletes-only period starts inside the active session, the Gym ID shows a notice with its start time while the session is active. The session is never cut (REQ-F-83).
 
 ### 7. Gym ID states: athlete
@@ -241,39 +242,40 @@ stateDiagram-v2
 
 ```mermaid
 stateDiagram-v2
-  state "No session, Check In button" as a_none
-  state "Active session with Athlete tag, name, photo, clock" as a_active
-  state "Authorized athlete plus term, no open session, clock" as a_valid
+  state "Registra tu entrada, no session" as a_none
+  state "Active session with Athlete tag, name, photo, elapsed duration" as a_active
+  state "Visit ended, reason and total duration" as a_ended
   state "Invalid, removed from roster or term ended" as a_invalid
-  state "No connection, not valid now, clock stopped" as a_offline
+  state "No connection, not valid now, duration stopped" as a_offline
 
   [*] --> a_none
   a_none --> a_active : valid Check In
-  a_active --> a_valid : session ends by check-out, after 2 hours, or at a closure
-  a_valid --> a_active : new valid Check In
+  a_active --> a_ended : check-out, automatic close, closure or Staff correction
+  a_ended --> a_none : Continue, authorization still current
+  a_ended --> a_invalid : Continue, authorization no longer current
   a_active --> a_offline : poll fails
-  a_valid --> a_offline : poll fails
   a_offline --> a_active : poll succeeds, session active
-  a_offline --> a_valid : poll succeeds, session ended
+  a_offline --> a_ended : poll succeeds, session ended
   a_active --> a_invalid : removed from roster mid-term
-  a_valid --> a_invalid : removed from roster mid-term
-  a_valid --> a_invalid : term authorization ends
+  a_none --> a_invalid : removed from roster or term ends
   a_invalid --> [*]
 ```
 
-- The athlete Gym ID stays valid while the term authorization is active; how a session ends does not change that (REQ-F-38, REQ-F-40). Staff check the read-only roster for an athlete in a_valid (REQ-F-45, E-59).
+- Ending a visit removes it from occupancy but does not revoke a current athlete authorization. After Continue, the athlete returns to "Registra tu entrada" and follows the normal Check In process. Current access, photo and opening rules still apply (E-163, REQ-F-33, REQ-F-38).
+- There is no separate "Authorized athlete" card without a session, and the Gym ID does not display the term (E-163). Term dates still govern authorization and the new-term photo rules.
 - Removed from the roster mid-term: the Gym ID is invalid at once, the current session keeps counting until it ends, and no new Check In is allowed (REQ-F-49).
-- Text for a_valid (E-75): "Authorized athlete" plus the term, for example "Authorized athlete, Fall 2026", with the clock and an icon (REQ-NF-14). It never says "expired" or "session ended". Athletes never see time left, at any time (REQ-F-40). The Staff active sessions list follows the same rule (E-99).
-- The Gym ID shows a tag, "Athlete", with text and an icon, and a color different from the member tag (E-75). The colors are the owner's choice and are not picked yet. Same clock, offline and athletes-only notice rules as the paid member Gym ID.
+- The Athlete tag keeps its text, icon and category color. The duration, offline and athletes-only notice rules are the same as for a paid member. Athletes never see time left (REQ-F-40, E-99).
 
-### 8. Athletes-only notice during a session
+### 8. Athletes-only notice before Check In and during a session
 
 **Type:** System flow. **Use it to:** write the backend rule that adds the notice to the Check In and Gym ID answers, and its tests.
 
 ```mermaid
 flowchart TD
   A["Check In response or Gym ID poll"] --> B{"Session active?"}
-  B -- "No" --> Z["No notice"]
+  B -- "No" --> P{"An athletes-only slot starts<br/>in the next 60 minutes?"}
+  P -- "No" --> Z["No notice"]
+  P -- "Yes" --> N
   B -- "Yes" --> C{"An athletes-only slot starts<br/>after now and before the session end?"}
   C -- "No" --> Z
   C -- "Yes" --> N["Show notice with the period start time<br/>to every User: athletes and paid members<br/>session keeps running"]
@@ -281,12 +283,12 @@ flowchart TD
 
   classDef back fill:#fff3cd,stroke:#b8860b,color:#000
   classDef ok fill:#d4edda,stroke:#2e7d32,color:#000
-  class A,B,C back
+  class A,B,C,P back
   class N,E,Z ok
 ```
 
 - Covers REQ-F-83 and the rejection side of REQ-F-82. Times shown in `America/Puerto_Rico`, in the format of REQ-NF-38 (REQ-NF-37).
-- Every User sees the notice, athletes and paid members (E-76).
+- Every User sees the notice, athletes and paid members (E-76). Without a session it shows in the 60 minutes before the period, and a paid member can still Check In until the period starts (E-161).
 
 #### Theme color during the athletes-only period
 
@@ -309,7 +311,7 @@ flowchart TD
 - The whole theme of the User app changes color, so every User sees at a glance which period it is. The Staff and Administrator dashboard does not change color (REQ-F-90).
 - Color is never the only signal (REQ-NF-14): the text notice and an icon stay (WCAG 1.4.1).
 - Without a connection the app returns to the normal color and does not claim an athletes-only period from cached schedules (REQ-F-90, REQ-NF-26).
-- The theme colors, and the colors of the Member and Athlete tags on the Gym ID, are the owner's choice and are not picked yet. They must not overlap, so one color never means two things.
+- The theme colors, and the colors of the Member and Athlete tags on the Gym ID, are the team's choice and are not picked yet. They must not overlap, so one color never means two things.
 
 ### 9. Occupancy counting
 
@@ -346,7 +348,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A["User shows the Gym ID"] --> B{"Clock moving and state shown<br/>with text and icon?"}
+  A["User shows the Gym ID"] --> B{"Elapsed duration moving and state shown<br/>with text and icon?"}
   B -- "No" --> X1["Not verified: possible screenshot"]
   B -- "Yes" --> C["Staff search the name<br/>in the active sessions list"]
   C --> D{"Found in active sessions?"}
@@ -355,6 +357,7 @@ flowchart TD
   E -- "No" --> X2["Not verified"]
   D -- "No" --> F{"Athlete with no open session?"}
   F -- "Yes" --> G["Staff search the roster<br/>read-only, by name or student number"]
+  R["Staff verify an athlete without an open session"] --> G
   G --> H{"On the roster and<br/>stored photo matches?"}
   H -- "Yes" --> OK2["Verified: authorized athlete"]
   H -- "No" --> X3["Not verified"]
@@ -364,7 +367,7 @@ flowchart TD
   classDef back fill:#fff3cd,stroke:#b8860b,color:#000
   classDef reject fill:#f8d7da,stroke:#842029,color:#000
   classDef ok fill:#d4edda,stroke:#2e7d32,color:#000
-  class A,B,C,G staff
+  class A,B,C,G,R staff
   class D,E,F,H back
   class X1,X2,X3,X4 reject
   class OK,OK2 ok
@@ -373,6 +376,7 @@ flowchart TD
 **About this diagram:** Covers REQ-F-44 and REQ-F-45. The roster search is the read-only roster Staff see under E-59 (still to be confirmed by the gym).
 
 - Staff verify against backend data, not only the User's screen (REQ-F-45). The active sessions list shows Check In time, authorization and Gym ID (REQ-F-44). It shows time left before the automatic close for paid members; for an athlete it shows "athlete" and the Check In time, never time left (E-99). Each row has a Check out action (REQ-F-48). A search is a fresh request, so verification never waits for the next poll.
+- An athlete without an open session can be checked directly against the roster, without a live Gym ID. This verifies authorization, not a new entry; normal or Staff-assisted Check In still creates the visit (E-163, REQ-F-45).
 - Staff see only photo, authorization, waiver and emergency contact (REQ-NF-19). The roster list they see is read-only (E-59). The student number is shown in full (E-81).
 
 ### 11. Staff check-out and photo pending
@@ -407,11 +411,11 @@ flowchart TD
 
 ## Design decisions to confirm
 
-"Decided, revisable" means the owner accepted the recommendation and can still change it.
+"Decided, revisable" means the team accepted the recommendation and can still change it.
 
 ### D1. Order of the Check In checks and the two-call flow
 
-Status: Decided (owner, 2026-10-17), option A.
+Status: Decided (team, 2026-10-17), option A.
 
 - A. Phone first asks the backend for the current session and eligibility (connection, active session, authorization, photo, open, athletes-only). Only if eligible, it asks location and sends one Check In request, where the backend repeats all checks. Pro: no location prompt when Check In would fail anyway; matches REQ-F-37; the same GET serves the Gym ID screen. Con: two requests, about one extra round trip toward the 3 second target (REQ-NF-16).
 - B. Ask location first, then one request that checks everything. Pro: one request. Con: asks location from people with no authorization or when the gym is closed; the User fixes location only to learn the gym is closed.
@@ -421,7 +425,7 @@ Decision: A, because the User gets no location prompt when Check In would fail a
 
 ### D2. Accuracy and boundary rule
 
-Status: Proposed. Values come from measurement at the gym (REQ-NF-28) and stay out of this issue. One part is decided (architecture D6, owner, 2026-10-19, revisable): the 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting.
+Status: Proposed. Values come from measurement at the gym (REQ-NF-28) and stay out of this issue. One part is decided (architecture D6, team, 2026-10-19, revisable): the 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting.
 
 - A. Two separate checks: accuracy at or below a threshold, and distance to the gym coordinates at or below the boundary radius. Pro: simple, each failure has its own message. Con: a fix near the edge with a large accuracy radius can pass.
 - B. Distance plus accuracy at or below the boundary radius (the whole uncertainty circle inside the boundary). Pro: strict. Con: rejects people inside the gym when accuracy is poor indoors.
@@ -431,7 +435,7 @@ Recommendation: A, because it maps one to one to the SRS messages and the measur
 
 ### D3. How expiry is computed
 
-Status: Decided (owner, 2026-10-19), option A, revisable.
+Status: Decided (team, 2026-10-19), option A, revisable.
 
 - A. Query time is the rule: a session is active while status is active and `now()` is before its end. A scheduled task also marks old rows as expired, only for tidy data. Pro: expiry is exact; the task can fail without wrong counts. Con: one more moving part.
 - B. Query time only, never store expired. Pro: least code. Con: every reader (Staff list, analytics) must apply the same time rule.
@@ -441,7 +445,7 @@ Decision: A, because expiry is exact and the task can fail without wrong counts.
 
 ### D4. Exclusion constraint and early end
 
-Status: Decided (owner, 2026-10-19), option A, revisable. Depends on PostgreSQL (M-09).
+Status: Decided (team, 2026-10-19), option A, revisable. Depends on PostgreSQL (M-09).
 
 - A. `EXCLUDE USING gist (user_id WITH =, period WITH &&) WHERE (status <> 'void')`, and ending early cuts the period to the real end time. Pro: the stored period is the real visit, which analytics need anyway. Con: the period changes after insert.
 - B. Same constraint with `WHERE (status = 'active')`, period kept at 2 hours, real end stored in another column. Pro: the period never changes. Con: two end values to keep straight.
@@ -450,9 +454,9 @@ Decision: A, because the stored period is the real visit, which analytics need a
 
 ### D5. Error message keys and response shape
 
-Status: Decided (owner, 2026-10-17), option A (E-74). On 2026-10-26 the codes were renamed from `check_in.reason` to `check_in_reason` to match the snake_case rule in `api-conventions.md` (issue #47 review). The decision itself did not change.
+Status: Decided (team, 2026-10-17), option A (E-74). On 2026-10-26 the codes were renamed from `check_in.reason` to `check_in_reason` to match the snake_case rule in `api-conventions.md` (issue #47 review). The decision itself did not change.
 
-- A. The backend returns a stable code per reason (`check_in_offline` is phone only; `check_in_no_authorization`, `check_in_photo_required`, `check_in_photo_pending`, `check_in_gym_closed`, `check_in_athletes_only`, `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy`, `check_in_outside_boundary`) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
+- A. The backend returns a stable code per reason (`check_in_offline` is phone only; `check_in_no_authorization`, `check_in_photo_required`, `check_in_photo_pending`, `check_in_gym_closed`, `check_in_athletes_only`, `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy`, `check_in_outside_boundary`; `location_required` (422) when the request has no latitude, longitude or accuracy, and the phone shows the location-unavailable panel) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
 - B. The backend returns translated text only. Pro: one place. Con: the phone cannot react per reason (open photo upload, show how to turn on location), and tests depend on wording.
 
 Decision: A, because the app can react to each cause (open the photo upload, show how to turn on location). Two causes are added to REQ-F-33: location unavailable and new term photo needed. The texts are written later (REQ-F-33 "Texts: design").
@@ -465,11 +469,11 @@ Status: Proposed. REQ-F-43 allows 20 to 30 seconds.
 - B. 30 seconds. Pro: fewer requests and less battery on phones. Con: up to 30 seconds of delay on a value that changes only with Check In, expiry or a correction.
 - C. 20 for Staff screens, 30 for User screens. Pro: fresh where Staff work. Con: two values to test.
 
-Recommendation: B, one setting, polling only while the page is visible. The clock runs on the phone from the server time, so it does not depend on the interval, and Staff searches are fresh requests.
+Recommendation: B, one setting, polling only while the page is visible. The elapsed-duration indicator runs on the phone from the backend Check In time and server time (E-163), so it does not depend on the interval, and Staff searches are fresh requests.
 
 ### D7. Can the User see their own past Check Ins
 
-Status: Decided (owner, 2026-10-20), option A (E-105). Answered by E-126: the full history, kept 5 years (E-125).
+Status: Decided (team, 2026-10-20), option A (E-105). Answered by E-126: the full history, kept 5 years (E-125).
 
 - A. Yes. A My visits screen (U-09), reached from the account (U-03), lists the User's own past Check Ins from the session records: date and time, newest first. Location is never shown (REQ-NF-03). Pro: a returning User can see their own history. Con: one more screen and a new requirement.
 - B. Not now. History stays in the database for statistics only. Pro: less to build. Con: the User cannot see their own visits.
@@ -511,26 +515,26 @@ Decision: A. The earlier recommendation was B. How far back the list goes: all h
 | REQ-F-48 | 4. Facility session states; 6. Gym ID states: paid member; 11. Staff check-out and photo pending |
 | REQ-F-94 | 1. Check In checks before location; 5. Staff-assisted Check In; 11. Staff check-out and photo pending |
 | REQ-F-49 | 7. Gym ID states: athlete; 9. Occupancy counting |
-| REQ-F-82 | 1. Check In checks before location; 5. Staff-assisted Check In; 8. Athletes-only notice during a session |
-| REQ-F-83 | 2. Check In location checks and session creation (notice on success); 6. Gym ID states: paid member; 8. Athletes-only notice during a session |
-| REQ-F-90 | 8. Athletes-only notice during a session (theme color) |
+| REQ-F-82 | 1. Check In checks before location; 5. Staff-assisted Check In; 8. Athletes-only notice before Check In and during a session |
+| REQ-F-83 | 2. Check In location checks and session creation (notice on success); 6. Gym ID states: paid member; 8. Athletes-only notice before Check In and during a session |
+| REQ-F-90 | 8. Athletes-only notice before Check In and during a session (theme color) |
 | REQ-NF-01 | 3. Successful Check In; 4. Facility session states; 9. Occupancy counting |
 | REQ-NF-03 | 2. Check In location checks and session creation; 3. Successful Check In; 4. Facility session states (My visits shows no location) |
 | REQ-NF-05 (retention, 5 years) | 4. Facility session states (how long visits are kept); D7; Gap 11 |
 | REQ-NF-11 | 2. Check In location checks and session creation |
 | REQ-NF-14 | 6. Gym ID states: paid member; 7. Gym ID states: athlete; 10. Staff verification of a Gym ID |
 | REQ-NF-19 | 10. Staff verification of a Gym ID |
-| REQ-NF-26 | 1. Check In checks before location; 2. Check In location checks and session creation; 5. Staff-assisted Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice during a session (theme color); 9. Occupancy counting |
+| REQ-NF-26 | 1. Check In checks before location; 2. Check In location checks and session creation; 5. Staff-assisted Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice before Check In and during a session (theme color); 9. Occupancy counting |
 | REQ-NF-28 | 2. Check In location checks and session creation; D2 |
 | REQ-NF-29 | 2. Check In location checks and session creation |
-| REQ-NF-37 | 8. Athletes-only notice during a session |
+| REQ-NF-37 | 8. Athletes-only notice before Check In and during a session |
 | REQ-NF-39 | 4. Facility session states; 5. Staff-assisted Check In |
 | REQ-NF-42 | 3. Successful Check In (alt block) |
 | E-59 (Staff see the roster) | 5. Staff-assisted Check In; 7. Gym ID states: athlete; 10. Staff verification of a Gym ID; Gap 6 |
 | D1 (check order, eligibility query first) | 1. Check In checks before location; 2. Check In location checks and session creation; 3. Successful Check In; D1 |
 | E-74 (fixed code per rejection cause) | 1. Check In checks before location; 2. Check In location checks and session creation; D5; Gaps 1 and 2 |
-| E-75 (athlete Gym ID text and no time left; clock with seconds once per second; Member and Athlete tags) | 3. Successful Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice during a session; D6 |
-| E-76 (everyone sees the athletes-only notice; theme color in the athletes-only period) | 8. Athletes-only notice during a session; Gap 4 |
+| E-75 (Member and Athlete tags; timing and post-visit display refined by E-163) | 3. Successful Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice before Check In and during a session; D6 |
+| E-76 (everyone sees the athletes-only notice; theme color in the athletes-only period) | 8. Athletes-only notice before Check In and during a session; Gap 4 |
 | E-80 (Staff void only active sessions) | 4. Facility session states; Gap 5 |
 | E-81 (student number filled and never masked) | 5. Staff-assisted Check In; 10. Staff verification of a Gym ID |
 | E-105 (My visits screen U-09, own past Check Ins from session records) | 4. Facility session states; D7; Gap 11 |
