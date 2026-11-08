@@ -21,7 +21,7 @@ export const en: Messages = {
     numberHint: 'Authorization number: 6 or 7 characters, may contain letters.',
     paymentDescription: 'Payment description ·', receiptNumber: 'Authorization number:', exampleNumber: '4K7Q2B',
     paymentHelp: (phone: string) => `You need a paid membership. Problems? Call ${phone}.`, buy: 'Buy membership',
-    continue: 'Continue', existing: 'Already have an account?', signIn: 'Sign in',
+    continue: 'Continue', existing: 'Already have an account?', noMembership: "Don't have a membership?", signIn: 'Sign in',
     renewal: (email: string) => `You already have an account with ${email}. Sign in to add this membership.`,
     hello: (name: string) => `Hello, ${name}!`, createPassword: 'Create a password',
     passwordIntro: 'You will use this password to sign in to your account.',

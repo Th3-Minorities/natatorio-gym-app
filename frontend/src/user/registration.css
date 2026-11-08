@@ -30,6 +30,8 @@
 .registration-existing { display: flex; align-items: center; justify-content: center; min-height: var(--user-touch); font-size: var(--registration-caption-size); line-height: var(--spacing-20); color: var(--muted-foreground); }
 .registration-existing > span { width: 150px; }
 .registration-existing a { display: flex; align-items: center; min-height: var(--user-touch); padding-inline: var(--user-input-padding); color: var(--primary); font-size: var(--user-label-size); font-weight: var(--weight-medium); text-decoration: underline; }
+.registration-existing--store > span { width: auto; }
+.registration-existing a svg { width: var(--user-body-line); height: var(--user-body-line); margin-inline-start: var(--spacing-4); flex: none; }
 .registration .registration-identification-form { flex: 1; gap: var(--spacing-24); }
 .registration-number { display: flex; flex-direction: column; gap: var(--spacing-16); }
 .registration .field__input { border-color: var(--muted-foreground); }

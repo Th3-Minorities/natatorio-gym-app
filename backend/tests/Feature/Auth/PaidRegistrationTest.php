@@ -118,6 +118,24 @@ class PaidRegistrationTest extends TestCase
             ->assertUnprocessable()->assertJsonPath('error.details.contact_number.0', '787-555-0199');
     }
 
+    public function test_the_store_url_needs_a_setting_and_a_running_term(): void
+    {
+        $this->getJson('/api/user/registration/privacy')->assertOk()->assertJsonPath('store_url', null);
+
+        $setting = Setting::query()->create(['name' => 'store_url', 'value' => 'https://store.example/membership']);
+        $this->getJson('/api/user/registration/privacy')->assertOk()->assertJsonPath('store_url', null);
+
+        $term = AcademicTerm::factory()->create(['starts_on' => today()->subDay(), 'ends_on' => today()->addDay()]);
+        $this->getJson('/api/user/registration/privacy')->assertOk()->assertJsonPath('store_url', 'https://store.example/membership');
+
+        $setting->update(['value' => '']);
+        $this->getJson('/api/user/registration/privacy')->assertOk()->assertJsonPath('store_url', null);
+
+        $setting->update(['value' => 'https://store.example/membership']);
+        $term->update(['starts_on' => today()->subDays(10), 'ends_on' => today()->subDay()]);
+        $this->getJson('/api/user/registration/privacy')->assertOk()->assertJsonPath('store_url', null);
+    }
+
     public function test_invalid_claimed_and_ended_numbers_have_identical_responses(): void
     {
         $member = $this->membership();

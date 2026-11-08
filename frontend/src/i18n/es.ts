@@ -19,7 +19,7 @@ export const es = {
     numberHint: 'Número de autorización: 6 o 7 caracteres, puede tener letras.',
     paymentDescription: 'Descripción del pago ·', receiptNumber: 'Número de autorización:', exampleNumber: '4K7Q2B',
     paymentHelp: (phone: string) => `Necesitas una membresía pagada. ¿Problemas? Llama al ${phone}.`, buy: 'Comprar membresía',
-    continue: 'Continuar', existing: '¿Ya tienes cuenta?', signIn: 'Inicia sesión',
+    continue: 'Continuar', existing: '¿Ya tienes cuenta?', noMembership: '¿No tienes membresía?', signIn: 'Inicia sesión',
     renewal: (email: string) => `Ya tienes una cuenta con ${email}. Inicia sesión para añadir esta membresía.`,
     hello: (name: string) => `¡Hola, ${name}!`, createPassword: 'Crea una contraseña',
     passwordIntro: 'Usarás esta contraseña para iniciar sesión en tu cuenta.',

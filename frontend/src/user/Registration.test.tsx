@@ -179,13 +179,36 @@ it('empties the status region when a timed wait ends', async () => {
   } finally { vi.useRealTimers() }
 })
 
-it('shows the receipt example, payment help and buy button on identification', async () => {
+function sendStoreUrl(storeUrl: string | null) {
+  const base = vi.mocked(fetch).getMockImplementation()!
+  vi.mocked(fetch).mockImplementation(async (path, init) => String(path).endsWith('/privacy') && !init?.body
+    ? json({ version: 'draft', draft: true, store_url: storeUrl, contact_number: '265-3866' })
+    : base(path, init))
+}
+
+it('shows the receipt example, payment help and both store controls when the server sends a URL', async () => {
+  sendStoreUrl('https://store.example/membership')
   render(<UserApp />)
   await reachIdentification()
   expect(screen.getByText('Descripción del pago ·')).toBeInTheDocument()
   expect(screen.getByText('4K7Q2B')).toBeInTheDocument()
   expect(screen.getByText('Necesitas una membresía pagada. ¿Problemas? Llama al 265-3866.')).toBeInTheDocument()
-  expect(screen.getByRole('link', { name: 'Comprar membresía' })).toHaveAttribute('aria-disabled', 'true')
+  expect(screen.getByText('¿No tienes membresía?')).toBeInTheDocument()
+  const links = screen.getAllByRole('link', { name: 'Comprar membresía' })
+  expect(links).toHaveLength(2)
+  for (const link of links) {
+    expect(link).toHaveAttribute('href', 'https://store.example/membership')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  }
+})
+
+it('hides both store controls without a URL', async () => {
+  render(<UserApp />)
+  await reachIdentification()
+  expect(screen.getByText('Necesitas una membresía pagada. ¿Problemas? Llama al 265-3866.')).toBeInTheDocument()
+  expect(screen.queryByText('¿No tienes membresía?')).not.toBeInTheDocument()
+  expect(screen.queryByText('Comprar membresía')).not.toBeInTheDocument()
 })
 
 it('looks up ten digits as an authorization number', async () => {

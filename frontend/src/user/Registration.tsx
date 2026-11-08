@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { GraduationCap, ReceiptText, ShieldCheck } from 'lucide-react'
+import { ExternalLink, GraduationCap, ReceiptText, ShieldCheck } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button, TextField } from '../components'
 import { useDateFormat } from '../format/dateTime'
@@ -140,6 +140,10 @@ function RegistrationFlow({ path, navigate, setLocale }: {
     {' / '}<a href="/privacy?lang=en" lang="en" onClick={(event) => { event.preventDefault(); setLocale('en') }}>{u.english}</a>
   </div>
   const existing = <div className="registration-existing"><span>{t.existing}</span><a href="/sign-in">{t.signIn}</a></div>
+  const storeLine = privacy?.store_url
+    ? <div className="registration-existing registration-existing--store"><span>{t.noMembership}</span>
+      <a href={privacy.store_url} target="_blank" rel="noopener noreferrer">{t.buy}<ExternalLink aria-hidden="true" /></a></div>
+    : null
   const lookupStatus = <div className="registration-status" role="status">
     {waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage}
   </div>
@@ -205,10 +209,9 @@ function RegistrationFlow({ path, navigate, setLocale }: {
             </div>
             <div className="registration-receipt"><p>{t.paymentDescription}</p><div><span>{t.receiptNumber}</span><strong>{t.exampleNumber}</strong></div></div>
             {privacy && <p className="registration-help">{t.paymentHelp(privacy.contact_number)}</p>}
-            {privacy?.store_url ? <a href={privacy.store_url} target="_blank" rel="noopener noreferrer" className="button button--secondary user-action registration-buy">{t.buy}</a>
-              : <span role="link" aria-disabled="true" className="button button--secondary user-action registration-buy">{t.buy}</span>}
+            {privacy?.store_url && <a href={privacy.store_url} target="_blank" rel="noopener noreferrer" className="button button--secondary user-action registration-buy">{t.buy}</a>}
           </div>
-          <div className="registration-bottom"><Button type="submit" className="user-action" disabled={busy || offline || waiting}>{t.continue}</Button>{existing}</div>
+          <div className="registration-bottom"><Button type="submit" className="user-action" disabled={busy || offline || waiting}>{t.continue}</Button>{existing}{storeLine}</div>
         </form>
       </>}
     </UserPage>
