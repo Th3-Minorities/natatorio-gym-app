@@ -74,7 +74,7 @@ throw new ApiException('authorization_number_invalid', 422);
 - Pick a code that names the case, not the screen: `authorization_number_invalid`, not `registration_error`.
 - Pass the code as a plain string, as the first argument.
 - Add the text to both `frontend/src/i18n/es.ts` and `en.ts`, under `errors.<code>`. A frontend test reads the codes in `backend/app`, `backend/routes` and `backend/bootstrap` and fails if a code has no text in both files. A backend test fails if a code is not snake_case or not a plain string.
-- A new validation rule works the same way: add `validation.<rule>` to both files.
+- A new validation rule works the same way: add `validation.<rule>` to both files. A rule object is named by its class name in snake_case, for example `password` for `Password::min(10)->uncompromised()`.
 - `ApiException` errors are expected, so they are not written to the error log.
 - List the new code in the OpenAPI contract for that route.
 - Do not use `abort(404, 'text')` to send text to the person: the API sends no text. Use `ApiException`.
@@ -195,11 +195,11 @@ nginx passes requests straight to PHP, so Laravel sees the address that connecte
 
 ## 7. Staff accounts, invitations and password reset
 
-Set up in GitHub issue #84. Requirements: REQ-F-88, REQ-NF-10.
+Set up in GitHub issue #84. Requirements: REQ-F-52, REQ-F-88, REQ-NF-39, REQ-NF-51.
 
 ### Staff accounts screen
 
-Only an Administrator calls these routes (`auth:staff`, `staff.active`, `role:admin`). Each route that changes an account answers with that account as `{"account": {...}}`, with `id`, `name`, `email`, `role` (`staff` or `admin`) and `status` (`active`, `invited` or `deactivated`). Accounts are never deleted.
+Only an Administrator calls these routes (`auth:staff`, `staff.active`, `role:admin`). Role, deactivate and reactivate answer with that account as `{"account": {...}}`, with `id`, `name`, `email`, `role` (`staff` or `admin`) and `status` (`active`, `invited` or `deactivated`). Resending an invitation answers `204`. Accounts are never deleted. Deactivating an invited account is allowed, and reactivating it shows it as invited again.
 
 | Route | Body | Answer |
 |---|---|---|
@@ -207,20 +207,21 @@ Only an Administrator calls these routes (`auth:staff`, `staff.active`, `role:ad
 | `POST /api/staff/accounts` | `name`, `email`, `role` | `201` with the new invited account. It sends the invitation email |
 | `POST /api/staff/accounts/{id}/invitation` | | `204`. It sends a new invitation email |
 | `PATCH /api/staff/accounts/{id}/role` | `role` | `200` |
-| `POST /api/staff/accounts/{id}/deactivate` | | `200`. The account's open sign-ins end at their next request with `401 staff_account_deactivated` |
+| `POST /api/staff/accounts/{id}/deactivate` | | `200`. The account's open sign-ins end at their next request, with `401 staff_account_deactivated` while it stays deactivated, and with `401 unauthenticated` after a reactivation, because each deactivation raises the account's `session_epoch`, which is part of the sign-in fingerprint (see Forgotten password) |
 | `POST /api/staff/accounts/{id}/reactivate` | | `200` |
 
 | Status | Code | When |
 |---|---|---|
 | 422 | `validation_failed` with `email: ["unique"]` | Another staff account has the email, in any case. Two invitations for one email at the same moment get the same answer |
+| 403 | `forbidden` | The Administrator making the change lost the role or was deactivated after the request began. The service checks again on locked rows |
 | 409 | `staff_account_not_invited` | Resending to an account that is not invited |
 | 409 | `staff_role_own_account` | An Administrator changing their own role |
 | 409 | `staff_deactivate_own_account` | An Administrator deactivating their own account |
 | 409 | `staff_last_administrator` | The change would leave no active Administrator |
-| 409 | `staff_account_status_changed` | The account changed while the screen showed it, for example someone else deactivated it. The PWA reloads the list |
+| 409 | `staff_account_status_changed` | The account's status changed while the screen showed it, for example someone else deactivated it. The PWA reloads the list |
 | 429 | `too_many_requests` | More than 10 invitations or resends in a minute by one Administrator, because each one sends an email |
 
-The audit log gets `staff.invite`, `staff.invite_resend`, `staff.role_change`, `staff.deactivate` and `staff.reactivate`. The `staff.invite` entry keeps the name and role but not the email, which is already on the account.
+The audit log gets seven actions in this section: `staff.invite`, `staff.invite_resend`, `staff.invite_accept`, `staff.role_change`, `staff.deactivate`, `staff.reactivate` and `staff.password_reset`. A role change to the same role writes no entry. The `staff.invite` entry keeps the name and role but not the email, which is already on the account.
 
 ### Invitation link
 
@@ -231,7 +232,7 @@ The email links to `/staff/invitacion?token=...`. The link works once and lasts 
 | `POST /api/staff/invitation/validate` | `token` | `200` with `name`, `email` and `role`, for the "Crear tu contraseña" page |
 | `POST /api/staff/invitation/accept` | `token`, `password`, `password_confirmation` | `204`. The account becomes active and the person signs in on N-11 |
 
-An unknown, used or expired link, or a link for a deactivated account, gets `422 staff_invite_link_invalid`. They all get the same answer, so the link reveals nothing more. Accepting writes `staff.invite_accept`, with the invited account as the one acting.
+An unknown, used or expired link, or a link for a deactivated account, gets `422 staff_invite_link_invalid`. They all get the same answer, so the link reveals nothing more. Accepting writes `staff.invite_accept` with no before or after values, and the invited account is the one acting.
 
 ### Forgotten password
 
@@ -245,11 +246,15 @@ An unknown, used or expired link, or a link for a deactivated account, gets `422
 - The server sends the email after it answers, so neither the answer nor its timing says whether the email has an account.
 - Only active accounts with a password get an email. Invited people use their invitation. Deactivated people ask an Administrator.
 - A wrong, used or expired link gets `422 staff_reset_link_invalid`. A link from the User reset (#15) gets the same answer, because the two keep their tokens in different tables.
-- A reset writes `staff.password_reset`, and ends every sign-in of that account, on every device. Each staff sign-in keeps a fingerprint of the password (an HMAC of the password hash with the app key). When the password changes, the next request from an old sign-in gets `401 unauthenticated`.
+- A reset writes `staff.password_reset`, and ends every sign-in of that account, on every device. Each staff sign-in keeps a fingerprint (an HMAC, with the app key, of the password hash and the account's `session_epoch`). When the password changes, or the account is deactivated and then reactivated, the next request from an old sign-in gets `401 unauthenticated`.
 
 ### Password rules
 
-A new password, from an invitation or a reset, needs at least 10 characters and must not appear in a known data leak (`uncompromised()`). There are no other composition rules. Laravel sends only the first 5 characters of the password's SHA-1 hash to the leak service. If the service does not answer, the password is accepted. A failure comes back as `validation_failed` with `password: ["password"]` for either reason, or `["confirmed"]` when the two do not match.
+A new password, from an invitation or a reset, follows REQ-NF-51. A failure comes back as `validation_failed` with `password: ["password"]`, whether it is too short or leaked, or `["confirmed"]` when the two do not match. The password is accepted when the leak service does not answer.
+
+### Active term
+
+`POST /api/staff/sign-in` and `GET /api/staff/me` also answer with `active_term`: `{"name", "starts_on", "ends_on"}` (dates as `YYYY-MM-DD`) for the academic term that includes today in Puerto Rico, or `null` when none does. The dashboard uses it for the term chip and the "no active term" banner. Editing terms is #21.
 
 ### Attempt limits
 

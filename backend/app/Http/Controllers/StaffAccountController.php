@@ -90,7 +90,7 @@ class StaffAccountController extends Controller
             throw new ApiException('staff_role_own_account', 409);
         }
 
-        return response()->json(['account' => $this->show($changes->changeRole($account, $input['role']))]);
+        return response()->json(['account' => $this->show($changes->changeRole($request->user('staff'), $account, $input['role']))]);
     }
 
     public function deactivate(Request $request, StaffAccount $account, StaffAccountChanges $changes): JsonResponse
@@ -100,12 +100,12 @@ class StaffAccountController extends Controller
             throw new ApiException('staff_deactivate_own_account', 409);
         }
 
-        return response()->json(['account' => $this->show($changes->deactivate($account))]);
+        return response()->json(['account' => $this->show($changes->deactivate($request->user('staff'), $account))]);
     }
 
-    public function reactivate(StaffAccount $account, StaffAccountChanges $changes): JsonResponse
+    public function reactivate(Request $request, StaffAccount $account, StaffAccountChanges $changes): JsonResponse
     {
-        return response()->json(['account' => $this->show($changes->reactivate($account))]);
+        return response()->json(['account' => $this->show($changes->reactivate($request->user('staff'), $account))]);
     }
 
     private function isSelf(Request $request, StaffAccount $account): bool

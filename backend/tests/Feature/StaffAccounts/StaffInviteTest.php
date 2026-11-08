@@ -7,6 +7,7 @@ use App\Models\EmailLink;
 use App\Models\StaffAccount;
 use App\Notifications\StaffInvitation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\CallsTheApiFromThePwa;
@@ -83,6 +84,31 @@ class StaffInviteTest extends TestCase
         });
     }
 
+    public function test_the_emailed_token_opens_the_invitation(): void
+    {
+        $this->invite()->assertCreated();
+        $account = StaffAccount::query()->where('email', 'yariel.nieves@example.edu')->sole();
+        $token = Notification::sent($account, StaffInvitation::class)->sole()->token;
+
+        $this->fromThePwa()->postJson('/api/staff/invitation/validate', ['token' => $token])
+            ->assertOk()->assertExactJson(['name' => 'Yariel Nieves León', 'email' => 'yariel.nieves@example.edu', 'role' => 'staff']);
+    }
+
+    public function test_the_email_uses_the_account_language_and_the_staff_link(): void
+    {
+        $texts = [
+            'es' => ['Invitación al equipo del gimnasio', 'Crear tu contraseña'],
+            'en' => ['Invitation to the gym team', 'Create your password'],
+        ];
+        foreach ($texts as $locale => [$subject, $action]) {
+            $account = StaffAccount::factory()->create(['locale' => $locale, 'password' => null]);
+            $mail = (new StaffInvitation('plain-token'))->toMail($account);
+            $this->assertSame($subject, $mail->subject);
+            $this->assertStringContainsString('/staff/invitacion?token=plain-token', $mail->viewData['url']);
+            $this->assertStringContainsString($action, (string) $mail->render());
+        }
+    }
+
     public function test_an_invite_writes_the_audit_log_without_the_email(): void
     {
         $this->invite(['role' => 'admin'])->assertCreated();
@@ -137,6 +163,30 @@ class StaffInviteTest extends TestCase
         $this->assertSame(1, EmailLink::query()->where('staff_account_id', $account->id)->count());
         Notification::assertSentToTimes($account, StaffInvitation::class, 2);
         $this->assertSame(1, AuditLogEntry::query()->where('action', 'staff.invite_resend')->count());
+    }
+
+    public function test_resending_after_the_link_expired_gives_a_working_link(): void
+    {
+        Http::fake(['api.pwnedpasswords.com/*' => Http::response('')]);
+        $this->invite()->assertCreated();
+        $account = StaffAccount::query()->where('email', 'yariel.nieves@example.edu')->sole();
+        $expired = Notification::sent($account, StaffInvitation::class)->sole()->token;
+
+        $this->travel(8)->days();
+        $this->fromThePwa()->postJson('/api/staff/invitation/validate', ['token' => $expired])
+            ->assertJsonPath('error.code', 'staff_invite_link_invalid');
+
+        // The Administrator's own sign-in from 8 days ago has ended; the resend comes from a new one.
+        $this->flushSession();
+        $this->asAdmin()->postJson("/api/staff/accounts/{$account->id}/invitation")->assertNoContent();
+        $fresh = Notification::sent($account, StaffInvitation::class)->last()->token;
+
+        $this->assertNotSame($expired, $fresh);
+        $this->fromThePwa()->postJson('/api/staff/invitation/validate', ['token' => $fresh])->assertOk();
+        $this->fromThePwa()->postJson('/api/staff/invitation/accept', [
+            'token' => $fresh, 'password' => 'una frase larga para el gimnasio', 'password_confirmation' => 'una frase larga para el gimnasio',
+        ])->assertNoContent();
+        $this->assertNotNull($account->fresh()->password);
     }
 
     public function test_only_invited_accounts_get_a_new_invitation(): void

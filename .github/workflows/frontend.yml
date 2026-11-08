@@ -54,7 +54,7 @@ jobs:
         working-directory: .
         run: |
           chmod -R a+rwX backend
-          docker compose up -d --build --wait
+          docker compose --profile development up -d --build --wait
           docker compose exec -T app composer install --no-interaction --no-progress
           docker compose exec -T app sh -c 'cp .env.example .env && php artisan key:generate'
           # The staff sign-in test (#16) signs in with the seeder's fake accounts.
@@ -68,9 +68,9 @@ jobs:
       - name: Container logs
         if: failure()
         working-directory: .
-        run: docker compose logs
+        run: docker compose --profile development logs
 
       - name: Stop the containers
         if: always()
         working-directory: .
-        run: docker compose down --volumes
+        run: docker compose --profile development down --volumes

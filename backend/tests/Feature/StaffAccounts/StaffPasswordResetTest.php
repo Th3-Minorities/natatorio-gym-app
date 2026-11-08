@@ -8,11 +8,14 @@ use App\Models\User;
 use App\Notifications\StaffPasswordReset;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Testing\TestResponse;
+use Illuminate\Validation\NotPwnedVerifier;
 use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
 
@@ -25,11 +28,15 @@ class StaffPasswordResetTest extends TestCase
 
     private StaffAccount $account;
 
+    /** What the leaked-password service answers: hash suffixes it has seen leaked. */
+    private string $leakedSuffixes = '';
+
     protected function setUp(): void
     {
         parent::setUp();
         Notification::fake();
-        $this->mock(UncompromisedVerifier::class)->shouldReceive('verify')->andReturn(true);
+        // The leaked-password check asks an outside service; tests answer for it.
+        Http::fake(['api.pwnedpasswords.com/*' => fn () => Http::response($this->leakedSuffixes)]);
         $this->account = StaffAccount::factory()->create(['email' => 'Mariel.Velez@example.edu']);
     }
 
@@ -97,6 +104,44 @@ class StaffPasswordResetTest extends TestCase
         $this->reset($token)->assertUnprocessable()->assertJsonPath('error.code', 'staff_reset_link_invalid');
         $entry = AuditLogEntry::query()->where('action', 'staff.password_reset')->sole();
         $this->assertSame($this->account->id, $entry->staff_account_id);
+        $this->assertNull($entry->before_values);
+        $this->assertNull($entry->after_values);
+    }
+
+    public function test_the_token_in_the_email_resets_the_password(): void
+    {
+        $this->fromThePwa()->postJson('/api/staff/password/email', ['email' => $this->account->email])->assertOk();
+        $token = Notification::sent($this->account, StaffPasswordReset::class)->sole()->token;
+
+        $this->fromThePwa()->postJson('/api/staff/password/validate', ['email' => $this->account->email, 'token' => $token])
+            ->assertNoContent();
+        $this->reset($token)->assertNoContent();
+
+        $this->assertTrue(Hash::check(self::NEW_PASSWORD, $this->account->fresh()->password));
+    }
+
+    public function test_a_leaked_password_is_refused(): void
+    {
+        $token = $this->token();
+        $this->leakedSuffixes = substr(strtoupper(sha1(self::NEW_PASSWORD)), 5).':42';
+
+        $this->reset($token)->assertUnprocessable()->assertJsonPath('error.details.password', ['password']);
+
+        $this->assertTrue(Hash::check('password', $this->account->fresh()->password));
+        $this->assertSame(0, AuditLogEntry::query()->where('action', 'staff.password_reset')->count());
+    }
+
+    public function test_the_password_is_accepted_when_the_leak_service_does_not_answer(): void
+    {
+        Http::swap(new HttpFactory);
+        Http::fake(['api.pwnedpasswords.com/*' => Http::failedConnection()]);
+        $this->app->forgetInstance(UncompromisedVerifier::class);
+        $this->app->bind(UncompromisedVerifier::class, fn () => new NotPwnedVerifier(Http::getFacadeRoot()));
+
+        $this->reset($this->token())->assertNoContent();
+
+        Http::assertSent(fn ($request) => str_starts_with($request->url(), 'https://api.pwnedpasswords.com/range/'));
+        $this->assertTrue(Hash::check(self::NEW_PASSWORD, $this->account->fresh()->password));
     }
 
     public function test_resetting_signs_the_account_out_everywhere(): void

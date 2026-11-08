@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Http\Middleware\EnsureStaffSessionIsActive;
+use App\Models\AcademicTerm;
 use App\Models\StaffAccount;
 use App\Services\AuditLog;
 use App\Services\SignInThrottle;
@@ -91,9 +92,22 @@ class StaffSessionController extends Controller
         return $hash ??= Hash::make(Str::random(40));
     }
 
-    /** @return array{name: string, email: string, role: string, locale: string} */
+    /**
+     * The term of the day is what the dashboard shows in its term chip, or its "no active term" banner when null.
+     *
+     * @return array{name: string, email: string, role: string, locale: string, active_term: array{name: string, starts_on: string, ends_on: string}|null}
+     */
     private function profile(StaffAccount $account): array
     {
-        return $account->only(['name', 'email', 'role', 'locale']);
+        $term = AcademicTerm::current();
+
+        return [
+            ...$account->only(['name', 'email', 'role', 'locale']),
+            'active_term' => $term === null ? null : [
+                'name' => $term->name,
+                'starts_on' => $term->starts_on->toDateString(),
+                'ends_on' => $term->ends_on->toDateString(),
+            ],
+        ];
     }
 }

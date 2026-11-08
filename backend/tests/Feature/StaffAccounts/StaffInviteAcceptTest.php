@@ -70,6 +70,8 @@ class StaffInviteAcceptTest extends TestCase
         $entry = AuditLogEntry::query()->where('action', 'staff.invite_accept')->sole();
         $this->assertSame($this->account->id, $entry->staff_account_id);
         $this->assertSame($this->account->id, $entry->subject_id);
+        $this->assertNull($entry->before_values);
+        $this->assertNull($entry->after_values);
     }
 
     public function test_the_person_can_then_sign_in(): void

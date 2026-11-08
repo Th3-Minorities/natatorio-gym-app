@@ -24,7 +24,7 @@ class StaffAccount extends Authenticatable
 
     protected function casts(): array
     {
-        return ['password' => 'hashed', 'deactivated_at' => 'datetime'];
+        return ['password' => 'hashed', 'deactivated_at' => 'datetime', 'session_epoch' => 'integer'];
     }
 
     /** Called by the staff_accounts password broker. */
@@ -34,12 +34,13 @@ class StaffAccount extends Authenticatable
     }
 
     /**
-     * A keyed hash of the password hash. Each sign-in keeps it, and a sign-in whose copy no longer
-     * matches ends, so changing the password signs the account out everywhere.
+     * A keyed hash of the password hash and the session epoch. Each sign-in keeps it, and a sign-in whose copy
+     * no longer matches ends, so changing the password or deactivating the account signs it out everywhere,
+     * also when it is reactivated before the old sign-in made another request.
      */
     public function passwordFingerprint(): string
     {
-        return hash_hmac('sha256', (string) $this->password, (string) config('app.key'));
+        return hash_hmac('sha256', $this->password.'|'.(int) $this->session_epoch, (string) config('app.key'));
     }
 
     /** active, invited (no password yet) or deactivated, as the A-15 list shows it. */

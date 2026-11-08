@@ -32,6 +32,18 @@ class StaffAccountChangesTest extends TestCase
         return $this->actingAs($this->admin, 'staff')->fromThePwa()->json($method, $uri, $data);
     }
 
+    /** The service refuses with this code and status, whoever calls it. */
+    private function assertRefused(callable $change, string $code, int $status): void
+    {
+        try {
+            $change();
+            $this->fail("Expected {$code}.");
+        } catch (ApiException $e) {
+            $this->assertSame($code, $e->errorCode);
+            $this->assertSame($status, $e->status);
+        }
+    }
+
     // Change role
 
     public function test_an_administrator_changes_a_role_and_the_log_keeps_both_roles(): void
@@ -54,6 +66,32 @@ class StaffAccountChangesTest extends TestCase
         $this->asAdmin('PATCH', "/api/staff/accounts/{$this->staff->id}/role", ['role' => 'admin'])->assertOk();
 
         $this->keepingTheSessionOf($signIn)->getJson('/api/staff/accounts')->assertOk();
+    }
+
+    public function test_a_demotion_takes_effect_on_the_next_request(): void
+    {
+        $other = StaffAccount::factory()->admin()->create();
+        $signIn = $this->fromThePwa()->postJson('/api/staff/sign-in', ['email' => $other->email, 'password' => 'password'])->assertOk();
+        $this->keepingTheSessionOf($signIn)->getJson('/api/staff/accounts')->assertOk();
+
+        $this->asAdmin('PATCH', "/api/staff/accounts/{$other->id}/role", ['role' => 'staff'])->assertOk();
+
+        $this->keepingTheSessionOf($signIn)->getJson('/api/staff/accounts')->assertForbidden();
+    }
+
+    public function test_the_last_active_administrator_is_never_demoted(): void
+    {
+        // Same rule as deactivating: through the screen the one acting always stays, and two Administrators
+        // acting at once are caught by the locked check. An invited or deactivated Administrator does not count.
+        StaffAccount::factory()->admin()->create(['password' => null]);
+        StaffAccount::factory()->admin()->deactivated()->create();
+
+        $this->assertRefused(
+            fn () => app(StaffAccountChanges::class)->changeRole($this->admin, $this->admin, 'staff'),
+            'staff_last_administrator', 409,
+        );
+        $this->assertSame('admin', $this->admin->fresh()->role);
+        $this->assertSame(0, AuditLogEntry::query()->count());
     }
 
     public function test_nobody_changes_their_own_role(): void
@@ -109,6 +147,20 @@ class StaffAccountChangesTest extends TestCase
         $this->assertSame(['status' => 'deactivated'], $entry->after_values);
     }
 
+    public function test_a_sign_in_made_before_a_deactivation_stays_ended_after_the_reactivation(): void
+    {
+        $signIn = $this->fromThePwa()->postJson('/api/staff/sign-in', ['email' => $this->staff->email, 'password' => 'password'])->assertOk();
+
+        $this->asAdmin('POST', "/api/staff/accounts/{$this->staff->id}/deactivate")->assertOk();
+        $this->asAdmin('POST', "/api/staff/accounts/{$this->staff->id}/reactivate")->assertOk();
+
+        // The old sign-in made no request in between, so only the account itself can tell it ended.
+        $this->keepingTheSessionOf($signIn)->getJson('/api/staff/me')
+            ->assertUnauthorized()->assertJsonPath('error.code', 'unauthenticated');
+        $again = $this->fromThePwa()->postJson('/api/staff/sign-in', ['email' => $this->staff->email, 'password' => 'password'])->assertOk();
+        $this->keepingTheSessionOf($again)->getJson('/api/staff/me')->assertOk();
+    }
+
     public function test_an_invitation_can_be_withdrawn_by_deactivating(): void
     {
         $invited = StaffAccount::factory()->create(['password' => null]);
@@ -146,7 +198,7 @@ class StaffAccountChangesTest extends TestCase
         $this->admin->forceFill(['deactivated_at' => now()])->save();
 
         try {
-            app(StaffAccountChanges::class)->deactivate($last);
+            app(StaffAccountChanges::class)->deactivate($last, $last);
             $this->fail('The last active Administrator was deactivated.');
         } catch (ApiException $e) {
             $this->assertSame('staff_last_administrator', $e->errorCode);
@@ -194,6 +246,43 @@ class StaffAccountChangesTest extends TestCase
     }
 
     // Who may do it
+
+    public function test_two_administrators_cannot_demote_or_deactivate_each_other_at_once(): void
+    {
+        // The second change reached the server while the first held the locks. Run in order, the second
+        // finds its Administrator already gone and is refused, so one active Administrator is left.
+        $other = StaffAccount::factory()->admin()->create();
+        $changes = app(StaffAccountChanges::class);
+
+        $changes->changeRole($this->admin, $other, 'staff');
+        $this->assertRefused(fn () => $changes->changeRole($other, $this->admin, 'staff'), 'forbidden', 403);
+        $this->assertRefused(fn () => $changes->deactivate($other, $this->admin), 'forbidden', 403);
+        $this->assertSame('admin', $this->admin->fresh()->role);
+        $this->assertNull($this->admin->fresh()->deactivated_at);
+
+        $third = StaffAccount::factory()->admin()->create();
+        $changes->deactivate($this->admin, $third);
+        $this->assertRefused(fn () => $changes->changeRole($third, $this->admin, 'staff'), 'forbidden', 403);
+        $this->assertRefused(fn () => $changes->reactivate($third, $third), 'forbidden', 403);
+        $this->assertSame('admin', $this->admin->fresh()->role);
+    }
+
+    public function test_an_administrator_who_lost_the_role_after_the_request_began_is_refused(): void
+    {
+        // The route middleware read the old role; the change reads it again on the locked rows.
+        StaffAccount::query()->whereKey($this->admin->id)->update(['role' => 'staff']);
+        $deactivated = StaffAccount::factory()->deactivated()->create();
+
+        $this->asAdmin('PATCH', "/api/staff/accounts/{$this->staff->id}/role", ['role' => 'admin'])
+            ->assertForbidden()->assertJsonPath('error.code', 'forbidden');
+        $this->asAdmin('POST', "/api/staff/accounts/{$this->staff->id}/deactivate")->assertForbidden();
+        $this->asAdmin('POST', "/api/staff/accounts/{$deactivated->id}/reactivate")->assertForbidden();
+
+        $this->assertSame('staff', $this->staff->fresh()->role);
+        $this->assertNull($this->staff->fresh()->deactivated_at);
+        $this->assertNotNull($deactivated->fresh()->deactivated_at);
+        $this->assertSame(0, AuditLogEntry::query()->count());
+    }
 
     public function test_staff_are_forbidden_every_change(): void
     {
