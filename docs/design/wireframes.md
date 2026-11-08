@@ -1,5 +1,7 @@
 # Wireframes
 
+For the current registration and authorization states of issue #40, use the [complete state and transition index](issue-40-wireframes.md). It includes N-03, N-05, U-02, U-06, U-07 and U-08 with exact Figma frame links and recovery behavior.
+
 The wireframes live in the Figma file [MOCKUPS-GYM](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM). This page links each screen to its frame, grouped by issue, so the feature issues can find the design they build. Screen IDs follow the [screen map](screen-map.md).
 
 The sections below link the main screens and their states. Use the current page and frame links for each issue when reviewing or implementing a screen.
