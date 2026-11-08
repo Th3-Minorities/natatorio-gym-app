@@ -40,12 +40,11 @@ class User extends Authenticatable
     public function profile(): array
     {
         $authorization = $this->currentAuthorization();
-        [$local, $domain] = explode('@', (string) $this->email, 2);
-        $masked = mb_substr($local, 0, 1).'***'.(mb_strlen($local) > 1 ? mb_substr($local, -1) : '').'@'.$domain;
 
+        // Only the account's own sign-in and /me send this, so the email is not masked (team, 2026-11-08).
         return [
             'name' => WaiverAcceptance::query()->where('user_id', $this->id)->value('full_name'),
-            'email' => $masked,
+            'email' => $this->email,
             'locale' => $this->locale,
             'authorization' => $authorization === null ? null : ['type' => $authorization->type, 'term' => $authorization->academicTerm->name],
             'updated_at' => now()->toISOString(),

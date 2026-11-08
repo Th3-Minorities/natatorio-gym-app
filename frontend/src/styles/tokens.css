@@ -89,6 +89,8 @@
   /* Check In, U-01 (Figma page "#41 Gym ID and Check in", 4085:1125). */
   --check-in-member: #a55128;
   --check-in-member-background: #783d2a;
+  --check-in-member-deep: #6c3824;
+  --check-in-member-soft: #f2dfd2;
   --check-in-athlete-card: #2d603a;
   --check-in-athlete-background: #153e2a;
   --check-in-gold: #a27a24;

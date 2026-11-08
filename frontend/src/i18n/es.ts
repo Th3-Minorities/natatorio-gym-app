@@ -61,7 +61,21 @@ export const es = {
   },
   // U-01 Check In (Figma page "#41 Gym ID and Check in": boards 01, 04, 08, 09, 10, Atletas 02, 04, 05, 06,
   // and the member confirmation 4104:719).
+  gym: {
+    low: 'Baja', moderate: 'Moderada', high: 'Alta',
+    lead: 'Tu espacio para entrenar', title: 'Ocupación estimada', people: 'personas', empty: 'Sin actividad',
+    updated: (time: string) => `Actualizado a las ${time}`, stale: (time?: string) => time ? `Dato no actualizado · Último dato a las ${time}` : 'Dato no actualizado',
+    loading: 'Actualizando ocupación…', failed: 'No pudimos actualizar', offline: 'Sin conexión',
+    schedules: 'Horarios', notices: 'Avisos', guide: 'Guía de máquinas', bench: 'Banco de pesas', pulldown: 'Jalón al pecho',
+    learnBench: 'Aprende a usarlo →', learnPulldown: 'Aprende a usarla →',
+  },
   checkIn: {
+    activeLead: 'Tu entrada está registrada', restoreCard: 'Restablece la conexión para validar tu tarjeta.',
+    invalidNow: 'No válida ahora', staleDuration: 'Duración · Sin actualizar', connectCard: 'Conéctate para mostrar una tarjeta vigente.',
+    lastUpdate: (time: string) => `Última actualización: ${time}`,
+    visitEnded: 'Tu visita ha terminado', sessionEnded: 'Sesión finalizada', totalDuration: 'Duración total',
+    entry: 'Entrada', exit: 'Salida', continue: 'Continuar',
+    endReasons: { checked_out: 'Tu salida fue registrada por el personal.', expired: 'La sesión se cerró automáticamente.', closed: 'La sesión terminó por cierre del gimnasio.' },
     ready: '¿Listo para entrenar?', review: 'Revisa lo necesario para continuar', nextAccess: 'Consulta tu próximo acceso',
     confirmed: '¡Tu entrada quedó registrada!', member: 'Miembro', athlete: 'Atleta', student: 'Estudiante',
     registerTitle: 'Registra tu entrada', registerText: 'Confirma tu llegada al gimnasio.',

@@ -44,6 +44,10 @@ describe('formatDateTime', () => {
 })
 
 describe('formatDate and formatTime', () => {
+  it('includes seconds for live status update times in both languages', () => {
+    expect(formatTime('2026-11-07T17:07:24Z', 'es', true)).toBe('1:07:24 p. m.')
+    expect(formatTime('2026-11-07T17:07:24Z', 'en', true)).toBe('1:07:24 PM')
+  })
   it('keeps a date-only value on its calendar day in Puerto Rico', () => {
     expect(formatDate('2026-11-05', 'es')).toBe('5 nov 2026')
     expect(formatDate('2026-11-05', 'en')).toBe('Nov 5, 2026')

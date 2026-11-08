@@ -1,0 +1,28 @@
+.gym { border-radius: var(--user-large-radius); }
+.gym .user-navigation { padding-bottom: var(--user-icon-small); }
+.gym .user-content { gap: var(--spacing-8); padding-top: 3.125rem; }
+.gym .user-content h1 { font-size: var(--user-brand-size); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); color: var(--hero); }
+.gym .user-content > p { font-size: var(--user-body-size); line-height: var(--user-body-line); }
+.gym .user-offline + .user-content { padding-top: var(--spacing-12); }
+.gym .user-offline { margin: var(--user-space-6) 0 0; padding: 0.5625rem var(--spacing-24); background: var(--check-in-danger-soft); color: var(--user-danger); }
+.gym-occupancy { display: flex; flex-direction: column; gap: var(--spacing-12); min-height: 11.875rem; padding: var(--spacing-20); border-radius: var(--spacing-20); background: var(--user-sage-soft); color: var(--hero); }
+.gym-occupancy__heading { display: flex; align-items: center; justify-content: space-between; }
+.gym .gym-occupancy h2 { font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.gym-occupancy svg { width: var(--spacing-24); height: var(--spacing-24); flex: none; }
+.gym .gym-occupancy__count { display: flex; align-items: center; gap: var(--user-space-6); color: var(--hero); }
+.gym-occupancy__count strong { font-size: 2.75rem; line-height: var(--user-large-control-height); }
+.gym .gym-occupancy__badge { margin-left: auto; display: flex; align-items: center; justify-content: center; min-width: 5.875rem; min-height: var(--user-title-line); padding: 0 var(--user-input-padding); border-radius: 999rem; background: var(--surface); font-size: var(--spacing-12); line-height: var(--user-caption-line); font-weight: var(--user-weight-semibold); }
+.gym-occupancy__bar { height: var(--spacing-8); overflow: hidden; border-radius: 999rem; background: var(--sage); }
+.gym-occupancy__bar > div { height: 100%; border-radius: inherit; background: var(--primary); }
+.gym .gym-caption { font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+.gym .gym-occupancy__problem { color: var(--hero); font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
+.gym-occupancy__skeleton { width: min(100%, 9.375rem); height: var(--user-account-title-line); border-radius: var(--spacing-12); background: var(--border); }
+.gym-shortcuts { display: flex; gap: var(--spacing-8); }
+.gym-shortcuts > div { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--user-space-6); min-height: 4.5rem; padding: var(--user-input-padding); border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-20); color: var(--hero); font-size: var(--user-nav-size); font-weight: var(--weight-medium); }
+.gym-shortcuts svg { width: var(--user-navigation-account-icon-size); height: var(--user-navigation-account-icon-size); flex: none; }
+.gym .gym-guide-title { color: var(--hero); font-size: var(--user-title-size); line-height: var(--user-title-line); }
+.gym-machine { display: flex; align-items: center; gap: var(--spacing-8); min-height: 4.75rem; padding: var(--spacing-12); border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-20); }
+.gym-machine > svg { width: 2.25rem; height: 2.25rem; color: var(--muted-foreground); stroke-width: 0.5; flex: none; }
+.gym-machine > div { min-width: 0; overflow-wrap: anywhere; }
+.gym-machine h3 { margin: 0; color: var(--hero); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.gym-machine p { font-size: var(--spacing-12); line-height: var(--user-caption-line); }
