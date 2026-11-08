@@ -7,6 +7,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rules\Password;
 use Tests\TestCase;
 
 class ApiErrorFormatTest extends TestCase
@@ -21,6 +22,9 @@ class ApiErrorFormatTest extends TestCase
             Route::post('/validation-rules', fn (Request $request) => $request->validate([
                 'email' => ['required', 'email', 'max:8'],
                 'name' => ['required', 'starts_with:A'],
+            ]));
+            Route::post('/password-rule', fn (Request $request) => $request->validate([
+                'password' => [Password::min(10)],
             ]));
             Route::get('/api-exception', fn () => throw new ApiException('number_invalid', 422, ['field' => 'number']));
             Route::get('/crash', fn () => throw new \LogicException('secret internal detail'));
@@ -94,6 +98,17 @@ class ApiErrorFormatTest extends TestCase
             ->assertExactJson(['error' => [
                 'code' => 'validation_failed',
                 'details' => ['email' => ['email', 'max'], 'name' => ['starts_with']],
+            ]]);
+    }
+
+    public function test_a_rule_object_is_named_without_its_class_path(): void
+    {
+        // The class path would show how the app is built; the PWA only needs the rule's name.
+        $this->postJson('/api/test/password-rule', ['password' => 'short'])
+            ->assertUnprocessable()
+            ->assertExactJson(['error' => [
+                'code' => 'validation_failed',
+                'details' => ['password' => ['password']],
             ]]);
     }
 
