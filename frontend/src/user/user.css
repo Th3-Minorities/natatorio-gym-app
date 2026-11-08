@@ -11,6 +11,10 @@
   border-radius: var(--spacing-20);
   overflow: clip;
 }
+/* On a phone the app fills the screen; the 390 px rounded frame is only for wider screens. */
+@media (max-width: 599px) {
+  .user-app { max-width: none; border-radius: 0; }
+}
 .user-app--access { background: var(--hero); }
 .user-header {
   display: flex;
