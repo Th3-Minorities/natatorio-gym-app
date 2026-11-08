@@ -99,7 +99,7 @@ flowchart TD
 Notes:
 
 - Password rules (E-63): at least 10 characters, no rules about mixing letters, digits or symbols, at least 64 characters allowed, and a check against leaked passwords with Laravel `Password::min(10)->uncompromised()`. That check calls an outside service (haveibeenpwned.com, k-anonymity), so it needs a test for the case when the service does not answer. NIST SP 800-63B-4 asks for 15 characters for single-factor passwords. The team chose 10 for typing on a phone. Staff accounts are assumed to follow the same rule (to confirm).
-- Forgetting a staff password: not decided (gap 1).
+- Forgetting a staff password: reset with a single-use email link at `/staff/recuperar`, like Users (E-166, gap 1 closed).
 
 ### 4. Invite and deactivate staff accounts
 
@@ -395,7 +395,7 @@ flowchart TD
   S3 --> S4{"Schedule slot? regular hours, special hours,<br/>closure or athletes only"}
   S4 -->|"Yes"| S5["AUDIT: schedule change"]
   S5 --> S7{"Closure?"}
-  S7 -->|"Yes"| S8["Every active facility session ends at once<br/>note: closed by closure"]
+  S7 -->|"Yes"| S8["When the closure starts (E-169), every active facility session ends at once<br/>note: closed by closure"]
   S4 -->|"No, notice or facility information"| S6["No audit entry"]
 
   classDef audit fill:#fde2e1,stroke:#b42318,color:#000
@@ -586,7 +586,7 @@ Marked Decided when the team chose in the design review (October 2026) or earlie
 
 ## Gaps and questions
 
-1. **Forgotten staff password.** Not decided. Staff accounts have an email and a password, so a reset by email like REQ-F-06 is the natural way, but no decision covers it.
+1. **Forgotten staff password.** Decided (E-166). A single-use link to the account email opens `/staff/recuperar`, like the User reset (E-11). The answer to a request is the same whether or not the email has a staff account.
 2. **Audit list misses some actions.** REQ-NF-39 does not list account deletion by the Administrator (REQ-F-09), staff account invites and deactivations, or backup actions. All look like they belong. Drawn as Proposed.
 3. **Photos after undo.** Resolved by E-57 for the release of an added authorization, which deletes the authorization with its term photo, record and file. The import undo it also covered was removed by E-127.
 4. **Corrected order that changes email or Authorization Number of a claimed membership.** REQ-F-30 updates the record and REQ-F-11 says the account email is the payment email. Not said: does the account email change, and does the old number stay claimed? Suggest: update the membership, keep the account email, flag the row in the sync result.
@@ -607,7 +607,7 @@ Marked Decided when the team chose in the design review (October 2026) or earlie
 19. **Deactivation and open sessions.** Resolved by E-130: deactivating an account ends its open sessions at once. A middleware checks `deactivated_at` on every request (data-model gap 9).
 20. **How the other Administrators are added.** The install command creates the first Administrator and Administrators invite Staff (E-114). Nothing says how the second secretary and the director get their Administrator accounts.
 21. **Store access.** Open. The sync needs a read-only API key from the store owner and outbound HTTPS from the VM to the store, which is a question for CTI (E-127, SRS 2.5). The key lives only in the server's environment file.
-22. **Letter case of the Authorization Number.** Open. The number can include letters (E-128). Whether the lookup compares with or without regard to case is not decided.
+22. **Letter case of the Authorization Number.** Decided (E-167). The lookup turns the typed number to upper case before it compares, so case does not matter.
 
 ## Traceability
 

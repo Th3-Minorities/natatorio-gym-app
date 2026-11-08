@@ -43,7 +43,7 @@ flowchart TD
 - Authorization is checked before enabling the Check In button. The wireframe has no separate "Verificando acceso" screen; its visible loading states are location and submission. The backend checks below and the final submission checks remain required (E-163).
 - "No connection" is detected on the phone: the request fails or times out. There is no offline Check In (REQ-NF-26, SRS 2.4).
 - The athlete photo check comes from REQ-F-26. A paid member uploads the photo at registration and renewal, so in practice only athletes get the "new term photo needed" rejection.
-- Photo pending (REQ-F-94, E-118): Staff mark an account when its photo does not match the person. Check In is refused, also the Staff-assisted one, until the person uploads a new photo from their phone. Whether the upload clears the mark by itself or Staff approve it is open.
+- Photo pending (REQ-F-94, E-118): Staff mark an account when its photo does not match the person. Check In is refused, also the Staff-assisted one, until the person uploads a new photo from their phone. The upload does not clear the mark: Staff approve the new photo on S-02, and only then can the person Check In (E-168).
 - The athletes-only check applies only to paid members (REQ-F-82). Manual authorizations: see Gaps.
 
 ### 2. Check In location checks and session creation
@@ -208,7 +208,7 @@ flowchart TD
 - Staff can only read the roster here; adding, editing, removing or importing roster records stays with the Administrator (E-59).
 - "Check in" on the roster screen (S-05) opens the assisted Check In screen (S-03) with the student number already filled in (E-81). Staff and Administrators always see the student number in full, on every screen they use.
 - The assisted session goes through the same protected operation as diagram 3, so the exclusion constraint also guards it. A connection is required (REQ-NF-26). The audit log entry follows REQ-NF-39.
-- Decided (E-118, REQ-F-94): when the photo does not match the person, Staff mark the account "photo pending" (diagram 11). Check In stays off until the person uploads a new photo from their phone. Staff do not take photos. Whether the new photo clears the mark by itself or Staff approve it is open.
+- Decided (E-118, REQ-F-94): when the photo does not match the person, Staff mark the account "photo pending" (diagram 11). Check In stays off until the person uploads a new photo from their phone. Staff do not take photos. The upload does not clear the mark: Staff approve the new photo on S-02 (E-168).
 
 ### 6. Gym ID states: paid member
 
@@ -375,7 +375,7 @@ flowchart TD
 
 **About this diagram:** Covers REQ-F-44 and REQ-F-45. The roster search is the read-only roster Staff see under E-59 (still to be confirmed by the gym).
 
-- Staff verify against backend data, not only the User's screen (REQ-F-45). The active sessions list shows Check In time, authorization and Gym ID (REQ-F-44). It shows time left before the automatic close for paid members; for an athlete it shows "athlete" and the Check In time, never time left (E-99). Each row has a Check out action (REQ-F-48). A search is a fresh request, so verification never waits for the next poll.
+- Staff verify against backend data, not only the User's screen (REQ-F-45). The active sessions list shows Check In time, authorization and Gym ID (REQ-F-44). It shows the time inside, counted from the Check In time, for paid members and athletes, never time left (E-170). Each row has a Check out action (REQ-F-48). A search is a fresh request, so verification never waits for the next poll.
 - An athlete without an open session can be checked directly against the roster, without a live Gym ID. This verifies authorization, not a new entry; normal or Staff-assisted Check In still creates the visit (E-163, REQ-F-45).
 - Staff see only photo, authorization, waiver and emergency contact (REQ-NF-19). The roster list they see is read-only (E-59). The student number is shown in full (E-81).
 
@@ -394,8 +394,8 @@ flowchart TD
   P["Photo does not match the person at the door"] --> Q["Staff mark the account photo pending"]
   Q --> R["Check In and Staff-assisted Check In refused<br/>cause: photo pending"]
   R --> S["The person uploads a new photo from their own phone"]
-  S --> T{"Does the upload clear the mark by itself,<br/>or do Staff approve it?"}
-  T -- "Open" --> U["Decision pending (E-118)"]
+  S --> T["Staff approve the new photo on S-02 (E-168)"]
+  T --> U["Mark cleared, Check In allowed"]
 
   classDef staff fill:#d1ecf1,stroke:#0c5460,color:#000
   classDef back fill:#fff3cd,stroke:#b8860b,color:#000
@@ -489,12 +489,12 @@ Decision: A. The earlier recommendation was B. How far back the list goes: all h
 5. Decided (E-80): Staff can void only active sessions, so past statistics do not change (REQ-F-48). Open: who fixes a mistake found the next day.
 6. Resolved by E-59 (still to be confirmed by the gym): Staff see the roster read-only and search it by name or student number, for athlete verification and assisted Check In.
 7. Athletes-only slots and regular hours: if an athletes-only slot falls outside regular hours, is the gym open for athletes? Depends on the slot list (G-28).
-8. Resolved by E-115: a closure published, or a term ending, ends every active session at once with the note "closed by closure".
+8. Resolved by E-115 and E-169: a closure starting, or a term ending, ends every active session at once with the note "closed by closure".
 9. Staff-assisted Check In for an athlete on the roster with no account: no session is possible because sessions belong to a User. The athlete registers with the link sent to the roster email; there is no in-person code (E-117), and if the link fails the athlete calls the office. Whether the gym accepts that Staff cannot do the assisted Check In in this case is still pending.
 10. REQ-NF-03: coordinates must also stay out of request logs and error reports. Not stated in the SRS; noted for implementation.
 11. Decided (E-105, E-126): the User sees their own past Check Ins on My visits (U-09), from the session records, with date and time, newest first, no location, and the full history. Records are kept 5 years (REQ-NF-05, E-125). REQ-F-92 is the requirement for the screen.
 12. Resolved by E-115 (G-32): a person may come back the same day, each entry after a check-out counts as a visit, and there is no daily limit. The 60 minutes are a guide Staff apply when the gym is full; the app does not enforce them.
-13. Open (E-118): whether the new photo of a photo pending account clears the mark by itself or Staff approve it.
+13. Resolved by E-168: the new photo does not clear the mark; Staff approve it on S-02.
 
 ## Traceability
 
