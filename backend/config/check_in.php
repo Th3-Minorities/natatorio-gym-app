@@ -10,6 +10,6 @@ return [
     'max_accuracy_meters' => (float) env('CHECK_IN_MAX_ACCURACY_METERS', 50),
     // An athletes-only period shows as upcoming this many minutes before it starts (E-161).
     'notice_minutes' => (int) env('CHECK_IN_NOTICE_MINUTES', 60),
-    // Only development and the demo set it; without it, a center over 50 m from the gym stops the app (architecture D6).
+    // Only development and the demo set it; without it, a boundary whose center distance plus radius exceeds 50 m stops the app (REQ-NF-29, architecture D6).
     'allow_any_boundary' => (bool) env('CHECK_IN_ALLOW_ANY_BOUNDARY', false),
 ];

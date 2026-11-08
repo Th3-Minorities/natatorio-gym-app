@@ -7,6 +7,7 @@ use App\Models\Authorization;
 use App\Models\FacilitySession;
 use App\Models\ScheduleSlot;
 use App\Models\User;
+use App\Services\FacilitySessions;
 use App\Support\GymBoundary;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -21,11 +22,18 @@ use Illuminate\Support\Facades\DB;
  */
 class CheckInController extends Controller
 {
+    public function __construct(private FacilitySessions $sessions) {}
+
     public function show(Request $request): JsonResponse
     {
         $user = $request->user('web');
 
-        return response()->json($this->body($this->activeSession($user), $user));
+        $last = $this->sessions->lastEndedFor($user);
+
+        return response()->json([
+            ...$this->body($this->activeSession($user), $user),
+            'last_session' => $last ? $this->sessions->lastData($last) : null,
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -47,6 +55,8 @@ class CheckInController extends Controller
                     return [$session, false];
                 }
                 $authorization = $this->checkEligibility($user, $location);
+                // A term end or closure may have ended a visit before the scheduler ran; free its time range first.
+                $this->sessions->closeDueFor($user);
                 $session = FacilitySession::query()->create([
                     'user_id' => $user->id,
                     'authorization_id' => $authorization->id,
@@ -106,11 +116,10 @@ class CheckInController extends Controller
         return $authorization;
     }
 
-    /** Active while its status is active and the database clock is before its end (data-model D3). */
+    /** Active until check-out, two hours, or the end of the term, even before the scheduler runs. */
     private function activeSession(User $user): ?FacilitySession
     {
-        return FacilitySession::query()->where('user_id', $user->id)->where('status', 'active')
-            ->whereRaw('ends_at > now()')->first();
+        return $this->sessions->activeFor($user);
     }
 
     private function body(?FacilitySession $session, User $user): array

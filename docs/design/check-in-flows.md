@@ -143,7 +143,7 @@ stateDiagram-v2
   [*] --> active : valid Check In or Staff-assisted Check In
   active --> checked_out : Staff check the person out
   active --> expired : backend time reaches start plus 2 hours, closed automatically
-  active --> closed : closure published or term ends, closed by closure
+  active --> closed : closure starts or term ends, closed by closure
   active --> ended_early : Staff end it early, a correction
   active --> void : Staff void it, created by mistake
   checked_out --> [*]
@@ -164,7 +164,7 @@ stateDiagram-v2
 
 - A session stays open until Staff check the person out (E-115, REQ-F-48): `status = 'checked_out'` and the end time is the time of the exit. This is the routine way a session ends. `ended_early` stays for corrections, so statistics tell them apart. A check-out is routine, not a correction, so it needs no audit entry of its own (to confirm).
 - A session nobody closes ends by itself 2 hours after the Check In, computed from backend time (REQ-F-38). The app shows it as "closed automatically". It counts in analytics as a visit, not in occupancy.
-- When a closure is published or the term ends, every active session gets `status = 'closed'` and the end time of that moment. The app shows "closed by closure" (E-115).
+- When a closure starts or the term ends, every active session gets `status = 'closed'` and the end time of that moment. The app shows "closed by closure" (E-115).
 - The 60 minutes are a guide Staff apply when the gym is full; the app does not enforce them. A person may come back the same day: there is no daily limit, and each entry after a session ends counts as a visit. Stepping out briefly (the bathroom, the car) is the same session (E-115).
 - Only Staff and Administrators can check out, end early or void (REQ-F-48). Each correction is an audit log entry (REQ-NF-39). Staff cannot extend a session or create one without authorization.
 - Staff can check out, end or void only active sessions (E-80). Staff already list active sessions, so there is no Staff list of past sessions, and past statistics do not change. Who fixes a mistake found the next day is still open (see Gaps).
@@ -230,7 +230,7 @@ stateDiagram-v2
   pm_offline --> pm_active : poll succeeds
 ```
 
-- When the session ends, the Gym ID says why: checked out, "closed automatically" or "closed by closure", with text and an icon, not only color (REQ-F-40, REQ-NF-14, E-115).
+- When the session ends, the Gym ID says why: checked out, "closed automatically" or "closed by closure", with text and an icon, not only color (REQ-F-40, REQ-NF-14, E-115). The app reads the last ended visit from `last_session` in `GET /api/user/check-in`.
 - The live indicator shows elapsed duration from the backend Check In time, in HH:MM:SS. It advances at most once per second without flashing and stops when the visit ends or connection is lost. It is not a countdown or the current time of day. There is no code or QR (REQ-F-40, E-163, WCAG 2.2.2).
 - The Gym ID shows a tag, "Member" for a paid member, with text and an icon, and a color different from the athlete tag (E-75). The colors are the team's choice and are not picked yet. They must not repeat the athletes-only theme color of diagram 8, so one color never means two things.
 - Without a connection the app does not show a stored Gym ID as current (REQ-NF-26). It shows "not valid now", the last successful update time, and a stopped elapsed-duration indicator (E-77, E-163). A persistent banner at the top of the screen says the data is not current, with an "updated at" time. The same applies to the athlete Gym ID below.
@@ -321,7 +321,7 @@ flowchart TD
 flowchart LR
   CI["Check In<br/>row inserted"] --> T[("facility_sessions")]
   SC["Staff check out, end early or void<br/>row updated"] --> T
-  CLO["Closure published or term ends<br/>every active row closed"] --> T
+  CLO["Closure starts or term ends<br/>every active row closed"] --> T
   TM["Time passes: 2 hours<br/>no write needed"] --> T
   T --> Q["Count open rows: status active<br/>and now() before the 2-hour end"]
   Q --> API["GET occupancy<br/>fresh count, no cache"]

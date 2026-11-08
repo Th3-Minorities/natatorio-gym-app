@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\PaidRegistrationController;
 use App\Http\Controllers\StaffAccountController;
@@ -44,6 +45,7 @@ Route::prefix('staff')->group(function () {
     Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);
         Route::get('/me', [StaffSessionController::class, 'me']);
+        Route::post('/sessions/{session}/check-out', CheckOutController::class)->whereNumber('session');
     });
 
     // Staff accounts screen (A-15, REQ-F-88).
