@@ -93,6 +93,41 @@ export const es = {
     timeoutText: 'Tu sesión se cerró por inactividad. Inicia sesión de nuevo.',
   },
 
+  // N-11 pages opened from an email link (#84): 4039:4170, 4039:4224, 4126:1316, 4126:1341 and 4039:4325.
+  staffAccess: {
+    forgotTitle: 'Recuperar contraseña',
+    forgotText: 'Escribe el correo de tu cuenta del equipo.',
+    email: 'Correo electrónico',
+    emailPlaceholder: 'nombre@ejemplo.com',
+    sendLink: 'Enviar enlace',
+    backToSignIn: 'Volver a iniciar sesión',
+    checkEmailTitle: 'Revisa tu correo',
+    checkEmailText: 'Si existe una cuenta del equipo con ese correo, recibirás un enlace para recuperar tu contraseña.',
+    checkSpam: 'Revisa también la carpeta de correo no deseado.',
+    createTitle: 'Crear tu contraseña',
+    createText: 'Completa tu acceso al equipo del gimnasio.',
+    createSubmit: 'Crear contraseña',
+    resetTitle: 'Restablecer contraseña',
+    resetText: 'Elige una nueva contraseña para tu cuenta del equipo.',
+    resetSubmit: 'Guardar contraseña',
+    newPassword: 'Nueva contraseña',
+    newPasswordPlaceholder: 'Escribe una contraseña',
+    confirmPassword: 'Confirmar contraseña',
+    confirmPasswordPlaceholder: 'Repite la contraseña',
+    passwordHint:
+      'Usa al menos 10 caracteres. Puedes usar una frase larga. Evita contraseñas conocidas o filtradas. Ambas contraseñas deben coincidir.',
+    checking: 'Revisando el enlace…',
+    expiredTitle: 'Enlace vencido o usado',
+    inviteExpiredText: 'Este enlace de invitación ya no se puede usar.',
+    inviteExpiredHelp: 'Pide a un Administrador que te envíe una nueva invitación para crear tu contraseña.',
+    // The reset email's link, expired or used (4424:1683). The invitation's has its own help text.
+    resetExpiredText: 'Este enlace para recuperar tu contraseña ya no se puede usar.',
+    requestAnother: 'Solicitar otro enlace',
+    // Not drawn in Figma: shown on N-11 after saving, since the note says "Al guardar, vuelve al acceso del equipo".
+    savedTitle: 'Contraseña guardada',
+    savedText: 'Inicia sesión con tu nueva contraseña.',
+  },
+
   // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
   dashboard: {
     skipToContent: 'Saltar al contenido',
@@ -123,12 +158,73 @@ export const es = {
       manualEntries: 'Entradas manuales',
       auditLog: 'Registro de auditoría',
     },
-    // Neutral: staff accounts have no gender, so not "Administrador" or "Administradora".
-    roles: { staff: 'Staff', admin: 'Administración' },
+    roles: { staff: 'Staff', admin: 'Administrador' },
     signOut: 'Cerrar sesión',
     // Not drawn in Figma: the sign-out could not reach the server, so the person is still signed in.
     signOutFailedTitle: 'No se pudo cerrar sesión',
     signOutFailedText: 'Revisa la conexión e intenta de nuevo.',
+  },
+
+  // A-15, Figma 100:841 (#84).
+  staffTeam: {
+    title: 'Cuentas del staff',
+    description: 'Administra el acceso del equipo al gimnasio.',
+    summary: (active: number, invited: number) =>
+      `${active} ${active === 1 ? 'activa' : 'activas'} · ${invited} ${invited === 1 ? 'invitada' : 'invitadas'}`,
+    tableTitle: 'Equipo del gimnasio',
+    columns: { name: 'Nombre', email: 'Correo electrónico', role: 'Rol', status: 'Estado', actions: 'Acciones' },
+    status: { active: 'Activo', invited: 'Invitado', deactivated: 'Desactivado' },
+    keptTitle: 'Las cuentas se conservan',
+    keptText: 'Al desactivar una cuenta se retira su acceso. Su registro permanece en esta lista.',
+    loadingTitle: 'Cargando cuentas…',
+    loadingText: 'Espera un momento mientras se consulta el equipo.',
+    offlineText: 'Las acciones estarán disponibles al recuperar la conexión.',
+    // Term chip and banner, Figma 100:841 and 100:1297.
+    termAccess: 'Acceso del equipo',
+    noTermChip: 'Sin término activo',
+    noTermTitle: 'No hay un término activo hoy',
+    noTermText: 'Configura las fechas en Términos. No se pueden crear autorizaciones nuevas.',
+    // Invitar, Figma 100:1126, 100:1197 and 100:1231.
+    invite: 'Invitar',
+    inviteTitle: 'Invitar al equipo',
+    inviteText: 'La persona recibirá un enlace por correo para establecer su propia contraseña.',
+    fullName: 'Nombre completo',
+    email: 'Correo electrónico',
+    role: 'Rol',
+    sendInvite: 'Enviar invitación',
+    cancel: 'Cancelar',
+    emailInUseTitle: 'Este correo ya está en uso',
+    emailInUseText: (email: string) => `${email} ya pertenece a una cuenta del equipo. Usa otro correo.`,
+    fixEmail: 'Corregir correo',
+    invitedTitle: 'Invitación enviada',
+    invitedText: (firstName: string) => `${firstName} aparecerá como invitado hasta que establezca su contraseña.`,
+    // Reenviar invitación, Figma 4039:3311.
+    resend: 'Reenviar invitación',
+    resentTitle: 'Invitación reenviada',
+    resentText: (email: string, firstName: string) =>
+      `Enviamos una nueva invitación a ${email}. ${firstName} seguirá como Invitado hasta crear su contraseña.`,
+    // Cambiar rol, Figma 4039:3226, 4039:3252 and 4039:3285.
+    changeRole: 'Cambiar rol',
+    currentRole: (role: string) => `Rol actual: ${role}`,
+    newRole: 'Nuevo rol',
+    roleAudit: 'Este cambio quedará registrado en el registro de auditoría.',
+    save: 'Guardar',
+    roleChangedTitle: 'Rol cambiado',
+    roleChangedText: (name: string, role: string) =>
+      `${name} ahora tiene el rol ${role}. El cambio se guardó en el registro de auditoría.`,
+    ownRoleTitle: 'No puedes cambiar tu propio rol',
+    ownRoleText: (role: string) => `Debes conservar tu rol ${role}. Pide a otro Administrador que cambie tu rol.`,
+    understood: 'Entendido',
+    // Desactivar, Figma 100:1205. Reactivar has no Figma frame (E-150).
+    deactivate: 'Desactivar',
+    deactivateTitle: (name: string) => `¿Desactivar a ${name}?`,
+    deactivateText:
+      'No podrá iniciar sesión. La cuenta se conservará con estado desactivado. Sus sesiones abiertas terminan de inmediato.',
+    deactivateConfirm: 'Desactivar cuenta',
+    reactivate: 'Reactivar',
+    // Read by screen readers only: the row itself shows the change.
+    deactivated: (name: string) => `${name} se desactivó.`,
+    reactivated: (name: string) => `${name} se reactivó.`,
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
@@ -139,6 +235,7 @@ export const es = {
     errorDetail: 'No pudimos cargar los datos. Inténtalo de nuevo.',
     retry: 'Reintentar',
     offlineTitle: 'Sin conexión',
+    offlineRetryText: 'Revisa la conexión e intenta de nuevo.',
     offlineLead: 'Sin conexión. Los datos pueden haber cambiado. Las acciones estarán disponibles al recuperar la conexión.',
   },
 
@@ -164,6 +261,13 @@ export const es = {
     staff_credentials_invalid: 'El correo o la contraseña no son correctos.',
     staff_session_expired: 'Tu sesión terminó tras un rato sin actividad. Inicia sesión de nuevo.',
     staff_account_deactivated: 'Esta cuenta fue desactivada. Pide acceso a un Administrador si lo necesitas de nuevo.',
+    staff_account_not_invited: 'Esta cuenta ya no está pendiente de invitación. Actualiza la lista.',
+    staff_invite_link_invalid: 'Este enlace de invitación ya no se puede usar.',
+    staff_reset_link_invalid: 'Este enlace venció o ya se utilizó.',
+    staff_role_own_account: 'No puedes cambiar tu propio rol.',
+    staff_deactivate_own_account: 'No puedes desactivar tu propia cuenta.',
+    staff_last_administrator: 'Debe quedar al menos un Administrador activo.',
+    staff_account_status_changed: 'Esta cuenta cambió mientras la veías. Actualiza la lista.',
   },
 
   validation: {
@@ -175,6 +279,7 @@ export const es = {
     in: 'Selecciona una opción válida.',
     unique: 'Este valor ya está en uso.',
     confirmed: 'La confirmación no coincide.',
+    password: 'Usa al menos 10 caracteres y evita contraseñas conocidas o filtradas.',
     invalid: 'Revisa este campo.',
   },
 }

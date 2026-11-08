@@ -1,12 +1,17 @@
 import { createContext, useContext } from 'react'
 import { ApiError } from '../api/client'
 
+/** The term whose dates include today, with its dates as Y-m-d. */
+export type ActiveTerm = { name: string; starts_on: string; ends_on: string }
+
 /** The signed-in staff account, as /api/staff/me answers it (docs/design/api-conventions.md, section 6). */
 export type StaffAccount = {
   name: string
   email: string
   role: 'staff' | 'admin'
   locale: string
+  /** Null when no term includes today. */
+  active_term: ActiveTerm | null
 }
 
 /** Why a sign-in ended without the person signing out: N-11 and the inactivity screen show it. */

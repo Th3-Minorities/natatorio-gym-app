@@ -100,6 +100,7 @@ erDiagram
     varchar(10) role "staff or admin"
     varchar(2) locale "es or en, changed in the account's preferences"
     timestamptz deactivated_at "NULL while access is allowed, set when the person leaves"
+    int session_epoch "0 at first, +1 on each deactivation; a sign-in made before it ends, even after a reactivation"
   }
   staff_password_reset_tokens {
     varchar(255) email PK "email of the staff account"
