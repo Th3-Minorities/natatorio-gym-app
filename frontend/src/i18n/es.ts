@@ -364,6 +364,9 @@ export const es = {
     term_overlap: 'Las fechas coinciden con otro término.',
     // A-05 "Número repetido" (101:1380).
     roster_student_number_taken: 'Este número ya está en el roster.',
+    roster_status_changed: 'Este atleta cambió mientras lo veías. Actualiza la lista.',
+    // A-05 "Restitución rechazada" (101:1383).
+    roster_reinstate_active_authorization: 'Ya tiene una autorización activa.',
   },
 
   validation: {

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
+use App\Models\Authorization;
 use App\Models\RosterRecord;
 use App\Services\AuditLog;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,6 +20,9 @@ use Illuminate\Validation\Rule;
 class RosterController extends Controller
 {
     private const FIELDS = ['name', 'sport', 'student_number', 'institutional_email'];
+
+    /** The reason a withdrawal writes on the authorizations it revokes (E-93). */
+    private const REMOVED = 'removed from roster';
 
     public function index(Request $request): JsonResponse
     {
@@ -72,6 +76,86 @@ class RosterController extends Controller
         }, $athlete);
 
         return response()->json(['athlete' => $this->show($athlete)]);
+    }
+
+    /**
+     * Withdraw (A-05 "Retirar"): the athlete's authorizations of the current and later terms are revoked with the
+     * reason "removed from roster" (E-93), so the Gym ID and Check In stop at once. An open visit stays open
+     * until it ends (REQ-F-49). Past terms are history and stay as they were.
+     */
+    public function withdraw(RosterRecord $athlete, AuditLog $log): JsonResponse
+    {
+        $athlete = DB::transaction(function () use ($athlete, $log) {
+            $athlete = $this->locked($athlete, removed: false);
+            $athlete->forceFill(['removed_at' => now()])->save();
+            $this->authorizations($athlete)->where('authorizations.status', 'active')
+                ->update(['status' => 'revoked', 'reason' => self::REMOVED, 'updated_at' => now()]);
+            $log->record('roster.withdraw', $athlete, ['status' => 'active'], ['status' => 'withdrawn']);
+
+            return $athlete;
+        });
+
+        return response()->json(['athlete' => $this->show($athlete)]);
+    }
+
+    /**
+     * Reinstate (A-05 "Restituir", E-95): the authorizations the withdrawal revoked become active again. It needs
+     * a reason of 10 characters or more, and is refused when the person already has an active authorization in
+     * that term (one per User and term, E-94).
+     */
+    public function reinstate(Request $request, RosterRecord $athlete, AuditLog $log): JsonResponse
+    {
+        $input = $request->validate(['reason' => ['required', 'string', 'min:10', 'max:1000']]);
+
+        try {
+            $athlete = DB::transaction(function () use ($athlete, $input, $log) {
+                $athlete = $this->locked($athlete, removed: true);
+                $revoked = $this->authorizations($athlete)->where('authorizations.status', 'revoked')
+                    ->where('authorizations.reason', self::REMOVED)->with('academicTerm')->get();
+                foreach ($revoked as $authorization) {
+                    $this->refuseSecondActive($authorization);
+                    $authorization->forceFill(['status' => 'active', 'reason' => null])->save();
+                }
+                $athlete->forceFill(['removed_at' => null])->save();
+                $log->record('roster.reinstate', $athlete, ['status' => 'withdrawn'], ['status' => 'active'], $input['reason']);
+
+                return $athlete;
+            });
+        } catch (UniqueConstraintViolationException) {
+            // Another active authorization appeared at the same moment: the unique index of E-94 stops this one.
+            throw new ApiException('roster_reinstate_active_authorization', 409);
+        }
+
+        return response()->json(['athlete' => $this->show($athlete)]);
+    }
+
+    /** Locks the row and checks it is still in the state the screen showed. */
+    private function locked(RosterRecord $athlete, bool $removed): RosterRecord
+    {
+        $athlete = RosterRecord::query()->whereKey($athlete->id)->lockForUpdate()->firstOrFail();
+        if (($athlete->removed_at !== null) !== $removed) {
+            throw new ApiException('roster_status_changed', 409);
+        }
+
+        return $athlete;
+    }
+
+    /** The athlete's authorizations in terms that have not ended. */
+    private function authorizations(RosterRecord $athlete): Builder
+    {
+        return Authorization::query()->select('authorizations.*')
+            ->join('academic_terms', 'academic_terms.id', '=', 'authorizations.academic_term_id')
+            ->where('authorizations.roster_record_id', $athlete->id)
+            ->where('academic_terms.ends_on', '>=', today()->toDateString());
+    }
+
+    private function refuseSecondActive(Authorization $authorization): void
+    {
+        $other = Authorization::query()->where('user_id', $authorization->user_id)
+            ->where('academic_term_id', $authorization->academic_term_id)->where('status', 'active')->exists();
+        if ($other) {
+            throw new ApiException('roster_reinstate_active_authorization', 409, ['term' => ['name' => $authorization->academicTerm->name]]);
+        }
     }
 
     /** @return array{name: string, sport: string, student_number: string, institutional_email: string} */

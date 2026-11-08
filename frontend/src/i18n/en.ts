@@ -335,6 +335,8 @@ export const en: Messages = {
     staff_account_status_changed: 'This account changed while you were viewing it. Refresh the list.',
     term_overlap: 'The dates overlap another term.',
     roster_student_number_taken: 'This number is already on the roster.',
+    roster_status_changed: 'This athlete changed while you were viewing it. Refresh the list.',
+    roster_reinstate_active_authorization: 'They already have an active authorization.',
   },
 
   validation: {

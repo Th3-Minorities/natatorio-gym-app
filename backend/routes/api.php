@@ -73,6 +73,8 @@ Route::prefix('staff')->group(function () {
     Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
         Route::post('/roster', [RosterController::class, 'store']);
         Route::patch('/roster/{athlete}', [RosterController::class, 'update'])->whereNumber('athlete');
+        Route::post('/roster/{athlete}/withdraw', [RosterController::class, 'withdraw'])->whereNumber('athlete');
+        Route::post('/roster/{athlete}/reinstate', [RosterController::class, 'reinstate'])->whereNumber('athlete');
     });
 });
 
