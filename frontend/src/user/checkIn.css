@@ -1,10 +1,14 @@
 /* U-01 Check In. Values from the Figma page "#41 Gym ID and Check in" (4085:1125). */
+.check-in { border-radius: var(--user-large-radius); }
+.check-in .user-navigation { padding-bottom: 1.125rem; }
 .check-in .user-content { gap: var(--spacing-12); }
 .check-in .user-content h1 { font-size: var(--user-brand-size); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); color: var(--hero); }
 .check-in .user-content h2 { margin: 0; font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); color: var(--hero); }
 .check-in .check-in-lead { font-size: var(--user-body-size); line-height: var(--user-body-line); }
-.check-in .user-offline { margin: var(--user-space-6) 0 0; padding: 9px var(--spacing-24); background: var(--check-in-danger-soft); color: var(--user-danger); }
-/* 4106:1789: the banner sits 18px from the top (36px tall) and the title 12px below it. Online the same space stays empty, so the title never moves. */
+/* 4106:1789: the banner sits 18px from the top (36px tall) and the title 12px below it. Online the same space stays empty, so the title never moves.
+   Offline UserPage renders no .user-top (12px), so the margin adds it back. .user-app.check-in outranks .user-app--account .user-offline in user.css. */
+.user-app.check-in .user-offline { margin: calc(var(--spacing-12) + var(--user-space-6)) 0 0; padding: 9px var(--spacing-24); background: var(--check-in-danger-soft); color: var(--user-danger); }
+.user-app.check-in .user-offline svg { color: inherit; }
 .check-in .user-content { padding-top: calc(var(--user-space-6) + 36px + var(--spacing-12)); }
 .check-in .user-offline + .user-content { padding-top: var(--spacing-12); }
 
@@ -14,6 +18,8 @@
 .check-in .check-in-identity .check-in-identity__name { display: flex; align-items: center; gap: var(--user-space-6); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); color: var(--hero); }
 .check-in-photo { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--user-sage-soft); color: var(--hero); }
 .check-in-photo svg { width: 23.4px; height: 23.4px; }
+.check-in-photo { overflow: hidden; }
+.check-in-photo img { width: 100%; height: 100%; object-fit: cover; }
 .check-in .check-in-identity__name > span:first-child { min-width: 106px; }
 .check-in--athlete .check-in-identity__name > span:first-child { min-width: 112px; }
 .check-in-badge { display: grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--check-in-member); color: var(--surface); }
@@ -78,7 +84,7 @@
 .check-in-waves { position: absolute; left: -53px; top: -130px; width: 495.9px; height: 527.8px; pointer-events: none; }
 .check-in-waves--bottom { top: 490px; }
 
-.check-in-id { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-8); height: 364px; padding: var(--spacing-20); overflow: hidden; border-radius: var(--spacing-20); background: var(--check-in-member); text-align: center; }
+.check-in-id { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-8); min-height: 22.75rem; padding: var(--spacing-20); overflow: hidden; border-radius: var(--spacing-20); background: var(--check-in-member); text-align: center; }
 .check-in--athlete .check-in-id, .check-in--athlete .check-in-duration { background: var(--check-in-athlete-card); }
 .check-in-id > * { position: relative; flex: none; }
 .check-in-id .check-in-id__waves { position: absolute; inset: 0; width: 100%; height: 100%; }
@@ -96,18 +102,46 @@
 .check-in-id .check-in-badge { background: var(--surface); color: var(--check-in-member); }
 .check-in--athlete .check-in-id .check-in-badge { background: var(--surface); color: var(--hero); }
 .check-in .check-in-id .check-in-id__small { width: 100%; font-size: var(--spacing-12); line-height: var(--user-caption-line); }
-.check-in .check-in-id .check-in-id__category { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); min-width: 82px; padding: var(--spacing-4) var(--spacing-8); border-radius: 999px; background: var(--surface); color: var(--check-in-member); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.check-in .check-in-id .check-in-id__category { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); width: 5.125rem; padding: var(--spacing-4) 0; border-radius: 999px; background: var(--surface); color: var(--check-in-member); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
 .check-in--athlete .check-in-id .check-in-id__category { color: var(--hero); }
 .check-in-id__category svg { width: 14px; height: 14px; }
 .check-in-id hr { background: var(--check-in-wave); opacity: 0.6; }
 .check-in .check-in-id .check-in-id__time { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
 
-.check-in-duration { display: flex; align-items: center; gap: var(--spacing-12); height: 58px; padding: var(--spacing-12); border-radius: var(--spacing-20); background: var(--check-in-member); }
-.check-in-duration svg { width: var(--spacing-24); height: var(--spacing-24); flex: none; }
+.check-in-duration { display: flex; align-items: flex-start; gap: var(--spacing-12); min-height: 3.625rem; padding: var(--spacing-12); border-radius: var(--spacing-20); background: var(--check-in-member); }
+.check-in-duration svg { width: var(--spacing-24); height: var(--spacing-24); margin-top: 0.59375rem; flex: none; }
 .check-in .check-in-duration p { display: flex; flex-direction: column; font-size: var(--user-nav-size); line-height: var(--user-nav-line); font-weight: var(--weight-medium); }
 .check-in-duration__value { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
 .check-in .check-in-show { text-align: center; font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
 .check-in--confirmed .check-in-caption { text-align: center; }
+
+/* Gym ID offline (4105:1202, 4199:3897) and ended visits (4106:1076, 4160:2520). */
+.check-in--confirmed .user-content, .check-in--ended .user-content { padding-top: 3.125rem; }
+.check-in--stale .user-offline { margin-top: var(--spacing-32); }
+.check-in--stale .check-in-id__state { align-items: flex-start; }
+.check-in--stale .check-in-id__state span { width: 6.25rem; text-align: left; }
+.check-in .user-content h1:focus { outline: none; }
+.check-in--stale .check-in-id { opacity: 0.5; }
+.check-in--stale .check-in-id p { color: var(--surface); }
+.check-in--stale .check-in-duration { min-height: 4.625rem; background: var(--background); color: var(--muted-foreground); }
+.check-in--stale .check-in-show { color: var(--hero); }
+.check-in--stale .check-in-caption, .check-in--ended .check-in-caption { text-align: center; }
+.check-in--stale .check-in-id__waves, .check-in--ended .check-in-id__waves { animation: none; will-change: auto; left: 0; width: 100%; }
+.check-in--ended { --id-ended-color: var(--check-in-member-deep); --id-ended-background: var(--check-in-member-soft); }
+.check-in--ended.check-in--athlete { --id-ended-color: var(--hero); --id-ended-background: var(--user-sage-soft); }
+.check-in--ended .user-content { position: relative; }
+.check-in--ended .user-content > :not(.check-in-waves) { position: relative; }
+.check-in--ended .check-in-id { background: var(--id-ended-background); }
+.check-in--ended .check-in-id p, .check-in--ended .check-in-caption { color: var(--id-ended-color); }
+.check-in--ended .check-in-lead { color: var(--hero); }
+.check-in--ended .check-in-photo { background: var(--surface); }
+.check-in--ended .check-in-photo, .check-in--ended .check-in-id .check-in-badge, .check-in--ended .check-in-id .check-in-id__category { color: var(--id-ended-color); }
+.check-in--ended .check-in-id hr { background: var(--id-ended-color); opacity: 0.28; }
+.check-in-id__times { display: flex; justify-content: space-between; width: 100%; }
+.check-in-id__times > div { flex: 1; }
+.check-in--ended .check-in-duration { background: var(--surface); border: var(--user-border-width) solid var(--id-ended-color); color: var(--id-ended-color); }
+.check-in--ended .check-in-duration p { color: inherit; }
+.check-in--ended .check-in-waves { opacity: 0.65; }
 
 /* Figma draws every Check In icon with a 2px stroke at its own size (1.3px on the small photo placeholder). */
 .check-in .user-content svg *, .check-in .user-offline svg * { vector-effect: non-scaling-stroke; }

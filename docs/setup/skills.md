@@ -43,7 +43,7 @@ graphify install
 
 ### sdlc-process and unslop
 
-No public source found. Ask Carlos Pepín for the folders and copy them to `~/.claude/skills/`.
+No public source found. Ask the team for the folders and copy them to `~/.claude/skills/`.
 
 ## Skills in the repo
 

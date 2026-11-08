@@ -6,6 +6,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { I18nProvider } from './i18n'
 import { StaffApp } from './staff/StaffApp'
 import { isStaffPath } from './staff/staffPath'
+import { listenForInstall } from './user/installPrompt'
 import './styles/base.css'
 
 // Spanish until a signed-in account says otherwise (E-64, E-114).
@@ -25,3 +26,13 @@ createRoot(document.getElementById('root')!).render(
     </I18nProvider>
   </StrictMode>,
 )
+
+listenForInstall()
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      // The online app stays usable if the browser cannot install the offline shell.
+    })
+  })
+}

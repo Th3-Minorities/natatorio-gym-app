@@ -19,7 +19,7 @@ export function UserNotice({ title, children, success = false, informational = f
   const Icon = success ? Check : TriangleAlert
   return <div className="user-notice">{success || informational ? <div className="notice" role="status">
     <p className="notice__title">{title}</p><p className="notice__text">{children}</p>
-  </div> : <Notice title={title}>{children}</Notice>}<Icon aria-hidden="true" /></div>
+  </div> : <Notice title={title}>{children}</Notice>}<Icon aria-hidden="true" size={18} absoluteStrokeWidth /></div>
 }
 
 export function UserLoading({ detail }: { detail: string }) {
@@ -29,19 +29,19 @@ export function UserLoading({ detail }: { detail: string }) {
   </div>
 }
 
-export function UserPage({ children, header = true, large = false, offline = false, back, className = '', current = 'account' }: {
-  children: ReactNode; header?: boolean; large?: boolean; offline?: boolean; back?: string; className?: string; current?: Destination
+export function UserPage({ children, header = true, large = false, offline = false, offlineText, back, className = '', current = 'account' }: {
+  children: ReactNode; header?: boolean; large?: boolean; offline?: boolean; offlineText?: string; back?: string; className?: string; current?: Destination
 }) {
   const t = useMessages().user
   return <div className={`user-app ${header ? 'user-app--access' : 'user-app--account'} ${large ? 'user-app--large' : ''} ${className}`}>
-    {header ? <UserHeader back={back} /> : <div className="user-top" />}
-    {offline && <div className="user-offline" role="status"><WifiOff aria-hidden="true" /><span>{t.offline}</span></div>}
+    {header ? <UserHeader back={back} /> : !offline && <div className="user-top" />}
+    {offline && <div className="user-offline" role="status"><WifiOff aria-hidden="true" size={18} absoluteStrokeWidth /><span>{offlineText ?? t.offline}</span></div>}
     <main className="user-content">{children}</main>
     {!header && <UserNavigation current={current} />}
   </div>
 }
 
-type Destination = 'check-in' | 'account'
+type Destination = 'check-in' | 'account' | 'gym'
 
 /** Figma "gym/rack-sentadillas" (4190:575), its four layers placed as in the navigation instance (4097:106). */
 function SquatRack() {
@@ -56,9 +56,8 @@ function SquatRack() {
 export function UserNavigation({ current = 'account' }: { current?: Destination }) {
   const t = useMessages().user
   const here = (destination: Destination) => current === destination ? 'page' as const : undefined
-  // The Gym destination is supplied by the User app issue.
   return <footer className="user-navigation"><nav aria-label={t.navigation}>
-    <span className="user-navigation-item"><SquatRack /><span>{t.gym}</span></span>
+    <a href="/gym" className="user-navigation-item" aria-current={here('gym')}><SquatRack /><span>{t.gym}</span>{here('gym') && <i aria-hidden="true" />}</a>
     <a href="/check-in" className="user-check-in" aria-current={here('check-in')}><span className="user-check-in__circle"><Dumbbell aria-hidden="true" /></span>
       <span>{t.checkIn}</span>{here('check-in') && <i aria-hidden="true" />}</a>
     <a href="/account" className="user-navigation-account" aria-current={here('account')}><UserRound aria-hidden="true" /><span>{t.account}</span>
@@ -79,7 +78,7 @@ export function PasswordField({ label, placeholder, value, onChange, error, auto
       autoComplete={autoComplete} maxLength={255} error={error} aria-describedby={hint && !error ? hintId : describedBy}
       onChange={(event) => onChange(event.target.value)} required />
     <Button variant="link" className="user-password__toggle" aria-label={visible ? t.hidePassword : t.showPassword}
-      aria-pressed={visible} onClick={() => setVisible(!visible)}><Icon aria-hidden="true" /></Button>
+      aria-pressed={visible} onClick={() => setVisible(!visible)}><Icon aria-hidden="true" size={16} absoluteStrokeWidth /></Button>
     {hint && !error && <p id={hintId} className="user-caption">{hint}</p>}
   </div>
 }

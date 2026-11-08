@@ -1,24 +1,33 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
-import { Camera, Check, Clock, LockKeyhole, MapPin, TriangleAlert, UserRound, WifiOff, type LucideIcon } from 'lucide-react'
+import { Camera, Check, Clock, DoorOpen, LockKeyhole, MapPin, TriangleAlert, UserRound, WifiOff, type LucideIcon } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { useDateFormat } from '../format/dateTime'
 import { errorMessage, useMessages } from '../i18n'
 import type { UserProfile } from './UserApp'
 import { LocationHelp } from './LocationHelp'
 import { UserPage } from './ui'
+import { useConnection } from './useConnection'
 import athletesNotice from './assets/athletes-notice.svg'
 import athletesPeriod from './assets/athletes-period.svg'
 import wavesBottom from './assets/background-waves-bottom.svg'
 import wavesTop from './assets/background-waves-top.svg'
 import idWaves from './assets/id-waves.svg'
+import endedMemberId from './assets/ended-member-id.svg'
+import endedMemberTop from './assets/ended-member-top.svg'
+import endedMemberBottom from './assets/ended-member-bottom.svg'
+import endedAthleteId from './assets/ended-athlete-id.svg'
+import endedAthleteTop from './assets/ended-athlete-top.svg'
+import endedAthleteBottom from './assets/ended-athlete-bottom.svg'
 import weightBench from './assets/weight-bench.svg'
 import './checkIn.css'
 
 // U-01 Check In (issue #17). Figma page "#41 Gym ID and Check in" (4085:1125).
 
 type Period = { state: 'upcoming' | 'active'; starts_at: string; ends_at: string }
+type LastSession = { id: number | string; started_at: string; ended_at: string; end_reason: 'checked_out' | 'expired' | 'closed' }
 export type CheckInStatus = {
-  session: { id: number | string; started_at: string; status: 'active' } | null
+  session?: { id: number | string; started_at: string; status: 'active' } | null
+  last_session?: LastSession | null
   athletes_period: Period | null
   /** The type of the latest authorization, current or not. */
   account_type: 'member' | 'athlete' | null
@@ -49,6 +58,8 @@ function locate(): Promise<GeolocationPosition> {
   })
 }
 
+const DISMISSED_KEY = 'checkIn.dismissedSession'
+
 function elapsed(since: string, now: number) {
   const seconds = Math.max(0, Math.floor((now - new Date(since).getTime()) / 1000))
   return [seconds / 3600, (seconds % 3600) / 60, seconds % 60].map((part) => String(Math.floor(part)).padStart(2, '0')).join(':')
@@ -67,16 +78,76 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const [help, setHelp] = useState(false)
   const [phase, setPhase] = useState<'locating' | 'registering' | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
+  const online = useConnection()
+  const [networkFailed, setNetworkFailed] = useState(false)
+  const [dismissed, setDismissed] = useState<string | null>(() => {
+    try { return localStorage.getItem(DISMISSED_KEY) } catch { return null }
+  })
+  const [registration, setRegistration] = useState<{ id: number | string; announce: boolean } | null>(null)
+  const registered = registration !== null && registration.id === status?.session?.id
+  const [now, setNow] = useState(0)
+  const [updatedAt, setUpdatedAt] = useState(() => Date.now())
+  const clockOffset = useRef(0)
+  const lastTick = useRef<number | null>(null)
+  const requestId = useRef(0)
+  const offline = !online || networkFailed
+  const updateNow = useCallback((time: number) => {
+    const tick = performance.now()
+    if (lastTick.current !== null && tick - lastTick.current < 1000) return
+    lastTick.current = tick
+    setNow((prev) => Math.max(prev, time))
+  }, [])
+  const syncClock = useCallback((time: number) => {
+    const offset = time - Date.now()
+    if (Math.abs(offset - clockOffset.current) > 1500) clockOffset.current = offset
+    setUpdatedAt(time)
+    updateNow(Date.now() + clockOffset.current)
+  }, [updateNow])
 
-  const refresh = useCallback(() => apiRequest<CheckInStatus>('/user/check-in').then((next) => {
-    setStatus(next)
-    return next
-  }, (error: unknown) => {
-    if (!ended(error) && error instanceof ApiError && error.code === 'offline') setProblem('offline')
-    return null
-  }).finally(() => setLoaded(true)), [ended])
+  const refresh = useCallback(async (background = false) => {
+    const id = ++requestId.current
+    try {
+      let serverTime: number | undefined
+      const next = await apiRequest<CheckInStatus>('/user/check-in', { autoRefresh: background, onServerTime: (time) => { serverTime = time } })
+      if (id !== requestId.current || !navigator.onLine) return null
+      syncClock(serverTime ?? Date.now() + clockOffset.current)
+      setStatus(next)
+      setRegistration((current) => current && current.id === next.session?.id ? { ...current, announce: false } : null)
+      setNetworkFailed(false)
+      setProblem((current) => current === 'offline' ? null : current)
+      return next
+    } catch (error) {
+      if (id !== requestId.current) return null
+      if (!ended(error)) {
+        setNetworkFailed(true)
+        if (error instanceof ApiError && error.code === 'offline') setProblem('offline')
+      }
+      return null
+    } finally { if (id === requestId.current) setLoaded(true) }
+  }, [ended, syncClock])
 
-  useEffect(() => { void refresh() }, [refresh])
+  useEffect(() => {
+    if (!online) return
+    let disposed = false
+    queueMicrotask(() => { if (!disposed && !document.hidden) void refresh() })
+    const check = () => { if (navigator.onLine && !document.hidden) void refresh(true) }
+    const timer = setInterval(check, 25_000)
+    document.addEventListener('visibilitychange', check)
+    return () => { disposed = true; requestId.current += 1; clearInterval(timer); document.removeEventListener('visibilitychange', check) }
+  }, [online, refresh])
+
+  useEffect(() => {
+    const disconnect = () => { requestId.current += 1; setNetworkFailed(true) }
+    window.addEventListener('offline', disconnect)
+    return () => window.removeEventListener('offline', disconnect)
+  }, [])
+
+  const activeSessionId = status?.session?.id
+  useEffect(() => {
+    if (activeSessionId === undefined || offline) return
+    const timer = setInterval(() => updateNow(Date.now() + clockOffset.current), 1000)
+    return () => clearInterval(timer)
+  }, [activeSessionId, offline, updateNow])
 
   async function register() {
     if (!navigator.onLine) { setProblem('offline'); return }
@@ -89,8 +160,11 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
     const { latitude, longitude, accuracy } = position.coords
     setPhase('registering')
     try {
-      const next = await apiRequest<CheckInStatus>('/user/check-in', { method: 'POST', body: { latitude, longitude, accuracy } })
+      requestId.current += 1
+      const next = await apiRequest<CheckInStatus>('/user/check-in', { method: 'POST', body: { latitude, longitude, accuracy }, onServerTime: syncClock })
       setStatus(next)
+      setRegistration(next.session ? { id: next.session.id, announce: true } : null)
+      setNetworkFailed(false)
       setProblem(null)
     } catch (error) {
       if (ended(error)) return
@@ -123,7 +197,8 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
 
   const athlete = (status?.account_type ?? (profile?.authorization?.type === 'athlete' ? 'athlete' : 'member')) === 'athlete'
   const period = status?.athletes_period ?? null
-  const view = status?.session ? 'confirmed' : problem ?? (!loaded ? 'loading' : period?.state === 'active' && !athlete ? 'exclusive' : 'ready')
+  const lastSession = status?.last_session && String(status.last_session.id) !== dismissed ? status.last_session : null
+  const view = status?.session ? 'confirmed' : lastSession ? 'ended' : problem ?? (!loaded ? 'loading' : period?.state === 'active' && !athlete ? 'exclusive' : 'ready')
 
   const first = useRef(true)
   useEffect(() => {
@@ -139,11 +214,19 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   } : problem === 'authorization' && athlete ? t.problems.athleteAuthorization : t.problems[problem]
   const progress = phase && t[phase]
   const range = period && dates.timeRange(period.starts_at, period.ends_at)
-  return <UserPage header={false} current="check-in" offline={view === 'offline'}
-    className={`check-in ${athlete ? 'check-in--athlete' : 'check-in--member'} ${view === 'confirmed' ? 'check-in--confirmed' : ''}`}>
-    {/* TODO(#18): a session that was already active opens the Gym ID screen, which #18 builds. */}
-    {status?.session ? <Confirmed profile={profile} athlete={athlete} startedAt={status.session.started_at} heading={heading} period={period}
-      detail={athlete ? status.sport : status.member_group === 'student' ? t.student : null} /> : <>
+  return <UserPage header={false} current="check-in" offline={offline || view === 'offline'}
+    className={`check-in ${athlete ? 'check-in--athlete' : 'check-in--member'} ${view === 'confirmed' && !offline ? 'check-in--confirmed' : ''} ${view === 'confirmed' && offline ? 'check-in--stale' : ''} ${view === 'ended' ? 'check-in--ended' : ''}`}>
+    {status?.session || lastSession ? <Confirmed profile={profile} athlete={athlete} startedAt={(status?.session ?? lastSession!).started_at} heading={heading} period={status?.session && !offline ? period : null}
+      now={now} offline={offline} updatedAt={updatedAt} lastSession={status?.session ? null : lastSession} registered={registered} busy={busy}
+      onContinue={() => void run(async () => {
+        const next = await refresh()
+        if (next) {
+          setDismissed(next.last_session ? String(next.last_session.id) : null)
+          try { if (next.last_session) localStorage.setItem(DISMISSED_KEY, String(next.last_session.id)) } catch { /* in-memory only */ }
+          setRegistration(null); setProblem(null)
+        }
+      })}
+      detail={athlete ? status?.sport : status?.member_group === 'student' ? t.student : null} /> : <>
     <h1 ref={heading} tabIndex={-1}>{user.checkIn}</h1>
     {view !== 'loading' && <>
       <p className="check-in-lead">{progress ? t.processing : lead}</p>
@@ -187,7 +270,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
       <Note icon={MapPin}>{progress?.hint ?? t.locationNote}</Note>
     </>}
     </>}
-    <div className="visually-hidden" role="status">{view === 'confirmed' ? t.confirmed : progress?.title ?? message?.title}</div>
+    <div className="visually-hidden" role="status">{view === 'confirmed' ? registered && registration?.announce && !offline ? t.confirmed : undefined : view === 'ended' ? undefined : progress?.title ?? message?.title}</div>
   </UserPage>
 }
 
@@ -223,8 +306,7 @@ function Action({ href, onClick, disabled, secondary, children }: { href?: strin
 function Identity({ profile, athlete, authorized }: { profile: UserProfile | null; athlete: boolean; authorized: boolean }) {
   const t = useMessages()
   return <div className="check-in-identity">
-    {/* TODO(#18): show the person's authorized photo instead of the placeholder. */}
-    <span className="check-in-photo"><UserRound aria-hidden="true" /></span>
+    <Photo profile={profile} />
     <div>
       <p className="check-in-identity__name"><span>{profile?.name ?? profile?.email}</span>
         {authorized && <span className="check-in-badge" role="img" aria-label={t.user.activeAuthorization}><Check aria-hidden="true" /></span>}</p>
@@ -269,27 +351,29 @@ function HoldButton({ busy, label, onConfirm }: { busy: boolean; label?: string;
   </button>
 }
 
-function Confirmed({ profile, athlete, startedAt, heading, detail, period }: {
-  profile: UserProfile | null; athlete: boolean; startedAt: string; heading: RefObject<HTMLHeadingElement | null>; detail?: string | null; period: Period | null
+function Photo({ profile, large = false }: { profile: UserProfile | null; large?: boolean }) {
+  const [failed, setFailed] = useState(false)
+  return <span className={`check-in-photo ${large ? 'check-in-photo--large' : ''}`}>
+    {profile && !failed ? <img src="/api/user/photo" alt="" onError={() => setFailed(true)} /> : <UserRound aria-hidden="true" />}
+  </span>
+}
+
+function Confirmed({ profile, athlete, startedAt, heading, detail, period, now, offline, updatedAt, lastSession, registered, busy, onContinue }: {
+  profile: UserProfile | null; athlete: boolean; startedAt: string; heading: RefObject<HTMLHeadingElement | null>; detail?: string | null; period: Period | null;
+  now: number; offline: boolean; updatedAt: number; lastSession?: LastSession | null; registered: boolean; busy: boolean; onContinue: () => void
 }) {
   const t = useMessages().checkIn
   const user = useMessages().user
   const dates = useDateFormat()
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const tick = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(tick)
-  }, [])
   return <>
-    <img className="check-in-waves check-in-waves--top" src={wavesTop} alt="" />
-    <img className="check-in-waves check-in-waves--bottom" src={wavesBottom} alt="" />
+    {!offline && <><img className="check-in-waves check-in-waves--top" src={lastSession ? athlete ? endedAthleteTop : endedMemberTop : wavesTop} alt="" />
+    <img className="check-in-waves check-in-waves--bottom" src={lastSession ? athlete ? endedAthleteBottom : endedMemberBottom : wavesBottom} alt="" /></>}
     <h1 ref={heading} tabIndex={-1}>{user.checkIn}</h1>
-    <p className="check-in-lead">{t.confirmed}</p>
+    <p className="check-in-lead">{lastSession ? t.visitEnded : offline ? t.restoreCard : registered ? t.confirmed : t.activeLead}</p>
     <div className="check-in-id">
-      <img className="check-in-id__waves" src={idWaves} alt="" />
-      <p className="check-in-id__state"><Check aria-hidden="true" /><span>{t.sessionActive}</span></p>
-      {/* TODO(#18): show the person's authorized photo instead of the placeholder. */}
-      <span className="check-in-photo check-in-photo--large"><UserRound aria-hidden="true" /></span>
+      <img className="check-in-id__waves" src={lastSession ? athlete ? endedAthleteId : endedMemberId : idWaves} alt="" />
+      <p className="check-in-id__state">{lastSession ? <DoorOpen aria-hidden="true" /> : <Check aria-hidden="true" />}<span>{lastSession ? t.sessionEnded : offline ? t.invalidNow : t.sessionActive}</span></p>
+      <Photo profile={profile} large />
       <p className="check-in-id__name"><span>{profile?.name ?? profile?.email}</span>
         {profile?.authorization && <span className="check-in-badge" role="img" aria-label={user.activeAuthorization}><Check aria-hidden="true" /></span>}</p>
       {profile?.name && <p className="check-in-id__small">{profile.email}</p>}
@@ -297,15 +381,17 @@ function Confirmed({ profile, athlete, startedAt, heading, detail, period }: {
       {/* Figma draws "Estudiante" (4104:719) and the sport (4199:3403); no frame draws the employee word. */}
       {detail && <p className="check-in-id__small">{detail}</p>}
       <hr />
-      <p className="check-in-id__small">{t.entryRegistered}</p>
-      <p className="check-in-id__time">{dates.time(startedAt)}</p>
+      {lastSession ? <div className="check-in-id__times"><div><p className="check-in-id__small">{t.entry}</p><p className="check-in-id__time">{dates.time(startedAt)}</p></div>
+        <div><p className="check-in-id__small">{t.exit}</p><p className="check-in-id__time">{dates.time(lastSession.ended_at)}</p></div></div> : <>
+        <p className="check-in-id__small">{t.entryRegistered}</p><p className="check-in-id__time">{dates.time(startedAt)}</p></>}
     </div>
     <div className="check-in-duration">
       <Clock aria-hidden="true" />
-      <p><span>{t.duration}</span><span className="check-in-duration__value">{elapsed(startedAt, now)}</span></p>
+      <p><span>{lastSession ? t.totalDuration : offline ? t.staleDuration : t.duration}</span><span className="check-in-duration__value">{elapsed(startedAt, lastSession ? Date.parse(lastSession.ended_at) : now)}</span></p>
     </div>
     {period && <PeriodNotice period={period} />}
-    <p className="check-in-show">{t.showCard}</p>
-    <p className="check-in-caption">{t.staffExit}</p>
+    {lastSession ? <><Action onClick={onContinue} disabled={busy || offline}>{t.continue}</Action><p className="check-in-caption">{t.endReasons[lastSession.end_reason]}</p></> : <>
+      <p className="check-in-show">{offline ? t.connectCard : t.showCard}</p>
+      <p className="check-in-caption">{offline ? t.lastUpdate(`${dates.day(new Date(updatedAt), new Date(updatedAt))}, ${dates.time(new Date(updatedAt), true)}`) : t.staffExit}</p></>}
   </>
 }

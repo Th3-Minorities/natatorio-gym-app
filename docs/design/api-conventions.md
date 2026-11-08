@@ -112,7 +112,7 @@ Run them from the repository root while the containers are up:
 | Create the first Administrator | `docker compose exec app php artisan staff:create-admin --name="Ana Rivera" --email="ana@example.com"` |
 | Clear a sign-in lockout | `docker compose exec app php artisan cache:clear` |
 
-The seeder is empty for now. Each feature adds its own seeder with fake data only, never real student or payment data (context.md, team rules).
+`DatabaseSeeder` calls `FakeDataSeeder`, which creates the development accounts (`admin@example.com` and a test User). Each feature adds its own seeder with fake data only, never real student or payment data (context.md, team rules).
 
 ## 5. CI
 
@@ -169,6 +169,8 @@ Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function 
 - `role:staff,admin` or `role:admin`: pick it from the role table in the SRS overview. Any other role gets `403 forbidden`.
 
 `RouteProtectionTest` fails when an `/api` route lacks these checks and is not on its list of public routes. Add a route to that list only when anyone may call it without signing in.
+
+Schedules and notices (C-02 and C-03) require a signed-in User or staff account (E-183, REQ-F-55). Their read routes do not belong on the public-route list. A User does not need an active gym authorization to read them; staff reads follow the checks above.
 
 ### Audit log
 
@@ -259,3 +261,26 @@ A new password, from an invitation or a reset, follows REQ-NF-51. A failure come
 ### Attempt limits
 
 These routes are public, so each one has its own limit per IP, per minute: 10 for `password/email`, `password/reset` and `invitation/accept`, and 30 for the two `validate` routes. Over the limit, the answer is `429 too_many_requests` with `Retry-After`.
+## 8. Check-out and session end
+
+### Check-out
+
+`POST /api/staff/sessions/{session}/check-out` marks the exit of one person. Staff and Administrators can call it (`auth:staff`, `staff.active`, `role:staff,admin`). It needs no body and writes no audit entry (E-129).
+
+- Answer `200` with `{"session": {"id", "started_at", "status", "ended_at", "end_reason"}}`. `status` and `end_reason` are `checked_out`, and `ended_at` is the time of the exit.
+- `404 not_found`: the id does not exist or is not a number.
+- `422 validation_failed`: the id is 0 or too large.
+- `409 conflict`: the session is no longer active. That covers a session already checked out, one whose 2 hours passed, one closed at the end of the term, one ended early or void, and the loser of two check-outs sent at the same moment.
+- `401 unauthenticated`: no staff sign-in, or a User account.
+
+### What the User reads
+
+`GET /api/user/check-in` returns `session` only while the visit is active, with `id`, `started_at` and `status`. Otherwise `session` is `null`. It also returns `last_session`, the most recent visit that ended, or `null`: `{"id", "started_at", "ended_at", "end_reason"}`.
+
+- `end_reason` is `checked_out` (also for a visit Staff ended early), `expired` (the app shows "closed automatically") or `closed` (the app shows "closed by closure").
+- Void sessions never appear.
+- The answer has no countdown and no term.
+
+### Scheduled close
+
+The task `close-facility-sessions` runs every minute and is safe to repeat. An expired session keeps `ended_at` empty in the database, and the API answers with its `ends_at`. A session closed at the end of the term gets the midnight after the term's last day as `ended_at`.

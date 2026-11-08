@@ -11,6 +11,8 @@ export default defineConfig({
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8080',
+    // page.route() cannot see requests the service worker makes, so mocked specs would reach the real API.
+    serviceWorkers: 'block',
   },
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1 --port 5173 --strictPort',

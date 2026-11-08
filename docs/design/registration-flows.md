@@ -7,7 +7,7 @@ The diagrams use plain words only. Requirement IDs and decision codes are in the
 Two answers are still pending and touch almost every diagram:
 
 - The contact number (REQ-F-73) is 265-3866, the office's direct line (G-25).
-- The address of the store page where members pay is a setting the gym still has to give. The welcome screen and the registration screen have a "Buy membership" button that opens it while a term runs, with no redirect (E-92, E-96, E-126, E-153).
+- The address of the store page where members pay is a setting the gym still has to give. The number-entry step of N-03 has a "Buy membership" button and help number 265-3866; Welcome keeps its original layout (E-184). The button opens the store while a term runs, with no redirect (E-126, E-153).
 
 Mail is assumed available (E-61). CTI described a path: the server runs a mail service (CTI suggests Postfix) and sends through CTI's mail gateway once CTI authorizes the VM (M-07, answered in principle). The authorization is still to be requested, and SPF and DKIM were not discussed. If CTI does not authorize the VM, the fallback is an external provider, which needs approval (M-11). Every email link depends on it: athlete registration (diagram 4), "I am an athlete" (diagram 7, E-58) and password reset.
 
@@ -85,7 +85,7 @@ flowchart TD
 
 **About this diagram:** Backend view of one lookup, used by diagrams 1 and 6. The PWA sends the number when the person submits the field (REQ-F-70). The app does not check the length of the number, because it can change (6 and 7 characters have been seen), and the number can include letters (E-128, E-153). Registration has one field (REG-14, E-153): a number of exactly 9 digits is a student number and goes to diagram 4, so this path only receives other numbers. The lookup reads the imported_memberships rows of the current term (REQ-F-10, E-71). When the number is not there, it asks the store right then and looks again, so a person who just paid registers at once (REQ-F-97, E-127). The ask goes through the same limits, which also protect the store (REQ-F-71, with values in REG-1 and REG-2, pending), and the alert goes to audit_log_entries (REQ-NF-39). The Authorization Number is unique across all orders (E-128).
 
-Notes: a claimed number counts as a failure, so the reply and the counting look the same as for an invalid number (REQ-F-72). A number from an ended term is simply not found in the current term (E-71, REG-9). It gets the same message and counts as a failure. If the database or the store cannot answer, the lookup is denied with a "try again later" message and the contact number (REQ-F-18). It is not counted as a failed lookup. Only orders with status `completed` give access, so an order that is still pending in the store gets the same message. When two orders share a number, the lookup is denied with the contact number, and the sync skips the second order with that number (E-128). The read of 84 orders on 2026-11-04 found no repeated value among the 69 paid ones. Whether the lookup ignores letter case is not decided.
+Notes: a claimed number counts as a failure, so the reply and the counting look the same as for an invalid number (REQ-F-72). A number from an ended term is simply not found in the current term (E-71, REG-9). It gets the same message and counts as a failure. If the database or the store cannot answer, the lookup is denied with a "try again later" message and the contact number (REQ-F-18). It is not counted as a failed lookup. Only orders with status `completed` give access, so an order that is still pending in the store gets the same message. When two orders share a number, the lookup is denied with the contact number, and the sync skips the second order with that number (E-128). The read of 84 orders on 2026-11-04 found no repeated value among the 69 paid ones. The lookup turns the typed number to upper case before it compares, so letter case does not matter (E-167).
 
 ### 3. Final step: photo first, then account and claim
 
@@ -504,7 +504,7 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-92 (upfront line) | 1, 4; intro |
 | E-93 (roster removal revokes with a reason) | 9. Authorization states; Gap 11 |
 | E-95 (Reinstate on A-05) | 9. Authorization states; Gap 11 |
-| E-96 (store button on the welcome and paid registration screens only) | 1, 4; intro |
+| E-96 (store placement superseded by E-184) | 1, 4; intro |
 | E-97 (Authorization Number field under both banners) | 6 |
 | E-98 (compromised-password check described as an external call) | 1 (notes) |
 | E-100 ("I am an athlete" under both banners) | 6 |
@@ -517,3 +517,4 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-127 (paid memberships from the store's API; lookup asks the store) | 1 (notes), 2, 9. Authorization states |
 | E-128 (Authorization Number with letters, unique across all orders; length not checked) | 1, 2; REG-14; Gap 6 |
 | E-153 (one registration screen and field) | 1, 2, 4; REG-14 |
+| E-184 (purchase, prerequisite and help on number entry; original Welcome layout) | 1; intro |

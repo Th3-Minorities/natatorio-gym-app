@@ -2,8 +2,11 @@
 
 use App\Http\Controllers\AcademicTermController;
 use App\Http\Controllers\CheckInController;
+use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\OccupancyController;
 use App\Http\Controllers\PaidRegistrationController;
+use App\Http\Controllers\PrivacyNoticeController;
 use App\Http\Controllers\RosterController;
 use App\Http\Controllers\StaffAccountController;
 use App\Http\Controllers\StaffInvitationController;
@@ -19,6 +22,9 @@ use Illuminate\Support\Facades\Route;
 // Every route here is served under /api (docs/design/api-conventions.md).
 
 Route::get('/health', HealthController::class);
+
+// The privacy notice data (N-08) for any visitor or signed-in User; the registration step has its own route.
+Route::get('/privacy', [PrivacyNoticeController::class, 'show']);
 
 Route::prefix('user/registration')->middleware(EnsureRegistrationGuest::class)->group(function () {
     Route::get('/privacy', [PaidRegistrationController::class, 'privacy']);
@@ -46,6 +52,7 @@ Route::prefix('staff')->group(function () {
     Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
         Route::post('/sign-out', [StaffSessionController::class, 'signOut']);
         Route::get('/me', [StaffSessionController::class, 'me']);
+        Route::post('/sessions/{session}/check-out', CheckOutController::class)->whereNumber('session');
     });
 
     // Staff accounts screen (A-15, REQ-F-88).
@@ -89,6 +96,8 @@ Route::prefix('user')->group(function () {
 
     Route::middleware(EnsureUserSessionIsCurrent::class)->group(function () {
         Route::get('/me', [UserAccountController::class, 'me']);
+        Route::get('/photo', [UserAccountController::class, 'photo']);
+        Route::get('/occupancy', OccupancyController::class);
         Route::post('/sign-out', [UserSessionController::class, 'signOut']);
         Route::patch('/locale', [UserAccountController::class, 'locale']);
         Route::delete('/account', [UserAccountController::class, 'delete']);

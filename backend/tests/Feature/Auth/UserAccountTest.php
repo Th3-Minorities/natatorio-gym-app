@@ -30,6 +30,16 @@ class UserAccountTest extends TestCase
         return $user;
     }
 
+    public function test_the_own_account_gets_its_full_email(): void
+    {
+        $user = $this->signedInUser();
+        $user->update(['email' => 'daniel@email.com']);
+
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('email', 'daniel@email.com');
+        $this->patchJson('/api/user/locale', ['locale' => 'en'])
+            ->assertOk()->assertJsonPath('email', 'daniel@email.com');
+    }
+
     public function test_profile_reads_name_and_current_authorization_from_existing_models(): void
     {
         $user = $this->signedInUser();
@@ -37,6 +47,7 @@ class UserAccountTest extends TestCase
         $term = AcademicTerm::factory()->create(['starts_on' => today()->subDay(), 'ends_on' => today()->addDay()]);
         Authorization::factory()->manual()->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
         $this->getJson('/api/user/me')->assertOk()->assertJsonPath('name', 'María Rodríguez')
+            ->assertJsonPath('email', $user->email)
             ->assertJsonPath('authorization.term', $term->name)->assertJsonPath('authorization.type', 'manual');
     }
 
@@ -89,6 +100,36 @@ class UserAccountTest extends TestCase
         }
 
         $this->getJson('/api/user/me')->assertOk()->assertJsonPath('authorization', null);
+    }
+
+    public function test_profile_returns_the_account_type_without_an_active_authorization(): void
+    {
+        $user = $this->signedInUser();
+        foreach ([['Older term', -90, -60, 'paid'], ['Ended term', -30, -1, 'athlete']] as [$name, $start, $end, $type]) {
+            $term = AcademicTerm::factory()->create([
+                'name' => $name, 'starts_on' => today()->addDays($start), 'ends_on' => today()->addDays($end),
+            ]);
+            Authorization::factory()->{$type}()->create(['user_id' => $user->id, 'academic_term_id' => $term->id, 'status' => 'revoked']);
+        }
+
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('authorization', null)->assertJsonPath('account_type', 'athlete');
+    }
+
+    public function test_profile_takes_the_account_type_from_the_current_authorization_over_a_later_one(): void
+    {
+        $user = $this->signedInUser();
+        $current = AcademicTerm::factory()->create(['starts_on' => today()->subDay(), 'ends_on' => today()->addDay()]);
+        $next = AcademicTerm::factory()->create(['starts_on' => today()->addDays(2), 'ends_on' => today()->addDays(30)]);
+        Authorization::factory()->paid()->create(['user_id' => $user->id, 'academic_term_id' => $current->id]);
+        Authorization::factory()->athlete()->create(['user_id' => $user->id, 'academic_term_id' => $next->id]);
+
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('authorization.type', 'paid')->assertJsonPath('account_type', 'paid');
+    }
+
+    public function test_profile_has_no_account_type_before_any_authorization(): void
+    {
+        $this->signedInUser();
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('account_type', null);
     }
 
     public function test_profile_does_not_show_a_future_only_authorization(): void

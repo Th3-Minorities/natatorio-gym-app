@@ -42,8 +42,8 @@ export function formatDate(value: DateInput, locale: Locale): string {
 }
 
 /** "9:28 a. m." or "9:28 AM". */
-export function formatTime(value: DateInput, locale: Locale): string {
-  return format(value, locale, { hour: 'numeric', minute: '2-digit', hour12: true })
+export function formatTime(value: DateInput, locale: Locale, seconds = false): string {
+  return format(value, locale, { hour: 'numeric', minute: '2-digit', ...(seconds ? { second: '2-digit' } : {}), hour12: true })
 }
 
 /** "2:00–4:00 p. m." or "2:00–4:00 PM", as drawn in the Check In notices (Figma 4097:267). */
@@ -68,7 +68,7 @@ export function useDateFormat() {
   const locale = useLocale()
   return {
     date: (value: DateInput) => formatDate(value, locale),
-    time: (value: DateInput) => formatTime(value, locale),
+    time: (value: DateInput, seconds = false) => formatTime(value, locale, seconds),
     dateTime: (value: DateInput, now?: Date) => formatDateTime(value, locale, now),
     day: (value: DateInput, now?: Date) => formatDay(value, locale, now),
     timeRange: (start: DateInput, end: DateInput) => formatTimeRange(start, end, locale),

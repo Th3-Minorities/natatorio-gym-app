@@ -25,6 +25,7 @@ type RequestOptions = {
   body?: unknown
   /** A request the screen made by itself, like a refresh. It does not keep a staff sign-in alive (E-130). */
   autoRefresh?: boolean
+  onServerTime?: (time: number) => void
 }
 
 const CSRF_COOKIE = 'XSRF-TOKEN'
@@ -82,6 +83,8 @@ export async function apiRequest<T = unknown>(path: string, options: RequestOpti
   }
 
   if (!response.ok) throw await toError(response)
+  const serverTime = Date.parse(response.headers.get('Date') ?? '')
+  if (Number.isFinite(serverTime)) options.onServerTime?.(serverTime)
   if (response.status === 204) return undefined as T
   try {
     return (await response.json()) as T
