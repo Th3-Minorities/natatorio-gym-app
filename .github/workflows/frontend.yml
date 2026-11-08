@@ -63,7 +63,10 @@ jobs:
 
       - run: npm ci
       - run: npx playwright install --with-deps chromium msedge
-      - run: npx playwright test
+      - name: Set User browser test credentials
+        run: grep -E '^E2E_USER_(EMAIL|PASSWORD)=' ../backend/.env.example >> "$GITHUB_ENV"
+      # The User sign-in tests share one account and each sign-in ends the account's other sessions, so browsers run one at a time.
+      - run: npx playwright test --workers=1
 
       - name: Container logs
         if: failure()
