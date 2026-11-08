@@ -463,7 +463,6 @@ describe('User destinations', () => {
     expect(screen.queryByRole('link', { name: 'Comenzar' })).toBeNull()
     expandWelcome()
     expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toHaveFocus()
-    expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.getByText('Tu espacio para entrenar en el RUM.')).toBeInTheDocument()
     expect(screen.getByText('¿Ya tienes cuenta?')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
@@ -489,8 +488,7 @@ describe('User destinations', () => {
   it('expands the welcome sheet with a tap on it', () => {
     open('/welcome')
     const sheet = screen.getByRole('main')
-    fireEvent.pointerDown(sheet, { clientY: 700, pointerId: 1 })
-    fireEvent.pointerUp(sheet, { clientY: 702, pointerId: 1 })
+    fireEvent.click(sheet)
     expect(screen.getByRole('link', { name: 'Comenzar' })).toBeInTheDocument()
   })
 

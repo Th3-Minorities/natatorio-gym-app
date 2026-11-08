@@ -382,9 +382,8 @@ function AccountRow({ icon: Icon, title, detail, href }: { icon: LucideIcon; tit
 }
 
 const SWIPE_UP = 30
-const TAP = 10
 
-/** N-01 starts collapsed (Figma 4078:11); a tap or a swipe up on the sheet opens it (4078:95). */
+/** N-01 starts collapsed (Figma 4078:11); a tap (on click) or a swipe up on the sheet opens it (4078:95). */
 function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (locale: Locale) => void }) {
   const t = useMessages().user
   const [expanded, setExpanded] = useState(false)
@@ -392,10 +391,11 @@ function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (loca
   const startY = useRef<number | null>(null)
   useEffect(() => { if (expanded) heading.current?.focus() }, [expanded])
   const drag = expanded ? {} : {
-    onPointerDown: (event: PointerEvent<HTMLElement>) => { startY.current = event.clientY; event.currentTarget.setPointerCapture?.(event.pointerId) },
+    onPointerDown: (event: PointerEvent<HTMLElement>) => { if (event.button !== 0) return; startY.current = event.clientY; event.currentTarget.setPointerCapture?.(event.pointerId) },
     onPointerMove: (event: PointerEvent<HTMLElement>) => { if (startY.current !== null && startY.current - event.clientY >= SWIPE_UP) setExpanded(true) },
-    onPointerUp: (event: PointerEvent<HTMLElement>) => { if (startY.current !== null && Math.abs(startY.current - event.clientY) < TAP) setExpanded(true); startY.current = null },
+    onPointerUp: () => { startY.current = null },
     onPointerCancel: () => { startY.current = null },
+    onClick: () => setExpanded(true),
   }
   return <div className="user-app user-welcome">
     <img className="user-welcome__illustration" src={welcomeIllustration} width={390} height={844} alt="" />
