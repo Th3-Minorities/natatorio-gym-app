@@ -13,10 +13,11 @@
 | Questions after the CTI meeting (E-108 to E-113; E-110 is partly decided) | 6 | 5 | 1 |
 | Decisions after the Athletic Activities meeting (2026-11-04) | 38 | 38 | 0 |
 | Decisions from the dashboard base (2026-11-06) | 2 | 2 | 0 |
+| Decisions from the welcome-screen review (2026-11-08) | 1 | 1 | 0 |
 | WooCommerce import | 1 | 1 | 0 |
 | Questions for the professor or advisors | 5 | 0 | 5 |
 | Team process (not requirements) | 6 | 3 | 3 |
-| Total | 150 | 141 | 9 |
+| Total | 151 | 142 | 9 |
 
 ## Scope and priorities
 
@@ -265,7 +266,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-63 | Password rules and reset | At least 10 characters, at least 64 allowed, no composition rules, and a check against compromised passwords with an external service (Laravel `uncompromised`, haveibeenpwned.com). NIST SP 800-63B-4 asks 15 for single-factor passwords; The team chose 10 for phone use, a recorded deviation. A local list was rejected as more work. The gym account is assumed to follow the same rule. Passwords stay on Laravel's built-in handling. The reset request gives the same answer whether or not the email has an account. SRS REQ-NF-51 (new), REQ-F-06. | Team | 2026-10-17 |
 | E-64 | Language | One language per account, not per device. The User picks it when creating the account and changes it in the profile preferences. The gym account has one language for every computer. No language button in the top bar. Still open: the language before sign in, and where the gym account changes it and whether that needs the PIN. SRS REQ-NF-33. | Team | 2026-10-17 |
 | E-65 | Gym dashboard | Staff and the Administrator work on a dashboard on its own address, not in the User app. The gym sign-in page lives there, with no link from the User sign-in page. Staff land on the dashboard. Administrator items show to Staff grayed out with a padlock; tapping one asks for the PIN and unlocks it on the same screen. To confirm: the dashboard is a route of the same codebase, and whether a Lock button returns to Staff mode. SRS REQ-NF-10. The PIN part was replaced by E-114. | Team | 2026-10-17 |
-| E-66 | Public schedules and notices; contact number | Schedules and notices are public, also before sign in. Occupancy and analytics stay behind sign in. The notice editor warns against sensitive data. The Administrator edits the gym contact number in the facility information editor. SRS role table, REQ-F-55. | Team | 2026-10-17 |
+| E-66 | Public schedules and notices; contact number | Schedules and notices were public, also before sign in. That access rule is superseded by E-165 (2026-11-08). Occupancy and analytics stay behind sign in. The notice editor warns against sensitive data. The Administrator edits the gym contact number in the facility information editor. SRS role table, REQ-F-55. | Team | 2026-10-17 |
 | E-67 | User with no active authorization | A banner on top and Check In grayed out. Expired: the banner asks to renew and shows the Authorization Number field and "I am an athlete". Any other cause (revoked, import undone, number released, no current term): "no active authorization" and the contact number. Final texts go in the wireframes. Changes E-50. SRS REQ-F-23. | Team | 2026-10-17 |
 | E-68 | One authorization per term | A User holds at most one active authorization per term. "I am an athlete" shows only to a User with no active authorization, and a manual grant to an account that already has an active one for that term is rejected. A revoked authorization does not count (E-94). SRS REQ-F-19, REQ-F-80, REQ-F-87. | Team | 2026-10-17 |
 | E-69 | Photo at registration and in a new term | The photo is taken at that moment or uploaded, and the screen says it cannot be changed. The athlete sets password, photo and waiver on the link page, saved together; with "I am an athlete" the photo is saved on the link page, so there is never an authorization without a photo. A new term starts at the first app open: the roster is looked up by the student number of the last claim, the account and history stay, and the new photo is asked before Check In. A User with a manual authorization gives the photo the same way. Changes E-38. SRS REQ-F-13, REQ-F-15, REQ-F-26, REQ-F-80, REQ-F-87. | Team | 2026-10-17 |
@@ -464,6 +465,12 @@ The team settled these while building the dashboard base, after the Athletic Act
 |---|---|---|---|---|
 | E-163 | Gym ID duration and return after a visit | The live indicator is elapsed session duration, HH:MM:SS, from the backend Check In time. It advances at most once per second, without flashing, and stops when the visit ends or the connection is lost. Offline, the card says it is not valid now and shows its last successful update time. The Gym ID does not show the term. After a visit, both members and athletes see the end reason and total duration; Continue returns to Registra tu entrada when access is still valid. Ending a visit does not revoke the athlete authorization. There is no separate authorized-athlete card without a session. Authorization is checked before enabling Check In; no separate Verificando acceso screen is needed. The backend still checks the current rules on submission. Refines E-75 and E-129. SRS REQ-F-40, REQ-NF-26. | Team | 2026-11-07 |
 | E-164 | User navigation and occupancy placement | The User app has Gimnasio, Check-in and Mi cuenta tabs. C-01 is on Gimnasio, separate from the U-01 Check-in screen; it remains on the Staff dashboard S-01. Tapping C-01 opens today's analytics, as before. This updates the placement in SM-1 and SM-4; it does not change the occupancy calculation or the 20 to 30 second polling interval. | Team | 2026-11-07 |
+
+## Decisions from the welcome-screen review (2026-11-08)
+
+| ID | Topic | Answer | Answered by | Date |
+|---|---|---|---|---|
+| E-165 | Schedules and notices require sign in | Remove schedules (C-02) and notices (C-03) from the public welcome screen (N-01) and its signed-out routes. They remain available after sign in, on Gimnasio for Users and in the dashboard menu for Staff and Administrators. A User does not need an active gym authorization to read them. Reading their API data also requires sign in. The contact number, store button, privacy notice and install help remain available before sign in. Replaces only the public-access part of E-66; notice editing and its warning against sensitive data stay. Confirmed by Viviana during the #42 wireframe review. SRS role table, REQ-F-55. | Team | 2026-11-08 |
 
 ## WooCommerce import
 
