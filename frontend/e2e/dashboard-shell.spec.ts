@@ -1,5 +1,5 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
+import { expectNoViolations } from './axe.ts'
 
 test.use({ baseURL: 'http://127.0.0.1:5173' })
 
@@ -20,11 +20,7 @@ test('keyboard users can skip to the dashboard content', async ({ page }) => {
 })
 
 test('dashboard shell has no automated WCAG 2.2 AA violations', async ({ page }) => {
-  const { violations } = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
-    .analyze()
-
-  expect(violations).toEqual([])
+  await expectNoViolations(page)
 })
 
 test('dashboard shell reflows at 320 CSS pixels', async ({ page }) => {
