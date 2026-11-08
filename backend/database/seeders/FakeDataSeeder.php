@@ -33,6 +33,12 @@ class FakeDataSeeder extends Seeder
 {
     public function run(): void
     {
+        if (app()->environment('production')) {
+            $this->command?->warn('Fake data is never seeded in production.');
+
+            return;
+        }
+
         $this->content();
         [$current] = $this->terms();
         [$admin, $staff] = $this->staff();
@@ -40,6 +46,7 @@ class FakeDataSeeder extends Seeder
         $athletes = $this->athletes($current);
         $manual = $this->manualGrant($current);
         $this->links();
+        $this->browserTestUser();
         $this->signInData();
         $this->visits($paid, $athletes, $manual, $admin, $staff);
         $this->auditLog($admin, $staff);
@@ -252,5 +259,14 @@ class FakeDataSeeder extends Seeder
         WaiverAcceptance::factory()->create(['user_id' => $user->id]);
 
         return $user;
+    }
+
+    private function browserTestUser(): User
+    {
+        return User::factory()->create([
+            'email' => env('E2E_USER_EMAIL', 'user@example.com'),
+            'password' => Hash::make(env('E2E_USER_PASSWORD', 'test-user-password-129')),
+            'locale' => 'es',
+        ]);
     }
 }

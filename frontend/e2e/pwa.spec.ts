@@ -26,6 +26,7 @@ test('the service worker precaches the app, never the API, and N-09 opens withou
       await new Promise<void>((resolve) => navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), { once: true }))
     }
   })
+  await page.evaluate(() => fetch('/api/health'))
   const cached = await page.evaluate(async () => {
     const paths: string[] = []
     for (const name of await caches.keys()) for (const request of await (await caches.open(name)).keys()) paths.push(new URL(request.url).pathname)

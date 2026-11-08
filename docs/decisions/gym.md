@@ -109,7 +109,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Feature | 3.2 Paid Member Registration |
 | Why we ask | The plan today is A. With B, the new email must be checked with a link (team.md, E-09). |
 | Answer | A: always the payment email in WooCommerce. The member does not type it, and there is no email verification step (team.md, E-09). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-15: Email when a member changes type
@@ -121,7 +121,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Feature | 3.4 Authorization, Academic Terms and Renewal |
 | Why we ask | The person must keep one account and its Check In history. Paid members use the payment email and athletes the roster email, so the two may differ. The answer also tells us how to match a roster record to an existing account. |
 | Answer | A: the current account email stays. The user signs in to the existing account and adds the new authorization from inside it: an Authorization Number for a new paid membership, or a student number ("I am an athlete") that is in the current-term roster and unclaimed. No new account is created and staff do not merge accounts. Update 2026-11-05: the roster is now one list, not one per term (team.md, E-116). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-04: Lost or changed phone
@@ -133,7 +133,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Feature | 3.1 Accounts and Sign In |
 | Why we ask | Each account works on one device at a time. REQ-F-05 (now part of REQ-F-03) stayed Pending until the staff role was defined. |
 | Answer | A: the user signs in on the new phone with the password, and the old session ends. A user who forgot the password uses the email reset (team.md, E-11). There is no staff process. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-19: Authorization Number format
@@ -145,7 +145,7 @@ Also asked in cti.md: M-16 (who may have administrator access to the server).
 | Feature | 3.2 Paid Member Registration, 4.1 Data Dictionary |
 | Why we ask | The number is the paid member's proof of purchase. If it is short or in sequence, someone can guess another member's number, and registration needs extra protection. |
 | Answer | From a sample receipt email: the Authorization Number is the 6-digit value in the Payment Description. Registration uses only this number, with these protections: limits on failed lookups per IP address and in total, a masked payment email, the same message for an invalid and an already claimed number, release of a number claimed by mistake by PIN holders, and recovery by the real owner with the password reset. Still open: whether the number is unique across orders. The team checks it with a real export (team.md, E-30). Update 2026-11-04: a read of all 84 store orders shows the number is the gateway field PGPAY_AUTHNUM, 6 characters that can include letters (3 of 69 end in a letter), and no value repeats. It is unique across all orders (team.md, E-128). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 Also asked in cti.md, if CTI manages the store.
@@ -159,7 +159,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.1 Accounts and Sign In |
 | Why we ask | REQ-F-09 is new and nobody has approved it. Retention periods come from G-03. |
 | Answer | The user requests deletion from the app, only when the user has no active authorization. Personal data and photos are deleted. Anonymous Check In counts are kept for analytics. PIN holders can handle a deletion for a user if needed. Update 2026-11-05: there is no PIN; an Administrator with a personal account handles a deletion when the user asks (team.md, E-114). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-34: Who takes the User's photo
@@ -197,7 +197,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.4 Authorization, Academic Terms and Renewal |
 | Why we ask | Every authorization expires at the end of its term. A wrong date gives or removes access for everyone at once. |
 | Answer | A: the dates come from the UPRM academic calendar and the Administrator enters them. Summer is asked in G-26. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-10: Roster data and format
@@ -209,7 +209,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.9 Athlete Roster |
 | Why we ask | The SRS minimum is student number, name, institutional email and term. A spreadsheet lets us import the list; paper means typing each record. |
 | Answer | PIN holders create, import or edit the roster in the system. The SRS minimum stays student number, name, institutional email and term. The gym still answers which other fields it records and whether the lists are on paper or in a spreadsheet. In the CTI meeting one team member said the gym receives the list as an Excel file and prints it; another said the source is not known. Not verified with the gym. CTI recommended uploading the same file the gym receives, so the system keeps what it needs and ignores the rest. Follow-up questions: G-33. Update 2026-11-04: the lists exist only in Word, one per sport, sent by each coach every semester; the gym list is the merit scholarship list plus athletes the coach certifies. Each has name, student number and sport, and the office adds the institutional email. Administrators enter them by hand, with no file import (team.md, E-116). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-13: Who names the roster Staff (closed: no roster Staff)
@@ -221,7 +221,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.10 Gym Account, PIN and Permissions, 3.9 Athlete Roster |
 | Why we ask | Only Staff with this permission can change the roster. REQ-F-53 (now part of REQ-NF-48) stayed Pending until we knew who grants it. |
 | Answer | Closed. There is no separate roster permission. The gym uses one shared gym account, and the roster tool needs the PIN. Who holds the PIN is asked in G-29. Update 2026-11-05: there is no shared gym account and no PIN; only Administrators, with personal accounts, change the roster (team.md, E-114, E-116). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### E-14: Administrator and the roster (moved from the team list)
@@ -233,7 +233,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.10 Gym Account, PIN and Permissions |
 | Why we ask | The proposal gave this task to the Administrator; now designated Staff do it. The gym knows how the work is split. With B, REQ-F-54 is removed and the team rewrites the Objective 4 test. |
 | Answer | Closed. The roster is handled by PIN holders. REQ-F-54 is Removed, and the Objective 4 test now checks each action by whether the PIN was entered. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-14: Review of roster entries
@@ -245,7 +245,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.9 Athlete Roster |
 | Why we ask | With B or C, the team adds a report or review step to REQ-F-50. |
 | Answer | Replaced by the audit log. Every roster change is recorded with time, IP address, device and the values before and after. Whether the gym also wants a term report is asked in G-30. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-33: Roster updates each term
@@ -271,7 +271,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.8 Staff Operations |
 | Why we ask | Staff must find the account and confirm it is the same person. REQ-F-46 stays Pending until the accepted identification is set. |
 | Answer | A paid member shows a photo of the payment confirmation, and staff find the account by Authorization Number. An athlete gives the student number. Staff also compare the photo stored in the account with the person in front of them (confirmed 2026-10-14). Changed 2026-10-14 (team.md, E-54): for a paid member, Staff search by name and compare the stored photo; no receipt or payment confirmation is needed. Athletes still give the student number. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-20: Session corrections by Staff
@@ -283,7 +283,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.8 Staff Operations |
 | Why we ask | Any correction outside this list is rejected. Each correction changes the occupancy count and is recorded in the audit log. |
 | Answer | Two corrections: end a session early, and void a session created by mistake. A void keeps the record and the log, and the session stops counting in occupancy and analytics. Staff cannot extend sessions or create sessions without authorization. Open, depends on G-32: if the gym wants a check-out, ending sessions becomes a routine Staff action, not only a correction. Update 2026-11-04: an error found after a session closed is fixed by the Staff on duty (meeting notes, to confirm). How a closed session is corrected is still to design. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-22: Refund during an active session
@@ -295,7 +295,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.4 Authorization, Academic Terms and Renewal |
 | Why we ask | REQ-F-27 removes the authorization, but the effect on a session already open is not defined. |
 | Answer | Closed. There are no refunds or cancellations; memberships only expire at the end of the term. REQ-F-27 is Removed. Update 2026-11-04: the department does refund in some cases, for example when the gym stays closed. Refunds are made in the payment gateway, outside the store, so an Administrator revokes the authorization by hand in the app (team.md, E-120). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-09: Access rules and the PIN model
@@ -381,7 +381,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 3.12 Membership and Safety Records |
 | Why we ask | The proposal stores these only if the gym needs them. Each one adds sensitive data that needs access limits and retention rules. |
 | Answer | Waivers and emergency contacts only. The system stores a waiver acceptance with full name, email and an emergency contact (name and phone). Name and email come from the payment record or the roster. No street address, no documents and no medical warnings. Staff see the waiver and emergency contact from the Staff dashboard. Open since the CTI meeting: is accepting on screen enough, or does the director need a drawn signature or a signed paper? With on-screen acceptance nothing is uploaded; only the acceptance is stored. A signature or a paper brings back document storage, size limits, a check that the file is valid, and more backup space. The director says what he needs legally. Source: [CTI meeting](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/59). Update 2026-11-04: accepting on screen counts as the signature. The department sends the waiver text. Update 2026-11-06: the department also wants a signature, so a drawn signature is added for the Final report after research (team.md, E-155). Athletes are not asked again each term (team.md, E-116). |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-03: How long data is kept (merges G-12)
@@ -393,7 +393,7 @@ Also asked in cti.md, if CTI manages the store.
 | Feature | 4.3 Data Acquisition, Integrity, Retention, and Disposal, 8.1 Audit |
 | Why we ask | The default today is to discard old photos unless UPRM requires keeping them. Without periods, the system cannot delete anything on schedule. In the CTI meeting, CTI said the reports the gym wants decide what data is kept and for how long. Open: in the CTI meeting, CTI said nobody asks for the audit log until an incident happens. CTI did not speak about how long entries are kept. The end-of-term rule for the audit log stays as decided unless the gym wants a longer period. |
 | Answer | Audit log: each entry is kept until the end of the term in which it happened (decided 2026-10-14). IP addresses in the log are personal data and follow the same rule. Every other period is unknown; the gym and UPRM answer. No provisional values. Update 2026-11-04: every kind of data is kept 5 years (team.md, E-125). This replaces the end-of-term rule for the audit log. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
@@ -407,7 +407,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 | Feature | 6.3 Security, 7 Internationalization and Localization Requirements |
 | Why we ask | The system cannot collect photos or other personal data without this notice. The team can draft it, but someone at UPRM must approve it. |
 | Answer | The team drafts the notice in Spanish and English, and the gym approves it. Confirmed 2026-11-04. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ## Content
@@ -421,7 +421,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 | Feature | 3.11 Facility Information, Schedules and Notices, 7 Internationalization and Localization Requirements |
 | Why we ask | Every text the gym publishes needs both versions. With A, publishing a notice takes the gym two texts each time. |
 | Answer | B for the initial texts: the team translates and the gym approves. Notices published after December are asked in G-27. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ### G-27: English for notices after December
@@ -441,7 +441,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 | Field | Value |
 |---|---|
 | Question | Which schedule periods are for athletes only? |
-| Affects | REQ-F-82 Paid members cannot Check In during athletes-only periods; REQ-F-83 Notice when a period starts within the session; REQ-F-55 (b) Mark a slot as athletes only (was REQ-F-84) |
+| Affects | REQ-F-82 Paid members cannot Check In during athletes-only periods; REQ-F-83 Notice shortly before a period starts or when it starts within the session (E-161); REQ-F-55 (b) Mark a slot as athletes only (was REQ-F-84) |
 | Feature | 3.6 Check In and Facility Session, 3.11 Facility Information, Schedules and Notices |
 | Why we ask | During these periods paid members cannot do Check In. A User whose 60-minute session overlaps the start of a period sees its start time; the session is not cut. |
 | Answer | For the rest of the fall 2026 semester, from November 9, the gym is open to athletes only. Administrators create athlete-only periods in the schedule screen, and a period outside regular hours opens the gym for athletes only. |
@@ -459,7 +459,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 | Feature | 6.4 Other Quality Attributes, 3.6 Check In and Facility Session |
 | Why we ask | The Check In boundary and the accepted accuracy must be measured at the gym on iPhone and Android. Without access, these values stay unknown. |
 | Answer | Yes. The team can test inside and around the gym whenever it wants, for Capstone purposes. Update 2026-11-04: the team measures the location on its visit to see the machines, calling the office first. |
-| Answered by | Carlos Pepin (team), gym to confirm |
+| Answered by | Team, gym to confirm |
 | Date | 2026-10-13 |
 
 ## Also in team.md

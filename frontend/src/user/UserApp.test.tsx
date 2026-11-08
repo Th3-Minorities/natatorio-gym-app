@@ -197,6 +197,17 @@ describe('U-03 and U-05', () => {
     expect(await screen.findByText(account.name)).toBeInTheDocument()
   })
 
+  it('shows the no-connection state, not the load error, when the account cannot load offline', async () => {
+    answer = async () => { throw new TypeError('network') }
+    open('/account')
+    expect(await screen.findByText('Sin conexión · Datos no actualizados')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
+    expect(screen.queryByText('No pudimos cargar tu cuenta')).toBeNull()
+    answer = async () => json(account)
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(await screen.findByText(account.name)).toBeInTheDocument()
+  })
+
   it('shows the other-device state when a protected request rejects the session', async () => {
     answer = async () => error('user_session_replaced', 401)
     open('/account')
@@ -231,13 +242,20 @@ describe('User destinations', () => {
     render(<UserEntry><p>Health page</p></UserEntry>)
     expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.queryByText('Health page')).toBeNull()
-    expect(screen.queryByRole('link', { name: 'Registrarme' })).toBeNull()
-    expect(screen.queryByRole('link', { name: 'Instalar app' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Registrarme' })).toHaveAttribute('href', '/register')
+    expect(screen.queryByText('Instalar app')).toBeNull()
+    expect(screen.queryByText(/Ayuda para instalar/)).toBeNull()
+  })
+
+  it('shows the help line on welcome with the contact number from the API', async () => {
+    answer = async () => json({ version: 'draft', draft: true, store_url: null, contact_number: '787-555-0199' })
+    open('/welcome')
+    expect(await screen.findByText('Necesitas una membresía pagada o estar en el roster de atletas. Ayuda · 787-555-0199.')).toBeInTheDocument()
   })
 
   it('returns from sign-in to welcome', async () => {
     open()
-    expect(screen.queryByRole('link', { name: 'Comenzar' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
     fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
     expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Comenzar' })).toBeNull()
@@ -246,7 +264,8 @@ describe('User destinations', () => {
   it('keeps account destinations without screens as non-links', async () => {
     open('/account')
     await screen.findByRole('heading', { name: 'Mi cuenta' })
-    for (const name of ['Gimnasio', 'Check-in', 'Soy atleta']) expect(screen.queryByRole('link', { name })).toBeNull()
+    for (const name of ['Gimnasio', 'Soy atleta']) expect(screen.queryByRole('link', { name })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Check-in' })).toHaveAttribute('href', '/check-in')
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('href', '/account')
   })
 

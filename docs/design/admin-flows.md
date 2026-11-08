@@ -529,7 +529,7 @@ flowchart TD
 
 ## Design decisions to confirm
 
-Marked Decided when the owner chose in the design review (October 2026) or the team chose earlier. D14 to D16 and the extension of D12 were decided on 2026-10-20 (E-101 to E-107). D1 to D4 and D14 were replaced on 2026-11-04 by E-114 (personal staff accounts, no PIN). D5 and D13 are still Proposed and stay open for the PR review.
+Marked Decided when the team chose in the design review (October 2026) or earlier. D14 to D16 and the extension of D12 were decided on 2026-10-20 (E-101 to E-107). D1 to D4 and D14 were replaced on 2026-11-04 by E-114 (personal staff accounts, no PIN). D5 and D13 are still Proposed and stay open for the PR review.
 
 **D1. PIN format.** Replaced by E-114: there is no PIN.
 
@@ -577,11 +577,11 @@ Marked Decided when the owner chose in the design review (October 2026) or the t
 
 **D14. Lock button and the Administrator menu screen.** Replaced by E-114 (2026-11-04): there is no Lock button, no "Administrator mode" bar and no PIN. A-03 stays removed (E-102). A-14 is removed and A-15 to A-17 are new; the other A IDs do not change.
 
-**D15. Where staff accounts change their language.** Decided (E-104, owner, 2026-10-20), updated by E-114 and data-model D11: each staff account stores its own language and changes it in its preferences.
+**D15. Where staff accounts change their language.** Decided (E-104, team, 2026-10-20), updated by E-114 and data-model D11: each staff account stores its own language and changes it in its preferences.
 - The control is C-06 on the dashboard and may also be a button in the dashboard top bar. The wireframe picks the placement.
 - The rule of no language button in the top bar (E-64) applies to the User app, not to the gym dashboard.
 
-**D16. Deleting a term.** Decided (E-107), owner, 2026-10-20: terms are never deleted.
+**D16. Deleting a term.** Decided (E-107), team, 2026-10-20: terms are never deleted.
 - A term created by mistake is fixed by editing its dates (E-88). A-04 has no delete button and no delete states.
 
 ## Gaps and questions

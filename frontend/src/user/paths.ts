@@ -1,3 +1,5 @@
-const USER_PATHS = ['/welcome', '/sign-in', '/recover-password', '/reset-password', '/account', '/account/settings', '/account/delete', '/install']
+const USER_PATHS = ['/welcome', '/sign-in', '/recover-password', '/reset-password', '/account', '/account/settings', '/account/delete', '/check-in', '/install']
 
-export function isUserPath(path: string) { return USER_PATHS.includes(path) }
+export const REGISTRATION_PATHS = ['/register', '/register/identify', '/register/password', '/privacy']
+
+export function isUserPath(path: string) { return USER_PATHS.includes(path) || REGISTRATION_PATHS.includes(path) }

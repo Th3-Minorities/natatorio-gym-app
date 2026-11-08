@@ -36,7 +36,7 @@ export function InstallHelp() {
 
   function arrows(event: KeyboardEvent) {
     const index = PLATFORMS.indexOf(platform)
-    const next = { ArrowLeft: PLATFORMS[(index + 1) % PLATFORMS.length], ArrowRight: PLATFORMS[(index + 1) % PLATFORMS.length],
+    const next = { ArrowLeft: PLATFORMS[(index - 1 + PLATFORMS.length) % PLATFORMS.length], ArrowRight: PLATFORMS[(index + 1) % PLATFORMS.length],
       Home: PLATFORMS[0], End: PLATFORMS[PLATFORMS.length - 1] }[event.key]
     if (!next) return
     event.preventDefault()

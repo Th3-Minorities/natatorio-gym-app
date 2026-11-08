@@ -1,6 +1,30 @@
 // Spanish texts, the default language (context.md, "Interface language"). en.ts must have the same keys.
 
 export const es = {
+  registration: {
+    privacy: 'Aviso de privacidad', before: 'Antes de comenzar',
+    privacyIntro: 'Revisa el aviso de privacidad antes de continuar con tu registro.',
+    draft: 'BORRADOR', provisional: 'Texto provisional para el diseño.',
+    pendingNotice: 'Aquí se mostrará el aviso de privacidad aprobado por el gimnasio.',
+    pendingApproval: 'Versión final pendiente de aprobación.', continueRegistration: 'Continuar con el registro',
+    draftTitle: 'BORRADOR · Pendiente de aprobación', placeholder: 'Texto provisional para el wireframe.',
+    noticeBody: 'Aquí se mostrará el aviso de privacidad aprobado por el gimnasio, antes de recopilar datos personales.',
+    noticeSections: ['[Datos que se recopilan]', '[Finalidad y uso]', '[Retención e información de contacto]'],
+    offlineAvailable: 'El aviso está disponible sin conexión.',
+    loading: 'Cargando el aviso…', errorTitle: 'No pudimos mostrar el aviso',
+    errorDetail: 'Intenta de nuevo antes de continuar con el registro.',
+    title: 'Registro', identificationIntro: 'Ingresa tu número de estudiante o el número de transacción de tu recibo.',
+    number: 'Número de estudiante o transacción', numberPlaceholder: 'Escribe tu número',
+    studentHint: 'Estudiante: 9 dígitos.',
+    numberHint: 'Número de autorización: 6 o 7 caracteres, puede tener letras.',
+    paymentDescription: 'Descripción del pago ·', receiptNumber: 'Número de autorización:', exampleNumber: '4K7Q2B',
+    paymentHelp: (phone: string) => `Necesitas una membresía pagada. ¿Problemas? Llama al ${phone}.`, buy: 'Comprar membresía',
+    continue: 'Continuar', existing: '¿Ya tienes cuenta?', noMembership: '¿No tienes membresía?', signIn: 'Inicia sesión',
+    renewal: (email: string) => `Ya tienes una cuenta con ${email}. Inicia sesión para añadir esta membresía.`,
+    hello: (name: string) => `¡Hola, ${name}!`, createPassword: 'Crea una contraseña',
+    passwordIntro: 'Usarás esta contraseña para iniciar sesión en tu cuenta.',
+    passwordPlaceholder: 'Escribe tu contraseña', confirmPlaceholder: 'Repite tu contraseña',
+  },
   user: {
     brand: 'RUM', brandName: 'GIMNASIO DE PESAS', back: 'Volver',
     signInTitle: 'Log in', signIn: 'Iniciar sesión', description: 'Ingresa a tu cuenta para continuar.',
@@ -11,7 +35,7 @@ export const es = {
     signing: 'Iniciando sesión…', wrongTitle: 'No pudimos iniciar sesión',
     wrongText: 'Revisa el correo y la contraseña e intenta de nuevo.',
     waitTitle: 'Espera antes de intentar de nuevo',
-    waitText: (time: string) => `Intenta de nuevo a las ${time}.`,
+    waitText: (time: string) => `Intenta de nuevo a las ${time.replace(/\.$/, '')}.`,
     replacedTitle: 'Iniciaste sesión en otro dispositivo', replacedText: 'Vuelve a iniciar sesión para usar tu cuenta aquí.',
     offline: 'Sin conexión · Datos no actualizados', offlineForm: 'Conéctate para continuar. Se conservan los datos ingresados.',
     recover: 'Recuperar contraseña',
@@ -55,8 +79,8 @@ export const es = {
     activeTitle: 'Tienes una autorización activa', activeText: 'La cuenta puede eliminarse cuando ya no tengas una autorización activa.',
     returnToSettings: 'Volver a Ajustes', offlineDelete: 'Conéctate para eliminar la cuenta.',
     welcome: 'Bienvenido al gimnasio', deleted: 'Tu cuenta se eliminó', deletedDetail: 'Puedes registrarte de nuevo cuando tengas acceso al gimnasio.',
-    register: 'Registrarme', membershipHelp: 'Necesitas una membresía pagada o estar en el roster de atletas. Ayuda · 265-3866.',
-    install: 'Instalar app', helpPrivacy: 'Ayuda para instalar · Aviso de privacidad', languages: 'Español / English',
+    register: 'Registrarme', membershipHelp: (phone: string) => `Necesitas una membresía pagada o estar en el roster de atletas. Ayuda · ${phone}.`,
+    languages: 'Español / English',
     gym: 'Gimnasio', checkIn: 'Check-in', navigation: 'Navegación principal',
   },
   install: {
@@ -69,6 +93,59 @@ export const es = {
     installedTitle: '¡Todo listo!', installedText: 'Ya estás usando la app instalada.', installedHelp: 'Puedes abrirla desde tu pantalla de inicio.',
     continue: 'Continuar', notNow: 'Ahora no',
   },
+  // U-01 Check In (Figma page "#41 Gym ID and Check in": boards 01, 04, 08, 09, 10, Atletas 02, 04, 05, 06,
+  // and the member confirmation 4104:719).
+  checkIn: {
+    ready: '¿Listo para entrenar?', review: 'Revisa lo necesario para continuar', nextAccess: 'Consulta tu próximo acceso',
+    confirmed: '¡Tu entrada quedó registrada!', member: 'Miembro', athlete: 'Atleta', student: 'Estudiante',
+    registerTitle: 'Registra tu entrada', registerText: 'Confirma tu llegada al gimnasio.',
+    hold: 'Mantén presionado para entrar', holding: 'Mantén presionado…', locationNote: 'Necesitaremos verificar tu ubicación.',
+    processing: 'Estamos procesando tu Check-in',
+    locating: {
+      title: 'Obteniendo ubicación', text: 'Confirmamos tu llegada al gimnasio.', button: 'Obteniendo ubicación…',
+      hint: 'Permite la ubicación si el navegador lo solicita.',
+    },
+    registering: {
+      title: 'Registrando entrada', text: 'Guardamos la hora de tu entrada.', button: 'Registrando entrada…',
+      hint: 'Espera la confirmación antes de entrar.',
+    },
+    upcoming: 'Próximo horario exclusivo de atletas', exclusive: 'Horario exclusivo de atletas',
+    periodTime: (day: string, range: string) => `${day} · ${range}`,
+    athletesTraining: 'Ahora entrenan los atletas', exclusiveRange: (range: string) => `Horario exclusivo · ${range}`,
+    canRegister: 'Podrás registrar tu entrada', from: (time: string) => `A partir de las ${time}`,
+    membershipValid: 'Tu membresía sigue vigente.', schedules: 'Ver horarios', availableAfter: 'Check-in disponible al terminar este periodo.',
+    sessionActive: 'Sesión activa', entryRegistered: 'Entrada registrada', duration: 'Duración',
+    showCard: 'Muestra esta tarjeta al personal.', staffExit: 'El personal registra tu salida.',
+    problems: {
+      authorization: { title: 'Tu acceso no está vigente', text: 'No encontramos una autorización vigente para registrar tu entrada.', action: 'Revisar mi acceso' },
+      athleteAuthorization: {
+        title: 'Tu acceso de atleta no está vigente',
+        text: 'No encontramos una autorización de atleta vigente. Consulta con el personal para revisar tu acceso.',
+        action: 'Ver información de contacto',
+      },
+      closed: { title: 'El gimnasio está cerrado', text: 'Consulta los horarios y los avisos antes de tu próxima visita.', action: 'Ver horarios' },
+      termPhoto: { title: 'Necesitamos una foto nueva', text: 'Actualiza tu foto para el nuevo término antes de registrar tu entrada.', action: 'Actualizar foto' },
+      pendingPhoto: { title: 'Tu foto necesita actualizarse', text: 'El personal marcó tu foto como pendiente. Carga una foto nueva desde tu teléfono.', action: 'Actualizar foto' },
+      denied: {
+        title: 'Activa el permiso de ubicación',
+        text: 'Activa el permiso de ubicación en los ajustes del navegador. Luego pulsa Reintentar para continuar con tu Check-in.',
+        action: 'Reintentar', help: 'Ver cómo activar ubicación',
+      },
+      unavailable: { title: 'No pudimos obtener tu ubicación', text: 'Espera un momento y vuelve a intentarlo desde el gimnasio.', action: 'Intentar de nuevo' },
+      accuracy: { title: 'Necesitamos mayor precisión', text: 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.', action: 'Intentar de nuevo' },
+      outside: { title: 'Acércate al gimnasio', text: 'Debes estar dentro del área del gimnasio para registrar tu entrada.', action: 'Intentar de nuevo' },
+      offline: { title: 'Necesitas conexión', text: 'Conéctate a internet para verificar y registrar tu entrada.', action: 'Reintentar conexión' },
+    },
+    deniedNote: 'En la PWA, abre los ajustes del sitio desde el navegador.',
+    help: {
+      title: 'Activa tu ubicación', text: 'Sigue los pasos de tu navegador y vuelve para reintentar.',
+      ios: { name: 'iPhone · Safari', steps: ['Abre este sitio en Safari.', 'Menú de página → Configuración del sitio web.', 'Ubicación → Permitir.'] },
+      android: { name: 'Android · Chrome', steps: ['Abre este sitio en Chrome.', 'Información del sitio → Permisos.', 'Ubicación → Permitir.'] },
+      note: 'Activa también la ubicación del dispositivo. Si usas la app instalada, revisa el permiso desde el navegador.',
+      close: 'Cerrar ayuda',
+    },
+  },
+
   health: {
     waiting: 'Comprobando la API...',
     connected: 'API: conectada',
@@ -103,6 +180,41 @@ export const es = {
     timeoutText: 'Tu sesión se cerró por inactividad. Inicia sesión de nuevo.',
   },
 
+  // N-11 pages opened from an email link (#84): 4039:4170, 4039:4224, 4126:1316, 4126:1341 and 4039:4325.
+  staffAccess: {
+    forgotTitle: 'Recuperar contraseña',
+    forgotText: 'Escribe el correo de tu cuenta del equipo.',
+    email: 'Correo electrónico',
+    emailPlaceholder: 'nombre@ejemplo.com',
+    sendLink: 'Enviar enlace',
+    backToSignIn: 'Volver a iniciar sesión',
+    checkEmailTitle: 'Revisa tu correo',
+    checkEmailText: 'Si existe una cuenta del equipo con ese correo, recibirás un enlace para recuperar tu contraseña.',
+    checkSpam: 'Revisa también la carpeta de correo no deseado.',
+    createTitle: 'Crear tu contraseña',
+    createText: 'Completa tu acceso al equipo del gimnasio.',
+    createSubmit: 'Crear contraseña',
+    resetTitle: 'Restablecer contraseña',
+    resetText: 'Elige una nueva contraseña para tu cuenta del equipo.',
+    resetSubmit: 'Guardar contraseña',
+    newPassword: 'Nueva contraseña',
+    newPasswordPlaceholder: 'Escribe una contraseña',
+    confirmPassword: 'Confirmar contraseña',
+    confirmPasswordPlaceholder: 'Repite la contraseña',
+    passwordHint:
+      'Usa al menos 10 caracteres. Puedes usar una frase larga. Evita contraseñas conocidas o filtradas. Ambas contraseñas deben coincidir.',
+    checking: 'Revisando el enlace…',
+    expiredTitle: 'Enlace vencido o usado',
+    inviteExpiredText: 'Este enlace de invitación ya no se puede usar.',
+    inviteExpiredHelp: 'Pide a un Administrador que te envíe una nueva invitación para crear tu contraseña.',
+    // The reset email's link, expired or used (4424:1683). The invitation's has its own help text.
+    resetExpiredText: 'Este enlace para recuperar tu contraseña ya no se puede usar.',
+    requestAnother: 'Solicitar otro enlace',
+    // Not drawn in Figma: shown on N-11 after saving, since the note says "Al guardar, vuelve al acceso del equipo".
+    savedTitle: 'Contraseña guardada',
+    savedText: 'Inicia sesión con tu nueva contraseña.',
+  },
+
   // Dashboard shell and sidebar (Figma "Dashboard / Shell", 98:5).
   dashboard: {
     skipToContent: 'Saltar al contenido',
@@ -133,12 +245,73 @@ export const es = {
       manualEntries: 'Entradas manuales',
       auditLog: 'Registro de auditoría',
     },
-    // Neutral: staff accounts have no gender, so not "Administrador" or "Administradora".
-    roles: { staff: 'Staff', admin: 'Administración' },
+    roles: { staff: 'Staff', admin: 'Administrador' },
     signOut: 'Cerrar sesión',
     // Not drawn in Figma: the sign-out could not reach the server, so the person is still signed in.
     signOutFailedTitle: 'No se pudo cerrar sesión',
     signOutFailedText: 'Revisa la conexión e intenta de nuevo.',
+  },
+
+  // A-15, Figma 100:841 (#84).
+  staffTeam: {
+    title: 'Cuentas del staff',
+    description: 'Administra el acceso del equipo al gimnasio.',
+    summary: (active: number, invited: number) =>
+      `${active} ${active === 1 ? 'activa' : 'activas'} · ${invited} ${invited === 1 ? 'invitada' : 'invitadas'}`,
+    tableTitle: 'Equipo del gimnasio',
+    columns: { name: 'Nombre', email: 'Correo electrónico', role: 'Rol', status: 'Estado', actions: 'Acciones' },
+    status: { active: 'Activo', invited: 'Invitado', deactivated: 'Desactivado' },
+    keptTitle: 'Las cuentas se conservan',
+    keptText: 'Al desactivar una cuenta se retira su acceso. Su registro permanece en esta lista.',
+    loadingTitle: 'Cargando cuentas…',
+    loadingText: 'Espera un momento mientras se consulta el equipo.',
+    offlineText: 'Las acciones estarán disponibles al recuperar la conexión.',
+    // Term chip and banner, Figma 100:841 and 100:1297.
+    termAccess: 'Acceso del equipo',
+    noTermChip: 'Sin término activo',
+    noTermTitle: 'No hay un término activo hoy',
+    noTermText: 'Configura las fechas en Términos. No se pueden crear autorizaciones nuevas.',
+    // Invitar, Figma 100:1126, 100:1197 and 100:1231.
+    invite: 'Invitar',
+    inviteTitle: 'Invitar al equipo',
+    inviteText: 'La persona recibirá un enlace por correo para establecer su propia contraseña.',
+    fullName: 'Nombre completo',
+    email: 'Correo electrónico',
+    role: 'Rol',
+    sendInvite: 'Enviar invitación',
+    cancel: 'Cancelar',
+    emailInUseTitle: 'Este correo ya está en uso',
+    emailInUseText: (email: string) => `${email} ya pertenece a una cuenta del equipo. Usa otro correo.`,
+    fixEmail: 'Corregir correo',
+    invitedTitle: 'Invitación enviada',
+    invitedText: (firstName: string) => `${firstName} aparecerá como invitado hasta que establezca su contraseña.`,
+    // Reenviar invitación, Figma 4039:3311.
+    resend: 'Reenviar invitación',
+    resentTitle: 'Invitación reenviada',
+    resentText: (email: string, firstName: string) =>
+      `Enviamos una nueva invitación a ${email}. ${firstName} seguirá como Invitado hasta crear su contraseña.`,
+    // Cambiar rol, Figma 4039:3226, 4039:3252 and 4039:3285.
+    changeRole: 'Cambiar rol',
+    currentRole: (role: string) => `Rol actual: ${role}`,
+    newRole: 'Nuevo rol',
+    roleAudit: 'Este cambio quedará registrado en el registro de auditoría.',
+    save: 'Guardar',
+    roleChangedTitle: 'Rol cambiado',
+    roleChangedText: (name: string, role: string) =>
+      `${name} ahora tiene el rol ${role}. El cambio se guardó en el registro de auditoría.`,
+    ownRoleTitle: 'No puedes cambiar tu propio rol',
+    ownRoleText: (role: string) => `Debes conservar tu rol ${role}. Pide a otro Administrador que cambie tu rol.`,
+    understood: 'Entendido',
+    // Desactivar, Figma 100:1205. Reactivar has no Figma frame (E-150).
+    deactivate: 'Desactivar',
+    deactivateTitle: (name: string) => `¿Desactivar a ${name}?`,
+    deactivateText:
+      'No podrá iniciar sesión. La cuenta se conservará con estado desactivado. Sus sesiones abiertas terminan de inmediato.',
+    deactivateConfirm: 'Desactivar cuenta',
+    reactivate: 'Reactivar',
+    // Read by screen readers only: the row itself shows the change.
+    deactivated: (name: string) => `${name} se desactivó.`,
+    reactivated: (name: string) => `${name} se reactivó.`,
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
@@ -149,11 +322,27 @@ export const es = {
     errorDetail: 'No pudimos cargar los datos. Inténtalo de nuevo.',
     retry: 'Reintentar',
     offlineTitle: 'Sin conexión',
+    offlineRetryText: 'Revisa la conexión e intenta de nuevo.',
     offlineLead: 'Sin conexión. Los datos pueden haber cambiado. Las acciones estarán disponibles al recuperar la conexión.',
   },
 
   // The PWA owns the texts for stable API error codes (E-154).
   errors: {
+    // Check In refusals (U-01). The screen shows the drawn panels; these are the same texts for other uses.
+    check_in_no_authorization: 'No encontramos una autorización vigente para registrar tu entrada.',
+    check_in_gym_closed: 'Consulta los horarios y los avisos antes de tu próxima visita.',
+    check_in_photo_required: 'Actualiza tu foto para el nuevo término antes de registrar tu entrada.',
+    check_in_photo_pending: 'El personal marcó tu foto como pendiente. Carga una foto nueva desde tu teléfono.',
+    check_in_athletes_only: 'Check-in disponible al terminar este periodo.',
+    location_required: 'Espera un momento y vuelve a intentarlo desde el gimnasio.',
+    check_in_low_accuracy: 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.',
+    check_in_outside_boundary: 'Debes estar dentro del área del gimnasio para registrar tu entrada.',
+    registration_privacy_required: 'Revisa el aviso de privacidad antes de continuar con tu registro.',
+    registration_number_unavailable: 'Necesitas una membresía pagada.',
+    registration_waiver_unavailable: 'Intenta de nuevo antes de continuar con el registro.',
+    registration_photo_failed: 'Intenta de nuevo antes de continuar con el registro.',
+    registration_photo_invalid: 'Intenta de nuevo antes de continuar con el registro.',
+    registration_photo_conversion_unavailable: 'Intenta de nuevo antes de continuar con el registro.',
     user_credentials_invalid: 'Revisa el correo y la contraseña e intenta de nuevo.',
     user_session_replaced: 'Vuelve a iniciar sesión para usar tu cuenta aquí.',
     user_reset_link_invalid: 'Este enlace venció o ya se utilizó.',
@@ -174,6 +363,13 @@ export const es = {
     staff_credentials_invalid: 'El correo o la contraseña no son correctos.',
     staff_session_expired: 'Tu sesión terminó tras un rato sin actividad. Inicia sesión de nuevo.',
     staff_account_deactivated: 'Esta cuenta fue desactivada. Pide acceso a un Administrador si lo necesitas de nuevo.',
+    staff_account_not_invited: 'Esta cuenta ya no está pendiente de invitación. Actualiza la lista.',
+    staff_invite_link_invalid: 'Este enlace de invitación ya no se puede usar.',
+    staff_reset_link_invalid: 'Este enlace venció o ya se utilizó.',
+    staff_role_own_account: 'No puedes cambiar tu propio rol.',
+    staff_deactivate_own_account: 'No puedes desactivar tu propia cuenta.',
+    staff_last_administrator: 'Debe quedar al menos un Administrador activo.',
+    staff_account_status_changed: 'Esta cuenta cambió mientras la veías. Actualiza la lista.',
   },
 
   validation: {
@@ -185,6 +381,7 @@ export const es = {
     in: 'Selecciona una opción válida.',
     unique: 'Este valor ya está en uso.',
     confirmed: 'La confirmación no coincide.',
+    password: 'Usa al menos 10 caracteres y evita contraseñas conocidas o filtradas.',
     invalid: 'Revisa este campo.',
   },
 }

@@ -22,6 +22,10 @@
   --sage-on-raised: #c5c89f;
   --accent: #fa9500;
   --sage: #babd8d;
+  /* Status chips of A-15 (100:676), drawn as plain colors in Figma, not variables. */
+  --chip-invited: #f9edce;
+  --chip-invited-foreground: #694708;
+  --chip-off: #eaece4;
 
   /* Spacing */
   --spacing-4: 4px;
@@ -100,4 +104,14 @@
   --install-handy-icon: 48px;
   --install-done-size: 72px;
   --install-done-icon: 44px;
+
+  /* Check In, U-01 (Figma page "#41 Gym ID and Check in", 4085:1125). */
+  --check-in-member: #a55128;
+  --check-in-member-background: #783d2a;
+  --check-in-athlete-card: #2d603a;
+  --check-in-athlete-background: #153e2a;
+  --check-in-gold: #a27a24;
+  --check-in-gold-soft: #faeccb;
+  --check-in-danger-soft: #faeae5;
+  --check-in-wave: #d8cd94;
 }

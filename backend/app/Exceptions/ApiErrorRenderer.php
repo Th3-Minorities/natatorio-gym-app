@@ -42,7 +42,8 @@ class ApiErrorRenderer
                 $e->status,
                 'validation_failed',
                 array_map(
-                    fn (array $rules) => array_map(fn (string $rule) => Str::snake($rule), array_keys($rules)),
+                    // A rule object is listed by its class; class_basename keeps only its name.
+                    fn (array $rules) => array_map(fn (string $rule) => Str::snake(class_basename($rule)), array_keys($rules)),
                     $e->validator->failed(),
                 ),
             ),
