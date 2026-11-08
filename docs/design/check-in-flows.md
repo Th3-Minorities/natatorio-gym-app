@@ -83,7 +83,7 @@ flowchart TD
 - Location comes from the browser Geolocation API (REQ-NF-11). The permission state is read before asking where the browser allows it; otherwise the error of the position request tells denied, unavailable or timeout apart.
 - The phone checks accuracy and boundary only to answer fast. The backend repeats every check except the location permission and is the only one that decides. The client is never trusted for authorization. Location is a condition, not proof of presence (SRS 3.6).
 - Coordinates travel once in the Check In request and are not stored. Only the result of the location check may be stored on the session (REQ-NF-03). The boundary, accuracy threshold and gym coordinates come from environment configuration (REQ-NF-28, REQ-NF-29).
-- The 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting (architecture D6, Decided (owner, 2026-10-19), open to revision).
+- The 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting (architecture D6, Decided (team, 2026-10-19), open to revision).
 
 ### 3. Successful Check In
 
@@ -409,11 +409,11 @@ flowchart TD
 
 ## Design decisions to confirm
 
-"Decided, revisable" means the owner accepted the recommendation and can still change it.
+"Decided, revisable" means the team accepted the recommendation and can still change it.
 
 ### D1. Order of the Check In checks and the two-call flow
 
-Status: Decided (owner, 2026-10-17), option A.
+Status: Decided (team, 2026-10-17), option A.
 
 - A. Phone first asks the backend for the current session and eligibility (connection, active session, authorization, photo, open, athletes-only). Only if eligible, it asks location and sends one Check In request, where the backend repeats all checks. Pro: no location prompt when Check In would fail anyway; matches REQ-F-37; the same GET serves the Gym ID screen. Con: two requests, about one extra round trip toward the 3 second target (REQ-NF-16).
 - B. Ask location first, then one request that checks everything. Pro: one request. Con: asks location from people with no authorization or when the gym is closed; the User fixes location only to learn the gym is closed.
@@ -423,7 +423,7 @@ Decision: A, because the User gets no location prompt when Check In would fail a
 
 ### D2. Accuracy and boundary rule
 
-Status: Proposed. Values come from measurement at the gym (REQ-NF-28) and stay out of this issue. One part is decided (architecture D6, owner, 2026-10-19, revisable): the 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting.
+Status: Proposed. Values come from measurement at the gym (REQ-NF-28) and stay out of this issue. One part is decided (architecture D6, team, 2026-10-19, revisable): the 50 m check always runs at startup. Only a flag allows another boundary; development and the demo set it, production does not. Without the flag, a boundary farther than 50 m stops the app from starting.
 
 - A. Two separate checks: accuracy at or below a threshold, and distance to the gym coordinates at or below the boundary radius. Pro: simple, each failure has its own message. Con: a fix near the edge with a large accuracy radius can pass.
 - B. Distance plus accuracy at or below the boundary radius (the whole uncertainty circle inside the boundary). Pro: strict. Con: rejects people inside the gym when accuracy is poor indoors.
@@ -433,7 +433,7 @@ Recommendation: A, because it maps one to one to the SRS messages and the measur
 
 ### D3. How expiry is computed
 
-Status: Decided (owner, 2026-10-19), option A, revisable.
+Status: Decided (team, 2026-10-19), option A, revisable.
 
 - A. Query time is the rule: a session is active while status is active and `now()` is before its end. A scheduled task also marks old rows as expired, only for tidy data. Pro: expiry is exact; the task can fail without wrong counts. Con: one more moving part.
 - B. Query time only, never store expired. Pro: least code. Con: every reader (Staff list, analytics) must apply the same time rule.
@@ -443,7 +443,7 @@ Decision: A, because expiry is exact and the task can fail without wrong counts.
 
 ### D4. Exclusion constraint and early end
 
-Status: Decided (owner, 2026-10-19), option A, revisable. Depends on PostgreSQL (M-09).
+Status: Decided (team, 2026-10-19), option A, revisable. Depends on PostgreSQL (M-09).
 
 - A. `EXCLUDE USING gist (user_id WITH =, period WITH &&) WHERE (status <> 'void')`, and ending early cuts the period to the real end time. Pro: the stored period is the real visit, which analytics need anyway. Con: the period changes after insert.
 - B. Same constraint with `WHERE (status = 'active')`, period kept at 2 hours, real end stored in another column. Pro: the period never changes. Con: two end values to keep straight.
@@ -452,7 +452,7 @@ Decision: A, because the stored period is the real visit, which analytics need a
 
 ### D5. Error message keys and response shape
 
-Status: Decided (owner, 2026-10-17), option A (E-74). On 2026-10-26 the codes were renamed from `check_in.reason` to `check_in_reason` to match the snake_case rule in `api-conventions.md` (issue #47 review). The decision itself did not change.
+Status: Decided (team, 2026-10-17), option A (E-74). On 2026-10-26 the codes were renamed from `check_in.reason` to `check_in_reason` to match the snake_case rule in `api-conventions.md` (issue #47 review). The decision itself did not change.
 
 - A. The backend returns a stable code per reason (`check_in_offline` is phone only; `check_in_no_authorization`, `check_in_photo_required`, `check_in_photo_pending`, `check_in_gym_closed`, `check_in_athletes_only`, `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy`, `check_in_outside_boundary`) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
 - B. The backend returns translated text only. Pro: one place. Con: the phone cannot react per reason (open photo upload, show how to turn on location), and tests depend on wording.
@@ -471,7 +471,7 @@ Recommendation: B, one setting, polling only while the page is visible. The elap
 
 ### D7. Can the User see their own past Check Ins
 
-Status: Decided (owner, 2026-10-20), option A (E-105). Answered by E-126: the full history, kept 5 years (E-125).
+Status: Decided (team, 2026-10-20), option A (E-105). Answered by E-126: the full history, kept 5 years (E-125).
 
 - A. Yes. A My visits screen (U-09), reached from the account (U-03), lists the User's own past Check Ins from the session records: date and time, newest first. Location is never shown (REQ-NF-03). Pro: a returning User can see their own history. Con: one more screen and a new requirement.
 - B. Not now. History stays in the database for statistics only. Pro: less to build. Con: the User cannot see their own visits.

@@ -282,7 +282,7 @@ Also asked in cti.md: M-17 (limits for real WooCommerce data on team computers; 
 | E-80 | Void | Staff end or void only active sessions; past statistics do not change. For later: who fixes a mistake found the next day. SRS REQ-F-48. | Team | 2026-10-17 |
 | E-81 | Student number | Shown in full to Staff and the Administrator on every screen they use. Only emails are masked. SRS REQ-NF-19. | Team | 2026-10-17 |
 | E-82 | Manual authorizations in statistics | Their own group, next to paid members and athletes. SRS REQ-F-61 (e). Replaced by E-148. | Team | 2026-10-17 |
-| E-83 | PIN format | 4 digits on a numeric keypad. Carlos knows the tradeoff: 10,000 combinations; attempt limits protect the screen, but a stored hash of a 4-digit PIN falls at once if the database leaks. SRS REQ-NF-48. | Team | 2026-10-19 |
+| E-83 | PIN format | 4 digits on a numeric keypad. The team knows the tradeoff: 10,000 combinations; attempt limits protect the screen, but a stored hash of a 4-digit PIN falls at once if the database leaks. SRS REQ-NF-48. | Team | 2026-10-19 |
 | E-84 | Import result and undo | The result (counts plus accepted and rejected orders) is saved with the import and can be opened again later, so rejected names and emails are stored; their retention is pending (REQ-NF-05). Undo is always allowed, also after Check Ins; active sessions count until they end; the confirmation shows counts without blocking. Undo deletes what that import created and does not revert its changes to older records. SRS REQ-F-28, REQ-F-31, REQ-NF-05, 4.2. Replaced by E-127. | Team | 2026-10-19 |
 | E-85 | No current term | A notice on every Administrator screen, and the reason in each error. SRS 3.4. | Team | 2026-10-19 |
 | E-86 | Reason for a manual grant or revoke | Required, free text of at least 10 characters, written to the audit log. Makes the Proposed part of E-35 final. SRS REQ-F-87. | Team | 2026-10-19 |
@@ -475,7 +475,7 @@ The team settled these while building the dashboard base, after the Athletic Act
 | Affects | REQ-F-28 Load an Export Orders file; REQ-F-29 Fields the import copies; REQ-F-10 Validate the Authorization Number (with E-30) |
 | Feature | 3.5 WooCommerce Import, 3.2 Paid Member Registration |
 | Why we ask | The team has an example file but cannot share it yet. The import cannot be designed without the real columns. |
-| Owner | Carlos Pepin |
+| Owner | Team |
 | Status | Answered (E-127, E-128) |
 | Answer | The orders were read from the store's API instead of an export file. The fields the app needs, where each lives and what it stores are in E-127 and E-128. |
 | Answered by | Team |

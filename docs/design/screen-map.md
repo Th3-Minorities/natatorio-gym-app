@@ -1,6 +1,6 @@
 # Screen map by role
 
-This document lists every screen of the PWA, groups them by role, and draws how a person moves between them. Each screen has a short stable id (N for not signed in, U for User, C for shared, S for Staff, A for Administrator) so wireframe and feature issues can refer to it. Public screens use N, not P, so they do not look like the professor question codes P-01 to P-05 in `team.md`. It covers GitHub issue #8. Flows, state names and rules come from the finished design files: `architecture.md`, `data-model.md`, `registration-flows.md` (REG-N decisions), `check-in-flows.md` (D-N decisions) and `admin-flows.md` (D-N decisions, here written "admin D-N"). Requirements come from `docs/requirements/SRS.md` v0.10, with the team decisions up to E-128. Wireframes and visual design are out of scope. Where a diagram follows a choice from [Design decisions to confirm](#design-decisions-to-confirm), the diagram draws the chosen option and the note under it names the choice (SM-N). The owner decided SM-1 to SM-6 and the gaps in a design review between 2026-10-17 and 2026-10-19 (issue #52), and the wireframe questions on 2026-10-20 (E-101 to E-107). On 2026-11-04 personal staff accounts replaced the shared gym account and the PIN (E-114), so the PIN screens (A-01, A-02), the recovery screen (N-12), Security (A-14) and the in-person registration screens (N-10, S-04) are removed, and A-15 to A-17 are new. Parts still open say "to confirm".
+This document lists every screen of the PWA, groups them by role, and draws how a person moves between them. Each screen has a short stable id (N for not signed in, U for User, C for shared, S for Staff, A for Administrator) so wireframe and feature issues can refer to it. Public screens use N, not P, so they do not look like the professor question codes P-01 to P-05 in `team.md`. It covers GitHub issue #8. Flows, state names and rules come from the finished design files: `architecture.md`, `data-model.md`, `registration-flows.md` (REG-N decisions), `check-in-flows.md` (D-N decisions) and `admin-flows.md` (D-N decisions, here written "admin D-N"). Requirements come from `docs/requirements/SRS.md` v0.10, with the team decisions up to E-128. Wireframes and visual design are out of scope. Where a diagram follows a choice from [Design decisions to confirm](#design-decisions-to-confirm), the diagram draws the chosen option and the note under it names the choice (SM-N). The team decided SM-1 to SM-6 and the gaps in a design review between 2026-10-17 and 2026-10-19 (issue #52), and the wireframe questions on 2026-10-20 (E-101 to E-107). On 2026-11-04 personal staff accounts replaced the shared gym account and the PIN (E-114), so the PIN screens (A-01, A-02), the recovery screen (N-12), Security (A-14) and the in-person registration screens (N-10, S-04) are removed, and A-15 to A-17 are new. Parts still open say "to confirm".
 
 Pending answers touch several screens:
 
@@ -381,7 +381,7 @@ All screens target WCAG 2.2 level AA (REQ-NF-13). Notes only where a screen has 
 
 ## Design decisions to confirm
 
-All six are decided. Carlos Pepin, the owner, answered them in the design review of 2026-10-17. The option tables stay as the record of what was compared. The wireframe answers of 2026-10-20 closed the notes that SM-2, SM-3 and SM-4 left open (E-101 to E-104). On 2026-11-04 E-114 replaced the shared gym account and the PIN: the parts of SM-2, SM-3, SM-4 and SM-5 that mention the PIN, the padlock or the gym account were replaced, and the option tables stay as a record of what was compared.
+All six are decided. The team answered them in the design review of 2026-10-17. The option tables stay as the record of what was compared. The wireframe answers of 2026-10-20 closed the notes that SM-2, SM-3 and SM-4 left open (E-101 to E-104). On 2026-11-04 E-114 replaced the shared gym account and the PIN: the parts of SM-2, SM-3, SM-4 and SM-5 that mention the PIN, the padlock or the gym account were replaced, and the option tables stay as a record of what was compared.
 
 ### SM-1: Navigation for Users on the phone
 
@@ -391,7 +391,7 @@ All six are decided. Carlos Pepin, the owner, answered them in the design review
 | B | Menu button that opens a list | Room for any number of items. Every screen except home needs two taps, and items are hidden from people who do not open the menu |
 | C | Home with tiles, no persistent navigation | Simple home. Back to home between every screen; more taps |
 
-Decided (owner, 2026-10-17): A. Updated by E-164: User tabs are Gimnasio, Check-in and Mi cuenta. Check In stays one tap away; C-01 is on Gimnasio. Staff and Administrators keep the role-based dashboard menu.
+Decided (team, 2026-10-17): A. Updated by E-164: User tabs are Gimnasio, Check-in and Mi cuenta. Check In stays one tap away; C-01 is on Gimnasio. Staff and Administrators keep the role-based dashboard menu.
 
 ### SM-2: Where the language switch lives (REQ-NF-33)
 
@@ -402,7 +402,7 @@ Decided (owner, 2026-10-17): A. Updated by E-164: User tabs are Gimnasio, Check-
 | C | Top bar on public screens, More after sign in | Visible when it matters most. Two places to build and test |
 | Decided | None of A, B or C. The language is asked when the account is created, and the User is told it can change later in profile preferences or settings. No language button in the top bar of the User app (E-104) | One language per account, so the app and the emails agree. N-01 and N-02 are always in Spanish before an account exists (E-103) |
 
-Decided (owner, 2026-10-17): the own option above (E-64). The language belongs to the account, so one setting covers every device and every email. On the gym dashboard the control needs no extra permission and may also be a button in the dashboard top bar (E-104).
+Decided (team, 2026-10-17): the own option above (E-64). The language belongs to the account, so one setting covers every device and every email. On the gym dashboard the control needs no extra permission and may also be a button in the dashboard top bar (E-104).
 
 ### SM-3: Staff and Administrator layout
 
@@ -413,7 +413,7 @@ Decided (owner, 2026-10-17): the own option above (E-64). The language belongs t
 | C | Separate area with its own menu, entered with the PIN; leaving it returns to Staff | Clear separation. Moving between session work and administration needs a switch; two layouts to build |
 | Decided, then replaced by E-114 | Option A with a change: one menu with everything, and the Administrator items shown grayed out with a padlock for Staff. Tapping a grayed item opens the PIN dialog | Staff see what the Administrator can do. A Lock button in an Administrator mode bar returns to Staff with one tap (E-101) |
 
-Decided (owner, 2026-10-17): A with the padlock (E-65). The Administrator finds every item in one place and the padlock tells Staff the item needs the PIN. In every option the backend decides each action (REQ-F-52), so the padlock is for clarity, not security. Replaced on 2026-11-04 by E-114: with personal accounts and no PIN, the menu shows the Administrator items only to Administrators. There is no padlock, Lock button or Administrator mode bar.
+Decided (team, 2026-10-17): A with the padlock (E-65). The Administrator finds every item in one place and the padlock tells Staff the item needs the PIN. In every option the backend decides each action (REQ-F-52), so the padlock is for clarity, not security. Replaced on 2026-11-04 by E-114: with personal accounts and no PIN, the menu shows the Administrator items only to Administrators. There is no padlock, Lock button or Administrator mode bar.
 
 ### SM-4: Home screen per role
 
@@ -424,7 +424,7 @@ Decided (owner, 2026-10-17): A with the padlock (E-65). The Administrator finds 
 | C | One dashboard for every role with role-specific cards | One screen to design. Check In moves below other cards, which works against REQ-NF-16 |
 | Decided, then updated by E-114 | Users use the PWA (U-01 or U-07). Staff and Administrators use a dashboard on a different path and do not touch the PWA. Both land on S-01, and the Administrator items in the menu show only to Administrators | Two services on separate routes, in the same codebase (REQ-NF-10, a reading to confirm). The A-03 menu screen is removed (E-102) |
 
-Decided (owner, 2026-10-17): the own option above (E-65). The Administrator does not change screens to reach the Administrator items.
+Decided (team, 2026-10-17): the own option above (E-65). The Administrator does not change screens to reach the Administrator items.
 
 ### SM-5: Where staff accounts sign in
 
@@ -434,7 +434,7 @@ Decided (owner, 2026-10-17): the own option above (E-65). The Administrator does
 | B | Separate screen N-11 at its own address, bookmarked on the front desk computer, with a small link from N-02 | Clear labels and messages for each. One more small screen. The address is not secret and gives no extra security |
 | C | Separate screen N-11 on the dashboard route, with no link from N-02. Staff reach it by typing the address | Users never see the gym sign in. Staff must know the address |
 
-Decided (owner, 2026-10-17): C (E-65). The 150 Users a day never see a gym sign in. Staff reach N-11 by typing the dashboard address. Attempt limits (REQ-F-07) apply the same on both screens.
+Decided (team, 2026-10-17): C (E-65). The 150 Users a day never see a gym sign in. Staff reach N-11 by typing the dashboard address. Attempt limits (REQ-F-07) apply the same on both screens.
 
 ### SM-6: What screens show without a connection (REQ-NF-26)
 
@@ -443,7 +443,7 @@ Decided (owner, 2026-10-17): C (E-65). The 150 Users a day never see a gym sign 
 | A | Every data screen hides its data and shows only "No connection" | Simplest rule. A User loses the schedule they were reading |
 | B | Schedules, notices, information and analytics already loaded in this visit stay on screen with "not current, updated at TIME". Occupancy hides its number. The Gym ID shows "No connection, not valid now" with an icon and the moving clock stops, so Staff see at once it is not live | Keeps harmless content readable and never shows occupancy or a Gym ID as current. Two behaviors to test |
 
-Decided (owner, 2026-10-17): B (E-77), with a persistent top banner for the whole app and "updated at TIME" on each section. Data stays only in page memory, since the service worker never caches `/api`.
+Decided (team, 2026-10-17): B (E-77), with a persistent top banner for the whole app and "updated at TIME" on each section. Data stays only in page memory, since the service worker never caches `/api`.
 
 ## Gaps and questions
 
