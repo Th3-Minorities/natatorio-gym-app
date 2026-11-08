@@ -270,6 +270,7 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
         </div>
 
         {/* Scrolls sideways on a phone; tabIndex lets the keyboard scroll it too (WCAG 2.1.1). */}
+        {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
         <div className="team-table" role="region" aria-labelledby={tableTitleId} tabIndex={0} ref={table}>
           <table aria-labelledby={tableTitleId}>
             <thead>

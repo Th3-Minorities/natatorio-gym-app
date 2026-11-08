@@ -395,6 +395,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   if (waiverPage) return step('registration--status', '/register/contact', <>
     <h1 tabIndex={-1}>{t.waiverFull}</h1><p>{t.waiverDraft(waiver.version)}</p>
     <p className="registration-caption">{t.waiverProvisional}</p>
+    {/* Scrolls inside the page; tabIndex lets the keyboard scroll it too (WCAG 2.1.1). */}
+    {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex */}
     <div className="registration-document" tabIndex={0}>
       {waiver.text.split('\n\n').slice(1).map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
     </div>

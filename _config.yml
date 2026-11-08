@@ -1,0 +1,21 @@
+title: Natatorio Gym App
+description: An app for checking in, gym cards and current occupancy at the UPRM Weight Gym.
+theme: jekyll-theme-cayman
+
+exclude:
+  - CLAUDE.md
+  - AGENTS.md
+  - .claude/
+  - .github/
+  - .env.example
+  - graphify-out/
+  - docs/meetings/private/
+  - backend/
+  - frontend/
+  - docker/
+  - docker-compose.yml
+  - docker-compose.override.yml
+  - db_exercise/
+  - artifacts/
+  - node_modules/
+  - vendor/

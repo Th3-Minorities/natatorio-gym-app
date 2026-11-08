@@ -68,6 +68,15 @@ jobs:
       # The User sign-in tests share one account and each sign-in ends the account's other sessions, so browsers run one at a time.
       - run: npx playwright test --workers=1
 
+      # #82: every axe scan saves its result. A violation already fails the test above; these files are the record.
+      - name: Save the accessibility scan results
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: a11y-results
+          path: frontend/a11y-results
+          if-no-files-found: warn
+
       - name: Container logs
         if: failure()
         working-directory: .

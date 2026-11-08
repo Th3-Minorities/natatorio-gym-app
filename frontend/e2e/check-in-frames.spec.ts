@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
+import { expectNoViolations } from './axe.ts'
 
 // U-01 Check In frames of the Figma page "#41 Gym ID and Check in", rendered with a mocked API.
 const SHOTS = process.env.CHECK_IN_SCREENSHOT_DIR ?? ''
@@ -99,8 +99,7 @@ test.describe('Check In Figma frames at 390x844', () => {
         await page.screenshot({ path: join(SHOTS, `${id}${testInfo.project.name === 'chromium' ? '' : `-${testInfo.project.name}`}.png`) })
       }
       if (state === 'pressing') await page.mouse.up()
-      const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
-      expect(accessibility.violations).toEqual([])
+      await expectNoViolations(page)
     })
   }
 })

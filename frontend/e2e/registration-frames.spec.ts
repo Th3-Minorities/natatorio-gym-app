@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { expectNoViolations } from './axe.ts'
 
 const shots = process.env.USER_SCREENSHOT_DIR
 const scenarios = ['179-6122', '179-6139', '179-6216', 'privacy-english', 'privacy-loading', 'privacy-error', 'privacy-offline'] as const
@@ -57,8 +57,7 @@ test.describe('paid registration screen states', () => {
         await mkdir(shots, { recursive: true })
         await page.screenshot({ path: join(shots, `${scenario}-${testInfo.project.name}.png`) })
       }
-      const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
-      expect(results.violations).toEqual([])
+      await expectNoViolations(page)
     })
   }
 })
