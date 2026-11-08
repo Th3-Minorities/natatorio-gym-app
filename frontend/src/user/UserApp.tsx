@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { UserRound } from 'lucide-react'
+import { ChevronRight, Download, UserRound } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button } from '../components'
 import { useDateFormat } from '../format/dateTime'
 import { I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
+import { InstallHelp } from './InstallHelp'
 import { CheckIn } from './CheckIn'
 import { UserAccess } from './UserAccess'
 import { Registration } from './Registration'
@@ -149,7 +150,7 @@ export function UserApp() {
   }
 
   return <I18nProvider locale={profile?.locale}><div onClick={intercept}>
-    {REGISTRATION_PATHS.includes(path) ? <Registration path={path} navigate={navigate} /> : !protectedPath ? path === '/welcome' ? <Welcome deleted={deleted} /> : <UserAccess
+    {path === '/install' ? <InstallHelp /> : REGISTRATION_PATHS.includes(path) ? <Registration path={path} navigate={navigate} /> : !protectedPath ? path === '/welcome' ? <Welcome deleted={deleted} /> : <UserAccess
       key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
       replaced={replaced} navigate={navigate} onSignedIn={(account) => {
         epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); setDeleted(false); navigate('/account')
@@ -170,6 +171,8 @@ function AccountView({ path, profile, loading, failed, offline, retry, busy, sig
   const dates = useDateFormat()
   let content
   if (loading && !profile) content = <><h1 className="user-account-title" tabIndex={-1}>{t.account}</h1><UserLoading detail={t.loadingAccount} /></>
+  else if (offline && !profile) content = <><h1 className="user-account-title" tabIndex={-1}>{t.account}</h1>
+    <Button className="user-action" onClick={retry}>{t.retry}</Button></>
   else if (failed || !profile) content = <><h1 className="user-account-title" tabIndex={-1}>{t.account}</h1>
     <UserNotice title={t.accountError}>{t.accountErrorText}</UserNotice><Button className="user-action" onClick={retry}>{t.retry}</Button></>
   else if (path === '/account/delete') content = refused || profile.authorization ? <>
@@ -205,11 +208,13 @@ function AccountView({ path, profile, loading, failed, offline, retry, busy, sig
     <AccountRow title={profile.authorization ? t.activeAuthorization : t.noAuthorization}
       detail={profile.authorization ? t.authorization(profile.authorization.type === 'athlete' ? t.athlete : profile.authorization.type === 'manual' ? t.manual : t.membership, profile.authorization.term) : t.accountAvailable} />
     <AccountRow title={t.emergency} detail={t.emergencyDetail} />
+    <a className="user-account-row user-account-row--link" href="/install"><Download aria-hidden="true" />
+      <div><strong>{t.installApp}</strong><span>{t.installAppDetail}</span></div><ChevronRight aria-hidden="true" /></a>
     <AccountRow title={t.visits} detail={t.visitsDetail} />
     <a className="user-account-row" href="/account/settings"><strong>{t.settings}</strong><span>{t.settingsDetail}</span></a>
     {!profile.authorization && <span className="button button--secondary user-action">{t.iAmAthlete}</span>}
   </>
-  return <UserPage header={false} offline={offline && Boolean(profile)}>{content}
+  return <UserPage header={false} offline={offline}>{content}
     {actionFailed && <p className="user-caption" role="alert">{errors.server_error}</p>}
   </UserPage>
 }
@@ -231,7 +236,6 @@ function Welcome({ deleted }: { deleted: boolean }) {
       <a className="button button--primary user-action" href="/sign-in">{t.signIn}</a>
       <a href="/register" className="button button--secondary user-action">{t.register}</a>{phone && <p className="user-caption">{t.membershipHelp(phone)}</p>}
     </div>
-    <div className="user-welcome-actions"><span className="button button--primary user-action">{t.install}</span>
-      <p className="user-caption">{t.helpPrivacy}</p><p className="user-caption">{t.languages}</p></div>
+    <div className="user-welcome-actions"><p className="user-caption">{t.languages}</p></div>
   </UserPage>
 }

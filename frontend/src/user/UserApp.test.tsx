@@ -187,11 +187,42 @@ describe('U-03 and U-05', () => {
     expect(await screen.findByRole('heading', { name: 'Eliminar cuenta' })).toBeInTheDocument()
   })
 
+  it('shows the Instalar app row after the emergency contact, also offline, linking to N-09', async () => {
+    open('/account')
+    const row = await screen.findByRole('link', { name: /Instalar app/ })
+    expect(row).toHaveAttribute('href', '/install')
+    expect(row).toHaveTextContent('Cómo instalar en tu teléfono')
+    const rows = Array.from(document.querySelectorAll('.user-account-row')).map((node) => node.querySelector('strong')?.textContent)
+    expect(rows.indexOf('Instalar app')).toBe(rows.indexOf('Contacto de emergencia') + 1)
+    act(() => { fireEvent(window, new Event('offline')) })
+    expect(await screen.findByText('Sin conexión · Datos no actualizados')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Instalar app/ })).toHaveAttribute('href', '/install')
+  })
+
+  it('hides the Instalar app row while the account is loading or failed', async () => {
+    answer = async () => error('server_error', 500)
+    open('/account')
+    expect(screen.queryByRole('link', { name: /Instalar app/ })).toBeNull()
+    await screen.findByRole('alert')
+    expect(screen.queryByRole('link', { name: /Instalar app/ })).toBeNull()
+  })
+
   it('shows loading and account load failures with retry', async () => {
     answer = async () => error('server_error', 500)
     open('/account')
     expect(screen.getByText('Cargando tu cuenta…')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar tu cuenta')
+    answer = async () => json(account)
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
+    expect(await screen.findByText(account.name)).toBeInTheDocument()
+  })
+
+  it('shows the no-connection state, not the load error, when the account cannot load offline', async () => {
+    answer = async () => { throw new TypeError('network') }
+    open('/account')
+    expect(await screen.findByText('Sin conexión · Datos no actualizados')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar' })).toBeInTheDocument()
+    expect(screen.queryByText('No pudimos cargar tu cuenta')).toBeNull()
     answer = async () => json(account)
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
     expect(await screen.findByText(account.name)).toBeInTheDocument()
@@ -232,7 +263,8 @@ describe('User destinations', () => {
     expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
     expect(screen.queryByText('Health page')).toBeNull()
     expect(screen.getByRole('link', { name: 'Registrarme' })).toHaveAttribute('href', '/register')
-    expect(screen.queryByRole('link', { name: 'Instalar app' })).toBeNull()
+    expect(screen.queryByText('Instalar app')).toBeNull()
+    expect(screen.queryByText(/Ayuda para instalar/)).toBeNull()
   })
 
   it('shows the help line on welcome with the contact number from the API', async () => {
