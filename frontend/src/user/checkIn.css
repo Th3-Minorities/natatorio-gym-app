@@ -5,8 +5,10 @@
 .check-in .user-content h1 { font-size: var(--user-brand-size); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); color: var(--hero); }
 .check-in .user-content h2 { margin: 0; font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); color: var(--hero); }
 .check-in .check-in-lead { font-size: var(--user-body-size); line-height: var(--user-body-line); }
-.check-in .user-offline { margin: var(--user-space-6) 0 0; padding: 9px var(--spacing-24); background: var(--check-in-danger-soft); color: var(--user-danger); }
-/* 4106:1789: the banner sits 18px from the top (36px tall) and the title 12px below it. Online the same space stays empty, so the title never moves. */
+/* 4106:1789: the banner sits 18px from the top (36px tall) and the title 12px below it. Online the same space stays empty, so the title never moves.
+   Offline UserPage renders no .user-top (12px), so the margin adds it back. .user-app.check-in outranks .user-app--account .user-offline in user.css. */
+.user-app.check-in .user-offline { margin: calc(var(--spacing-12) + var(--user-space-6)) 0 0; padding: 9px var(--spacing-24); background: var(--check-in-danger-soft); color: var(--user-danger); }
+.user-app.check-in .user-offline svg { color: inherit; }
 .check-in .user-content { padding-top: calc(var(--user-space-6) + 36px + var(--spacing-12)); }
 .check-in .user-offline + .user-content { padding-top: var(--spacing-12); }
 

@@ -2,14 +2,17 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: var(--user-width);
   min-height: 100dvh;
   margin: auto;
-  background: var(--surface);
+  background: var(--background);
   font-size: var(--user-body-size);
   line-height: var(--user-body-line);
-  border-radius: var(--spacing-20);
   overflow: clip;
+}
+/* A phone shows the app edge to edge. Figma's rounded 390 px frame is the phone outline, so the card shape is kept only on wider screens. */
+@media (min-width: 600px) {
+  .user-app { max-width: var(--user-width); border-radius: var(--spacing-20); }
+  .user-app--large { border-radius: var(--spacing-32) var(--spacing-32) var(--user-large-radius) var(--user-large-radius); }
 }
 .user-app--access { background: var(--hero); }
 .user-header {
@@ -28,6 +31,8 @@
 .user-brand strong { font-size: var(--user-brand-size); line-height: var(--user-brand-line); font-weight: var(--user-weight-extra-bold); }
 .user-brand span { font-size: var(--user-brand-caption); line-height: var(--spacing-12); font-weight: var(--user-weight-semibold); }
 .user-top { height: var(--spacing-12); flex: none; }
+/* Figma 4468:2653 starts the heading 24 px from the top, with no spacer above the content. */
+.user-app--privacy .user-top { display: none; }
 .user-content {
   display: flex;
   flex: 1;
@@ -35,7 +40,7 @@
   gap: var(--spacing-16);
   padding: var(--spacing-24) var(--spacing-24) var(--spacing-20);
   border-radius: var(--spacing-24) var(--spacing-24) 0 0;
-  background: var(--surface);
+  background: var(--background);
   min-width: 0;
 }
 .user-content > *, .user-content form > * { flex-shrink: 0; }
@@ -65,13 +70,11 @@
   border-radius: var(--user-radius-10);
   padding: var(--spacing-4) var(--user-input-padding);
   background: var(--user-field-background);
+  border-color: var(--user-border-input);
   color: var(--user-field-text);
 }
 .user-content .field__error { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--user-field-error); margin: 0; }
 .user-content [aria-invalid="true"] { border-color: var(--user-field-error); }
-/* N-02 and N-06 identify validation failures in the panel; the field description remains available to assistive technology. */
-.user-content form:not([data-mode="reset"]) .field__error { display: none; }
-.user-content form:not([data-mode="reset"]) [aria-invalid="true"] { border-color: var(--border-input); }
 .user-password { position: relative; display: flex; flex-direction: column; gap: var(--spacing-8); }
 .user-password .field__input { padding-right: var(--user-touch); }
 .user-password__toggle.button {
@@ -81,7 +84,6 @@
 .user-password__toggle svg { width: var(--spacing-16); height: var(--spacing-16); }
 .user-content .user-caption { font-size: var(--spacing-12); line-height: var(--user-caption-line); }
 .user-forgot, .user-return { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--primary); text-decoration: none; }
-.user-app:not(.user-app--large) .user-password__toggle { display: none; }
 .user-notice { position: relative; width: 100%; }
 .user-notice .notice {
   background: var(--surface); gap: var(--user-space-6); padding: var(--user-notice-padding);
@@ -89,13 +91,14 @@
 }
 .user-notice .notice__title { color: var(--foreground); padding-left: calc(var(--user-icon-small) + var(--spacing-8)); font-weight: var(--user-weight-semibold); }
 .user-notice .notice__text { font-size: var(--spacing-12); line-height: var(--user-caption-line); }
-.user-notice > svg { position: absolute; top: var(--user-notice-padding); left: var(--user-notice-padding); width: var(--user-icon-small); height: var(--user-icon-small); color: var(--primary); }
+.user-notice > svg { position: absolute; top: var(--user-notice-padding); left: var(--user-notice-padding); width: var(--user-icon-small); height: var(--user-icon-small); color: var(--hero); }
 .user-offline {
   display: flex; flex: none; gap: var(--spacing-8); padding: var(--user-input-padding) var(--spacing-24);
   background: var(--user-sage-soft); color: var(--foreground); font-size: var(--spacing-12); line-height: var(--user-caption-line);
   margin-inline: var(--spacing-4);
 }
-.user-offline svg { width: var(--user-icon-small); height: var(--user-icon-small); flex: none; }
+.user-app--account .user-offline { min-height: 36px; align-items: center; padding-block: var(--spacing-8); margin-inline: 0; }
+.user-offline svg { width: var(--user-icon-small); height: var(--user-icon-small); flex: none; color: var(--hero); }
 .user-loading { display: flex; flex-direction: column; gap: var(--spacing-16); }
 .user-loading .state { padding: 0; border: 0; background: transparent; }
 .user-loading .state__title { display: none; }
@@ -106,20 +109,61 @@
 .user-skeleton span:nth-of-type(1) { max-width: var(--user-skeleton-short); }
 .user-skeleton span:nth-of-type(3) { max-width: var(--user-skeleton-medium); }
 .user-content .user-account-title { font-size: var(--user-brand-size); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); }
-.user-profile { display: flex; align-items: flex-start; gap: var(--user-notice-padding); }
-.user-avatar { display: grid; place-items: center; width: var(--user-avatar-size); height: var(--user-avatar-size); border-radius: 50%; background: var(--user-sage-soft); color: var(--primary); flex: none; }
-.user-avatar svg { width: var(--user-avatar-icon-size); height: var(--user-avatar-icon-size); stroke-width: var(--user-avatar-icon-stroke); }
-.user-profile > div { min-width: 0; }
+.user-account-heading { display: flex; align-items: center; gap: var(--spacing-8); }
+.user-account-heading .user-back { color: var(--hero); }
+.user-account-heading .user-back:focus-visible { outline-color: var(--hero); }
+.user-offline + .user-content > .user-account-heading { margin-top: calc(-1 * var(--spacing-8)); }
+.user-account-intro { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.user-offline + .user-content > .user-account-intro { margin-top: calc(-1 * var(--spacing-8)); }
+.user-account-overview { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.user-account-overview .user-account-title { color: var(--hero); }
+.user-offline + .user-content > .user-account-overview { margin-top: calc(-1 * var(--spacing-8)); }
+.user-profile { position: relative; display: flex; align-items: flex-start; gap: var(--spacing-16); min-height: 150px; padding-bottom: var(--spacing-24); }
+.user-profile__waves { position: absolute; top: 0; left: calc(-1 * var(--spacing-24)); width: calc(100% + 2 * var(--spacing-24)); height: 154px; opacity: .85; fill: none; stroke: var(--sage); stroke-linecap: round; pointer-events: none; }
+/* Figma 4568:3019 "Cabecera sin datos": a 100 px header, with the wave starting 9 px above it. */
+.user-profile--empty { min-height: 100px; padding-bottom: 0; }
+.user-profile--empty .user-profile__waves { top: -45px; }
+.user-avatar { position: relative; display: grid; place-items: center; width: var(--user-avatar-size); height: var(--user-avatar-size); margin-top: var(--user-space-3); border-radius: 50%; background: var(--sage); color: var(--hero); flex: none; }
+.user-profile__details { position: relative; min-width: 0; }
+.user-profile__identity { min-height: 104px; }
 .user-profile h2 { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
-.user-profile p { font-size: var(--user-body-size); line-height: var(--user-body-line); margin-top: var(--user-space-3); }
-.user-account-row { display: flex; flex-direction: column; gap: var(--spacing-4); width: 100%; border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-12); padding: var(--user-notice-padding); text-decoration: none; color: var(--foreground); }
-.user-account-row strong { font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
-.user-account-row span { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--muted-foreground); }
+.user-profile .user-profile__email { color: var(--foreground); margin-top: var(--spacing-4); }
+.user-profile__badge { display: inline-block; margin-top: var(--spacing-4); padding: var(--user-space-3) var(--user-radius-10); border-radius: var(--spacing-12); background: var(--user-sage-soft); color: var(--hero); font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+.user-account-row { display: flex; align-items: center; gap: var(--spacing-12); width: 100%; min-height: 84px; border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-20); padding: var(--spacing-12); text-decoration: none; color: var(--foreground); background: var(--surface); }
+.user-account-row__icon { display: grid; place-items: center; width: var(--user-control-height); height: var(--user-control-height); border-radius: var(--spacing-12); background: var(--user-sage-soft); color: var(--hero); flex: none; }
+.user-account-row__text { display: flex; flex: 1; min-width: 0; flex-direction: column; gap: var(--spacing-4); overflow-wrap: anywhere; }
+.user-account-row__text strong { font-size: var(--spacing-16); line-height: var(--user-body-line); font-weight: var(--user-weight-semibold); }
+.user-account-row__text > span { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--muted-foreground); }
+.user-account-row__chevron { color: var(--hero); flex: none; }
+.user-account-scroll { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.user-account-scroll > * { flex: none; }
+.user-content .user-scroll-hint { display: flex; align-items: center; justify-content: center; gap: var(--spacing-8); font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+.user-content .user-scroll-hint { margin-top: calc(-1 * var(--spacing-8)); }
+.user-scroll-hint svg { color: var(--foreground); }
+/* A tall phone keeps the title and profile fixed and scrolls only the rows, as Figma draws it. A short or zoomed screen scrolls the whole page. */
+@media (min-height: 700px) {
+  .user-app--overview { height: 100dvh; }
+  .user-app--overview .user-content { min-height: 0; }
+  .user-app--overview .user-content > .user-account-overview { flex: 1 1 0; min-height: 0; margin-bottom: calc(-1 * var(--spacing-12)); }
+  .user-account-overview > :not(.user-account-scroll) { flex: none; }
+  .user-account-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+}
 .user-content .user-danger { background: var(--user-danger); color: var(--primary-foreground); }
 .user-content .user-danger-outline { border-color: var(--user-danger); color: var(--user-danger); }
-.user-navigation { position: sticky; bottom: 0; padding: var(--spacing-8) var(--spacing-24) var(--spacing-16); background: var(--surface); flex: none; }
+.user-delete-dialog {
+  width: min(calc(100% - 2 * var(--spacing-24)), calc(var(--user-width) - 2 * var(--spacing-24)));
+  max-height: calc(100dvh - 2 * var(--spacing-24));
+  margin: auto; padding: var(--spacing-24); border: var(--user-border-width) solid var(--border);
+  border-radius: var(--spacing-20); background: var(--surface); color: var(--foreground);
+}
+.user-delete-dialog[open] { display: flex; flex-direction: column; gap: var(--spacing-16); }
+.user-delete-dialog::backdrop { background: var(--user-backdrop); }
+.user-delete-dialog__intro { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.user-delete-dialog__intro h2 { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
+.user-delete-dialog__intro p { font-size: var(--user-label-size); line-height: var(--spacing-20); }
+.user-navigation { position: sticky; bottom: 0; padding: var(--spacing-8) var(--spacing-24) var(--spacing-16); background: var(--background); flex: none; }
 .user-navigation nav { height: var(--user-navigation-height); padding-top: var(--spacing-24); position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.user-navigation nav::before { position: absolute; content: ''; top: var(--spacing-24); bottom: 0; left: 0; right: 0; border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-20); }
+.user-navigation nav::before { position: absolute; content: ''; top: var(--spacing-24); bottom: 0; left: 0; right: 0; border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-20); background: var(--surface); }
 .user-navigation a, .user-navigation-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-4); padding-top: var(--spacing-12); font-size: var(--user-nav-size); line-height: var(--user-nav-line); color: var(--muted-foreground); text-decoration: none; }
 .user-navigation a, .user-navigation-item { font-weight: var(--weight-medium); }
 .user-navigation svg { width: var(--spacing-24); height: var(--spacing-24); color: var(--hero); }
@@ -129,13 +173,9 @@
 .user-check-in__circle { position: absolute; top: calc(-1 * var(--spacing-24)); width: var(--user-check-in-size); height: var(--user-check-in-size); display: grid; place-items: center; border: var(--user-focus-width) solid var(--surface); border-radius: 50%; background: var(--primary); }
 .user-check-in__circle svg { width: var(--user-navigation-check-in-icon-size); height: var(--user-navigation-check-in-icon-size); color: var(--primary-foreground); transform: scaleX(-1); }
 .user-check-in > span:nth-child(2) { margin-top: calc(var(--user-navigation-account-icon-size) + var(--spacing-4)); }
-.user-welcome-actions { display: flex; flex-direction: column; gap: var(--spacing-8); }
-.user-welcome-actions:last-child .user-action { font-weight: var(--weight-medium); }
-.user-welcome-actions:last-child .user-caption { color: var(--foreground); }
 
-/* The initial access screens use the larger register-page layout; their state frames use the compact layout above. */
+/* Access screens keep the same large layout in every state. */
 .user-app--large .user-header { height: var(--user-large-header-height); }
-.user-app--large { border-radius: var(--spacing-32) var(--spacing-32) var(--user-large-radius) var(--user-large-radius); }
 .user-app--large .user-header > * { transform: translateY(var(--spacing-8)); }
 .user-app--large .user-content { padding-top: var(--spacing-32); gap: var(--spacing-12); border-radius: var(--user-large-radius) var(--user-large-radius) 0 0; }
 .user-app--large h1 { font-size: var(--spacing-32); line-height: var(--user-large-title-line); font-weight: var(--user-weight-bold); }
@@ -144,16 +184,65 @@
 .user-app--large .field { gap: var(--spacing-8); }
 .user-app--large .field__label { font-weight: var(--weight-medium); }
 .user-app--large .field__input { height: var(--user-large-control-height); font-size: var(--spacing-16); }
-.user-app--large .field__input { background: var(--surface); color: var(--foreground); }
+.user-app--large .field__input { background: var(--user-field-background); color: var(--foreground); }
 .user-app--large .user-caption, .user-app--large form > p { font-size: var(--user-label-size); line-height: var(--spacing-20); }
 .user-app--large .user-action { font-size: var(--spacing-16); line-height: var(--user-body-line); font-weight: var(--weight-medium); border-radius: var(--user-radius-10); }
-.user-app--large .user-password__toggle { top: var(--user-title-line); }
+.user-app--large .user-password__toggle { top: var(--spacing-32); right: 0; }
+.user-app--large .user-password__toggle svg { transform: translateX(var(--spacing-4)); }
 .user-app--large .user-forgot { margin-top: calc(-1 * var(--spacing-20)); text-align: right; padding: var(--spacing-12) calc(var(--user-input-padding) + var(--spacing-16)); min-height: var(--user-touch); text-decoration: underline; font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--weight-medium); }
 .user-app--large .user-return { text-align: center; text-decoration: underline; font-size: var(--user-label-size); line-height: var(--spacing-20); padding: var(--spacing-12) 0; }
 .user-app--large form[data-mode="reset"] .user-return { margin-top: calc(-1 * var(--user-space-6)); }
 .user-register { display: flex; align-items: center; justify-content: center; gap: var(--spacing-32); min-height: var(--user-touch); font-size: var(--user-label-size); color: var(--muted-foreground); }
 .user-register-action { color: var(--primary); min-height: var(--user-touch); display: flex; align-items: center; padding: 0 var(--user-input-padding); font-weight: var(--weight-medium); text-decoration: underline; }
 .user-register > span:first-child { transform: translateX(calc(-1 * var(--spacing-8))); }
+
+/* N-01 welcome (Figma 179:6068). */
+.user-welcome { position: relative; background: var(--hero); color: var(--foreground); }
+/* Wider or taller than the 390 x 844 frame, the drawing scales to cover the hero instead of leaving a plain strip. */
+.user-welcome__illustration { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; pointer-events: none; }
+.user-welcome__brand {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: var(--spacing-8);
+  margin: var(--user-welcome-brand-top) var(--spacing-24) 0; color: var(--primary-foreground);
+}
+.user-welcome__brand strong { font-size: var(--user-welcome-brand-size); line-height: var(--user-welcome-brand-line); font-weight: var(--user-weight-extra-bold); }
+.user-welcome__brand span { font-size: var(--user-nav-size); line-height: var(--spacing-16); font-weight: var(--user-weight-semibold); letter-spacing: var(--user-space-2); }
+.user-welcome__brand i { width: var(--user-welcome-mark-width); height: var(--spacing-4); background: var(--accent); }
+.user-welcome__sheet {
+  position: relative; display: flex; flex-direction: column; margin-top: auto; min-height: var(--user-welcome-sheet-height);
+  padding: var(--spacing-12) var(--spacing-24) var(--spacing-24); background: var(--background);
+  border-radius: var(--user-welcome-sheet-radius) var(--user-welcome-sheet-radius) 0 0;
+}
+.user-welcome__handle { align-self: center; width: var(--user-welcome-handle-width); height: var(--spacing-4); margin: var(--spacing-8) 0 var(--spacing-32); border-radius: var(--user-space-2); background: var(--user-handle); }
+.user-welcome__sheet h1 { margin: 0 0 var(--spacing-8); font-size: var(--spacing-32); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); }
+.user-welcome__sheet > p { margin: 0; color: var(--muted-foreground); }
+.user-welcome .user-welcome__start {
+  width: 100%; height: var(--user-large-control-height); margin-top: var(--spacing-24); border-radius: var(--user-radius-10);
+  font-size: var(--spacing-16); line-height: var(--user-body-line); font-weight: var(--weight-medium); gap: var(--spacing-4);
+}
+.user-welcome .user-welcome__access {
+  display: flex; align-items: center; justify-content: center; gap: var(--spacing-4); min-height: var(--user-welcome-link-height); margin-top: var(--spacing-8);
+  font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--weight-medium);
+}
+.user-welcome__access a, .user-welcome__language button {
+  display: inline-flex; align-items: center; min-height: var(--user-welcome-link-height); padding: 0 var(--user-input-padding);
+  color: var(--primary); font: inherit; font-size: var(--user-label-size); line-height: var(--user-body-line); font-weight: var(--weight-medium); text-decoration: none;
+}
+.user-welcome__language { display: flex; align-items: center; justify-content: center; gap: var(--spacing-4); margin-top: auto; color: var(--muted-foreground); }
+.user-welcome__language button { border: 0; background: none; cursor: pointer; color: var(--muted-foreground); }
+.user-welcome__language button[aria-pressed="true"] { color: var(--primary); text-decoration: underline; }
+
+/* My account loading (Figma 4099:800): the title, then placeholders shaped like the profile and the rows. */
+.user-placeholder { display: block; flex: none; background: var(--user-sage-soft); border-radius: var(--spacing-8); }
+.user-profile--loading { align-items: center; height: 150px; min-height: 0; padding: 0 0 62px; }
+.user-profile--loading .user-avatar { margin: 0; background: var(--user-sage-soft); }
+.user-profile__placeholders { position: relative; display: flex; flex-direction: column; gap: var(--user-input-padding); }
+.user-account-row--loading { background: transparent; }
+.user-account-row--loading .user-account-row__text { gap: var(--spacing-8); }
+.user-profile__placeholders > :nth-child(1) { width: 180px; height: var(--spacing-24); }
+.user-profile__placeholders > :nth-child(2) { width: 150px; height: var(--spacing-16); }
+.user-profile__placeholders > :nth-child(3) { width: 66px; height: 22px; border-radius: 11px; }
+.user-account-row--loading .user-placeholder:nth-child(1) { width: 160px; max-width: 100%; height: 18px; }
+.user-account-row--loading .user-placeholder:nth-child(2) { width: 195px; max-width: 100%; height: var(--spacing-12); }
 
 /* Gym destination icon, Figma 4190:575 at 24 px (navigation instance 4097:106). */
 .user-rack { position: relative; display: block; width: var(--spacing-24); height: var(--spacing-24); flex: none; }

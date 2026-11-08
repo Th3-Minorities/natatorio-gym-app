@@ -17,6 +17,7 @@ class RouteProtectionTest extends TestCase
     /** Routes anyone may call without signing in. Add one here only on purpose. */
     private const PUBLIC_ROUTES = [
         'GET api/health',
+        'GET api/privacy',
         'GET api/sanctum/csrf-cookie',
         'POST api/staff/sign-in',
         'POST api/staff/password/email',

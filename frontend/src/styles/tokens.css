@@ -68,14 +68,14 @@
   --user-large-radius: 28px;
   --user-notice-padding: 14px;
   --user-icon-small: 18px;
-  --user-avatar-size: 64px;
-  --user-avatar-icon-size: 28.8px;
-  --user-avatar-icon-stroke: 1.5;
+  --user-avatar-size: 80px;
   --user-navigation-account-icon-size: 22px;
   --user-navigation-check-in-icon-size: 26px;
-  --user-field-background: #ffffff;
+  --user-field-background: var(--surface);
+  /* User fields keep the Figma border (179:6164), as the product owner chose; --border-input above stays for the dashboard. */
+  --user-border-input: var(--border);
   --user-field-text: #737373;
-  --user-field-error: #b91c1c;
+  --user-field-error: var(--user-danger);
   --user-navigation-height: 90px;
   --user-check-in-size: 56px;
   --user-skeleton-short: 280px;
@@ -89,6 +89,34 @@
   --user-weight-bold: 700;
   --user-weight-extra-bold: 800;
   --user-disabled-opacity: 0.55;
+  --user-backdrop: rgb(0 0 0 / 36%);
+
+  /* N-01 welcome (Figma 179:6068). */
+  --user-handle: #c8cbba;
+  --user-welcome-sheet-height: 416px;
+  --user-welcome-sheet-radius: 26px;
+  --user-welcome-brand-top: 110px;
+  --user-welcome-brand-size: 48px;
+  --user-welcome-brand-line: 52px;
+  --user-welcome-handle-width: 48px;
+  --user-welcome-mark-width: 40px;
+  --user-welcome-link-height: 40px;
+
+  /* N-09 install help (Figma 4078:792, 4078:869, 4078:919). */
+  --install-icon-size: 56px;
+  --install-icon-radius: 14px;
+  --install-name-size: 17px;
+  --install-detail-size: 13px;
+  --install-detail-line: 18px;
+  --install-step-size: 28px;
+  --install-step-border: 1.5px;
+  --install-step-line-opacity: 0.65;
+  --install-tab-height: 36px;
+  --install-handy-size: 20px;
+  --install-handy-height: 64px;
+  --install-handy-icon: 48px;
+  --install-done-size: 72px;
+  --install-done-icon: 44px;
 
   /* Check In, U-01 (Figma page "#41 Gym ID and Check in", 4085:1125). */
   --check-in-member: #a55128;

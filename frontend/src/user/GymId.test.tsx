@@ -5,7 +5,7 @@ import { Gym } from './Gym'
 import { UserApp, type UserProfile } from './UserApp'
 import { I18nProvider } from '../i18n'
 
-const profile: UserProfile = { name: 'Daniel Rivera', email: 'daniel@email.com', locale: 'es', authorization: { type: 'paid', term: '2026' }, updated_at: '2026-11-07T17:07:24Z' }
+const profile: UserProfile = { name: 'Daniel Rivera', email: 'daniel@email.com', locale: 'es', account_type: 'paid', authorization: { type: 'paid', term: '2026' }, updated_at: '2026-11-07T17:07:24Z' }
 const session = { id: 1, started_at: '2026-11-07T16:42:00Z', status: 'active' }
 let status: object
 let occupancy: object

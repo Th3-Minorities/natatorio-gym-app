@@ -67,7 +67,7 @@ class CheckInTest extends TestCase
         $this->authorize('athlete');
 
         $this->getJson('/api/user/check-in')->assertOk()
-            ->assertExactJson(['session' => null, 'athletes_period' => null, 'account_type' => 'athlete', 'member_group' => null, 'sport' => Authorization::query()->sole()->rosterRecord->sport]);
+            ->assertExactJson(['session' => null, 'athletes_period' => null, 'last_session' => null, 'account_type' => 'athlete', 'member_group' => null, 'sport' => Authorization::query()->sole()->rosterRecord->sport]);
     }
 
     public function test_get_without_an_authorization_has_no_account_type(): void
@@ -146,8 +146,58 @@ class CheckInTest extends TestCase
         $this->authorize();
         $this->open();
 
-        $this->getJson('/api/user/check-in')->assertJsonPath('session', null);
+        $this->getJson('/api/user/check-in')->assertJsonPath('session', null)
+            ->assertJsonPath('last_session.end_reason', 'expired');
         $this->postJson('/api/user/check-in', self::INSIDE)->assertCreated();
+    }
+
+    public function test_a_later_void_visit_does_not_hide_the_active_session(): void
+    {
+        $active = FacilitySession::factory()->startedMinutesAgo(30)->create(['user_id' => $this->user->id]);
+        FacilitySession::factory()->startedMinutesAgo(10)->checkedOut(5)->create([
+            'user_id' => $this->user->id, 'status' => 'void',
+        ]);
+
+        $this->getJson('/api/user/check-in')->assertOk()->assertJsonPath('session.id', $active->id);
+        $this->postJson('/api/user/check-in')->assertOk()->assertJsonPath('session.id', $active->id);
+        $this->assertDatabaseCount('facility_sessions', 2);
+    }
+
+    public function test_a_history_with_only_void_visits_has_no_last_session(): void
+    {
+        FacilitySession::factory()->startedMinutesAgo(60)->checkedOut(20)->create([
+            'user_id' => $this->user->id, 'status' => 'void',
+        ]);
+
+        $this->getJson('/api/user/check-in')->assertOk()
+            ->assertJsonPath('session', null)->assertJsonPath('last_session', null);
+    }
+
+    public function test_the_active_session_keeps_its_original_shape_and_last_session_is_the_previous_visit(): void
+    {
+        $previous = FacilitySession::factory()->startedMinutesAgo(200)->checkedOut(20)->create(['user_id' => $this->user->id]);
+        $active = FacilitySession::factory()->startedMinutesAgo(30)->create(['user_id' => $this->user->id]);
+
+        $response = $this->getJson('/api/user/check-in')->assertOk()
+            ->assertJsonPath('session.id', $active->id)->assertJsonPath('last_session.id', $previous->id);
+        $this->assertSame(['id', 'started_at', 'status'], array_keys($response->json('session')));
+        $this->assertSame(['id', 'started_at', 'ended_at', 'end_reason'], array_keys($response->json('last_session')));
+    }
+
+    public function test_a_check_in_after_a_closure_ended_the_visit_before_the_task_ran_is_created(): void
+    {
+        $old = FacilitySession::factory()->startedMinutesAgo(30)->create(['user_id' => $this->user->id]);
+        ScheduleSlot::factory()->dated()->create([
+            'starts_at' => now()->subMinutes(10), 'ends_at' => now()->subMinutes(5), 'created_at' => now()->subMinutes(10),
+        ]);
+        $this->authorize();
+        $this->open();
+
+        $this->postJson('/api/user/check-in', self::INSIDE)->assertCreated();
+
+        $this->assertSame('closed', $old->fresh()->status);
+        $this->assertNotNull($old->fresh()->ended_at);
+        $this->assertSame(1, FacilitySession::query()->where('status', 'active')->count());
     }
 
     public function test_a_checked_out_session_allows_a_new_check_in(): void

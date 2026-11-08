@@ -5,10 +5,11 @@ import { Button, TextField } from '../components'
 import { useDateFormat } from '../format/dateTime'
 import { errorText, I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
 import { PasswordField, UserLoading, UserNotice, UserPage } from './ui'
+import { PrivacyNoticeCard } from './PrivacyNoticeCard'
+import type { Privacy } from './privacyNotice'
 import { useConnection } from './useConnection'
 import './registration.css'
 
-type Privacy = { version: string; draft: boolean; store_url: string | null; contact_number: string }
 type Lookup = { state: 'ready'; name: string; masked_email: string } | { state: 'renewal'; masked_email: string }
 
 export function Registration(props: { path: string; navigate: (path: string) => void }) {
@@ -170,10 +171,7 @@ function RegistrationFlow({ path, navigate, setLocale }: {
         </> : <>
           <div className="registration-intro"><ShieldCheck className="registration-shield" aria-hidden="true" />
             <h1 tabIndex={-1}>{t.before}</h1><p>{t.privacyIntro}</p></div>
-          <section className="registration-notice" aria-label={t.privacy}>
-            <div className="registration-notice-heading"><h2><a href="/privacy">{t.privacy}</a></h2><span>{t.draft}</span></div>
-            <p>{t.provisional}</p><p>{t.pendingNotice}</p><p>{t.pendingApproval}</p>
-          </section>
+          <PrivacyNoticeCard draft={privacy.draft} linked />
           <div className="registration-bottom registration-privacy-actions">
             <Button className="user-action" disabled={busy} onClick={() => void continuePrivacy()}>{t.continueRegistration}</Button>
           </div>

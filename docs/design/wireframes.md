@@ -2,7 +2,7 @@
 
 The wireframes live in the Figma file [MOCKUPS-GYM](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM). This page links each screen to its frame, grouped by issue, so the feature issues can find the design they build. Screen IDs follow the [screen map](screen-map.md).
 
-Every main frame has a note under it with its issue and the decisions it follows. The states of each screen sit below the main frame, under "Estados y acciones".
+The sections below link the main screens and their states. Use the current page and frame links for each issue when reviewing or implementing a screen.
 
 ## Check In and Gym ID (#41)
 
@@ -62,7 +62,7 @@ Desktop. Figma pages "21" to "24 · Admin".
 
 ## Staff sign in (N-11)
 
-Desktop, on the dashboard path, with no link from the User sign in. Figma page "#43 20 · Staff".
+Part of #42. Desktop, on the dashboard path, with no link from the User sign in. Figma page "#43 20 · Staff".
 
 | Screen | Frame |
 |---|---|
@@ -72,19 +72,61 @@ Desktop, on the dashboard path, with no link from the User sign in. Figma page "
 | Invitation link expired or used | [4039:4325](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4039-4325) |
 | Signed out for inactivity | [4039:4365](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4039-4365) |
 
-States of N-11: signing in 4039:3798, wrong email or password 4039:3871, wait after too many attempts 4039:3942, no connection 4039:4018, deactivated account 4039:4094.
+States of N-11: [Signing in](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4039-3798), [Wrong email or password](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4039-3871), [Wait after too many attempts](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4039-3942), [No connection](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4039-4018), [Deactivated account](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4039-4094).
 
-## Phone screens drawn so far (#40, #42)
+## Sign in and account (#42)
 
-Figma page "login/signup logics". These issues stay open: the screens below are only part of their scope.
+Phone first. Current Figma page: [#40 y #42 · Acceso, registro y cuenta](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-2). The old `login/signup logics` page is historical; use the links below for the current handoff. None means no separate frame is indexed for that state. N-11 is desktop first and is indexed under [Staff sign in](#staff-sign-in-n-11).
 
-| Screen | Frame |
+E-183 removes schedules and notices from all signed-out flows. E-184 keeps the original Welcome layout and places the registration prerequisite, membership purchase and help number on the N-03 number-entry step. The store URL remains a pending setting; its button shows only during an active term when that setting is configured. Installation follows E-165: N-09 opens once right after the account is created and from the "Instalar app" row in Mi cuenta (U-03); the welcome screen has no Install button.
+
+### Entry, recovery, privacy and installation
+
+| Screen | Main | Loading | Error | No connection |
+|---|---|---|---|---|
+| N-01 Welcome | [Collapsed](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-11), [Expanded ES](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-95) | [Loading](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4489-2791) | None | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4546-2929) |
+| N-02 Sign in | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-637) | [Signing in](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4490-3038) | [Wrong credentials](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4490-3099), [Invalid fields](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4256-1822) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2136) |
+| N-06 Forgot password | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-695) | [Sending link](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2231) | [Server error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2260), [Invalid email](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4256-1846) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2295) |
+| N-07 New password | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-732) | [Checking link](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2359) | [Invalid password](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4256-1861), [Expired or used link](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2377) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4490-3162) |
+| N-08 Privacy notice (draft) | [Before registration](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-334), [From Mi cuenta](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4468-2653) | None | None | Same static notice |
+| N-09 Install help | [Registration: iPhone](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-792), [Android](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-869), [From Mi cuenta: 4453:2499](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4453-2499), [4453:2595](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4453-2595), [4453:2666](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4453-2666) | None | None | Same static instructions |
+
+- N-01: the offline state follows the original Welcome layout, with a full-width connection banner and both Comenzar and Iniciar sesión disabled. Both actions become available when the connection returns. Purchase and help stay on N-03 at number entry (E-184); schedules and notices require sign in (E-183).
+- N-02: [Wait after failed attempts](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2091), [Signed in on another device](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2180). Wrong credentials use red field outlines and one generic message, without revealing whether the email has an account.
+- N-06: [Request received](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2335) gives the same answer whether or not the email has an account.
+- N-08: the text is a draft pending gym approval (G-24); it remains readable without a connection.
+- N-09: opens once right after account creation and from the Instalar app row in U-03 (E-165). If the app is already installed it shows the installed state: [Already installed](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-919) from registration, and the Mi cuenta variants above. Back, Continuar and Ahora no lead to U-03. Hide the direct install button when the browser has no install event.
+
+### Account and preferences
+
+These screens use Gimnasio, Check-in and Mi cuenta tabs (E-164).
+
+| Screen | Main | Loading | Error | No connection |
+|---|---|---|---|---|
+| U-03 Account | [Active authorization](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-626), [No active authorization](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-683) | [Loading](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-800) | [Error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-835) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-875), [Offline, no saved data](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4568-3019) |
+| U-04 Emergency contact | [View and edit](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-937) | [Loading](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-993) | [Invalid fields](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1028) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1092) |
+| U-05 Delete account | [No active authorization](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1533) | None | [Active authorization: refused](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1634) | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1680) |
+| U-09 My visits | [History](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1272) | [Loading](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1315) | [Error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1396) | [With history](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1436), [No loaded data](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1483) |
+| U-09 Member variant | [History](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4303-1978) | [Loading](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4303-1994) | [Error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4303-2207) | [With history](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4303-2220), [No loaded data](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4303-2241) |
+| C-06 Language setting | [Spanish](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-740), [English](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1153) | None | None | [Offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1207) |
+
+- U-05: [Confirm deletion](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1587). A successful deletion returns to N-01.
+- U-09: [No visits](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1350), [Member: no visits](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4303-2015). History is kept for five years; loaded history stays visible offline with its update time.
+- C-06: [Language saved](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-1774). The setting is stored per account.
+
+## Registration handoff (#40; shared entry and installation with #42)
+
+The main sequence confirmed in E-184 is Welcome → enter number → create password → identification photo → waiver → install help after saving the account. The privacy notice is shown before collecting personal data; the language chosen on Welcome is saved to the account (E-174); the emergency contact remains part of registration.
+
+| Step | Current frame |
 |---|---|
-| N-01 Landing | [179:6068](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6068) |
-| N-02 Sign in | [179:6164](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6164) |
-| N-03 Register as paid member | [179:6324](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6324) |
-| N-04 Register as athlete | [179:6356](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6356) |
-| N-06 Forgot password | [179:6186](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6186) |
-| N-07 Set new password | [179:6199](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6199) |
-| N-08 Privacy notice (draft text) | [179:6122](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6122) |
-| N-09 Install help | [179:6242](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=179-6242) |
+| 1. Welcome | [Expanded ES](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-95) |
+| 2. Enter number; membership purchase and help | [Unified number entry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-576) |
+| 3. Create password | [Password](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-411) |
+| 4. Identification photo | [Not selected](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6805), [Selected](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6885) |
+| 5. Waiver and emergency contact | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6948), [Accepted](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7085) |
+| 6. Save account, then install help | [Saving](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7162), [iPhone](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-792), [Android](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-869) |
+
+The number-entry frame contains “¿Aún no tienes membresía?”, the registration prerequisite, “Comprar membresía” and “Ayuda: 265-3866”. The purchase button opens the external store on a tap. Registration uses one field for both paid members and athletes (E-153); N-04 was removed and must not be used as a separate registration screen.
+
+[Photo or save error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7223), [Waiver and contact offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7287). Athlete email-link rules and registration edge cases remain in [Registration flows](registration-flows.md).

@@ -60,7 +60,7 @@ flowchart TD
   FD["Front desk computer<br/>browser with a staff account<br/>dashboard path<br/>device still to confirm with the gym"]
 
   subgraph HOST["docker-compose on one host: member PC or CTI VM. CTI delivers plain Linux; the team installs the container engine"]
-    subgraph PXC["proxy container: nginx or Caddy, not decided"]
+    subgraph PXC["proxy container: nginx (E-173)"]
       PX["HTTPS end and routing<br/>two rules: /api to Laravel, the rest to the PWA<br/>one name for app and API, proposed<br/>certificate pending CTI answer"]
       ST["PWA static files<br/>React, TypeScript, Vite build<br/>served at /, user routes and the dashboard path"]
     end
@@ -97,7 +97,7 @@ flowchart TD
   class MAIL,RELAY,STORE pending
 ```
 
-**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-12 (outbound HTTPS to the store). Backups are decided (E-122, REQ-NF-06). The proxy choice is D1 and is still proposed. The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Every kind of data is kept 5 years (REQ-NF-05, E-125, E-131), but only the current photo of each person is kept (REQ-NF-04, E-135).
+**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-12 (outbound HTTPS to the store). Backups are decided (E-122, REQ-NF-06). The proxy is nginx (D1, E-173). The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Every kind of data is kept 5 years (REQ-NF-05, E-125, E-131), but only the current photo of each person is kept (REQ-NF-04, E-135).
 
 Notes:
 
@@ -207,7 +207,7 @@ Notes:
 - The 50 m startup check is how REQ-NF-29 is enforced (`design-notes.md`, team decision E-16). The 50 m check always runs at startup. Only a flag allows another boundary, and development and the demo set it. Production does not set it. Without the flag, a boundary farther than 50 m stops the app from starting (D6).
 - Server credentials live in protected configuration outside the repository. Development and production settings are separate (`context.md` section 3). The read-only store key is one of them: it lives only in the server's environment file (E-127).
 - Whoever has administrator access to the VM can read the database and the photos volume. That conflicts with REQ-NF-23 if team members run the server (M-16, gym G-01). CTI usually creates an account with sudo for the owner, who passes it to the team or makes another; off campus the team needs a VPN the owner requests, and the owner answers for those accounts. CTI has no staff to take over the system, and part of the install and orientation after December is the owner's.
-- Staff accounts have no recovery code (E-114). How a forgotten staff password is recovered is not decided (`admin-flows.md` gap 1).
+- Staff accounts have no recovery code (E-114). A forgotten staff password is reset with a single-use email link at `/staff/recuperar` (E-166).
 - If an external mail provider is used, the SMTP arrow leaves the VM, and student email addresses go with it (M-11).
 - VM request: CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team asks for 2 processors, 8 GB of memory, a 60 GB main disk and a 40 GB second disk for backups, in the same request, with a large margin on purpose (E-111, E-122).
 - Restore (E-122): the Administrator panel restores a backup already on the server, with no upload. The same install command restores a backup on a new server (E-123). A restore replaces everything saved after that backup, audit log entries included.
@@ -295,18 +295,18 @@ Notes:
 
 ## Design decisions to confirm
 
-D2, D3, D4, D6 and D7 are **Decided** (team, 2026-10-19) and can be revisited. D1, D5 and D8 are still **Proposed**. The team decides them in the PR review.
+D2, D3, D4, D6 and D7 are **Decided** (team, 2026-10-19) and can be revisited. D1 is **Decided** (team, 2026-11-08). D5 and D8 are still **Proposed**. The team decides them in the PR review.
 
-### D1: Proxy, nginx or Caddy
+### D1: Proxy, nginx
 
-**Status:** Proposed.
+**Status:** Decided (team, 2026-11-08), A, E-173.
 
 `context.md` lists "nginx or Caddy". Both can serve the static PWA files and pass `/api` to PHP-FPM.
 
 - **A. nginx.** Widely used with Laravel, and `context.md` already names it for the static files. It does not get certificates by itself: the certificate comes from CTI, or the team adds certbot and a renewal job.
 - **B. Caddy.** Gets and renews certificates by itself, with a short config. That only works if the VM is reachable from the internet (or DNS can be changed by the team) and UPRM allows that kind of certificate (M-01, M-03). If CTI hands over a certificate, this advantage is gone.
 
-Recommendation: wait for M-03. If CTI gives the certificate, A, because it is the most familiar option. If the team must get it and the VM is public, B. Development does not depend on this choice, since the tunnel gives HTTPS.
+Decision: A, nginx. It already runs in the docker-compose setup. The certificate source stays open until CTI answers M-03: CTI gives it, or the team adds certbot with a renewal job.
 
 ### D2: All backend routes under `/api`
 
