@@ -29,7 +29,7 @@ class RegistrationLookup
     public function ensureAllowed(Request $request): void
     {
         $key = $this->ipKey($request->ip());
-        $hits = RateLimiter::increment($key, config('registration.window_seconds'));
+        $hits = $this->reserve($key, config('registration.window_seconds'));
         if ($hits > config('registration.ip_failures')) {
             $wait = RateLimiter::availableIn($key);
             throw new ThrottleRequestsException('Too many attempts.', null, ['Retry-After' => (string) max(1, $wait)]);
@@ -37,6 +37,21 @@ class RegistrationLookup
         if (RateLimiter::tooManyAttempts('registration:global', config('registration.global_failures'))) {
             usleep(config('registration.slow_milliseconds') * 1000);
         }
+    }
+
+    /**
+     * RateLimiter::increment() resets the counter to 1 when two first requests
+     * race on a shared store, which admits more lookups than the limit.
+     * Same keys as the limiter, so availableIn() and decrement() still work.
+     */
+    private function reserve(string $key, int $window): int
+    {
+        $cache = Cache::driver(config('cache.limiter'));
+        $key = RateLimiter::cleanRateLimiterKey($key);
+        $cache->add($key.':timer', now()->addSeconds($window)->getTimestamp(), $window);
+        $cache->add($key, 0, $window);
+
+        return (int) $cache->increment($key);
     }
 
     public function failed(Request $request): ApiException
