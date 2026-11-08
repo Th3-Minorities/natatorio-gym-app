@@ -58,9 +58,9 @@ A key state is one version of a screen that you draw on its own. Diagram 7 of th
 | Issue | Name | Screens |
 |---|---|---|
 | #40 | Registration screens | 6 |
-| #41 | Check In and Gym ID screens | 3 |
+| #41 | Check In and Gym ID screens | 2 |
 | #42 | Sign in and account screens | 12 |
-| #43 | Staff screens | 3 |
+| #43 | Staff screens | 4 |
 | #44 | Content screens and analytics | 7 |
 | #45 | Administration screens | 9 |
 | | Total | 40 |
@@ -75,12 +75,12 @@ Proposed; the team can change it.
 |---|---|---|
 | 1 | #42 Sign in and account | It holds the app frame of screen map diagram 6 (top bar, no-connection banner, bottom tabs, side menu) and the entry screens N-01, N-02 and N-11. Most other flows start from these screens or return to them. |
 | 2 | #41 Check In and Gym ID | U-01 is the User home. C-01, the occupancy card, sits on every home (U-01, U-07, S-01), so the later homes reuse it. |
-| 3 | #43 Staff | S-01 is the gym dashboard home: the menu with the Staff items and, for Administrators, the Administrator items. S-03 (#41) opens from S-01, and every A screen opens from the S-01 menu. |
+| 3 | #43 Staff | S-01 is the gym dashboard home: the menu with the Staff items and, for Administrators, the Administrator items. S-03, also in #43, opens from S-01, and every A screen opens from the S-01 menu. |
 | 4 | #40 Registration | The registration flows end on U-01, drawn in step 2. U-07, in this issue, reuses the C-01 card and the tabs. |
 | 5 | #44 Content and analytics | C-02 to C-05 sit behind the tabs and the dashboard menu, which exist by now. A-10 to A-12 need the S-01 menu from step 3. |
 | 6 | #45 Administration | Every A screen opens from the S-01 menu for Administrators from step 3. |
 
-If you work in parallel, the gym dashboard is its own path (E-65, E-124), so one person can take the User app track (#42, #41, #40: 21 screens) and the other the dashboard track (#43, #45, then #44: 19 screens). The User app issues also hold two dashboard screens (N-11, S-03). Where a screen links to one that someone else draws, draw the link as a labeled button.
+If you work in parallel, the gym dashboard is its own path (E-65, E-124), so one person can take the User app track (#42, #41, #40: 20 screens) and the other the dashboard track (#43, #45, then #44: 20 screens). The User app issues also hold the dashboard sign-in screen (N-11); S-03 belongs to #43. Where a screen links to one that someone else draws, draw the link as a labeled button.
 
 ## 5. The six issues
 
@@ -132,29 +132,25 @@ Desk screen in this issue: N-11. Draw it desktop first.
 
 ### Issue 41: Check In and Gym ID
 
-You draw 3 screens.
+You draw 2 screens.
 
 | ID | Screen | Who sees it | What it must show | States to draw | Device | Comes from | Leads to |
 |---|---|---|---|---|---|---|---|
 | C-01 | Occupancy card | User, Staff, Administrator | Estimated occupancy with "updated at TIME", on every home | Loading: placeholder, no number. Empty: 0 is a real value. Error and no connection: number hidden, "not current" with icon (REQ-NF-26). Polls every 20 to 30 s (check-in D6) | Both | Sits on U-01, U-07 and S-01 | C-05 Analytics, today (tap) |
 | U-01 | Check In and Gym ID | User with active authorization | Home. Check In button; Gym ID after a valid Check In; C-01 card | Empty: no session yet, Check In button. Loading: checking eligibility, waiting for location, sending. Error: one state per cause code of check-in D5, with the text written by the app in the account's language (no authorization, gym closed, athletes-only, location denied with how to turn it on, location unavailable, low accuracy, outside boundary, new term photo needed, photo pending). No connection: Check In refused; Gym ID shows "not valid now" and the clock stops (SM-6). Special: paid member active with "Active session", the Check In time and the moving clock, no countdown (E-129); session ended shown with text and icon (checked out, closed automatically, closed by closure); athlete shown as "Authorized athlete, Fall 2026" (the term) with the moving clock, never time left, never "expired"; tag "Athlete" or "Member" with an icon and a different color for each (colors to pick); invalid after roster removal; athletes-only notice with start time for every User, and the theme color of the app changes during that period (E-76) | Phone | After sign in (N-02); saved on N-03, N-05, U-02 or U-08; N-05 Continue | U-02 (Check In rejected: new term photo needed); Hours, Notices and Stats tabs (C-02, C-03, C-05); More menu (C-04, U-03, N-09, N-08); U-07 when the authorization expires, is revoked or the athlete is removed from the roster; N-02 when signed in on another device |
-| S-03 | Person lookup and Staff-assisted Check In | Staff, Administrator | Search by name (paid member) or student number (athlete); compare the photo; confirm Check In; link to S-05 to check the roster | Loading. Empty: no match. Error: cause keys (no authorization, photo required, photo pending, gym closed, athletes-only for paid members). No connection: disabled. Special: person already has an active session, shown instead of a new one; opens with the student number filled in after "Check In this athlete" on S-05; the student number is shown in full (E-81) | Desk | S-01 (name not in active sessions, or the Assisted Check In button); S-05 (Check In this athlete) | S-01 (photo matches, confirm); S-02 (open person); S-05 (check the roster) |
 
 #### Open items for this issue
 
 - Colors of the "Athlete" and "Member" tags and of the athletes-only theme are the owner's choice and are not picked yet (E-75, E-76). Draw the tag with its text and icon, and write a note where the color changes. No colors in the wireframe.
 - The rejection texts are written later (E-74). Draw each cause with a draft text that names the cause.
 - The issue body lists 7 rejection causes. The screen map adds an eighth, "new term photo needed", which opens U-02 (drawn in #40), and a ninth, "photo pending" (E-118), which also leads to U-02. Draw both as U-01 states too.
-- S-03 is Desk. If the gym says Staff also use phones (G-06), S-03 needs a phone layout too.
 - The athletes-only periods themselves are not known yet (G-28). Draw the notice with a placeholder start time.
 
 #### Diagrams to read
 
-- [Screen map](screen-map.md) 2. User with an active authorization; 4. Staff (S-03); 6. Shared screens and the app frame; 7. Standard data states
+- [Screen map](screen-map.md) 2. User with an active authorization; 6. Shared screens and the app frame; 7. Standard data states
 - [Check In flows](check-in-flows.md) 1. Check In checks before location (the order of the rejection causes)
 - [Check In flows](check-in-flows.md) 2. Check In location checks and session creation
-- [Check In flows](check-in-flows.md) 5. Staff-assisted Check In
-- [Check In flows](check-in-flows.md) 11. Staff check-out and photo pending
 - [Check In flows](check-in-flows.md) 6. Gym ID states: paid member; 7. Gym ID states: athlete
 - [Check In flows](check-in-flows.md) 8. Athletes-only notice during a session, and its part "Theme color during the athletes-only period"
 - [Check In flows](check-in-flows.md) 9. Occupancy counting (C-01 polling)
@@ -164,11 +160,9 @@ You draw 3 screens.
 - Every screen listed above has a wireframe, phone size first and desktop where it changes
 - Another member approved it in a PR
 
-Desk screen in this issue: S-03. Draw it desktop first.
-
 ### Issue 43: Staff
 
-You draw 3 screens.
+You draw 4 screens.
 
 The gym dashboard is its own path, not part of the User app (E-65, E-124). Draw its frame on S-01: the menu with the Staff items, the Administrator items (shown to Administrators only, E-114), and the C-01 card. The dashboard does not change color during the athletes-only period (E-76).
 
@@ -176,29 +170,31 @@ The gym dashboard is its own path, not part of the User app (E-65, E-124). Draw 
 |---|---|---|---|---|---|---|---|
 | S-01 | Active sessions | Staff, Administrator | Home of the dashboard. C-01 card, list of active sessions with name, Check In time, authorization, and time left before the automatic close for paid members (for an athlete the list shows "athlete" and the Check In time instead, E-99); a Check out action on each row (E-115); search by name; the menu shows the Administrator items only to Administrators (E-114) | Loading. Empty: "no active sessions". Error. No connection: list marked not current, actions disabled. Search is a fresh request, never cached. Also draw the menu as an Administrator sees it (screen map diagram 5) | Desk | N-11 (correct password); S-02 or S-03 after their action | S-02, S-03, S-05; C-02 to C-05 (menu); N-11 (Sign out); for Administrators: A-04 to A-13, A-15 to A-17 |
 | S-02 | Person and session detail | Staff, Administrator | Photo from the backend, authorization, waiver acceptance, emergency contact, session; Check out, End early and Void with confirm; Mark photo pending (E-118) | Loading: photo. Error: session already ended or changed by another browser. No connection: actions disabled. Special: only active sessions can be checked out, ended early or voided; no list of past sessions, and past statistics do not change (E-80). With a photo pending: the mark shows, and Check In stays off until the person uploads a new photo | Desk | S-01 (tap a session); S-03 (open person) | S-01 (Check out, End early, Void or Mark photo pending, after confirm) |
-| S-05 | Athlete roster | Staff, Administrator | Read-only list of the roster records; search by name or student number; "Check In this athlete" opens S-03 (E-59) | Loading. Empty: "no records". Empty search: no match. Error. No connection: list marked not current, search disabled. Special: no add, edit or remove controls; search is a fresh request, never cached; the student number is shown in full (E-81). Gym still to confirm (G-09) | Desk | S-01 menu: Roster; S-03 (check the roster) | S-03 (Check In this athlete, number filled in) |
+| S-03 | Person lookup and Staff-assisted Check In | Staff, Administrator | Search by name (paid member) or student number (athlete); compare the photo; confirm Check In; link to S-05 to check the roster | Loading. Empty: no match. Error: cause keys (no authorization, photo required, photo pending, gym closed, athletes-only for paid members). No connection: disabled. Special: person already has an active session, shown instead of a new one; opens with the student number filled in after "Check in" on S-05; the student number is shown in full (E-81) | Desk | S-01 (name not in active sessions, or the Assisted Check In button); S-05 (Check in) | S-01 (photo matches, confirm); S-02 (open person); S-05 (check the roster) |
+| S-05 | Athlete roster | Staff, Administrator | Read-only list of the roster records; search by name or student number; "Check in" opens S-03 (E-59) | Loading. Empty: "no records". Empty search: no match. Error. No connection: list marked not current, search disabled. Special: an athlete with an active session shows "Entrada registrada" and the entry time instead of "Check in"; no add, edit or remove controls; search is a fresh request, never cached; the student number is shown in full (E-81). Gym still to confirm (G-09) | Desk | S-01 menu: Roster; S-03 (check the roster) | S-03 (Check in, number filled in) |
 
 #### Open items for this issue
 
 - Front desk devices (G-06): the gym has not confirmed. Draw Desk first. If Staff also use phones, S-01 to S-03 and S-05 need the phone layout too; the issue body says to draw it only if the gym says so.
 - S-05 waits on the gym's yes (G-09). Draw it anyway; the team decided it (E-59).
 - Dashboard language control (E-104): a setting, a button in the dashboard top bar, or both. Pick it together with whoever draws C-06 (#42).
-- The issue's "Done when" says "phone size first", while its scope says "Desktop first". The screen map marks all five as Desk, so draw desktop first.
 
 #### Diagrams to read
 
 - [Screen map](screen-map.md) 4. Staff (staff account with the Staff role); 5. Administrator (staff account with the Administrator role); 6. Shared screens and the app frame; 7. Standard data states
 - [Administration flows](admin-flows.md) 1. Staff account states (what Staff and Administrators see)
 - [Check In flows](check-in-flows.md) 4. Facility session states (Check out, End early and Void)
+- [Check In flows](check-in-flows.md) 5. Staff-assisted Check In
 - [Check In flows](check-in-flows.md) 11. Staff check-out and photo pending
 - [Check In flows](check-in-flows.md) 10. Staff verification of a Gym ID (active sessions list and roster search)
 
 #### Done when (from the issue)
 
-- Every screen listed above has a wireframe, phone size first and desktop where it changes
+- Each screen has a desktop wireframe with loading, empty, error, no-connection and applicable special states
+- Texts are in Spanish, with room for English
 - Another member approved it in a PR
 
-All three screens are Desk. Draw them desktop first.
+All four screens are Desk. Draw them desktop first.
 
 ### Issue 40: Registration
 
@@ -345,7 +341,7 @@ The design documents hold 55 numbered diagrams. Two are removed and keep their n
 | [Screen map](screen-map.md) | 1. Public screens | #40, #42 |
 | | 2. User with an active authorization | #41, #42, #44 |
 | | 3. User with no active authorization | #40 |
-| | 4. Staff (staff account with the Staff role) | #40, #41, #43, #44 |
+| | 4. Staff (staff account with the Staff role) | #42, #43, #44 |
 | | 5. Administrator (staff account with the Administrator role) | #43, #44, #45 |
 | | 6. Shared screens and the app frame | #41, #42, #43, #44 |
 | | 7. Standard data states | all six |
@@ -362,7 +358,7 @@ The design documents hold 55 numbered diagrams. Two are removed and keep their n
 | | 2. Check In location checks and session creation | #41 |
 | | 3. Successful Check In | not needed now |
 | | 4. Facility session states | #42 (U-09), #43 |
-| | 5. Staff-assisted Check In | #41 |
+| | 5. Staff-assisted Check In | #43 |
 | | 6. Gym ID states: paid member | #41 |
 | | 7. Gym ID states: athlete | #41 |
 | | 8. Athletes-only notice during a session | #41 |

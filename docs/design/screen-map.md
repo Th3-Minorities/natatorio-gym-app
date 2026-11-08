@@ -130,7 +130,7 @@ flowchart TD
   S03 -->|"open person"| S02
   S01 -->|"menu: Roster"| S05["S-05 Athlete roster<br/>read only, search by name<br/>or student number"]
   S03 -->|"check the roster"| S05
-  S05 -->|"Check In this athlete"| S03
+  S05 -->|"Check in"| S03
   S01 -->|"menu"| SH["C-02, C-03, C-04, C-05"]
   S01 -->|"Administrators only: menu items"| ADM["A-04 to A-17<br/>diagram 5"]
   S01 -->|"Sign out, or account deactivated"| N11
@@ -141,7 +141,7 @@ flowchart TD
 - The Staff and Administrator screens are a dashboard on their own path under the app's name (E-124), not part of the User PWA. Staff and Administrator do not use the PWA (E-65).
 - The dashboard menu shows the Administrator items only to Administrators, and the backend decides each action by role (E-114, REQ-F-52).
 - Staff use S-05 to check an athlete with no open session (REQ-F-45) and to find a student number before an assisted Check In. S-05 has no add, edit, remove or import: those stay on A-05.
-- "Check In this athlete" opens S-03 with the student number filled in (E-81). Staff and the Administrator see the student number in full on every screen they use.
+- "Check in" opens S-03 with the student number filled in (E-81). Staff and the Administrator see the student number in full on every screen they use.
 - Staff can void only active sessions. S-01 lists them and there is no list of past sessions (E-80).
 - Staff have no account settings screen. How a Staff member changes their own password or recovers a forgotten one is not decided (`admin-flows.md` gap 1).
 - The dashboard does not change color during the athletes-only period (E-76).
@@ -288,9 +288,9 @@ Device: "Phone" means designed for a phone first. "Desk" means the gym mostly us
 |---|---|---|---|---|---|---|
 | S-01 | Active sessions | Staff, Administrator | Home of the dashboard. C-01 card, list of active sessions with name, Check In time, authorization, and time left before the automatic close for paid members (for an athlete the list shows "athlete" and the Check In time instead, E-99); a Check out action on each row (E-115); search by name; the menu shows the Administrator items only to Administrators (E-114) | Loading. Empty: "no active sessions". Error. No connection: list marked not current, actions disabled. Search is a fresh request, never cached | Desk | REQ-F-42, F-43, F-44, F-45, F-48, NF-26 |
 | S-02 | Person and session detail | Staff, Administrator | Photo from the backend, authorization, waiver acceptance, emergency contact, session; Check out, End early and Void with confirm; Mark photo pending (E-118) | Loading: photo. Error: session already ended or changed by another browser. No connection: actions disabled. Special: only active sessions can be checked out, ended early or voided; no list of past sessions, and past statistics do not change (E-80). With a photo pending: the mark shows, and Check In stays off until the person uploads a new photo | Desk | REQ-F-45, F-48, F-94, NF-19, NF-20, NF-39 |
-| S-03 | Person lookup and Staff-assisted Check In | Staff, Administrator | Search by name (paid member) or student number (athlete); compare the photo; confirm Check In; link to S-05 to check the roster | Loading. Empty: no match. Error: cause keys (no authorization, photo required, photo pending, gym closed, athletes-only for paid members). No connection: disabled. Special: person already has an active session, shown instead of a new one; opens with the student number filled in after "Check In this athlete" on S-05; the student number is shown in full (E-81) | Desk | REQ-F-36, F-45, F-46, F-82, NF-39 |
+| S-03 | Person lookup and Staff-assisted Check In | Staff, Administrator | Search by name (paid member) or student number (athlete); compare the photo; confirm Check In; link to S-05 to check the roster | Loading. Empty: no match. Error: cause keys (no authorization, photo required, photo pending, gym closed, athletes-only for paid members). No connection: disabled. Special: person already has an active session, shown instead of a new one; opens with the student number filled in after "Check in" on S-05; the student number is shown in full (E-81) | Desk | REQ-F-36, F-45, F-46, F-82, NF-39 |
 | S-04 | Removed | None | S-04: removed (E-117). The ID stays in this table so the other S IDs keep their numbers. There is no in-person registration code | Not a screen | Desk | REQ-F-77 (Removed) |
-| S-05 | Athlete roster | Staff, Administrator | Read-only list of the roster records; search by name or student number; "Check In this athlete" opens S-03 (E-59) | Loading. Empty: "no records". Empty search: no match. Error. No connection: list marked not current, search disabled. Special: no add, edit or remove controls; search is a fresh request, never cached; the student number is shown in full (E-81). Gym still to confirm (G-09) | Desk | REQ-F-45, F-46, F-49, F-51 |
+| S-05 | Athlete roster | Staff, Administrator | Read-only list of the roster records; search by name or student number; "Check in" opens S-03 (E-59) | Loading. Empty: "no records". Empty search: no match. Error. No connection: list marked not current, search disabled. Special: an athlete with an active session shows "Entrada registrada" and the entry time instead of "Check in"; no add, edit or remove controls; search is a fresh request, never cached; the student number is shown in full (E-81). Gym still to confirm (G-09) | Desk | REQ-F-45, F-46, F-49, F-51 |
 
 ### Administrator (staff account with the Administrator role)
 
