@@ -45,6 +45,7 @@ class User extends Authenticatable
             ->where('authorizations.user_id', $this->id)->orderByDesc('academic_terms.starts_on')
             ->orderByDesc('authorizations.id')->value('authorizations.type');
 
+        // Only the account's own sign-in and /me send this, so the email is not masked (team, 2026-11-08).
         return [
             'name' => WaiverAcceptance::query()->where('user_id', $this->id)->value('full_name'),
             'email' => $this->email,

@@ -41,7 +41,7 @@ export function UserPage({ children, header = true, large = false, offline = fal
   </div>
 }
 
-type Destination = 'check-in' | 'account'
+type Destination = 'check-in' | 'account' | 'gym'
 
 /** Figma "gym/rack-sentadillas" (4190:575), its four layers placed as in the navigation instance (4097:106). */
 function SquatRack() {
@@ -56,9 +56,8 @@ function SquatRack() {
 export function UserNavigation({ current = 'account' }: { current?: Destination }) {
   const t = useMessages().user
   const here = (destination: Destination) => current === destination ? 'page' as const : undefined
-  // The Gym destination is supplied by the User app issue.
   return <footer className="user-navigation"><nav aria-label={t.navigation}>
-    <span className="user-navigation-item"><SquatRack /><span>{t.gym}</span></span>
+    <a href="/gym" className="user-navigation-item" aria-current={here('gym')}><SquatRack /><span>{t.gym}</span>{here('gym') && <i aria-hidden="true" />}</a>
     <a href="/check-in" className="user-check-in" aria-current={here('check-in')}><span className="user-check-in__circle"><Dumbbell aria-hidden="true" /></span>
       <span>{t.checkIn}</span>{here('check-in') && <i aria-hidden="true" />}</a>
     <a href="/account" className="user-navigation-account" aria-current={here('account')}><UserRound aria-hidden="true" /><span>{t.account}</span>

@@ -6,6 +6,7 @@ import { useDateFormat } from '../format/dateTime'
 import { I18nProvider, useLocale, useMessages, type Locale } from '../i18n'
 import { InstallHelp } from './InstallHelp'
 import { CheckIn } from './CheckIn'
+import { Gym } from './Gym'
 import { UserAccess } from './UserAccess'
 import { Registration } from './Registration'
 import { UserLoading, UserNotice, UserPage } from './ui'
@@ -45,7 +46,7 @@ export function UserApp() {
   const online = useConnection()
   const epoch = useRef(0)
   const offline = !online || networkFailed
-  const protectedPath = path.startsWith('/account') || path === '/check-in'
+  const protectedPath = path.startsWith('/account') || path === '/check-in' || path === '/gym'
 
   const navigate = useCallback((next: string) => {
     window.history.pushState({}, '', next)
@@ -169,7 +170,7 @@ export function UserApp() {
       key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
       replaced={replaced} navigate={navigate} onSignedIn={(account) => {
         epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); navigate('/account')
-      }} /> : path === '/check-in' ? <CheckIn profile={profile} ended={ended} /> : <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline} disconnected={!online}
+      }} /> : path === '/gym' ? <Gym ended={ended} /> : path === '/check-in' ? <CheckIn profile={profile} ended={ended} /> : <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline} disconnected={!online}
       retry={() => { setFailed(false); setLoading(true); void load() }} busy={busy} signOut={signOut} changeLocale={changeLocale} localeSaved={localeSaved}
       confirmation={confirmation} confirm={() => setConfirmation(true)} cancelConfirmation={() => { setConfirmation(false); setActionFailed(false) }}
       refused={refused} deleteAccount={deleteAccount} actionFailed={actionFailed} />}

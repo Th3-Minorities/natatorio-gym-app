@@ -3,6 +3,7 @@
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\OccupancyController;
 use App\Http\Controllers\PaidRegistrationController;
 use App\Http\Controllers\PrivacyNoticeController;
 use App\Http\Controllers\StaffAccountController;
@@ -75,6 +76,8 @@ Route::prefix('user')->group(function () {
 
     Route::middleware(EnsureUserSessionIsCurrent::class)->group(function () {
         Route::get('/me', [UserAccountController::class, 'me']);
+        Route::get('/photo', [UserAccountController::class, 'photo']);
+        Route::get('/occupancy', OccupancyController::class);
         Route::post('/sign-out', [UserSessionController::class, 'signOut']);
         Route::patch('/locale', [UserAccountController::class, 'locale']);
         Route::delete('/account', [UserAccountController::class, 'delete']);

@@ -30,6 +30,16 @@ class UserAccountTest extends TestCase
         return $user;
     }
 
+    public function test_the_own_account_gets_its_full_email(): void
+    {
+        $user = $this->signedInUser();
+        $user->update(['email' => 'daniel@email.com']);
+
+        $this->getJson('/api/user/me')->assertOk()->assertJsonPath('email', 'daniel@email.com');
+        $this->patchJson('/api/user/locale', ['locale' => 'en'])
+            ->assertOk()->assertJsonPath('email', 'daniel@email.com');
+    }
+
     public function test_profile_reads_name_and_current_authorization_from_existing_models(): void
     {
         $user = $this->signedInUser();

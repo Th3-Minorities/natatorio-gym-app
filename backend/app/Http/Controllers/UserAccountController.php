@@ -14,13 +14,28 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Throwable;
 
 class UserAccountController extends Controller
 {
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user('web')->profile());
+        $user = $request->user('web');
+
+        return response()->json($user->profile());
+    }
+
+    public function photo(Request $request): StreamedResponse
+    {
+        $path = Authorization::query()->where('user_id', $request->user('web')->id)
+            ->orderByDesc('id')->value('photo_path');
+        if (! $path || ! Storage::disk('local')->exists($path)) {
+            throw new ApiException('not_found', 404);
+        }
+
+        return Storage::disk('local')->response($path, null, ['Cache-Control' => 'private, no-store']);
     }
 
     public function locale(Request $request): JsonResponse

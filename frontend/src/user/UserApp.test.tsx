@@ -116,7 +116,7 @@ describe('N-02', () => {
     open(); fillSignIn()
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
     expect(await screen.findByRole('heading', { name: 'My account' })).toBeInTheDocument()
-    expect(document.documentElement.lang).toBe('en')
+    await waitFor(() => expect(document.documentElement.lang).toBe('en'))
   })
 })
 
@@ -482,7 +482,8 @@ describe('User destinations', () => {
   it('keeps account destinations without screens as non-links', async () => {
     open('/account')
     await screen.findByRole('heading', { name: 'Mi cuenta' })
-    for (const name of ['Gimnasio', 'Soy atleta']) expect(screen.queryByRole('link', { name })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Soy atleta' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Gimnasio' })).toHaveAttribute('href', '/gym')
     expect(screen.getByRole('link', { name: 'Check-in' })).toHaveAttribute('href', '/check-in')
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('href', '/account')
   })

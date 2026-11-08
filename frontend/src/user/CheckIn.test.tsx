@@ -34,6 +34,7 @@ beforeEach(() => {
     configurable: true, value: { getCurrentPosition: vi.fn((s: PositionCallback, f: PositionErrorCallback, o?: PositionOptions) => position(s, f, o)) },
   })
   document.cookie = 'XSRF-TOKEN=test'
+  localStorage.clear()
 })
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
 
@@ -67,6 +68,18 @@ describe('U-01 Check In', () => {
     expect(screen.getByText('Necesitaremos verificar tu ubicación.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Check-in' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('keeps the visit-ended screen dismissed after the app is reopened', async () => {
+    status = { ...idle, last_session: { id: 7, started_at: '2026-11-07T16:42:00Z', ended_at: '2026-11-07T18:00:00Z', end_reason: 'checked_out' } }
+    window.history.replaceState({}, '', '/check-in')
+    const view = render(<UserApp />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
+    expect(await screen.findByText('¿Listo para entrenar?')).toBeInTheDocument()
+    view.unmount()
+    render(<UserApp />)
+    expect(await screen.findByText('¿Listo para entrenar?')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Continuar' })).not.toBeInTheDocument()
   })
 
   it('shows the athlete initial state (4104:173)', async () => {
@@ -107,6 +120,14 @@ describe('U-01 Check In', () => {
     expect(screen.getByText('Muestra esta tarjeta al personal.')).toBeInTheDocument()
     expect(screen.getByText('El personal registra tu salida.')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('¡Tu entrada quedó registrada!')
+    status = { ...idle, session }
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    expect(document.querySelector('.visually-hidden[role="status"]')).toBeEmptyDOMElement()
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    await waitFor(() => expect(screen.getByText('Sesión activa')).toBeInTheDocument())
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
     expect(storage).not.toHaveBeenCalled()
   })
 
@@ -167,7 +188,7 @@ describe('U-01 Check In', () => {
   it('opens the confirmation without asking for location when a session is active (4199:3403)', async () => {
     status = { ...idle, account_type: 'athlete', session }
     await open()
-    expect(await screen.findByText('¡Tu entrada quedó registrada!', { selector: '.check-in-lead' })).toBeInTheDocument()
+    expect(await screen.findByText('Tu entrada está registrada', { selector: '.check-in-lead' })).toBeInTheDocument()
     expect(document.querySelector('.check-in--confirmed.check-in--athlete')).not.toBeNull()
     expect(geolocation()).not.toHaveBeenCalled()
   })
@@ -301,7 +322,7 @@ describe('U-01 Check In', () => {
     status = { ...idle, session }
     geolocation().mockClear()
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar conexión' }))
-    expect(await screen.findByText('¡Tu entrada quedó registrada!', { selector: '.check-in-lead' })).toBeInTheDocument()
+    expect(await screen.findByText('Tu entrada está registrada', { selector: '.check-in-lead' })).toBeInTheDocument()
     expect(geolocation()).not.toHaveBeenCalled()
   })
 
