@@ -252,7 +252,8 @@ describe('User destinations', () => {
   it('keeps account destinations without screens as non-links', async () => {
     open('/account')
     await screen.findByRole('heading', { name: 'Mi cuenta' })
-    for (const name of ['Gimnasio', 'Check-in', 'Soy atleta']) expect(screen.queryByRole('link', { name })).toBeNull()
+    for (const name of ['Gimnasio', 'Soy atleta']) expect(screen.queryByRole('link', { name })).toBeNull()
+    expect(screen.getByRole('link', { name: 'Check-in' })).toHaveAttribute('href', '/check-in')
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).toHaveAttribute('href', '/account')
   })
 

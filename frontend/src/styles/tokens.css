@@ -89,4 +89,14 @@
   --user-weight-bold: 700;
   --user-weight-extra-bold: 800;
   --user-disabled-opacity: 0.55;
+
+  /* Check In, U-01 (Figma page "#41 Gym ID and Check in", 4085:1125). */
+  --check-in-member: #a55128;
+  --check-in-member-background: #783d2a;
+  --check-in-athlete-card: #2d603a;
+  --check-in-athlete-background: #153e2a;
+  --check-in-gold: #a27a24;
+  --check-in-gold-soft: #faeccb;
+  --check-in-danger-soft: #faeae5;
+  --check-in-wave: #d8cd94;
 }

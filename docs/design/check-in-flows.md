@@ -266,14 +266,16 @@ stateDiagram-v2
 - Removed from the roster mid-term: the Gym ID is invalid at once, the current session keeps counting until it ends, and no new Check In is allowed (REQ-F-49).
 - The Athlete tag keeps its text, icon and category color. The duration, offline and athletes-only notice rules are the same as for a paid member. Athletes never see time left (REQ-F-40, E-99).
 
-### 8. Athletes-only notice during a session
+### 8. Athletes-only notice before Check In and during a session
 
 **Type:** System flow. **Use it to:** write the backend rule that adds the notice to the Check In and Gym ID answers, and its tests.
 
 ```mermaid
 flowchart TD
   A["Check In response or Gym ID poll"] --> B{"Session active?"}
-  B -- "No" --> Z["No notice"]
+  B -- "No" --> P{"An athletes-only slot starts<br/>in the next 60 minutes?"}
+  P -- "No" --> Z["No notice"]
+  P -- "Yes" --> N
   B -- "Yes" --> C{"An athletes-only slot starts<br/>after now and before the session end?"}
   C -- "No" --> Z
   C -- "Yes" --> N["Show notice with the period start time<br/>to every User: athletes and paid members<br/>session keeps running"]
@@ -281,12 +283,12 @@ flowchart TD
 
   classDef back fill:#fff3cd,stroke:#b8860b,color:#000
   classDef ok fill:#d4edda,stroke:#2e7d32,color:#000
-  class A,B,C back
+  class A,B,C,P back
   class N,E,Z ok
 ```
 
 - Covers REQ-F-83 and the rejection side of REQ-F-82. Times shown in `America/Puerto_Rico`, in the format of REQ-NF-38 (REQ-NF-37).
-- Every User sees the notice, athletes and paid members (E-76).
+- Every User sees the notice, athletes and paid members (E-76). Without a session it shows in the 60 minutes before the period, and a paid member can still Check In until the period starts (E-161).
 
 #### Theme color during the athletes-only period
 
@@ -454,7 +456,7 @@ Decision: A, because the stored period is the real visit, which analytics need a
 
 Status: Decided (team, 2026-10-17), option A (E-74). On 2026-10-26 the codes were renamed from `check_in.reason` to `check_in_reason` to match the snake_case rule in `api-conventions.md` (issue #47 review). The decision itself did not change.
 
-- A. The backend returns a stable code per reason (`check_in_offline` is phone only; `check_in_no_authorization`, `check_in_photo_required`, `check_in_photo_pending`, `check_in_gym_closed`, `check_in_athletes_only`, `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy`, `check_in_outside_boundary`) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
+- A. The backend returns a stable code per reason (`check_in_offline` is phone only; `check_in_no_authorization`, `check_in_photo_required`, `check_in_photo_pending`, `check_in_gym_closed`, `check_in_athletes_only`, `check_in_location_denied`, `check_in_location_unavailable`, `check_in_low_accuracy`, `check_in_outside_boundary`; `location_required` (422) when the request has no latitude, longitude or accuracy, and the phone shows the location-unavailable panel) and the app writes the text in the account's language. Pro: one test per code; texts change without code changes (REQ-NF-34). Con: frontend and backend share a list.
 - B. The backend returns translated text only. Pro: one place. Con: the phone cannot react per reason (open photo upload, show how to turn on location), and tests depend on wording.
 
 Decision: A, because the app can react to each cause (open the photo upload, show how to turn on location). Two causes are added to REQ-F-33: location unavailable and new term photo needed. The texts are written later (REQ-F-33 "Texts: design").
@@ -513,26 +515,26 @@ Decision: A. The earlier recommendation was B. How far back the list goes: all h
 | REQ-F-48 | 4. Facility session states; 6. Gym ID states: paid member; 11. Staff check-out and photo pending |
 | REQ-F-94 | 1. Check In checks before location; 5. Staff-assisted Check In; 11. Staff check-out and photo pending |
 | REQ-F-49 | 7. Gym ID states: athlete; 9. Occupancy counting |
-| REQ-F-82 | 1. Check In checks before location; 5. Staff-assisted Check In; 8. Athletes-only notice during a session |
-| REQ-F-83 | 2. Check In location checks and session creation (notice on success); 6. Gym ID states: paid member; 8. Athletes-only notice during a session |
-| REQ-F-90 | 8. Athletes-only notice during a session (theme color) |
+| REQ-F-82 | 1. Check In checks before location; 5. Staff-assisted Check In; 8. Athletes-only notice before Check In and during a session |
+| REQ-F-83 | 2. Check In location checks and session creation (notice on success); 6. Gym ID states: paid member; 8. Athletes-only notice before Check In and during a session |
+| REQ-F-90 | 8. Athletes-only notice before Check In and during a session (theme color) |
 | REQ-NF-01 | 3. Successful Check In; 4. Facility session states; 9. Occupancy counting |
 | REQ-NF-03 | 2. Check In location checks and session creation; 3. Successful Check In; 4. Facility session states (My visits shows no location) |
 | REQ-NF-05 (retention, 5 years) | 4. Facility session states (how long visits are kept); D7; Gap 11 |
 | REQ-NF-11 | 2. Check In location checks and session creation |
 | REQ-NF-14 | 6. Gym ID states: paid member; 7. Gym ID states: athlete; 10. Staff verification of a Gym ID |
 | REQ-NF-19 | 10. Staff verification of a Gym ID |
-| REQ-NF-26 | 1. Check In checks before location; 2. Check In location checks and session creation; 5. Staff-assisted Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice during a session (theme color); 9. Occupancy counting |
+| REQ-NF-26 | 1. Check In checks before location; 2. Check In location checks and session creation; 5. Staff-assisted Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice before Check In and during a session (theme color); 9. Occupancy counting |
 | REQ-NF-28 | 2. Check In location checks and session creation; D2 |
 | REQ-NF-29 | 2. Check In location checks and session creation |
-| REQ-NF-37 | 8. Athletes-only notice during a session |
+| REQ-NF-37 | 8. Athletes-only notice before Check In and during a session |
 | REQ-NF-39 | 4. Facility session states; 5. Staff-assisted Check In |
 | REQ-NF-42 | 3. Successful Check In (alt block) |
 | E-59 (Staff see the roster) | 5. Staff-assisted Check In; 7. Gym ID states: athlete; 10. Staff verification of a Gym ID; Gap 6 |
 | D1 (check order, eligibility query first) | 1. Check In checks before location; 2. Check In location checks and session creation; 3. Successful Check In; D1 |
 | E-74 (fixed code per rejection cause) | 1. Check In checks before location; 2. Check In location checks and session creation; D5; Gaps 1 and 2 |
-| E-75 (Member and Athlete tags; timing and post-visit display refined by E-163) | 3. Successful Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice during a session; D6 |
-| E-76 (everyone sees the athletes-only notice; theme color in the athletes-only period) | 8. Athletes-only notice during a session; Gap 4 |
+| E-75 (Member and Athlete tags; timing and post-visit display refined by E-163) | 3. Successful Check In; 6. Gym ID states: paid member; 7. Gym ID states: athlete; 8. Athletes-only notice before Check In and during a session; D6 |
+| E-76 (everyone sees the athletes-only notice; theme color in the athletes-only period) | 8. Athletes-only notice before Check In and during a session; Gap 4 |
 | E-80 (Staff void only active sessions) | 4. Facility session states; Gap 5 |
 | E-81 (student number filled and never masked) | 5. Staff-assisted Check In; 10. Staff verification of a Gym ID |
 | E-105 (My visits screen U-09, own past Check Ins from session records) | 4. Facility session states; D7; Gap 11 |

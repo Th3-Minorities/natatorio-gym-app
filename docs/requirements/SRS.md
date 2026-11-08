@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.19 draft, not approved
+**Version:** 0.20 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -84,6 +84,7 @@
 | Carlos J. Pepin Delgado | 2026-11-06 | Team decisions E-155 and E-156 (`team.md`): the waiver is accepted with an on-screen checkbox now, and a drawn signature is added for the Final report after research (REQ-F-60); no "15 minutes left" notice | 0.15 |
 | Viviana V Ramos Vivoni | 2026-11-07 | User Check In wireframes, E-163 and E-164: elapsed duration, no term on the Gym ID, normal Check In after a visit, offline update time and occupancy on Gimnasio (REQ-F-40, REQ-NF-26) | 0.18 |
 | Team | 2026-11-07 | Team decisions E-159 and E-160 (`team.md`): a Spanish / English switch on the welcome screen before sign in, replacing E-103 (REQ-NF-33); the student number has 9 digits, correcting E-153 (REQ-F-15) | 0.19 |
+| Team | 2026-11-07 | Team decision E-161 (`team.md`): the athletes-only notice also shows on the Check In screen in the 60 minutes before a period starts, without a session (REQ-F-83) | 0.20 |
 
 ## 1. Introduction
 
@@ -289,7 +290,7 @@ The User does Check In from the phone. Location is a Check In condition, not pro
 | REQ-F-37 | If the User already has an active session, another Check In shall return the current session and Gym ID without asking for location or creating a session. Location is asked only when a new session must be created. | MVP | High | Clear | Proposal:365, 416 |
 | REQ-F-38 | A session shall end in one of these ways: (a) Staff check the person out at the desk (REQ-F-48); (b) 2 hours after the Check In, by backend time, when nobody closed it, with the note "closed automatically"; (c) a published closure or the end of a term ends every active session at once, with the note "closed by closure"; (d) Staff end it early or void it (REQ-F-48). An ended session stops counting toward occupancy. A person may come back the same day: there is no daily limit, and each entry after a check-out counts as a visit. Stepping out briefly (the bathroom, the car) is the same session. The 60 minutes are a guide that Staff apply when the gym is full; the app does not enforce them. | MVP | High | Clear | Proposal:210, 350, 365; Team decision (E-115) |
 | REQ-F-82 | During an athletes-only period, the system shall reject Check In by paid members, including Staff-assisted Check In, with a notice. Athletes can do Check In. | N/A | Medium | Pending: list of periods (gym, G-28) | Team decision (E-49) |
-| REQ-F-83 | If an athletes-only period starts during a User's active session, the system shall show a notice with the start time of the period, at Check In and while the session is active. Every User sees it, athletes and paid members. An athletes-only period never cuts a session; only a closure or the end of a term ends sessions at once (REQ-F-38). | N/A | Medium | Clear | Team decision (E-76, E-115) |
+| REQ-F-83 | If an athletes-only period starts within the next 60 minutes, or during a User's active session, the system shall show a notice with the start time of the period, at Check In and while the session is active. Every User sees it, athletes and paid members. An athletes-only period never cuts a session; only a closure or the end of a term ends sessions at once (REQ-F-38). | N/A | Medium | Clear | Team decision (E-76, E-115, E-161) |
 | REQ-F-90 | During an athletes-only period, the whole User app shall change to a different color theme, so every User sees at a glance that the period is on. The app also shows the period with text and an icon (REQ-NF-14). The gym dashboard keeps its colors. Without a connection, the app shows its normal colors (REQ-NF-26). | N/A | Medium | Clear. Colors: the team picks them, and no color means two things (see REQ-F-40) | Team decision (E-76) |
 | REQ-F-92 | The User shall be able to open a "My visits" list of their own past Check Ins from the account screen, with their full history. Each row shows the date and time of the Check In. The list never shows the location (REQ-NF-03). Check Ins are kept 5 years (REQ-NF-05). | N/A | Medium | Clear | Team decision (E-105, E-125, E-126) |
 

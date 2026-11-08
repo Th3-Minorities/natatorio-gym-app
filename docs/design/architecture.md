@@ -291,7 +291,7 @@ Notes:
 - The `sign_in_sessions` table keeps no IP and no browser: both columns are NULL (E-91). Gym actions stay traceable through the audit log, which records IP, device and browser (REQ-NF-39).
 - Attempt counters live in the `cache` table, keyed by IP and email for sign in (E-91, E-93). They are temporary and are discarded when the wait ends. The "discarded" part is a default the team did not object to.
 - The database, not the PWA, guarantees one active session per User, also under simultaneous requests (REQ-F-36, REQ-NF-42). This needs PostgreSQL (M-09). The exclusion constraint ignores void rows (`WHERE status <> 'void'`), so an early end shortens the period (check-in D4).
-- Schedule and athletes-only checks use `schedule_slots` (REQ-F-33, REQ-F-82). If an athletes-only period starts while the session is open, the response carries its start time (REQ-F-83).
+- Schedule and athletes-only checks use `schedule_slots` (REQ-F-33, REQ-F-82). If an athletes-only period starts shortly or while the session is open, the response carries its start time (REQ-F-83, E-161).
 
 ## Design decisions to confirm
 

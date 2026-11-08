@@ -441,7 +441,7 @@ Also asked in cti.md: M-15 (whether FERPA or another UPR policy applies).
 | Field | Value |
 |---|---|
 | Question | Which schedule periods are for athletes only? |
-| Affects | REQ-F-82 Paid members cannot Check In during athletes-only periods; REQ-F-83 Notice when a period starts within the session; REQ-F-55 (b) Mark a slot as athletes only (was REQ-F-84) |
+| Affects | REQ-F-82 Paid members cannot Check In during athletes-only periods; REQ-F-83 Notice shortly before a period starts or when it starts within the session (E-161); REQ-F-55 (b) Mark a slot as athletes only (was REQ-F-84) |
 | Feature | 3.6 Check In and Facility Session, 3.11 Facility Information, Schedules and Notices |
 | Why we ask | During these periods paid members cannot do Check In. A User whose 60-minute session overlaps the start of a period sees its start time; the session is not cut. |
 | Answer | For the rest of the fall 2026 semester, from November 9, the gym is open to athletes only. Administrators create athlete-only periods in the schedule screen, and a period outside regular hours opens the gym for athletes only. |

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\HealthController;
 use App\Http\Controllers\PaidRegistrationController;
 use App\Http\Controllers\StaffAccountController;
@@ -71,5 +72,8 @@ Route::prefix('user')->group(function () {
         Route::post('/sign-out', [UserSessionController::class, 'signOut']);
         Route::patch('/locale', [UserAccountController::class, 'locale']);
         Route::delete('/account', [UserAccountController::class, 'delete']);
+        Route::get('/check-in', [CheckInController::class, 'show']);
+        Route::post('/check-in', [CheckInController::class, 'store'])
+            ->name('user.check-in')->middleware('throttle:user.check-in');
     });
 });
