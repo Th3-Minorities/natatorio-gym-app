@@ -58,6 +58,8 @@ function locate(): Promise<GeolocationPosition> {
   })
 }
 
+const DISMISSED_KEY = 'checkIn.dismissedSession'
+
 function elapsed(since: string, now: number) {
   const seconds = Math.max(0, Math.floor((now - new Date(since).getTime()) / 1000))
   return [seconds / 3600, (seconds % 3600) / 60, seconds % 60].map((part) => String(Math.floor(part)).padStart(2, '0')).join(':')
@@ -78,7 +80,9 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const heading = useRef<HTMLHeadingElement>(null)
   const online = useConnection()
   const [networkFailed, setNetworkFailed] = useState(false)
-  const [dismissed, setDismissed] = useState<number | string | null>(null)
+  const [dismissed, setDismissed] = useState<string | null>(() => {
+    try { return localStorage.getItem(DISMISSED_KEY) } catch { return null }
+  })
   const [registration, setRegistration] = useState<{ id: number | string; announce: boolean } | null>(null)
   const registered = registration !== null && registration.id === status?.session?.id
   const [now, setNow] = useState(0)
@@ -193,7 +197,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
 
   const athlete = (status?.account_type ?? (profile?.authorization?.type === 'athlete' ? 'athlete' : 'member')) === 'athlete'
   const period = status?.athletes_period ?? null
-  const lastSession = status?.last_session?.id !== dismissed ? status?.last_session : null
+  const lastSession = status?.last_session && String(status.last_session.id) !== dismissed ? status.last_session : null
   const view = status?.session ? 'confirmed' : lastSession ? 'ended' : problem ?? (!loaded ? 'loading' : period?.state === 'active' && !athlete ? 'exclusive' : 'ready')
 
   const first = useRef(true)
@@ -216,7 +220,11 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
       now={now} offline={offline} updatedAt={updatedAt} lastSession={status?.session ? null : lastSession} registered={registered} busy={busy}
       onContinue={() => void run(async () => {
         const next = await refresh()
-        if (next) { setDismissed(next.last_session?.id ?? null); setRegistration(null); setProblem(null) }
+        if (next) {
+          setDismissed(next.last_session ? String(next.last_session.id) : null)
+          try { if (next.last_session) localStorage.setItem(DISMISSED_KEY, String(next.last_session.id)) } catch { /* in-memory only */ }
+          setRegistration(null); setProblem(null)
+        }
       })}
       detail={athlete ? status?.sport : status?.member_group === 'student' ? t.student : null} /> : <>
     <h1 ref={heading} tabIndex={-1}>{user.checkIn}</h1>

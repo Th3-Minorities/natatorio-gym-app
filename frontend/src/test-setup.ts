@@ -4,6 +4,7 @@ import { afterEach } from 'vitest'
 
 afterEach(() => {
   cleanup()
+  localStorage.clear()
 })
 
 // jsdom has <dialog> but not showModal() or close(). This stand-in only opens and closes it;

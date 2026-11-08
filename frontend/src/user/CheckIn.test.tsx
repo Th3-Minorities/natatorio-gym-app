@@ -34,6 +34,7 @@ beforeEach(() => {
     configurable: true, value: { getCurrentPosition: vi.fn((s: PositionCallback, f: PositionErrorCallback, o?: PositionOptions) => position(s, f, o)) },
   })
   document.cookie = 'XSRF-TOKEN=test'
+  localStorage.clear()
 })
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers() })
 
@@ -67,6 +68,18 @@ describe('U-01 Check In', () => {
     expect(screen.getByText('Necesitaremos verificar tu ubicación.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Check-in' })).toHaveAttribute('aria-current', 'page')
     expect(screen.getByRole('link', { name: 'Mi cuenta' })).not.toHaveAttribute('aria-current')
+  })
+
+  it('keeps the visit-ended screen dismissed after the app is reopened', async () => {
+    status = { ...idle, last_session: { id: 7, started_at: '2026-11-07T16:42:00Z', ended_at: '2026-11-07T18:00:00Z', end_reason: 'checked_out' } }
+    window.history.replaceState({}, '', '/check-in')
+    const view = render(<UserApp />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Continuar' }))
+    expect(await screen.findByText('¿Listo para entrenar?')).toBeInTheDocument()
+    view.unmount()
+    render(<UserApp />)
+    expect(await screen.findByText('¿Listo para entrenar?')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Continuar' })).not.toBeInTheDocument()
   })
 
   it('shows the athlete initial state (4104:173)', async () => {
