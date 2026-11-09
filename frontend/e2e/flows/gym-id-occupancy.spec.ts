@@ -11,9 +11,10 @@ async function gym(page: Page) {
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Gimnasio' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Gimnasio' })).toBeVisible()
   await expect(page.getByRole('heading', { level: 2, name: 'Ocupación estimada' })).toBeVisible()
+  // Read the count only after the answer arrived (CI read it too early once).
+  await expect(page.getByText(/^Actualizado a las /)).toBeVisible()
   const count = Number(await page.locator('.gym-occupancy__count strong').textContent())
   await expect(page.locator('.gym-occupancy__badge')).toHaveText(count < 40 / 3 ? 'Baja' : count <= 80 / 3 ? 'Moderada' : 'Alta')
-  await expect(page.getByText(/^Actualizado a las /)).toBeVisible()
   return count
 }
 
@@ -40,7 +41,7 @@ test('the Gym ID stays on screen offline and Gimnasio counts the visit', async (
   await expect(page.getByText('Sesión activa', { exact: true })).toBeVisible()
 
   // 4. Gimnasio after the Check In: one more person
-  expect(await gym(page)).toBe(before + 1)
+  await expect.poll(() => gym(page)).toBe(before + 1)
 
   // 5. Gimnasio after the front desk check-out: back to the count before
   const { body } = await api(page.request, 'get', '/api/user/check-in', baseURL!)

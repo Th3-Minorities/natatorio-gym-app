@@ -159,14 +159,24 @@ test.describe('User screen states at 390x844', () => {
           await expect(page.getByText('Comenzar', { exact: true })).toBeVisible()
         }
         const inputs = page.locator('.field__input')
-        for (const input of await inputs.all()) {
-          await expect(input).toHaveCSS('height', '52px')
-          await expect(input).toHaveCSS('background-color', 'rgb(255, 253, 248)')
-          if (state !== 'invalid') await expect(input).toHaveCSS('border-color', 'rgb(217, 220, 203)')
-        }
         const toggles = page.getByRole('button', { name: 'Mostrar contraseña', exact: true })
-        await expect(toggles).toHaveCount(path === 'recover-password' ? 0 : path === 'reset-password' ? 2 : 1)
-        for (const toggle of await toggles.all()) await expect(toggle).toBeVisible()
+        if (state === 'validating') {
+          // Figma 4099:2359 draws only the loading state while the link is checked: the form is not rendered.
+          await expect(inputs).toHaveCount(0)
+          await expect(toggles).toHaveCount(0)
+        } else {
+          for (const input of await inputs.all()) {
+            await expect(input).toHaveCSS('height', '52px')
+            await expect(input).toHaveCSS('background-color', 'rgb(255, 253, 248)')
+            if (state === 'wrong') {
+              // Figma 4490:3099: a wrong password marks both inputs.
+              await expect(input).toHaveCSS('border-color', 'rgb(142, 52, 44)')
+              await expect(input).toHaveAttribute('aria-invalid', 'true')
+            } else if (state !== 'invalid') await expect(input).toHaveCSS('border-color', 'rgb(217, 220, 203)')
+          }
+          await expect(toggles).toHaveCount(path === 'recover-password' ? 0 : path === 'reset-password' ? 2 : 1)
+          for (const toggle of await toggles.all()) await expect(toggle).toBeVisible()
+        }
       }
       for (const notice of await page.locator('.user-notice .notice').all()) {
         await expect(notice).toHaveCSS('background-color', 'rgb(255, 253, 248)')

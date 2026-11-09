@@ -79,7 +79,7 @@ Test: `user-sign-in.spec.ts`
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
-| 1 | Sign in with a wrong password | `user@example.com` | "No pudimos iniciar sesión", still on Sign in | pass | pending |
+| 1 | Sign in with a wrong password | `user@example.com` | Both fields marked and "Correo o contraseña incorrectos." under the password, still on Sign in | pass | pending |
 | 2 | Sign in with the right password | `user@example.com` | Mi cuenta | pass | pending |
 | 3 | Tap Check-in in the navigation | none | Check In with the hold button | pass | pending |
 | 4 | Sign in on a second phone, reload the first | same account | First phone: Sign in with "Iniciaste sesión en otro dispositivo" | pass | pending |
