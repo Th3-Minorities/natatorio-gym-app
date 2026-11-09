@@ -68,12 +68,50 @@ describe('N-02', () => {
     expectAccessLayout()
   })
 
-  it('shows identical wrong-credentials copy and retains the entered email', async () => {
+  it('marks both wrong-credentials fields and shows one inline password error', async () => {
     answer = async () => error('user_credentials_invalid')
     open(); fillSignIn()
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Revisa el correo y la contraseña e intenta de nuevo.')
+    const message = await screen.findByText('Correo o contraseña incorrectos.')
+    const email = screen.getByLabelText('Correo electrónico')
+    const password = screen.getByLabelText('Contraseña')
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(document.querySelectorAll('.field__error')).toHaveLength(1)
+    expect(message).toHaveClass('field__error')
+    expect(password.closest('.user-password')).toContainElement(message)
+    expect(email).toHaveAttribute('aria-invalid', 'true')
+    expect(password).toHaveAttribute('aria-invalid', 'true')
+    expect(password).toHaveAccessibleDescription('Correo o contraseña incorrectos.')
+    expect(email).toHaveAccessibleDescription('Correo o contraseña incorrectos.')
+    expect(password).toHaveFocus()
+    expect(message.compareDocumentPosition(screen.getByRole('link', { name: '¿Olvidaste tu contraseña?' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByLabelText('Correo electrónico')).toHaveValue('user@example.com')
+    expectAccessLayout()
+  })
+
+  it.each(['Correo electrónico', 'Contraseña'])('clears the credentials error when editing %s', async (label) => {
+    answer = async () => error('user_credentials_invalid')
+    open(); fillSignIn()
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
+    await screen.findByText('Correo o contraseña incorrectos.')
+    fireEvent.change(screen.getByLabelText(label), { target: { value: 'changed' } })
+    expect(screen.queryByText('Correo o contraseña incorrectos.')).toBeNull()
+    expect(screen.getByLabelText('Correo electrónico')).not.toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Contraseña')).not.toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it.each(['server_error', 'unexpected_error'])('shows a server notice and keeps sign-in ready to retry after a 500 (%s)', async (code) => {
+    answer = async () => error(code, 500)
+    open(); fillSignIn()
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
+    const notice = await screen.findByRole('alert')
+    expect(notice).toHaveTextContent(es.signIn.wrongTitle)
+    expect(notice).toHaveTextContent(es.errors.server_error)
+    expect(notice.closest('.user-notice')).toBeInTheDocument()
+    expect(notice.compareDocumentPosition(document.querySelector('form')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByLabelText('Correo electrónico')).toHaveValue('user@example.com')
+    expect(screen.getByLabelText('Contraseña')).toHaveValue('a long password')
+    expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeEnabled()
     expectAccessLayout()
   })
 
@@ -189,15 +227,25 @@ describe('N-06 and N-07', () => {
     expect(screen.getByLabelText('Correo electrónico')).toHaveValue('any@example.com')
   })
 
-  it('keeps the new password form while validating and prevents submission until the link is valid', async () => {
+  it('shows only the new password heading and loading skeleton until the link is valid', async () => {
     let finish!: (response: Response) => void
     answer = () => new Promise((resolve) => { finish = resolve })
     open('/reset-password?token=token&email=user%40example.com')
     expect(screen.getByText('Estamos verificando el enlace…')).toBeInTheDocument()
-    expectAccessLayout(2, false)
-    expect(screen.getByRole('button', { name: 'Guardar contraseña' })).toBeDisabled()
+    expect(screen.getByRole('heading', { name: 'Nueva contraseña' })).toBeInTheDocument()
+    expect(document.querySelector('.user-skeleton')?.querySelectorAll('span')).toHaveLength(3)
+    expect(document.querySelector('.user-skeleton svg')).toBeInTheDocument()
+    expect(screen.queryByText(es.user.newDescription)).toBeNull()
+    expect(document.querySelector('form')).toBeNull()
+    expect(screen.queryByLabelText('Nueva contraseña')).toBeNull()
+    expect(screen.queryByLabelText('Confirmar contraseña')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Guardar contraseña' })).toBeNull()
+    expect(screen.queryByRole('link', { name: es.user.returnToSignIn })).toBeNull()
     await act(async () => finish(new Response(null, { status: 204 })))
     expect(await screen.findByLabelText('Confirmar contraseña')).toBeInTheDocument()
+    expect(screen.queryByText(es.user.validating)).toBeNull()
+    expect(screen.getByText(es.user.newDescription)).toBeInTheDocument()
+    expectAccessLayout(2, false)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar contraseña' })).toBeEnabled())
   })
 
@@ -220,16 +268,16 @@ describe('N-06 and N-07', () => {
     fireEvent(window, new Event('online'))
     await waitFor(() => expect(validate).toHaveBeenCalledTimes(2))
     expect(screen.getByText(es.user.validating)).toBeInTheDocument()
-    const submit = screen.getByRole('button', { name: es.user.save })
-    expect(submit).toBeDisabled()
-    fireEvent.submit(submit.closest('form')!)
+    expect(document.querySelector('form')).toBeNull()
+    expect(screen.queryByText(es.user.newDescription)).toBeNull()
+    expect(screen.queryByRole('button', { name: es.user.save })).toBeNull()
     expect(fetch).not.toHaveBeenCalledWith('/api/user/password/reset', expect.anything())
 
     await act(async () => finish(expired ? error('user_reset_link_invalid') : new Response(null, { status: 204 })))
     if (expired) {
       expect(await screen.findByRole('heading', { name: es.user.expiredTitle })).toBeInTheDocument()
     } else {
-      await waitFor(() => expect(submit).toBeEnabled())
+      expect(await screen.findByRole('button', { name: es.user.save })).toBeEnabled()
       await act(async () => { fireEvent(window, new Event('online')) })
       expect(validate).toHaveBeenCalledTimes(2)
     }

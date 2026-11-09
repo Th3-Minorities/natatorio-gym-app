@@ -76,13 +76,14 @@ export function UserNavigation({ current = 'account' }: { current?: Destination 
   </nav></footer>
 }
 
-export function PasswordField({ label, placeholder, value, onChange, error, autoComplete = 'new-password', hint, describedBy }: {
+export function PasswordField({ label, placeholder, value, onChange, error, autoComplete = 'new-password', hint, describedBy, id }: {
   label: string; placeholder: string; value: string; onChange: (value: string) => void; error?: string;
-  autoComplete?: string; hint?: string; describedBy?: string
+  autoComplete?: string; hint?: string; describedBy?: string; id?: string
 }) {
   const t = useMessages().user
   const [visible, setVisible] = useState(false)
-  const inputId = useId()
+  const generatedId = useId()
+  const inputId = id ?? generatedId
   const hintId = `${inputId}-hint`
   const errorId = `${inputId}-error`
   const Icon = visible ? EyeOff : Eye

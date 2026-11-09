@@ -16,7 +16,7 @@ test('a User signs in, reaches Check In, is replaced by a second phone and recov
   await page.getByLabel('Correo electrónico').fill(USER.email)
   await page.getByLabel('Contraseña', { exact: true }).fill('not-the-password')
   await page.getByRole('button', { name: 'Iniciar sesión', exact: true }).click()
-  await expect(page.getByText('No pudimos iniciar sesión', { exact: true })).toBeVisible()
+  await expect(page.getByText('Correo o contraseña incorrectos.', { exact: true })).toBeVisible()
   await expect(page).toHaveURL(/\/sign-in$/)
 
   // 2. Right password, then Check In from the navigation

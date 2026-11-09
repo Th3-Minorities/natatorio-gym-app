@@ -120,7 +120,7 @@ test.describe('User screen states at 390x844', () => {
         await page.evaluate("window.dispatchEvent(new Event('offline'))")
       }
       const ready = state === 'busy' ? path === 'sign-in' ? 'Iniciando sesión…' : 'Enviando enlace…'
-        : state === 'wrong' ? 'No pudimos iniciar sesión' : state === 'wait' ? 'Espera antes de intentar de nuevo'
+        : state === 'wrong' ? 'Correo o contraseña incorrectos.' : state === 'wait' ? 'Espera antes de intentar de nuevo'
         : state === 'replaced' ? 'Iniciaste sesión en otro dispositivo' : state === 'received' ? 'Solicitud recibida'
         : state === 'expired' ? 'El enlace ya no es válido' : state === 'validating' ? 'Estamos verificando el enlace…'
         : state === 'invalid' ? path === 'reset-password' ? 'Las contraseñas deben coincidir.' : 'Escribe un correo electrónico válido.'

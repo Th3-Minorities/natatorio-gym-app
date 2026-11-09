@@ -36,8 +36,8 @@ const passwordField = (page: Page) => page.getByLabel('Contraseña', { exact: tr
 const signInButton = (page: Page) => page.getByRole('button', { name: 'Iniciar sesión', exact: true })
 const heading = (page: Page, name: string) => page.getByRole('heading', { level: 1, name, exact: true })
 
-const WRONG_TITLE = 'No pudimos iniciar sesión'
-const WRONG_TEXT = 'Revisa el correo y la contraseña e intenta de nuevo.'
+// Figma N-02 4490:3099: one inline error under the password, both fields outlined, no boxed notice.
+const WRONG_TITLE = 'Correo o contraseña incorrectos.'
 const REPLACED_TITLE = 'Iniciaste sesión en otro dispositivo'
 const REPLACED_TEXT = 'Vuelve a iniciar sesión para usar tu cuenta aquí.'
 const WAIT_TITLE = 'Espera antes de intentar de nuevo'
@@ -59,7 +59,7 @@ async function attempt(page: Page, email: string, password: string) {
 
 async function expectWrong(page: Page) {
   await expect(page.getByText(WRONG_TITLE, { exact: true })).toBeVisible()
-  await expect(page.getByText(WRONG_TEXT, { exact: true })).toBeVisible()
+  await expect(page.getByLabel('Contraseña', { exact: true })).toHaveAttribute('aria-invalid', 'true')
   await expect(page).toHaveURL(/\/sign-in$/)
 }
 
@@ -700,7 +700,8 @@ test('SI-45 the link is checked first and the button waits for it', async ({ pag
   await page.route('**/api/user/password/validate', async (route) => { await new Promise((resolve) => setTimeout(resolve, 2000)); await route.continue() })
   await page.goto(link)
   await expect(page.getByText('Estamos verificando el enlace…', { exact: true })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Guardar contraseña', exact: true })).toBeDisabled()
+  // Figma N-07 4099:2359: while the link is checked the form is not shown at all.
+  await expect(page.getByRole('button', { name: 'Guardar contraseña', exact: true })).toHaveCount(0)
   await expectResetForm(page)
   await expect(page.getByText('Estamos verificando el enlace…', { exact: true })).toHaveCount(0)
 })
