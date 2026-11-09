@@ -198,7 +198,7 @@ All four screens are Desk. Draw them desktop first.
 
 ### Issue 40: Registration
 
-The current frames and recovery paths are indexed in [Issue #40: registration and authorization wireframes](issue-40-wireframes.md). Use that index for the existing-account N-05 mode and the U-screen state variants.
+Find the six screens, their states and recovery paths under [Registration and authorization (#40)](wireframes.md#registration-and-authorization-40).
 
 You draw 6 screens. N-04 (E-153) was removed: do not draw it.
 
@@ -217,9 +217,8 @@ N-03 and N-05 are wizards inside one page: typed data stays in the page until th
 
 - Contact number: 265-3866, the office's direct line (G-25). N-03, U-06, U-07, U-08 and the U-02 error show it.
 - Store address (E-92): N-03 has a "Buy membership" button while a term runs, with no redirect (E-126). The address is a setting that is not known yet: draw it with a placeholder address. It is the one registration screen for both kinds of person (E-153).
-- Outgoing mail is assumed (E-61), so draw the email link flows (N-03, N-05, U-06) as the normal path. There is no in-person registration any more (E-117), so N-10 and S-04 are not drawn. The issue body still says "only if the school has no outgoing mail" and asks for both versions of the athlete flow; one version is enough now.
+- The athlete flow uses the link sent by email (N-03, N-05, U-06, E-61). The in-person path was removed (E-117).
 - U-07 banner texts are drafts; you write the final wording in the wireframe (E-67).
-- N-05 in U-06 mode: the order of sign in and photo is left to the wireframes (screen map diagram 3). You choose it.
 - N-08 privacy notice text (G-24) appears as step 1 of N-03: use placeholder text.
 
 #### Diagrams to read
