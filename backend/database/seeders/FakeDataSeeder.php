@@ -41,6 +41,9 @@ class FakeDataSeeder extends Seeder
     /** The claimed order's account, with a current authorization and a photo, for the Check In flow tests. */
     public const CHECK_IN_EMAIL = 'pago-activo@example.com';
 
+    /** The one active roster record nobody has claimed yet; registration finds this athlete. */
+    public const FREE_STUDENT_NUMBER = '802000001';
+
     public function run(): void
     {
         if (app()->environment('production')) {
@@ -134,8 +137,8 @@ class FakeDataSeeder extends Seeder
             ...$fixed[$index] ?? [],
         ]));
 
-        return $orders->take(6)->map(function (ImportedMembership $order, int $index) use ($term) {
-            $user = $this->userWithWaiver($index === 0 ? ['email' => self::CHECK_IN_EMAIL] : []);
+        return $orders->take(6)->map(function (ImportedMembership $order) use ($term) {
+            $user = $this->userWithWaiver(['email' => $order->email], $order->name);
 
             return Authorization::factory()->paid($order)->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
         })->all();
@@ -144,11 +147,13 @@ class FakeDataSeeder extends Seeder
     /** @return list<Authorization> four claimed roster records; one free, one removed */
     private function athletes(AcademicTerm $term): array
     {
-        $records = RosterRecord::factory()->count(5)->create();
+        $records = RosterRecord::factory()->count(4)->create();
+        // On the roster and unclaimed, with a fixed number so registration can be tried by hand.
+        RosterRecord::factory()->create(['student_number' => self::FREE_STUDENT_NUMBER]);
         RosterRecord::factory()->removed()->create();
 
-        return $records->take(4)->map(function (RosterRecord $record) use ($term) {
-            $user = $this->userWithWaiver();
+        return $records->map(function (RosterRecord $record) use ($term) {
+            $user = $this->userWithWaiver(['email' => $record->institutional_email], $record->name);
 
             return Authorization::factory()->athlete($record)->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
         })->all();
@@ -156,7 +161,7 @@ class FakeDataSeeder extends Seeder
 
     private function manualGrant(AcademicTerm $term): Authorization
     {
-        $user = $this->userWithWaiver();
+        $user = $this->userWithWaiver(['email' => 'concedido-manual@example.com'], 'Acceso manual de prueba');
 
         return Authorization::factory()->manual()->create([
             'user_id' => $user->id,
@@ -179,20 +184,22 @@ class FakeDataSeeder extends Seeder
             'academic_term_id' => $past->id,
             'paid_at' => today()->subMonths(5),
             'authorization_number' => self::EXPIRED_AUTHORIZATION_NUMBER,
+            'name' => 'Pago vencido de prueba',
+            'email' => 'pago-vencido@example.com',
         ]);
-        Authorization::factory()->paid($expired)->create(['user_id' => $this->userWithWaiver(['email' => 'pago-vencido@example.com'])->id, 'academic_term_id' => $past->id]);
+        Authorization::factory()->paid($expired)->create(['user_id' => $this->userWithWaiver(['email' => 'pago-vencido@example.com'], 'Pago vencido de prueba')->id, 'academic_term_id' => $past->id]);
 
         // Removed athlete: the roster row stays with removed_at and the authorization is revoked (REQ-F-22).
-        $removed = RosterRecord::factory()->removed()->create();
+        $removed = RosterRecord::factory()->removed()->create(['name' => 'Atleta removido de prueba', 'institutional_email' => 'atleta-removido@example.com']);
         Authorization::factory()->athlete($removed)->create([
-            'user_id' => $this->userWithWaiver(['email' => 'atleta-removido@example.com'])->id,
+            'user_id' => $this->userWithWaiver(['email' => 'atleta-removido@example.com'], 'Atleta removido de prueba')->id,
             'academic_term_id' => $current->id,
             'status' => 'revoked',
             'reason' => 'removed from roster',
         ]);
 
         // Missing authorization: an account that finished registration steps but has no authorization at all.
-        $this->userWithWaiver(['email' => 'sin-autorizacion@example.com']);
+        $this->userWithWaiver(['email' => 'sin-autorizacion@example.com'], 'Sin autorización de prueba');
     }
 
     /**
@@ -211,9 +218,14 @@ class FakeDataSeeder extends Seeder
                 ['order_reference' => 'WC-900002', 'reason' => 'repeated authorization number'],
             ]],
         ]);
-        $cancelled = ImportedMembership::factory()->create(['import_id' => $import->id, 'order_status' => 'cancelled']);
+        $cancelled = ImportedMembership::factory()->create([
+            'import_id' => $import->id,
+            'order_status' => 'cancelled',
+            'name' => 'Orden cancelada de prueba',
+            'email' => 'orden-cancelada@example.com',
+        ]);
         Authorization::factory()->paid($cancelled)->create([
-            'user_id' => $this->userWithWaiver(['email' => 'orden-cancelada@example.com'])->id,
+            'user_id' => $this->userWithWaiver(['email' => 'orden-cancelada@example.com'], 'Orden cancelada de prueba')->id,
             'status' => 'revoked',
             'reason' => 'order cancelled',
         ]);
@@ -329,11 +341,15 @@ class FakeDataSeeder extends Seeder
         AuditLogEntry::factory()->count(2)->create(['staff_account_id' => $staff->id]);
     }
 
-    /** @param array<string, mixed> $attributes */
-    private function userWithWaiver(array $attributes = []): User
+    /**
+     * The name shown in the app is the waiver's full name, so it always belongs to the same person as the email.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    private function userWithWaiver(array $attributes = [], ?string $name = null): User
     {
         $user = User::factory()->create($attributes);
-        WaiverAcceptance::factory()->create(['user_id' => $user->id]);
+        WaiverAcceptance::factory()->create(array_filter(['user_id' => $user->id, 'email' => $user->email, 'full_name' => $name]));
 
         return $user;
     }

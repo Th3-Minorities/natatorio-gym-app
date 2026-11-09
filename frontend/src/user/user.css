@@ -15,6 +15,10 @@
   .user-app--large { border-radius: var(--spacing-32) var(--spacing-32) var(--user-large-radius) var(--user-large-radius); }
 }
 .user-app--access { background: var(--hero); }
+/* iOS Safari tints the status bar from the page background, so the strip above the green header stays green (Discussion #142). */
+@media (max-width: 599.98px) {
+  :root:has(.user-app--access), :root:has(.user-app--access) body, :root:has(.user-welcome), :root:has(.user-welcome) body { background: var(--hero); }
+}
 .user-header {
   display: flex;
   flex: none;
@@ -212,6 +216,14 @@
   padding: var(--spacing-12) var(--spacing-24) var(--spacing-24); background: var(--background);
   border-radius: var(--user-welcome-sheet-radius) var(--user-welcome-sheet-radius) 0 0;
 }
+/* Figma 4078:11: collapsed, the sheet is 204 px with the greeting and one hint; a tap or a swipe up opens it to 416 px (4078:95). The sheet is cream here, so the hint takes the surface colour to stay visible. */
+.user-welcome__sheet--collapsed { min-height: var(--user-welcome-collapsed-height); touch-action: none; }
+@media (prefers-reduced-motion: no-preference) { .user-welcome__sheet { transition: min-height 250ms ease; } }
+.user-welcome .user-welcome__hint {
+  display: flex; align-items: center; justify-content: center; gap: var(--spacing-4); width: 100%; height: var(--user-welcome-hint-height); margin-top: auto;
+  border: 0; border-radius: var(--user-radius-10); background: var(--surface); color: var(--primary); cursor: pointer;
+  font: inherit; font-size: var(--user-label-size); line-height: var(--user-body-line); font-weight: var(--weight-medium);
+}
 .user-welcome__handle { align-self: center; width: var(--user-welcome-handle-width); height: var(--spacing-4); margin: var(--spacing-8) 0 var(--spacing-32); border-radius: var(--user-space-2); background: var(--user-handle); }
 .user-welcome__sheet h1 { margin: 0 0 var(--spacing-8); font-size: var(--spacing-32); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); }
 .user-welcome__sheet > p { margin: 0; color: var(--muted-foreground); }
@@ -223,10 +235,16 @@
   display: flex; align-items: center; justify-content: center; gap: var(--spacing-4); min-height: var(--user-welcome-link-height); margin-top: var(--spacing-8);
   font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--weight-medium);
 }
-.user-welcome__access a, .user-welcome__language button {
+.user-welcome__access a, .user-welcome__access [aria-disabled="true"], .user-welcome__language button {
   display: inline-flex; align-items: center; min-height: var(--user-welcome-link-height); padding: 0 var(--user-input-padding);
   color: var(--primary); font: inherit; font-size: var(--user-label-size); line-height: var(--user-body-line); font-weight: var(--weight-medium); text-decoration: none;
 }
+/* N-01 offline (Figma 4546:2929): the banner runs edge to edge right under the handle, and the two actions dim. */
+.user-welcome__sheet > .user-offline {
+  align-items: center; margin: calc(var(--spacing-8) - var(--spacing-32)) calc(-1 * var(--spacing-24)) var(--spacing-24);
+  padding: var(--spacing-8) var(--spacing-24);
+}
+.user-welcome .button[aria-disabled="true"], .user-welcome__access [aria-disabled="true"] { opacity: var(--user-disabled-opacity); cursor: not-allowed; }
 .user-welcome__language { display: flex; align-items: center; justify-content: center; gap: var(--spacing-4); margin-top: auto; color: var(--muted-foreground); }
 .user-welcome__language button { border: 0; background: none; cursor: pointer; color: var(--muted-foreground); }
 .user-welcome__language button[aria-pressed="true"] { color: var(--primary); text-decoration: underline; }

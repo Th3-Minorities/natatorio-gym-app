@@ -11,7 +11,7 @@ test('manifest and launcher icons are linked and served (REQ-F-66)', async ({ pa
     const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]')!
     return await (await fetch(link.href)).json() as { name: string; display: string; start_url: string; icons: { sizes: string; src: string }[] }
   })
-  expect(manifest).toMatchObject({ name: 'Gimnasio RUM', display: 'standalone', start_url: '/account' })
+  expect(manifest).toMatchObject({ name: 'Gym RUM', display: 'standalone', start_url: '/account' })
   expect(manifest.icons.map((icon) => icon.sizes).sort()).toEqual(['192x192', '192x192', '512x512', '512x512'])
   expect(await page.locator('link[rel="apple-touch-icon"]').getAttribute('href')).toBe('/icon-180.png')
   for (const path of ['/icon-180.png', '/icon-192.png', '/icon-512.png']) {
@@ -39,7 +39,7 @@ test('the service worker precaches the app, never the API, and N-09 opens withou
   await context.setOffline(true)
   try {
     await page.goto('/install')
-    await expect(page.getByRole('heading', { level: 1, name: 'Instala la app' })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Instalar app' })).toBeVisible()
   } finally {
     await context.setOffline(false)
   }

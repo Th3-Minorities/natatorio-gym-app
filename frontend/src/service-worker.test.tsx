@@ -40,11 +40,22 @@ test('API failure rejects instead of returning an offline HTML shell', async () 
   fetch.mockRejectedValueOnce(new TypeError('offline'))
   let response: Promise<Response> | undefined
   listeners.get('fetch')!({
-    request: { url: 'https://gym.test/api/health', method: 'POST', mode: 'cors' },
+    request: { url: 'https://gym.test/api/health', method: 'GET', mode: 'cors' },
     respondWith: (value: Promise<Response>) => { response = value },
   })
   await expect(response).rejects.toThrow('offline')
   expect(caches.open).not.toHaveBeenCalled()
+})
+
+test('POST to the API is left to the browser so multipart bodies are not re-sent', () => {
+  const { listeners, fetch } = worker()
+  const respondWith = vi.fn()
+  listeners.get('fetch')!({
+    request: { url: 'https://gym.test/api/user/registration/complete', method: 'POST', mode: 'cors' },
+    respondWith,
+  })
+  expect(respondWith).not.toHaveBeenCalled()
+  expect(fetch).not.toHaveBeenCalled()
 })
 
 test('offline app navigation uses the precached shell', async () => {

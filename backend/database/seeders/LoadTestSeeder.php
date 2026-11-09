@@ -37,7 +37,9 @@ class LoadTestSeeder extends Seeder
 
         foreach (range(1, self::USERS) as $n) {
             $user = User::factory()->create(['email' => sprintf('load-%04d@example.com', $n)]);
-            WaiverAcceptance::factory()->create(['user_id' => $user->id]);
+            WaiverAcceptance::factory()->create([
+                'user_id' => $user->id, 'email' => $user->email, 'full_name' => sprintf('Usuario de carga %04d', $n),
+            ]);
             Authorization::factory()->paid(ImportedMembership::factory()->create(['academic_term_id' => $term->id]))
                 ->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
         }

@@ -2,13 +2,13 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.23 draft, not approved
+**Version:** 0.24 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
 **Organization:** Department of Computer Science and Engineering, University of Puerto Rico at Mayagüez (UPRM)
 
-**Date:** 2026-11-08
+**Date:** 2026-11-09
 
 ## Contents
 
@@ -88,6 +88,7 @@
 | Team | 2026-11-08 | Team decisions E-166 to E-182 (`team.md`): staff password reset by email link (REQ-F-06), Authorization Number lookup ignores letter case (REQ-F-10), Staff approve the new photo of a "photo pending" account (REQ-F-94), a closure ends sessions when it starts (REQ-F-38, REQ-F-55), time inside on the active sessions list (REQ-F-44), Staff and Administrator screens are desktop only (REQ-NF-10), the offline Gym ID card is an exception to WCAG AA text contrast (REQ-NF-13), emergency list of Authorization Numbers (new REQ-F-103), nginx as the proxy | 0.21 |
 | Team | 2026-11-08 | Team decisions E-183 and E-184 (`team.md`): schedules and notices require sign in and are no longer public (REQ-F-55); the membership purchase button, the registration prerequisite and the help number move to the number-entry step of N-03 (REQ-F-91) | 0.22 |
 | Team | 2026-11-08 | Team decisions E-185 and E-186 (`team.md`): the privacy notice has one public read-only source that Mi cuenta also opens (E-185); the Check In load test peak is 50 in 5 minutes and the stress level is 100, which closes the pending peak number of REQ-NF-50 (REQ-NF-15, REQ-NF-50); the E-153 row above now says the student number has 9 digits, as E-160 decided (REQ-F-15) | 0.23 |
+| Team | 2026-11-09 | REQ-NF-33 now follows E-174: the language is chosen on the welcome screen and saved at registration, with no language step; it no longer says the User chooses it when creating the account | 0.24 |
 
 ## 1. Introduction
 
@@ -488,7 +489,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it when creating the account and can change it later in the profile preferences. Before an account exists, the welcome screen offers Spanish or English; the choice is kept on the device and applies to the screens before sign in, and it is the preselected answer when the account's language is asked. After sign in, the account language applies. Each staff account stores its own language, changed in the account's preferences on the dashboard. The User app has no language button in the top bar. | N/A | High | Clear | Team decision (E-64, E-104, E-114, E-159) |
+| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it on the welcome screen, which offers Spanish or English before an account exists. The device keeps the choice and uses it on the screens before sign in, and registration saves it to the account without another language step. The User can change it later in the profile preferences. After sign in, the account language applies. Each staff account stores its own language, changed in the account's preferences on the dashboard. The User app has no language button in the top bar. | N/A | High | Clear | Team decision (E-64, E-104, E-114, E-159, E-174) |
 | REQ-NF-34 | All frontend and backend texts shall be in translation files from the start. API error texts shall live only in the PWA translation files, and the API shall send only a code. The backend shall translate what does not pass through the PWA, such as emails. | N/A | High | Clear | Team decision (E-154) |
 | REQ-NF-35 | Emails shall be sent in the language chosen by the User. | N/A | High | Clear | Team decision |
 | REQ-NF-36 | The page language attribute shall change together with the texts (WCAG 3.1.1). | N/A | High | Clear | Review gap |
