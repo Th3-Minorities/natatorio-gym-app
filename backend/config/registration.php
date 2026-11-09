@@ -7,6 +7,11 @@ return [
     'window_seconds' => 900,
     'slow_milliseconds' => 500,
     'privacy_version' => 'draft',
+    // Athlete email link (REQ-F-15). The limits are E-73. The validity is REG-6, still pending: 24 hours is the
+    // recommended option until the team decides.
+    'athlete_link_hours' => 24,
+    'athlete_link_resend_seconds' => 300,
+    'athlete_links_per_day' => 5,
     // DRAFT waiver approved by the team. The Department of Athletic Activities has not sent its official
     // text yet; replace the version and both texts when it arrives. Each text is the title, a blank line,
     // then one paragraph per blank-line-separated block.

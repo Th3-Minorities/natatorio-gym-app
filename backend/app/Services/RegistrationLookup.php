@@ -125,18 +125,30 @@ class RegistrationLookup
 
     public function hasAccount(ImportedMembership $membership): bool
     {
-        return User::query()->whereRaw('lower(email) = lower(?)', [$membership->email])->exists();
+        return $this->emailHasAccount($membership->email);
     }
 
     public function result(ImportedMembership $membership): array
     {
-        [$local, $domain] = explode('@', $membership->email, 2);
         $state = $this->hasAccount($membership) ? 'renewal' : 'ready';
 
         return [
             'state' => $state,
             ...($state === 'ready' ? ['name' => $membership->name] : []),
-            'masked_email' => Str::substr($local, 0, 1).'***'.(Str::length($local) > 1 ? Str::substr($local, -1) : '').'@'.$domain,
+            'masked_email' => $this->mask($membership->email),
         ];
+    }
+
+    /** First and last letter before the @ (E-72), for example m***z@upr.edu. */
+    public function mask(string $email): string
+    {
+        [$local, $domain] = explode('@', $email, 2);
+
+        return Str::substr($local, 0, 1).'***'.(Str::length($local) > 1 ? Str::substr($local, -1) : '').'@'.$domain;
+    }
+
+    public function emailHasAccount(string $email): bool
+    {
+        return User::query()->whereRaw('lower(email) = lower(?)', [$email])->exists();
     }
 }
