@@ -25,7 +25,7 @@ Three groups are involved:
 | Requirement | One thing the app must do, written as a rule. All of them are in one document, the SRS |
 | SRS | Software Requirements Specification: the document with every requirement |
 | Proposal | The project plan we submitted at the start of the course |
-| Check In | What a person does in the app when they arrive. It only works inside the gym, and it starts a 60-minute visit |
+| Check In | What a person does in the app when they arrive. It only works inside the gym, and it starts a 2-hour visit |
 | Gym ID | The digital gym card the app shows. Staff look at it to let a person in |
 | Authorization Number | A code (6 or 7 characters so far, letters allowed) a member gets by email when they pay for the gym. They type it to register in the app |
 | Roster | The list of student athletes allowed in the gym this term |
@@ -67,7 +67,7 @@ All documents are in the `docs` folder.
 | Servers and how the pieces connect | [Architecture](design/architecture.md) | 5 |
 | What the database stores | [Data model](design/data-model.md) | 4 |
 | Registering and renewing each term | [Registration flows](design/registration-flows.md) | 9 |
-| Check In, the 60-minute visit, the Gym ID, how full the gym is | [Check In flows](design/check-in-flows.md) | 11 |
+| Check In, the 2-hour visit, the Gym ID, how full the gym is | [Check In flows](design/check-in-flows.md) | 11 |
 | Staff and administration tasks | [Administration flows](design/admin-flows.md) | 17 |
 | Every screen and how people move between them | [Screen map](design/screen-map.md) | 7 |
 | What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) | |
