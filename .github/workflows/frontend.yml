@@ -3,14 +3,10 @@ name: Frontend
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: ['**']
 
 permissions:
   contents: read
-
-concurrency:
-  group: frontend-${{ github.ref }}
-  cancel-in-progress: true
 
 defaults:
   run:
@@ -37,8 +33,13 @@ jobs:
 
   # The built PWA through the proxy, talking to the real API, like a phone through the tunnel.
   browser:
+    name: browser (${{ matrix.project }})
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, msedge, firefox, webkit, android, iphone]
 
     steps:
       - uses: actions/checkout@v7.0.1
@@ -65,20 +66,37 @@ jobs:
           docker compose exec -T app php artisan tinker --execute="App\Models\ScheduleSlot::factory()->create(['type' => 'special_hours', 'weekday' => null, 'start_time' => null, 'end_time' => null, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'text_es' => 'Horario abierto de las pruebas de flujo.']);"
 
       - run: npm ci
-      - run: npx playwright install --with-deps chromium msedge firefox webkit
+      # Each project installs only the engine it runs on.
+      - name: Install the browser
+        run: |
+          case "${{ matrix.project }}" in
+            chromium|android) browser=chromium ;;
+            msedge) browser=msedge ;;
+            firefox) browser=firefox ;;
+            webkit|iphone) browser=webkit ;;
+          esac
+          npx playwright install --with-deps "$browser"
       - name: Set User browser test credentials
         run: grep -E '^E2E_USER_(EMAIL|PASSWORD)=' ../backend/.env.example >> "$GITHUB_ENV"
-      # The User sign-in tests share one account and each sign-in ends the account's other sessions, so browsers run one at a time.
-      - run: npx playwright test --workers=1
+      # The User sign-in tests share one account and each sign-in ends the account's other sessions, so tests run one at a time.
+      - run: npx playwright test --workers=1 --project=${{ matrix.project }}
 
       # #82: every axe scan saves its result. A violation already fails the test above; these files are the record.
       - name: Save the accessibility scan results
         if: always()
         uses: actions/upload-artifact@v7.0.2
         with:
-          name: a11y-results
+          name: a11y-results-${{ matrix.project }}
           path: frontend/a11y-results
           if-no-files-found: warn
+
+      - name: Save the Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playwright-report-${{ matrix.project }}
+          path: frontend/playwright-report
+          retention-days: 30
 
       - name: Container logs
         if: failure()
@@ -89,3 +107,14 @@ jobs:
         if: always()
         working-directory: .
         run: docker compose --profile development down --volumes
+
+  # One name for branch protection: it passes only when every browser project passed.
+  e2e:
+    needs: browser
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Every browser project passed
+        working-directory: .
+        run: test "${{ needs.browser.result }}" = "success"

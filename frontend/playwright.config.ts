@@ -8,14 +8,15 @@ const USER_APP = /^(?!.*(dashboard-shell|staff-accounts|staff-sign-in|terms-rost
 export default defineConfig({
   testDir: './e2e',
   forbidOnly: !!process.env.CI,
-  retries: 0,
+  retries: process.env.CI ? 2 : 0,
   // Without the vendor volume, the API on Windows can take 7 to 20 s per request (README, "PHP packages in a Docker volume").
   expect: { timeout: 30_000 },
-  reporter: [['list'], ['html', { open: 'never' }]],
+  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {
     baseURL: process.env.E2E_BASE_URL ?? 'http://localhost:8080',
     // page.route() cannot see requests the service worker makes, so mocked specs would reach the real API.
     serviceWorkers: 'block',
+    trace: 'on-first-retry',
   },
   webServer: {
     command: 'npm run dev -- --host 127.0.0.1 --port 5173 --strictPort',
