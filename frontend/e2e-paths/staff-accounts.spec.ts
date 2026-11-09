@@ -19,6 +19,7 @@ test.setTimeout(150_000)
 
 test.beforeAll(() => flushCache())
 test.beforeEach(() => flushCache())
+// oxlint-disable-next-line no-empty-pattern -- Playwright passes fixtures first; this hook only needs testInfo.
 test.afterEach(({}, info) => {
   if (/^SA-(13|14|15|16|36|50|61) /.test(info.title)) flushCache()
 })

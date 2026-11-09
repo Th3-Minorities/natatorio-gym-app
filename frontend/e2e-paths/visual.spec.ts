@@ -72,16 +72,7 @@ test('V-01 the Miembro pill keeps equal space left of the icon and right of the 
   expect(m.right).toBeGreaterThanOrEqual(m.left - 2)
 })
 
-// The pill is a fixed 5.125rem wide with no horizontal padding, so icon and text sit about 1px from the border on both sides. Threshold 4px is
-// this test's own, not read from Figma 4104:648.
-for (const view of ['active', 'ended'] as const) {
-  test(`V-01 the Miembro pill leaves at least 4px between its border and its content (${view} card)`, async ({ page, baseURL, playwright }) => {
-    if (view === 'active') await activeCard(page, baseURL)
-    else await endedCard(page, baseURL, playwright.request)
-    const m = await pillMetrics(page)
-    expect(Math.min(m.left, m.right)).toBeGreaterThanOrEqual(4)
-  })
-}
+// No minimum inset test: Figma 4104:648 draws the pill 82px wide with no horizontal padding (icon 14 + gap 6 + text 62), as the app builds it.
 
 /** Horizontal distance from the end of the name's last line to the badge. */
 function badgeGap(page: Page) {
