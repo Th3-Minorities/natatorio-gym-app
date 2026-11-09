@@ -15,11 +15,12 @@ self.addEventListener('fetch', (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
+  // Non-GET requests go straight to the network: Safari can drop a File body when a service worker re-sends a multipart POST (Discussion #142).
+  if (request.method !== 'GET') return;
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(request, { cache: 'no-store' }));
     return;
   }
-  if (request.method !== 'GET') return;
   if (request.mode === 'navigate') {
     event.respondWith(fetch(request).catch(() => caches.open(CACHE).then((cache) => cache.match('/index.html'))));
     return;

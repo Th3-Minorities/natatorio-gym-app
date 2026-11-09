@@ -142,11 +142,12 @@ export const en: Messages = {
     yesDelete: 'Yes, delete my account', activeTitle: 'You have an active authorization',
     activeText: 'Your authorization is still active. If you want to delete your account, contact gym staff to review your case.', returnToSettings: 'Back to Settings',
     offlineDelete: 'Connect to delete the account.',
+    welcomeShort: 'Welcome', welcomeHint: 'Tap or swipe to continue', welcomeOffline: 'Offline. Connect to continue.',
     welcome: 'Welcome to the gym', welcomeDetail: 'Your space to train at RUM.', haveAccount: 'Already have an account?',
     gym: 'Gym', checkIn: 'Check-in', navigation: 'Main navigation',
   },
   install: {
-    title: 'Install the app', description: 'Reach the gym from your home screen.', appName: 'Gimnasio RUM',
+    title: 'Install the app', description: 'Reach the gym from your home screen.', appName: 'Gym RUM',
     platform: 'Platform', iphone: 'iPhone', android: 'Android',
     safari: 'Open this page in Safari.', share: 'Tap Share.', shareDetail: 'It may be inside the page menu.',
     addHome: 'Choose Add to Home Screen.', confirmAdd: 'Confirm with Add.', openAsApp: 'If “Open as app” appears, leave it on.',
