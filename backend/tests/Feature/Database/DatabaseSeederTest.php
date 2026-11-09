@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
 
@@ -60,9 +61,30 @@ class DatabaseSeederTest extends TestCase
         $this->assertNotEmpty($people);
         foreach ($people as $person) {
             $this->assertSame($person->email, $person->waiver_email);
-            if (! str_ends_with($person->email, '@example.com')) {
-                $this->assertSame(\Illuminate\Support\Str::slug($person->full_name, '.'), explode('@', $person->email)[0]);
+            $this->assertEmailMatchesName($person->full_name, $person->email);
+        }
+
+        foreach ([['staff_accounts', 'name', 'email'], ['roster_records', 'name', 'institutional_email'], ['imported_memberships', 'name', 'email']] as [$table, $nameColumn, $emailColumn]) {
+            $rows = DB::table($table)->get([$nameColumn, $emailColumn]);
+
+            $this->assertNotEmpty($rows, "The seeder left {$table} empty.");
+            foreach ($rows as $row) {
+                $this->assertEmailMatchesName($row->$nameColumn, $row->$emailColumn);
             }
+        }
+    }
+
+    public function test_the_load_test_waivers_use_the_account_email(): void
+    {
+        $this->seed();
+        $this->artisan('db:seed', ['--class' => 'LoadTestSeeder'])->assertSuccessful();
+
+        $waivers = DB::table('waiver_acceptances')->join('users', 'users.id', '=', 'waiver_acceptances.user_id')
+            ->where('users.email', 'like', 'load-%')->get(['users.email', 'waiver_acceptances.email as waiver_email']);
+
+        $this->assertCount(100, $waivers);
+        foreach ($waivers as $waiver) {
+            $this->assertSame($waiver->email, $waiver->waiver_email);
         }
     }
 
@@ -120,6 +142,13 @@ class DatabaseSeederTest extends TestCase
         $this->artisan('db:seed', ['--class' => 'LoadTestSeeder', '--force' => true])->assertSuccessful();
 
         $this->assertSame(0, User::query()->where('email', 'like', 'load-%')->count());
+    }
+
+    private function assertEmailMatchesName(string $name, string $email): void
+    {
+        if (! str_ends_with($email, '@example.com')) {
+            $this->assertSame(Str::slug($name, '.'), explode('@', $email)[0], "{$email} does not match {$name}.");
+        }
     }
 
     /** @return list<string> */
