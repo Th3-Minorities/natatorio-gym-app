@@ -97,7 +97,7 @@ class RegistrationLookup
         return $membership;
     }
 
-    /** A 9-digit number is a student number: the athlete must be on the roster and not claimed yet (REQ-F-15). */
+    /** A 9-digit number is a student number: the athlete must be on the roster; a claimed record is refused unless the roster email already has an account (REQ-F-15, E-70). */
     public function findStudent(string $number, Request $request): RosterRecord
     {
         $this->ensureAllowed($request);
@@ -105,7 +105,8 @@ class RegistrationLookup
         if ($record === null) {
             throw $this->failed($request, 'student_not_on_roster');
         }
-        if (Authorization::query()->where('roster_record_id', $record->id)->exists()) {
+        if (! $this->emailHasAccount($record->institutional_email)
+            && Authorization::query()->where('roster_record_id', $record->id)->exists()) {
             throw $this->failed($request, 'roster_record_claimed');
         }
         RateLimiter::decrement($this->ipKey($request->ip()), config('registration.window_seconds'));
