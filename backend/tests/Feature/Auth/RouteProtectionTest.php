@@ -34,6 +34,8 @@ class RouteProtectionTest extends TestCase
         'POST api/user/registration/lookup',
         'GET api/user/registration/waiver',
         'POST api/user/registration/complete',
+        'POST api/user/registration/athlete/validate',
+        'POST api/user/registration/athlete/complete',
     ];
 
     /** @return list<Route> */

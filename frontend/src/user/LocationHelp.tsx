@@ -31,6 +31,7 @@ export function LocationHelp({ onClose }: { onClose: () => void }) {
   }
 
   return <div className="check-in-help">
+    {/* oxlint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- the dialog traps Tab, as the pattern requires */}
     <div ref={dialog} className="check-in-help__dialog" role="dialog" aria-modal="true" aria-labelledby="check-in-help-title" tabIndex={-1} onKeyDown={trap}>
       <h2 id="check-in-help-title">{t.title}</h2>
       <p>{t.text}</p>

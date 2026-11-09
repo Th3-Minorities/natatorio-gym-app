@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { expectNoViolations } from './axe.ts'
 
 const SHOTS = process.env.USER_SCREENSHOT_DIR ?? ''
 const profile = {
@@ -9,7 +9,7 @@ const profile = {
   authorization: { type: 'paid', term: '[Período actual]' }, updated_at: '2026-11-07T14:00:00Z',
 }
 const scenarios = [
-  ['179-6068', 'welcome', 'normal'],
+  ['4078-11', 'welcome', 'collapsed'], ['179-6068', 'welcome', 'normal'],
   ['179-6164', 'sign-in', 'normal'], ['sign-in-busy', 'sign-in', 'busy'], ['sign-in-wrong', 'sign-in', 'wrong'],
   ['4256-1822', 'sign-in', 'invalid'],
   ['4099-2091', 'sign-in', 'wait'], ['4099-2136', 'sign-in', 'offline'], ['4099-2180', 'account', 'replaced'],
@@ -92,6 +92,12 @@ test.describe('User screen states at 390x844', () => {
         await expect(page.getByText('Miembro', { exact: true })).toBeVisible()
       }
       if (path === 'welcome') {
+        await expect(page.getByRole('heading', { name: 'Bienvenido', exact: true })).toBeVisible()
+        // The collapsed sheet (4078:11) is captured and scanned before it expands.
+        if (state === 'collapsed') await expect(page.getByRole('button', { name: 'Toca o desliza para continuar' })).toBeVisible()
+        else await page.getByRole('button', { name: 'Toca o desliza para continuar' }).click()
+      }
+      if (path === 'welcome' && state === 'normal') {
         await expect(page.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeVisible()
         await expect(page.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
         await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
@@ -188,8 +194,7 @@ test.describe('User screen states at 390x844', () => {
         const screenshot = join(SHOTS, `${id}${testInfo.project.name === 'chromium' ? '' : `-${testInfo.project.name}`}.png`)
         await page.screenshot({ path: screenshot })
       }
-      const accessibility = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
-      expect(accessibility.violations).toEqual([])
+      await expectNoViolations(page)
       if (state === 'confirm') {
         await page.keyboard.press('Escape')
         await expect(page.getByRole('dialog')).toHaveCount(0)

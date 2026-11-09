@@ -41,7 +41,7 @@ async function refreshCsrfCookie(): Promise<void> {
   await send('/sanctum/csrf-cookie', 'GET', {})
 }
 
-async function send(path: string, method: string, headers: Record<string, string>, body?: string): Promise<Response> {
+async function send(path: string, method: string, headers: Record<string, string>, body?: BodyInit): Promise<Response> {
   try {
     return await fetch(`/api${path}`, { method, headers: { Accept: 'application/json', ...headers }, body })
   } catch {
@@ -72,11 +72,13 @@ export async function apiDownload(path: string): Promise<{ blob: Blob; filename:
 export async function apiRequest<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = options.method ?? 'GET'
   const changesData = method !== 'GET'
-  const body = options.body === undefined ? undefined : JSON.stringify(options.body)
+  // A FormData body (a file upload) goes as multipart; the browser sets its Content-Type.
+  const form = options.body instanceof FormData ? options.body : undefined
+  const body = options.body === undefined ? undefined : form ?? JSON.stringify(options.body)
 
   const attempt = async () => {
     const headers: Record<string, string> = {}
-    if (body !== undefined) headers['Content-Type'] = 'application/json'
+    if (body !== undefined && !form) headers['Content-Type'] = 'application/json'
     if (options.autoRefresh) headers['X-Auto-Refresh'] = '1'
     if (changesData) {
       if (csrfToken() === null) await refreshCsrfCookie()

@@ -15,6 +15,13 @@ export function UserHeader({ back = '/sign-in' }: { back?: string }) {
   </header>
 }
 
+export function AccountHeading({ title, back, backLabel }: { title: string; back: string; backLabel: string }) {
+  return <div className="user-account-heading">
+    <a href={back} className="user-back" aria-label={backLabel}><ArrowLeft aria-hidden="true" /></a>
+    <h1 tabIndex={-1}>{title}</h1>
+  </div>
+}
+
 export function UserNotice({ title, children, success = false, informational = false }: { title: string; children: string; success?: boolean; informational?: boolean }) {
   const Icon = success ? Check : TriangleAlert
   return <div className="user-notice">{success || informational ? <div className="notice" role="status">
@@ -29,13 +36,17 @@ export function UserLoading({ detail }: { detail: string }) {
   </div>
 }
 
+export function OfflineBanner({ text }: { text?: string }) {
+  const t = useMessages().user
+  return <div className="user-offline" role="status"><WifiOff aria-hidden="true" size={18} absoluteStrokeWidth /><span>{text ?? t.offline}</span></div>
+}
+
 export function UserPage({ children, header = true, large = false, offline = false, offlineText, back, className = '', current = 'account' }: {
   children: ReactNode; header?: boolean; large?: boolean; offline?: boolean; offlineText?: string; back?: string; className?: string; current?: Destination
 }) {
-  const t = useMessages().user
   return <div className={`user-app ${header ? 'user-app--access' : 'user-app--account'} ${large ? 'user-app--large' : ''} ${className}`}>
     {header ? <UserHeader back={back} /> : !offline && <div className="user-top" />}
-    {offline && <div className="user-offline" role="status"><WifiOff aria-hidden="true" size={18} absoluteStrokeWidth /><span>{offlineText ?? t.offline}</span></div>}
+    {offline && <OfflineBanner text={offlineText} />}
     <main className="user-content">{children}</main>
     {!header && <UserNavigation current={current} />}
   </div>
@@ -71,14 +82,20 @@ export function PasswordField({ label, placeholder, value, onChange, error, auto
 }) {
   const t = useMessages().user
   const [visible, setVisible] = useState(false)
-  const hintId = useId()
+  const inputId = useId()
+  const hintId = `${inputId}-hint`
+  const errorId = `${inputId}-error`
   const Icon = visible ? EyeOff : Eye
+  // Figma REG-03: the grey hint sits above the red error; REG-01: an error that repeats the hint shows once.
+  const showHint = !!hint && hint !== error
+  const described = [hint ? (showHint ? hintId : undefined) : describedBy, error ? errorId : undefined].filter(Boolean).join(' ')
   return <div className="user-password">
-    <TextField label={label} placeholder={placeholder} type={visible ? 'text' : 'password'} value={value}
-      autoComplete={autoComplete} maxLength={255} error={error} aria-describedby={hint && !error ? hintId : describedBy}
+    <TextField id={inputId} label={label} placeholder={placeholder} type={visible ? 'text' : 'password'} value={value}
+      autoComplete={autoComplete} maxLength={255} aria-invalid={error ? true : undefined} aria-describedby={described || undefined}
       onChange={(event) => onChange(event.target.value)} required />
     <Button variant="link" className="user-password__toggle" aria-label={visible ? t.hidePassword : t.showPassword}
       aria-pressed={visible} onClick={() => setVisible(!visible)}><Icon aria-hidden="true" size={16} absoluteStrokeWidth /></Button>
-    {hint && !error && <p id={hintId} className="user-caption">{hint}</p>}
+    {showHint && <p id={hintId} className="user-caption">{hint}</p>}
+    {error && <p id={errorId} className="field__error">{error}</p>}
   </div>
 }

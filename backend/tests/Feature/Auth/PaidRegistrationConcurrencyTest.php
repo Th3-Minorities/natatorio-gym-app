@@ -3,7 +3,9 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\AcademicTerm;
+use App\Models\EmailLink;
 use App\Models\ImportedMembership;
+use App\Models\RosterRecord;
 use Illuminate\Cache\DatabaseStore;
 use Illuminate\Foundation\Testing\DatabaseTruncation;
 use Illuminate\Support\Facades\Storage;
@@ -89,7 +91,22 @@ class PaidRegistrationConcurrencyTest extends TestCase
         Storage::fake('local');
         $term = AcademicTerm::factory()->create(['starts_on' => today()->subDay(), 'ends_on' => today()->addDay()]);
         ImportedMembership::factory()->create(['academic_term_id' => $term->id, 'authorization_number' => 'A']);
+        $this->assertTwoSimultaneousClaimsCreateOneAccount('paid');
+    }
+
+    public function test_two_simultaneous_athlete_link_claims_create_exactly_one_account_and_keep_only_its_photo(): void
+    {
+        Storage::fake('local');
+        AcademicTerm::factory()->create(['starts_on' => today()->subDay(), 'ends_on' => today()->addDay()]);
+        $record = RosterRecord::factory()->create();
+        EmailLink::factory()->create(['roster_record_id' => $record->id, 'token_hash' => hash('sha256', 'tok')]);
+        $this->assertTwoSimultaneousClaimsCreateOneAccount('athlete');
+    }
+
+    private function assertTwoSimultaneousClaimsCreateOneAccount(string $mode): void
+    {
         $input = json_encode([
+            'mode' => $mode,
             'connection' => config('database.connections.'.config('database.default')),
             'root' => Storage::disk('local')->path(''),
         ], JSON_THROW_ON_ERROR)."\n";

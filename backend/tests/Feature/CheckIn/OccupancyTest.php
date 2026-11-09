@@ -2,10 +2,13 @@
 
 namespace Tests\Feature\CheckIn;
 
+use App\Models\AcademicTerm;
 use App\Models\FacilitySession;
+use App\Models\ScheduleSlot;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
 
@@ -44,6 +47,35 @@ class OccupancyTest extends TestCase
 
         $this->getJson('/api/user/occupancy')->assertOk()
             ->assertExactJson(['count' => 2, 'max' => 40, 'updated_at' => now()->toISOString()]);
+    }
+
+    public function test_a_closure_that_started_drops_out_before_the_scheduler_runs(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-08 12:00:00', config('app.timezone')));
+        $this->signIn();
+        FacilitySession::factory()->startedMinutesAgo(30)->create();
+        FacilitySession::factory()->startedMinutesAgo(5)->create();
+        ScheduleSlot::factory()->dated()->create([
+            'starts_at' => now()->subMinutes(10), 'ends_at' => now()->addHour(), 'created_at' => now()->subMinutes(10),
+        ]);
+
+        // The first visit began before the closure; the second began while it was already published.
+        $this->getJson('/api/user/occupancy')->assertOk()->assertJsonPath('count', 1);
+    }
+
+    public function test_a_term_that_ended_drops_out_before_the_scheduler_runs(): void
+    {
+        $this->travelTo(Carbon::parse('2026-11-08 00:30:00', config('app.timezone')));
+        $this->signIn();
+        AcademicTerm::factory()->create(['starts_on' => '2026-08-01', 'ends_on' => '2026-11-07']);
+        FacilitySession::factory()->create([
+            'started_at' => Carbon::parse('2026-11-07 23:50:00', config('app.timezone')),
+            'ends_at' => Carbon::parse('2026-11-08 01:50:00', config('app.timezone')),
+        ]);
+        // Started after the term, so no term ends it.
+        FacilitySession::factory()->startedMinutesAgo(20)->create();
+
+        $this->getJson('/api/user/occupancy')->assertOk()->assertJsonPath('count', 1);
     }
 
     public function test_empty_gym_has_zero_occupancy(): void
