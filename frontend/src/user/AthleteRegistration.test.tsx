@@ -46,6 +46,8 @@ function openLink(token = 'abc') {
 }
 
 it('shows N03-09 with the masked email and a 5 minute resend countdown, and Corregir número goes back to the field', async () => {
+  const start = Date.now()
+  const clock = vi.spyOn(Date, 'now').mockReturnValue(start)
   await sendLink()
   const heading = await screen.findByRole('heading', { name: 'Revisa tu correo' })
   await waitFor(() => expect(heading).toHaveFocus())
@@ -54,6 +56,8 @@ it('shows N03-09 with the masked email and a 5 minute resend countdown, and Corr
   expect(screen.getByText('Abre el enlace en tu correo para completar contraseña, foto y relevo.')).toBeInTheDocument()
   expect(screen.getByText('Revisa también la carpeta de correo no deseado.')).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Reenviar en 05:00' })).toBeDisabled()
+  clock.mockReturnValue(start + 1000)
+  expect(await screen.findByRole('button', { name: 'Reenviar en 04:59' }, { timeout: 3000 })).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'Corregir número' }))
   expect(await screen.findByLabelText('Número de estudiante o transacción')).toHaveValue('802123456')
 })
