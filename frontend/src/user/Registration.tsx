@@ -496,7 +496,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
           <div className="registration-number">
             <TextField label={t.unavailable.label} value={number} readOnly={busy}
               error={(waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage) || undefined}
-              onChange={(event) => { setNumber(event.target.value); setLookup(null) }} autoComplete="off" required />
+              onChange={(event) => { setNumber(event.target.value); setLookup(null); setLookupMessage('') }} autoComplete="off" required />
           </div>
           <Button type="submit" className="user-action" disabled={busy || offline || waiting}>{t.continue}</Button>
           <a href={`tel:${unavailable.phone}`} className="button button--link user-action">{t.unavailable.help(unavailable.phone)}</a>

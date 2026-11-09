@@ -146,6 +146,42 @@ it('shows the N03-02 state with the server contact number and retries the edited
   expect(requests.at(-1)?.body).toEqual({ authorization_number: 'AB12C4' })
 })
 
+async function reachUnavailable() {
+  render(<UserApp />)
+  await reachIdentification()
+  await dropFocus()
+  vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'registration_number_unavailable', details: { contact_number: ['787-555-0199'] } } }, 422)))
+  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'AB12C3' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  const heading = await screen.findByRole('heading', { name: 'Revisa tu número' })
+  await waitFor(() => expect(heading).toHaveFocus())
+  heading.blur()
+}
+
+it('clears the N03-02 error and aria-invalid while the number is corrected', async () => {
+  await reachUnavailable()
+  const field = screen.getByLabelText('Número de autorización')
+  expect(field).toHaveAttribute('aria-invalid', 'true')
+  fireEvent.change(field, { target: { value: 'AB12C4' } })
+  expect(field).not.toHaveAttribute('aria-invalid')
+  expect(screen.queryByText(/No pudimos validar este número/)).not.toBeInTheDocument()
+})
+
+it.each([
+  ['a 429 with Retry-After', () => new Response(JSON.stringify({ error: { code: 'too_many_attempts' } }), { status: 429, headers: { 'Retry-After': '90' } }), 'Registro', null],
+  ['an offline failure', () => { throw new TypeError('network') }, 'Registro', null],
+  ['a student not on the roster', () => json({ error: { code: 'student_not_on_roster', details: { contact_number: ['787-555-0199'] } } }, 422), 'Revisa tu número', 'El número de estudiante se usa para atletas.'],
+])('leaves N03-02 for the right step and moves focus to the title after %s', async (_name, answer, title, body) => {
+  await reachUnavailable()
+  vi.stubGlobal('fetch', vi.fn(async () => answer()))
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  await waitFor(() => expect(screen.queryByRole('link', { name: 'Ayuda: 787-555-0199' })).not.toBeInTheDocument())
+  expect(screen.getByRole('heading', { level: 1, name: title })).toBeInTheDocument()
+  if (body) expect(screen.getByText(body)).toBeInTheDocument()
+  else expect(screen.queryByText('Usa el número de autorización de tu recibo.')).not.toBeInTheDocument()
+  await waitFor(() => expect(screen.getByRole('heading', { level: 1 })).toHaveFocus())
+})
+
 it('shows the N03-02 state in English with the phone from the server', async () => {
   storeLocale('en')
   try {
