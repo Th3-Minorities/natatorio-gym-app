@@ -1,7 +1,9 @@
 import { expect, test } from '@playwright/test'
+import { createOrder, tinkerAvailable } from '../../e2e-paths/setup-registration.ts'
 
-// #152 flow 1, paid member registration: Welcome to Check In, after the install help. Each browser claims its own
-// unclaimed seeded order (FakeDataSeeder::FREE_AUTHORIZATION_NUMBERS), so a second run needs a fresh seed.
+// #152 flow 1, paid member registration: Welcome to Check In, after the install help. CI claims one of the unclaimed seeded
+// orders per browser (FakeDataSeeder::FREE_AUTHORIZATION_NUMBERS), so a second run needs a fresh seed. On a local test stack
+// (KIM_PROJECT set, CI unset) each run creates its own order, so any number of devices and runs can register.
 
 test.setTimeout(240_000)
 
@@ -11,7 +13,7 @@ const photo = (name: string) => ({ name, mimeType: 'image/png', buffer: PNG })
 const UNAVAILABLE = /No pudimos validar este número\. Revisa tu recibo o llama al 265-3866\./
 
 test('a paid member registers from Welcome and reaches Check In', async ({ page }, testInfo) => {
-  const number = testInfo.project.name === 'msedge' ? 'PRUEBA2' : 'PRUEBA1'
+  const number = tinkerAvailable() ? createOrder('FLW').number : testInfo.project.name === 'msedge' ? 'PRUEBA2' : 'PRUEBA1'
   const password = 'una frase larga para el registro de prueba'
 
   // 1. Welcome
