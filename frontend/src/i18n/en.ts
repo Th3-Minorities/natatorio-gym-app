@@ -372,6 +372,8 @@ export const en: Messages = {
     check_in_outside_boundary: 'You must be inside the gym area to register your entry.',
     registration_privacy_required: 'Review the privacy notice before continuing your registration.',
     registration_number_unavailable: 'You need a paid membership.',
+    student_not_on_roster: 'You are not on the athlete list.',
+    roster_record_claimed: 'This registration is not available to create another account.',
     registration_waiver_unavailable: 'Try again before continuing registration.',
     registration_photo_failed: 'Try again before continuing registration.',
     registration_photo_invalid: 'Try again before continuing registration.',

@@ -399,6 +399,8 @@ export const es = {
     check_in_outside_boundary: 'Debes estar dentro del área del gimnasio para registrar tu entrada.',
     registration_privacy_required: 'Revisa el aviso de privacidad antes de continuar con tu registro.',
     registration_number_unavailable: 'Necesitas una membresía pagada.',
+    student_not_on_roster: 'No apareces en la lista de atletas.',
+    roster_record_claimed: 'Este registro no está disponible para crear otra cuenta.',
     registration_waiver_unavailable: 'Intenta de nuevo antes de continuar con el registro.',
     registration_photo_failed: 'Intenta de nuevo antes de continuar con el registro.',
     registration_photo_invalid: 'Intenta de nuevo antes de continuar con el registro.',
