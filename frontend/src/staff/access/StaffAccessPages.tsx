@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
 import { RefreshCw } from 'lucide-react'
 import { Button, TextField } from '../../components'
@@ -158,8 +158,9 @@ type SetPasswordProps = PageProps & {
  */
 function LinkShell({ announce, children }: { announce: string; children: ReactNode }) {
   const region = useRef<HTMLParagraphElement>(null)
-  // The text is written into the region after it is on the page; React never renders children inside it.
-  useEffect(() => {
+  // The text is written into the region after it is on the page; React never renders children inside it. A layout
+  // effect, so the text changes together with the state it describes and never lags behind the new title.
+  useLayoutEffect(() => {
     if (region.current) region.current.textContent = announce
   }, [announce])
   return (
