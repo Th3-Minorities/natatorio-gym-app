@@ -70,7 +70,10 @@ class AthleteLinks
     {
         $query = EmailLink::query()->where('purpose', 'athlete_registration')->where('token_hash', hash('sha256', $token));
         $link = ($lock ? $query->lockForUpdate() : $query)->first();
-        $record = $link?->rosterRecord;
+        // The final step also locks the roster record, which a withdrawal locks too: the registration either waits
+        // for the withdrawal and is refused here, or finishes first and the withdrawal then revokes it (#163).
+        $record = $link === null ? null
+            : ($lock ? RosterRecord::query()->lockForUpdate()->find($link->roster_record_id) : $link->rosterRecord);
         if ($link === null || $record === null || $record->removed_at !== null) {
             throw new ApiException('athlete_link_invalid', 422);
         }
