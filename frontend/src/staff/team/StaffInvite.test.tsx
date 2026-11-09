@@ -85,6 +85,20 @@ describe('inviting a person', () => {
     expect(callsTo(fetchMock, '/api/staff/accounts').some(([method]) => method === 'POST')).toBe(false)
   })
 
+  it('gives focus back to Invitar on Esc, even when the click did not focus it (Safari)', async () => {
+    fakeApi({ '/api/staff/me': () => json(lorena), '/api/staff/accounts': () => json({ accounts: team }) })
+    render(<StaffApp />)
+
+    // fireEvent.click does not focus the button, as Safari does not.
+    const dialog = await openInvite()
+    const invite = screen.getByRole('button', { name: t.invite })
+    expect(invite).not.toHaveFocus()
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await waitFor(() => expect(invite).toHaveFocus())
+  })
+
   it('shows "Este correo ya está en uso", then goes back to the form to fix the email', async () => {
     fakeApi({
       '/api/staff/me': () => json(lorena),

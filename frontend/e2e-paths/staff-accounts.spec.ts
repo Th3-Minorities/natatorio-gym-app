@@ -191,7 +191,11 @@ test('SA-01 the Administrator signs in, the button shows the busy text and keeps
   await signInButton(page).click()
   const busy = page.getByRole('button', { name: 'Iniciando sesión…', exact: true })
   await expect(busy).toBeVisible()
-  await expect(busy).toBeFocused()
+  // WebKit outside the GTK and WPE ports (Safari on macOS and iOS) does not focus a button on click, because
+  // HTMLFormControlElement::isMouseFocusable returns false there (https://bugs.webkit.org/show_bug.cgi?id=22261#c68,
+  // cited by https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/button#clicking_and_focus), so there
+  // is no focus for the button to keep. SA-20 checks the keyboard path, where it does have focus.
+  if (test.info().project.name !== 'desktop-webkit') await expect(busy).toBeFocused()
   await expectHeader(page, ADMIN.name, 'Administrador')
   await expect(page.getByText('Administración', { exact: true })).toBeVisible()
 })
@@ -378,9 +382,15 @@ test('SA-20 the sign-in works with the keyboard alone and the busy button keeps 
   await page.keyboard.type(staff.password)
   await page.keyboard.press('Tab')
   await expect(signInButton(page)).toBeFocused()
-  await page.keyboard.press('Tab')
-  await expect(page.getByRole('link', { name: '¿Olvidaste tu contraseña?' })).toBeFocused()
-  await page.keyboard.press('Shift+Tab')
+  // WebKit's Tab skips links unless the browser's tabsToLinks setting is on ("Press Tab to highlight each item" in
+  // Safari), and Playwright's WebKit runs with it off. Option+Tab reaches links only on Apple platforms
+  // (eventInvertsTabsToLinksClientCallResult in https://github.com/WebKit/WebKit/blob/main/Source/WebCore/page/EventHandler.cpp),
+  // so WebKit on this Windows runner cannot Tab to the link at all.
+  if (test.info().project.name !== 'desktop-webkit') {
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('link', { name: '¿Olvidaste tu contraseña?' })).toBeFocused()
+    await page.keyboard.press('Shift+Tab')
+  }
   await page.keyboard.press('Enter')
   const busy = page.getByRole('button', { name: 'Iniciando sesión…', exact: true })
   await expect(busy).toBeFocused()
