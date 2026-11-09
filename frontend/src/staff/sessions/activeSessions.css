@@ -1,4 +1,22 @@
-/* S-01 "Ocupación actual" card, Figma 121:3019, with the level and bar of C-01 (4106:1869, E-178). */
+/* S-01 (Figma 121:2841): the "Ocupación actual" card (121:3019) with the level and bar of C-01 (4106:1869, E-178),
+   and the "Gimnasio abierto" chip top right (121:3026). */
+
+.staff-gym--open {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Not drawn on S-01: closed in the grey of a finished state, athletes only outlined like the term chip. */
+.staff-gym--closed {
+  background: var(--chip-off);
+  color: var(--muted-foreground);
+}
+
+.staff-gym--athletes_only {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--primary);
+}
 
 .staff-occupancy {
   display: flex;

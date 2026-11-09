@@ -3,6 +3,7 @@
 namespace Tests\Feature\CheckIn;
 
 use App\Models\FacilitySession;
+use App\Models\ScheduleSlot;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,8 +53,47 @@ class StaffOccupancyTest extends TestCase
         $this->flushSession();
         $this->actingAs(StaffAccount::factory()->create(['role' => $role]), 'staff')->fromThePwa()
             ->getJson('/api/staff/occupancy')->assertOk()
-            ->assertExactJson(['count' => 2, 'max' => 60, 'updated_at' => now()->toISOString()])
+            ->assertExactJson(['count' => 2, 'max' => 60, 'updated_at' => now()->toISOString(), 'gym' => 'closed'])
             ->assertExactJson($forUser);
+    }
+
+    /**
+     * The "Gimnasio abierto" chip on S-01 (Figma 121:2841) follows the same schedule as Check In: a closure or no
+     * open slot is closed, and an athletes-only period is open for athletes only.
+     *
+     * @return array<string, array{list<array<string, mixed>>, string}>
+     */
+    public static function schedules(): array
+    {
+        // Wednesday 2026-11-11, 10:00 in Puerto Rico.
+        $regular = ['type' => 'regular_hours', 'weekday' => 3, 'start_time' => '06:00', 'end_time' => '22:00'];
+        $athletes = [...$regular, 'type' => 'athletes_only', 'start_time' => '09:00', 'end_time' => '11:00'];
+        $closure = [
+            'type' => 'closure', 'weekday' => null, 'start_time' => null, 'end_time' => null,
+            'starts_at' => '2026-11-11 08:00', 'ends_at' => '2026-11-11 12:00', 'text_es' => 'Cerrado.',
+        ];
+
+        return [
+            'regular hours' => [[$regular], 'open'],
+            'no slot now' => [[[...$regular, 'start_time' => '15:00']], 'closed'],
+            'nothing scheduled' => [[], 'closed'],
+            'a closure inside regular hours' => [[$regular, $closure], 'closed'],
+            'an athletes-only period' => [[$regular, $athletes], 'athletes_only'],
+            'an athletes-only period outside regular hours' => [[$athletes], 'athletes_only'],
+        ];
+    }
+
+    /** @param list<array<string, mixed>> $slots */
+    #[DataProvider('schedules')]
+    public function test_the_answer_says_whether_the_gym_is_open_by_the_check_in_schedule(array $slots, string $gym): void
+    {
+        $this->travelTo('2026-11-11 10:00:00');
+        foreach ($slots as $slot) {
+            ScheduleSlot::factory()->create($slot);
+        }
+
+        $this->actingAs(StaffAccount::factory()->create(), 'staff')->fromThePwa()
+            ->getJson('/api/staff/occupancy')->assertOk()->assertJsonPath('gym', $gym);
     }
 
     public function test_a_deactivated_account_is_refused(): void

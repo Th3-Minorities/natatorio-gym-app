@@ -8,36 +8,20 @@ import { occupancyLevel, occupancyPercent, useOccupancy } from '../../occupancy/
 import type { ShellProps } from '../team/StaffTeam'
 import { useDocumentTitle } from '../useDocumentTitle'
 import { useStaffSession } from '../useStaffSession'
+import '../team/staffTeam.css'
 import './activeSessions.css'
 
-// S-01 "Sesiones activas" (Figma 121:2841), the dashboard home for Staff and Administrators (#26). For now only the
-// occupancy card: the sessions list, check-out and the "Gimnasio abierto" chip come later.
+// S-01 "Sesiones activas" (Figma 121:2841), the dashboard home for Staff and Administrators (#26). For now the
+// "Gimnasio abierto" chip and the occupancy card; the sessions list and check-out come later.
+
+type OccupancyState = ReturnType<typeof useOccupancy>
 
 export function ActiveSessions({ shell }: { shell: ShellProps }) {
   const { notice, ...shellProps } = shell
   const texts = useMessages()
   const t = texts.activeSessions
   useDocumentTitle(t.title)
-
-  return (
-    <DashboardShell {...shellProps} title={t.title} description={t.description}>
-      {notice}
-      <OccupancyCard />
-    </DashboardShell>
-  )
-}
-
-/**
- * The count Users see on Gimnasio, with Figma's S-01 layout plus the level and the bar of C-01 (E-178). A new count
- * is not announced, to avoid noise; "not current" is announced once (screen map, accessibility notes).
- */
-function OccupancyCard() {
-  const texts = useMessages()
-  const t = texts.activeSessions
-  const gym = texts.gym
-  const dates = useDateFormat()
   const session = useStaffSession()
-  const titleId = useId()
   // The session object changes with each sign-in check; a ref keeps the polling from starting over each time.
   const report = useRef(session.reportError)
   useEffect(() => {
@@ -48,7 +32,33 @@ function OccupancyCard() {
     report.current(error)
     return error instanceof ApiError && error.status === 401
   }, [])
-  const { data, problem, online, offline, available } = useOccupancy('/staff/occupancy', ended)
+  // One request for the chip and the card, so they never disagree.
+  const occupancy = useOccupancy('/staff/occupancy', ended)
+  const state = occupancy.available ? occupancy.data?.gym : undefined
+
+  // Top right, where Figma draws it (121:3026), by the same schedule Check In uses. Hidden with the number when the
+  // data is not current.
+  const chip = state && <span className={`team-chip staff-gym staff-gym--${state}`}>{t.gymState[state]}</span>
+
+  return (
+    <DashboardShell {...shellProps} title={t.title} description={t.description} action={chip || undefined}>
+      {notice}
+      <OccupancyCard occupancy={occupancy} />
+    </DashboardShell>
+  )
+}
+
+/**
+ * The count Users see on Gimnasio, with Figma's S-01 layout plus the level and the bar of C-01 (E-178). A new count
+ * is not announced, to avoid noise; "not current" is announced once (screen map, accessibility notes).
+ */
+function OccupancyCard({ occupancy }: { occupancy: OccupancyState }) {
+  const texts = useMessages()
+  const t = texts.activeSessions
+  const gym = texts.gym
+  const dates = useDateFormat()
+  const titleId = useId()
+  const { data, problem, online, offline, available } = occupancy
 
   return (
     <section className="staff-occupancy" aria-labelledby={titleId} aria-busy={(!data && !problem && online) || undefined}>

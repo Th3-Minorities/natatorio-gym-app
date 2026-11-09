@@ -11,7 +11,7 @@ import { apiError, callsTo, fakeApi, json, lorena, offline, team } from '../team
 const t = es.activeSessions
 const gym = es.gym
 const OCCUPANCY = '/api/staff/occupancy'
-const occupancy = { count: 18, max: 40, updated_at: '2026-11-07T17:07:24Z' }
+const occupancy = { count: 18, max: 40, updated_at: '2026-11-07T17:07:24Z', gym: 'open' }
 
 beforeEach(() => {
   document.cookie = 'XSRF-TOKEN=token; path=/'
@@ -44,6 +44,27 @@ describe('S-01 occupancy', () => {
     expect(card).toHaveTextContent(t.closeRule)
     expect(card.querySelector('.staff-occupancy__bar > div')).toHaveStyle({ width: '45%' })
     expect(callsTo(fetchMock, OCCUPANCY)).toHaveLength(1)
+  })
+
+  it('says whether the gym is open, by the same schedule Check In uses', async () => {
+    openScreen()
+    // Top right of S-01, as Figma draws it (121:3026).
+    expect(await screen.findByText(t.gymState.open)).toHaveClass('team-chip')
+  })
+
+  it.each([
+    ['closed', t.gymState.closed],
+    ['athletes_only', t.gymState.athletes_only],
+  ])('names the %s state in the same place', async (state, text) => {
+    openScreen({ [OCCUPANCY]: () => json({ ...occupancy, gym: state }) })
+    expect(await screen.findByText(text)).toBeInTheDocument()
+    expect(screen.queryByText(t.gymState.open)).not.toBeInTheDocument()
+  })
+
+  it('hides the gym state with the number when the count cannot load', async () => {
+    openScreen({ [OCCUPANCY]: () => apiError('server_error', 500) })
+    expect(await screen.findByText(gym.failed)).toBeInTheDocument()
+    expect(screen.queryByText(t.gymState.open)).not.toBeInTheDocument()
   })
 
   it('shows the same card to Staff accounts', async () => {

@@ -5,15 +5,14 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Models\Authorization;
 use App\Models\FacilitySession;
-use App\Models\ScheduleSlot;
 use App\Models\User;
 use App\Services\FacilitySessions;
+use App\Services\GymSchedule;
 use App\Support\GymBoundary;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -22,7 +21,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CheckInController extends Controller
 {
-    public function __construct(private FacilitySessions $sessions) {}
+    public function __construct(private FacilitySessions $sessions, private GymSchedule $schedule) {}
 
     public function show(Request $request): JsonResponse
     {
@@ -91,15 +90,12 @@ class CheckInController extends Controller
         }
 
         $now = now();
-        $covering = fn (string ...$types) => $this->periods($now)->first(
-            fn ($p) => in_array($p['type'], $types, true) && $p['starts_at'] <= $now && $now < $p['ends_at']
-        );
         // An athletes-only period outside regular hours opens the gym for athletes (G-28).
-        if ($covering('closure') || ! $covering('regular_hours', 'special_hours', 'athletes_only')) {
+        if ($this->schedule->state($now) === 'closed') {
             throw new ApiException('check_in_gym_closed', 409);
         }
         // Manual authorizations count as paid members (E-126).
-        if ($authorization->type !== 'athlete' && ($period = $covering('athletes_only'))) {
+        if ($authorization->type !== 'athlete' && ($period = $this->schedule->covering($now, 'athletes_only'))) {
             throw new ApiException('check_in_athletes_only', 409, $this->period($period));
         }
 
@@ -154,7 +150,7 @@ class CheckInController extends Controller
     private function athletesPeriod(?FacilitySession $session): ?array
     {
         $now = now();
-        $periods = $this->periods($now)->where('type', 'athletes_only')->sortBy('starts_at');
+        $periods = $this->schedule->periods($now)->where('type', 'athletes_only')->sortBy('starts_at');
         if ($current = $periods->first(fn ($p) => $p['starts_at'] <= $now && $now < $p['ends_at'])) {
             return ['state' => 'active', ...$this->period($current)];
         }
@@ -164,34 +160,6 @@ class CheckInController extends Controller
             && ($p['starts_at'] <= $noticeEnd || ($session && $p['starts_at'] < $session->ends_at)));
 
         return $next ? ['state' => 'upcoming', ...$this->period($next)] : null;
-    }
-
-    /**
-     * Schedule slots as dated periods for today and tomorrow, enough to cover a 2-hour session.
-     *
-     * @return Collection<int, array{type: string, starts_at: Carbon, ends_at: Carbon}>
-     */
-    private function periods(Carbon $now)
-    {
-        $days = [$now->copy()->startOfDay(), $now->copy()->addDay()->startOfDay()];
-
-        $periods = ScheduleSlot::query()
-            ->where(fn ($q) => $q->whereNotNull('weekday')->orWhere('ends_at', '>', $days[0]->copy()->setTimezone(config('app.timezone'))))
-            ->get()
-            ->flatMap(fn (ScheduleSlot $slot) => $slot->weekday === null
-                ? [['type' => $slot->type, 'starts_at' => $slot->starts_at, 'ends_at' => $slot->ends_at]]
-                : collect($days)->filter(fn (Carbon $day) => $day->dayOfWeek === (int) $slot->weekday)->map(fn (Carbon $day) => [
-                    'type' => $slot->type,
-                    'starts_at' => $day->copy()->setTimeFromTimeString($slot->start_time),
-                    'ends_at' => $day->copy()->setTimeFromTimeString($slot->end_time),
-                ])->values()->all());
-
-        // On a day with special hours, they replace that day's regular hours (owner, 2026-11-07).
-        $specialDays = $periods->where('type', 'special_hours')
-            ->map(fn ($p) => $p['starts_at']->copy()->setTimezone(config('app.timezone'))->toDateString());
-
-        return $periods->reject(fn ($p) => $p['type'] === 'regular_hours'
-            && $specialDays->contains($p['starts_at']->copy()->setTimezone(config('app.timezone'))->toDateString()))->values();
     }
 
     /** @param array{starts_at: Carbon, ends_at: Carbon} $period */

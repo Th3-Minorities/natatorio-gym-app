@@ -4,7 +4,8 @@ import { useConnection } from '../user/useConnection'
 
 // The occupancy count that C-01 on Gimnasio and S-01 on the dashboard both show (REQ-F-41, E-164, E-178).
 
-export type Occupancy = { count: number; max: number; updated_at: string }
+/** gym: open, athletes_only or closed, by the Check In schedule; S-01 shows it as a chip (#26). */
+export type Occupancy = { count: number; max: number; updated_at: string; gym?: 'open' | 'athletes_only' | 'closed' }
 
 export type OccupancyLevel = 'low' | 'moderate' | 'high'
 

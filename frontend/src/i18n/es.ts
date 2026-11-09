@@ -305,6 +305,8 @@ export const es = {
     description: 'Verifica la foto de cada persona y registra su salida al dejar el gimnasio.',
     inside: 'Personas dentro ahora',
     closeRule: 'Las sesiones se cierran automáticamente 2 horas después del Check In.',
+    // The chip top right (Figma 121:3026). Only "Gimnasio abierto" is drawn on S-01; the other two are S-03's titles (4288:1256, 4288:1280).
+    gymState: { open: 'Gimnasio abierto', closed: 'Gimnasio cerrado', athletes_only: 'Horario exclusivo para atletas' },
   },
 
   // A-15, Figma 100:841 (#84).

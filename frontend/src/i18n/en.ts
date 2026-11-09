@@ -288,6 +288,7 @@ export const en: Messages = {
     description: "Check each person's photo and record their check-out when they leave the gym.",
     inside: 'People inside now',
     closeRule: 'Sessions close automatically 2 hours after Check In.',
+    gymState: { open: 'Gym open', closed: 'Gym closed', athletes_only: 'Athletes-only hours' },
   },
 
   staffTeam: {
