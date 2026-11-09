@@ -17,7 +17,7 @@
 .user-app--access { background: var(--hero); }
 /* iOS Safari tints the status bar from the page background, so the strip above the green header stays green (Discussion #142). */
 @media (max-width: 599.98px) {
-  :root:has(.user-app--access), :root:has(.user-app--access) body { background: var(--hero); }
+  :root:has(.user-app--access), :root:has(.user-app--access) body, :root:has(.user-welcome), :root:has(.user-welcome) body { background: var(--hero); }
 }
 .user-header {
   display: flex;
