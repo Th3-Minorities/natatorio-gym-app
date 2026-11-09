@@ -50,6 +50,22 @@ class DatabaseSeederTest extends TestCase
         $this->assertGreaterThan(0, DB::table('facility_sessions')->whereNotNull('entered_by_staff_account_id')->count());
     }
 
+    public function test_every_seeded_person_has_an_email_that_matches_the_name(): void
+    {
+        $this->seed();
+
+        $people = DB::table('waiver_acceptances')->join('users', 'users.id', '=', 'waiver_acceptances.user_id')
+            ->get(['waiver_acceptances.full_name', 'users.email', 'waiver_acceptances.email as waiver_email']);
+
+        $this->assertNotEmpty($people);
+        foreach ($people as $person) {
+            $this->assertSame($person->email, $person->waiver_email);
+            if (! str_ends_with($person->email, '@example.com')) {
+                $this->assertSame(\Illuminate\Support\Str::slug($person->full_name, '.'), explode('@', $person->email)[0]);
+            }
+        }
+    }
+
     public function test_the_help_number_is_the_office_line(): void
     {
         $this->seed();

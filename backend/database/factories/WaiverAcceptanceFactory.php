@@ -13,10 +13,12 @@ class WaiverAcceptanceFactory extends Factory
 {
     public function definition(): array
     {
+        $person = FakePerson::make();
+
         return [
             'user_id' => User::factory(),
-            'full_name' => fake()->name(),
-            'email' => fake()->safeEmail(),
+            'full_name' => $person['name'],
+            'email' => $person['email'],
             'emergency_contact_name' => fake()->name(),
             'emergency_contact_phone' => fake()->numerify('787-555-####'),
             'waiver_version' => '2026-11',

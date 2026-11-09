@@ -15,9 +15,11 @@ class StaffAccountFactory extends Factory
 
     public function definition(): array
     {
+        $person = FakePerson::make();
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $person['name'],
+            'email' => $person['email'],
             'password' => static::$password ??= Hash::make('password'),
             'role' => 'staff',
             'locale' => 'es',
