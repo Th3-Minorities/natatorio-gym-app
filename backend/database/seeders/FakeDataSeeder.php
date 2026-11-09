@@ -31,6 +31,9 @@ use Illuminate\Support\Str;
  */
 class FakeDataSeeder extends Seeder
 {
+    /** The one active roster record nobody has claimed yet; registration finds this athlete. */
+    public const FREE_STUDENT_NUMBER = '802000001';
+
     public function run(): void
     {
         if (app()->environment('production')) {
@@ -128,10 +131,12 @@ class FakeDataSeeder extends Seeder
     /** @return list<Authorization> four claimed roster records; one free, one removed */
     private function athletes(AcademicTerm $term): array
     {
-        $records = RosterRecord::factory()->count(5)->create();
+        $records = RosterRecord::factory()->count(4)->create();
+        // On the roster and unclaimed, with a fixed number so registration can be tried by hand.
+        RosterRecord::factory()->create(['student_number' => self::FREE_STUDENT_NUMBER]);
         RosterRecord::factory()->removed()->create();
 
-        return $records->take(4)->map(function (RosterRecord $record) use ($term) {
+        return $records->map(function (RosterRecord $record) use ($term) {
             $user = $this->userWithWaiver(['email' => $record->institutional_email], $record->name);
 
             return Authorization::factory()->athlete($record)->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);

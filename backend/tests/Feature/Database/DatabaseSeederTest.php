@@ -4,6 +4,7 @@ namespace Tests\Feature\Database;
 
 use App\Models\Authorization;
 use App\Models\User;
+use Database\Seeders\FakeDataSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -72,6 +73,22 @@ class DatabaseSeederTest extends TestCase
                 $this->assertEmailMatchesName($row->$nameColumn, $row->$emailColumn);
             }
         }
+    }
+
+    public function test_every_seeded_student_number_has_nine_digits_and_one_athlete_is_free_to_register(): void
+    {
+        $this->seed();
+
+        $numbers = DB::table('roster_records')->pluck('student_number');
+        $this->assertNotEmpty($numbers);
+        foreach ($numbers as $number) {
+            $this->assertMatchesRegularExpression('/^\d{9}$/', $number);
+        }
+
+        $free = DB::table('roster_records')->where('student_number', FakeDataSeeder::FREE_STUDENT_NUMBER)
+            ->whereNull('removed_at')->whereNotIn('id', DB::table('authorizations')->whereNotNull('roster_record_id')->select('roster_record_id'))
+            ->count();
+        $this->assertSame(1, $free);
     }
 
     public function test_the_load_test_waivers_use_the_account_email(): void

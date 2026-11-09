@@ -17,7 +17,7 @@ class RosterRecordFactory extends Factory
         $person = FakePerson::make('upr.example');
 
         return [
-            'student_number' => fake()->unique()->numerify('802#######'),
+            'student_number' => fake()->unique()->numerify('802######'),
             'name' => $person['name'],
             'institutional_email' => $person['email'],
             'sport' => fake()->randomElement(['Swimming', 'Volleyball', 'Basketball', 'Track']),
