@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { en } from '../i18n/en'
+import { es } from '../i18n/es'
 import { storeLocale } from './deviceLocale'
 import { UserApp } from './UserApp'
 
@@ -22,7 +23,7 @@ afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks() })
 
 async function reachIdentification() {
   fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
-  await screen.findByLabelText('Número de estudiante o transacción')
+  await screen.findByLabelText('Número de estudiante o autorización')
 }
 
 // Navigation focuses the title on the next frame; wait for that and drop it so a later focus move is the one under test.
@@ -45,7 +46,7 @@ it('shows privacy before the unified identification field', async () => {
 it('allows letters and any length and uses the imported name without rendering HTML', async () => {
   render(<UserApp />)
   await reachIdentification()
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
   expect(screen.getByText('¡Hola, [Nombre]!')).toBeInTheDocument()
@@ -54,23 +55,94 @@ it('allows letters and any length and uses the imported name without rendering H
   expect(screen.queryByLabelText('Contacto de emergencia')).not.toBeInTheDocument()
 })
 
+it('returns to the number step with one browser Back from the password step', async () => {
+  render(<UserApp />)
+  await reachIdentification()
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'A' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  await screen.findByRole('heading', { name: 'Crea una contraseña' })
+  expect(window.location.pathname).toBe('/register/password')
+  await act(async () => {
+    const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }))
+    window.history.back()
+    await popped
+  })
+  expect(window.location.pathname).toBe('/register/identify')
+  expect(await screen.findByLabelText('Número de estudiante o autorización')).toBeInTheDocument()
+})
+
 it('shows the short offline banner on the number step and keeps the entered number', async () => {
   render(<UserApp />)
   await reachIdentification()
-  const field = screen.getByLabelText('Número de estudiante o transacción')
+  const field = screen.getByLabelText('Número de estudiante o autorización')
   fireEvent.change(field, { target: { value: '12345A' } })
   expect(screen.queryByText(/Sin conexión/)).not.toBeInTheDocument()
   Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
   fireEvent(window, new Event('offline'))
   expect(screen.getByText('Sin conexión').closest('[role="status"]')).toHaveTextContent(/^Sin conexión$/)
+  const intro = screen.getByRole('heading', { name: 'Registro' }).parentElement!
+  expect(Array.from(intro.querySelectorAll('p'), (line) => line.textContent)).toEqual([
+    'Conéctate para consultar tu número.',
+    'Lo que escribiste se conserva mientras esta página siga abierta.',
+  ])
+  expect(document.querySelector('.registration-status')).toHaveTextContent('Conéctate para consultar tu número.')
   expect(field).toHaveValue('12345A')
   expect(screen.getByRole('button', { name: 'Continuar' })).toBeDisabled()
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+  fireEvent(window, new Event('online'))
+  expect(document.querySelector('.registration-status')).not.toHaveTextContent('Conéctate para consultar tu número.')
+  expect(screen.getByText('Ingresa tu número de estudiante o el número de autorización de tu recibo.')).toBeInTheDocument()
+  expect(screen.queryByText('Conéctate para consultar tu número.')).not.toBeInTheDocument()
+  expect(field).toHaveValue('12345A')
+  expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled()
+})
+
+it('shows the two English offline intro lines on the number step', async () => {
+  storeLocale('en')
+  try {
+    render(<UserApp />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Continue registration' }))
+    await screen.findByLabelText('Student or authorization number')
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    const intro = screen.getByRole('heading', { name: 'Registration' }).parentElement!
+    expect(Array.from(intro.querySelectorAll('p'), (line) => line.textContent)).toEqual([
+      'Connect to look up your number.',
+      'What you typed is kept while this page stays open.',
+    ])
+    expect(screen.queryByText(en.registration.identificationIntro)).not.toBeInTheDocument()
+  } finally { storeLocale('es') }
+})
+
+it('shows the offline banner and intro without a field error when the number lookup loses the network', async () => {
+  render(<UserApp />)
+  await reachIdentification()
+  const field = screen.getByLabelText('Número de estudiante o autorización')
+  fireEvent.change(field, { target: { value: '12345A' } })
+  vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('Failed to fetch') }))
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  expect(await screen.findByText('Sin conexión')).toBeInTheDocument()
+  const intro = screen.getByRole('heading', { name: 'Registro' }).parentElement!
+  expect(Array.from(intro.querySelectorAll('p'), (line) => line.textContent)).toEqual([
+    'Conéctate para consultar tu número.',
+    'Lo que escribiste se conserva mientras esta página siga abierta.',
+  ])
+  expect(document.querySelector('.field__error')).not.toBeInTheDocument()
+  expect(field).not.toHaveAttribute('aria-invalid', 'true')
+  expect(field).toHaveValue('12345A')
+  expect(screen.getByRole('button', { name: 'Continuar' })).toBeDisabled()
+  vi.stubGlobal('fetch', vi.fn(async () => json({ state: 'ready', name: '[Nombre]', masked_email: 'c***@upr.edu' })))
+  fireEvent(window, new Event('online'))
+  expect(document.querySelector('.field__error')).not.toBeInTheDocument()
+  expect(field).toHaveValue('12345A')
+  expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled()
+  for (const status of screen.queryAllByRole('status')) expect(status).not.toHaveTextContent(es.user.offlineForm)
 })
 
 it('does not show an offline banner on the password step', async () => {
   render(<UserApp />)
   await reachIdentification()
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '12345A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: '12345A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await screen.findByRole('heading', { name: 'Crea una contraseña' })
   Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
@@ -82,7 +154,7 @@ it('does not show an offline banner on the password step', async () => {
 it('does not save an account when the password step continues to the photo', async () => {
   render(<UserApp />)
   await reachIdentification()
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '12345A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: '12345A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await screen.findByRole('heading', { name: 'Crea una contraseña' })
   fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'a long password' } })
@@ -95,7 +167,7 @@ it('does not save an account when the password step continues to the photo', asy
 it('shows the short password sentence once, as the error with no grey hint above it', async () => {
   render(<UserApp />)
   await reachIdentification()
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '12345A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: '12345A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await screen.findByRole('heading', { name: 'Crea una contraseña' })
   fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'short' } })
@@ -112,7 +184,7 @@ it('protects direct registration URLs with the privacy step', async () => {
   window.history.replaceState({}, '', '/register/identify')
   render(<UserApp />)
   expect(await screen.findByRole('heading', { name: 'Antes de comenzar' })).toBeInTheDocument()
-  expect(screen.queryByLabelText('Número de estudiante o transacción')).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Número de estudiante o autorización')).not.toBeInTheDocument()
 })
 
 it('offers the exact English privacy frame before collecting data', async () => {
@@ -132,7 +204,7 @@ it('retains the entered number and uses existing help copy on an unavailable num
   expect(status).toBeEmptyDOMElement()
   expect(screen.getByRole('status')).toBe(status)
   vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'registration_number_unavailable', details: { contact_number: ['787-555-0199'] } } }, 422)))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: "' OR 1=1" } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: "' OR 1=1" } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(status).toHaveTextContent('No pudimos validar este número. Revisa tu recibo o llama al 787-555-0199.'))
   expect(screen.getByText('No pudimos validar este número. Revisa tu recibo o llama al 787-555-0199.', { selector: '.field__error' })).toBeInTheDocument()
@@ -146,7 +218,7 @@ it('shows the N03-02 state with the server contact number and retries the edited
   await reachIdentification()
   await dropFocus()
   vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'registration_number_unavailable', details: { contact_number: ['787-555-0199'] } } }, 422)))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'AB12C3' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'AB12C3' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   const heading = await screen.findByRole('heading', { name: 'Revisa tu número' })
   expect(screen.getByText('Usa el número de autorización de tu recibo.')).toBeInTheDocument()
@@ -176,7 +248,7 @@ async function reachUnavailable() {
   await reachIdentification()
   await dropFocus()
   vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'registration_number_unavailable', details: { contact_number: ['787-555-0199'] } } }, 422)))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'AB12C3' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'AB12C3' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   const heading = await screen.findByRole('heading', { name: 'Revisa tu número' })
   await waitFor(() => expect(heading).toHaveFocus())
@@ -232,7 +304,7 @@ it('announces the lookup error and Retry-After wait in the mounted status region
   vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: { code: 'too_many_attempts' } }), {
     status: 429, headers: { 'Retry-After': '90' },
   })))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(status).toHaveTextContent('Intenta de nuevo a las 8:01 a. m.'))
   expect(screen.getByRole('status')).toBe(status)
@@ -245,7 +317,7 @@ it('renders an imported script as text and never claims it', async () => {
   render(<UserApp />)
   await reachIdentification()
   vi.stubGlobal('fetch', vi.fn(async () => json({ state: 'ready', name: '<script>alert(1)</script>', masked_email: 'c***@upr.edu' })))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByText('¡Hola, <script>alert(1)</script>!')).toBeInTheDocument()
   expect(document.querySelector('script')).toBeNull()
@@ -267,7 +339,7 @@ it.each(['123456789', ' 987654321 '])('sends student number %s to the lookup and
     requests.push({ path, body: init?.body ? JSON.parse(String(init.body)) : null })
     return json({ state: 'athlete', masked_email: 'm***z@upr.edu', resend_in: 300 })
   }))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: number } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: number } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Revisa tu correo' })).toBeInTheDocument()
   expect(requests.find((request) => request.path.endsWith('/lookup'))?.body).toEqual({ authorization_number: number, locale: 'es' })
@@ -278,7 +350,7 @@ it('shows the N03-03 state with the server contact number when the student is no
   await reachIdentification()
   await dropFocus()
   vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'student_not_on_roster', details: { contact_number: ['787-555-0199'] } } }, 422)))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '802123456' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: '802123456' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   const heading = await screen.findByRole('heading', { name: 'Revisa tu número' })
   await waitFor(() => expect(heading).toHaveFocus())
@@ -292,7 +364,7 @@ it('shows the N03-03 state with the server contact number when the student is no
   fireEvent.click(screen.getByRole('button', { name: 'Corregir número' }))
   const identification = await screen.findByRole('heading', { name: 'Registro' })
   await waitFor(() => expect(identification).toHaveFocus())
-  expect(screen.getByLabelText('Número de estudiante o transacción')).toHaveValue('802123456')
+  expect(screen.getByLabelText('Número de estudiante o autorización')).toHaveValue('802123456')
   expect(screen.getByRole('status')).toBeEmptyDOMElement()
 })
 
@@ -300,7 +372,7 @@ it('shows the N03-11 state with sign in and change number when the athlete recor
   render(<UserApp />)
   await reachIdentification()
   vi.stubGlobal('fetch', vi.fn(async () => json({ error: { code: 'roster_record_claimed', details: { contact_number: ['787-555-0199'] } } }, 422)))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '802123456' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: '802123456' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Revisa tu registro' })).toBeInTheDocument()
   expect(screen.getByText('Este número de estudiante ya tiene un registro de atleta vinculado.')).toBeInTheDocument()
@@ -318,7 +390,7 @@ it('drops the student state when the user leaves identification', async () => {
   vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => path.endsWith('/lookup')
     ? json({ error: { code: 'student_not_on_roster', details: { contact_number: ['265-3866'] } } }, 422)
     : defaultFetch(path, init)))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '123456789' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: '123456789' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await screen.findByRole('heading', { name: 'Revisa tu número' })
   fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
@@ -337,7 +409,7 @@ it('empties the status region when a timed wait ends', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ error: { code: 'too_many_attempts' } }), {
       status: 429, headers: { 'Retry-After': '30' },
     })))
-    fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'A' } })
+    fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'A' } })
     fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
     await act(async () => { await vi.advanceTimersByTimeAsync(50) })
     expect(screen.getByRole('status')).toHaveTextContent('Intenta de nuevo a las')
@@ -381,7 +453,7 @@ it('hides both store controls without a URL', async () => {
 it('looks up ten digits as an authorization number', async () => {
   render(<UserApp />)
   await reachIdentification()
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '1234567890' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: '1234567890' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
   expect(requests.find((request) => request.path.endsWith('/lookup'))?.body).toEqual({ authorization_number: '1234567890', locale: 'es' })
@@ -391,7 +463,7 @@ it('shows N03-04 with the masked account email, and both ways back reach an empt
   render(<UserApp />)
   await reachIdentification()
   vi.stubGlobal('fetch', vi.fn(async () => json({ state: 'renewal', masked_email: 'c***@upr.edu' })))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Ya tienes una cuenta' })).toBeInTheDocument()
   expect(screen.getByText('Inicia sesión para añadir esta autorización a tu cuenta.')).toBeInTheDocument()
@@ -401,7 +473,7 @@ it('shows N03-04 with the masked account email, and both ways back reach an empt
   expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
   fireEvent.click(screen.getByRole('button', { name: 'Volver al registro' }))
   expect(await screen.findByRole('heading', { name: 'Registro' })).toBeInTheDocument()
-  expect(screen.getByLabelText('Número de estudiante o transacción')).toHaveValue('A')
+  expect(screen.getByLabelText('Número de estudiante o autorización')).toHaveValue('A')
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await screen.findByRole('heading', { name: 'Ya tienes una cuenta' })
   fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
@@ -410,7 +482,7 @@ it('shows N03-04 with the masked account email, and both ways back reach an empt
   await reachIdentification()
   expect(screen.getByRole('heading', { name: 'Registro' })).toBeInTheDocument()
   expect(screen.getByRole('status')).toBeEmptyDOMElement()
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'B' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'B' } })
   let finishLookup!: (response: Response) => void
   const fetchLookup = vi.fn(() => new Promise<Response>((resolve) => { finishLookup = resolve }))
   vi.stubGlobal('fetch', fetchLookup)
@@ -427,7 +499,6 @@ it.each([
   ['unknown_code', 503, 'Algo salió mal de nuestro lado. Intenta más tarde.'],
   ['unknown_code', 422, 'No se pudo procesar la solicitud.'],
   ['registration_number_unavailable', 500, 'Algo salió mal de nuestro lado. Intenta más tarde.'],
-  ['offline', 0, 'Conéctate para continuar. Se conservan los datos ingresados.'],
 ])('announces %s (%s) through the mounted status region', async (code, status, message) => {
   render(<UserApp />)
   await reachIdentification()
@@ -436,7 +507,7 @@ it.each([
     if (!status) throw new TypeError('Failed to fetch')
     return json({ error: { code } }, status)
   }))
-  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'A' } })
+  fireEvent.change(screen.getByLabelText('Número de estudiante o autorización'), { target: { value: 'A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await waitFor(() => expect(region).toHaveTextContent(message))
   expect(screen.getAllByRole('status')).toContain(region)

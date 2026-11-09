@@ -30,6 +30,27 @@ function fillSignIn() {
   fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'a long password' } })
 }
 
+it('replaces the validated athlete link so browser Back leaves its page', async () => {
+  answer = async (path) => path.endsWith('/athlete/validate')
+    ? json({ name: 'Marta Ruiz' })
+    : json({ version: 'draft', draft: true, store_url: null, contact_number: '265-3866' })
+  window.history.replaceState({}, '', '/welcome')
+  window.history.pushState({}, '', '/register/athlete?token=abc')
+  const historyLength = window.history.length
+  render(<UserApp />)
+  await screen.findByRole('heading', { name: 'Antes de comenzar' })
+  expect(window.location.pathname).toBe('/register/password')
+  expect(window.location.search).toBe('')
+  expect(window.history.length).toBe(historyLength)
+  await act(async () => {
+    const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }))
+    window.history.back()
+    await popped
+  })
+  expect(window.location.pathname).toBe('/welcome')
+  expect(screen.queryByRole('heading', { name: 'Verificando tu enlace' })).not.toBeInTheDocument()
+})
+
 function expectAccessLayout(passwords = 1, signIn = true) {
   expect(screen.getByRole('main').closest('.user-app')).toHaveClass('user-app--large')
   expect(document.querySelector('form')).toBeInTheDocument()
@@ -108,6 +129,7 @@ describe('N-02', () => {
     expect(notice).toHaveTextContent(es.signIn.wrongTitle)
     expect(notice).toHaveTextContent(es.errors.server_error)
     expect(notice.closest('.user-notice')).toBeInTheDocument()
+    expect(notice.closest('.user-notice')).toHaveClass('user-notice--danger')
     expect(notice.compareDocumentPosition(document.querySelector('form')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByLabelText('Correo electrónico')).toHaveValue('user@example.com')
     expect(screen.getByLabelText('Contraseña')).toHaveValue('a long password')
@@ -120,6 +142,7 @@ describe('N-02', () => {
     open(); fillSignIn()
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Intenta de nuevo a las')
+    expect(screen.getByRole('alert').closest('.user-notice')).not.toHaveClass('user-notice--danger')
     expectAccessLayout()
     expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeDisabled()
     await waitFor(() => expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeEnabled(), { timeout: 2000 })
@@ -223,6 +246,7 @@ describe('N-06 and N-07', () => {
     fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'any@example.com' } })
     fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos enviar la solicitud')
+    expect(screen.getByRole('alert').closest('.user-notice')).toHaveClass('user-notice--danger')
     expectAccessLayout(0, false)
     expect(screen.getByLabelText('Correo electrónico')).toHaveValue('any@example.com')
   })
@@ -524,6 +548,7 @@ describe('U-03 and U-05', () => {
     answer = async () => error('user_session_replaced', 401)
     open('/account')
     expect(await screen.findByRole('alert')).toHaveTextContent('Iniciaste sesión en otro dispositivo')
+    expect(screen.getByRole('alert').closest('.user-notice')).not.toHaveClass('user-notice--danger')
     expectAccessLayout()
   })
 

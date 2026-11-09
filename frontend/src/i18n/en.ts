@@ -15,8 +15,10 @@ export const en: Messages = {
     offlineAvailable: 'The notice is available offline.',
     loading: 'Loading the notice…', errorTitle: 'We could not display the notice',
     errorDetail: 'Try again before continuing registration.',
-    title: 'Registration', identificationIntro: 'Enter your student number or the transaction number on your receipt.',
-    number: 'Student or transaction number', numberPlaceholder: 'Enter your number',
+    title: 'Registration', identificationIntro: 'Enter your student number or the authorization number on your receipt.',
+    numberOfflineIntro: 'Connect to look up your number.',
+    numberOfflineKept: 'What you typed is kept while this page stays open.',
+    number: 'Student or authorization number', numberPlaceholder: 'Enter your number',
     studentHint: 'Student: 9 digits.',
     student: {
       title: 'Check your number', intro: 'The student number is used for athletes.', label: 'Student number',
@@ -159,7 +161,7 @@ export const en: Messages = {
   },
   gym: {
     low: 'Low', moderate: 'Moderate', high: 'High',
-    lead: 'Your space to train', title: 'Estimated occupancy', people: 'people', empty: 'No activity',
+    lead: 'Your space to train', title: 'Estimated occupancy', people: 'people',
     updated: (time: string) => `Updated at ${time}`, stale: (time?: string) => time ? `Data not updated · Last data at ${time}` : 'Data not updated',
     loading: 'Updating occupancy…', failed: 'We could not update', offline: 'No connection',
     schedules: 'Schedules', notices: 'Notices', guide: 'Machine guide', bench: 'Weight bench', pulldown: 'Lat pulldown',

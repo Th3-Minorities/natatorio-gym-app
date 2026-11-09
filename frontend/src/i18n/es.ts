@@ -13,8 +13,10 @@ export const es = {
     offlineAvailable: 'El aviso está disponible sin conexión.',
     loading: 'Cargando el aviso…', errorTitle: 'No pudimos mostrar el aviso',
     errorDetail: 'Intenta de nuevo antes de continuar con el registro.',
-    title: 'Registro', identificationIntro: 'Ingresa tu número de estudiante o el número de transacción de tu recibo.',
-    number: 'Número de estudiante o transacción', numberPlaceholder: 'Escribe tu número',
+    title: 'Registro', identificationIntro: 'Ingresa tu número de estudiante o el número de autorización de tu recibo.',
+    numberOfflineIntro: 'Conéctate para consultar tu número.',
+    numberOfflineKept: 'Lo que escribiste se conserva mientras esta página siga abierta.',
+    number: 'Número de estudiante o autorización', numberPlaceholder: 'Escribe tu número',
     studentHint: 'Estudiante: 9 dígitos.',
     student: {
       title: 'Revisa tu número', intro: 'El número de estudiante se usa para atletas.', label: 'Número de estudiante',
@@ -168,7 +170,7 @@ export const es = {
   // and the member confirmation 4104:719).
   gym: {
     low: 'Baja', moderate: 'Moderada', high: 'Alta',
-    lead: 'Tu espacio para entrenar', title: 'Ocupación estimada', people: 'personas', empty: 'Sin actividad',
+    lead: 'Tu espacio para entrenar', title: 'Ocupación estimada', people: 'personas',
     updated: (time: string) => `Actualizado a las ${time}`, stale: (time?: string) => time ? `Dato no actualizado · Último dato a las ${time}` : 'Dato no actualizado',
     loading: 'Actualizando ocupación…', failed: 'No pudimos actualizar', offline: 'Sin conexión',
     schedules: 'Horarios', notices: 'Avisos', guide: 'Guía de máquinas', bench: 'Banco de pesas', pulldown: 'Jalón al pecho',

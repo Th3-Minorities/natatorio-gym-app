@@ -96,6 +96,8 @@
 .user-notice .notice__title { color: var(--foreground); padding-left: calc(var(--user-icon-small) + var(--spacing-8)); font-weight: var(--user-weight-semibold); }
 .user-notice .notice__text { font-size: var(--spacing-12); line-height: var(--user-caption-line); }
 .user-notice > svg { position: absolute; top: var(--user-notice-padding); left: var(--user-notice-padding); width: var(--user-icon-small); height: var(--user-icon-small); color: var(--hero); }
+.user-notice--danger .notice { background: var(--danger-soft); border-color: var(--danger-border); color: var(--danger-text); }
+.user-notice--danger .notice__title, .user-notice--danger > svg { color: var(--danger-text); }
 .user-offline {
   display: flex; flex: none; gap: var(--spacing-8); padding: var(--user-input-padding) var(--spacing-24);
   background: var(--user-sage-soft); color: var(--foreground); font-size: var(--spacing-12); line-height: var(--user-caption-line);

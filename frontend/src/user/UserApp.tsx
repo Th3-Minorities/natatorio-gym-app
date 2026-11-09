@@ -27,7 +27,7 @@ type AccountType = 'paid' | 'athlete' | 'manual'
 
 type RouteContext = {
   path: string
-  navigate: (path: string) => void
+  navigate: (path: string, options?: { replace?: boolean }) => void
   ended: (error: unknown) => boolean
   profile: UserProfile | null
   replaced: boolean
@@ -94,8 +94,9 @@ export function UserApp() {
   const route = USER_ROUTES[path] ?? USER_ROUTES['/sign-in']
   const protectedPath = route.protected === true
 
-  const navigate = useCallback((next: string) => {
-    window.history.pushState({}, '', next)
+  const navigate = useCallback((next: string, options?: { replace?: boolean }) => {
+    if (options?.replace) window.history.replaceState({}, '', next)
+    else window.history.pushState({}, '', next)
     setPath(new URL(next, window.location.origin).pathname)
     setConfirmation(false)
     setRefused(false)

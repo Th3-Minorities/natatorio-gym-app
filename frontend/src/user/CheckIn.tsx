@@ -193,7 +193,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   // Board 10 notes: a retry first asks whether the session was already created.
   const retry = () => run(async () => {
     const next = await refresh()
-    if (next && !next.session) await register()
+    if (next && !next.session && problem !== 'offline') await register()
   })
 
   const athlete = (status?.account_type ?? (profile?.authorization?.type === 'athlete' ? 'athlete' : 'member')) === 'athlete'

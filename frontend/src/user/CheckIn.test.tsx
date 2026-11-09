@@ -58,6 +58,32 @@ function hold(milliseconds = 1000) {
 const geolocation = () => navigator.geolocation.getCurrentPosition as ReturnType<typeof vi.fn>
 
 describe('U-01 Check In', () => {
+  it.each([false, true])('only reloads the status when retrying an offline load (active visit: %s)', async (active) => {
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    let connected = false
+    fetchMock.mockImplementation((path: string, init?: RequestInit) =>
+      path.endsWith('/check-in') && !connected ? Promise.reject(new TypeError('network')) : original(path, init))
+    await open()
+    const retry = await screen.findByRole('button', { name: 'Reintentar conexión' })
+    status = active ? { ...idle, session } : idle
+    connected = true
+    fireEvent.click(retry)
+
+    if (active) await screen.findByText('Tu entrada está registrada', { selector: '.check-in-lead' })
+    else await screen.findByRole('button', { name: 'Mantén presionado para entrar' })
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/check-in'), expect.anything())
+    expect(fetch).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }))
+    expect(geolocation()).not.toHaveBeenCalled()
+
+    if (!active) {
+      hold()
+      await screen.findByText('¡Tu entrada quedó registrada!', { selector: '.check-in-lead' })
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/check-in'), expect.objectContaining({ method: 'POST' }))
+      expect(geolocation()).toHaveBeenCalledTimes(1)
+    }
+  })
+
   it('mounts offline, shows Necesitas conexión and loads when reconnected', async () => {
     Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
     await open()

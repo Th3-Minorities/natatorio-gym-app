@@ -22,9 +22,9 @@ export function AccountHeading({ title, back, backLabel }: { title: string; back
   </div>
 }
 
-export function UserNotice({ title, children, success = false, informational = false }: { title: string; children: string; success?: boolean; informational?: boolean }) {
+export function UserNotice({ title, children, success = false, informational = false, danger = false }: { title: string; children: string; success?: boolean; informational?: boolean; danger?: boolean }) {
   const Icon = success ? Check : TriangleAlert
-  return <div className="user-notice">{success || informational ? <div className="notice" role="status">
+  return <div className={`user-notice${danger ? ' user-notice--danger' : ''}`}>{success || informational ? <div className="notice" role="status">
     <p className="notice__title">{title}</p><p className="notice__text">{children}</p>
   </div> : <Notice title={title}>{children}</Notice>}<Icon aria-hidden="true" size={18} absoluteStrokeWidth /></div>
 }

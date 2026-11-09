@@ -25,7 +25,7 @@ type Waiver = { version: string; text: string }
 type PhotoError = 'failed' | 'format' | 'size'
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 
-export function Registration(props: { path: string; navigate: (path: string) => void }) {
+export function Registration(props: { path: string; navigate: (path: string, options?: { replace?: boolean }) => void }) {
   const parentLocale = useLocale()
   const parentTitle = useMessages().dashboard.brandName
   const [locale, setLocale] = useState<Locale>(parentLocale)
@@ -37,7 +37,7 @@ export function Registration(props: { path: string; navigate: (path: string) => 
 }
 
 function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
-  path: string; navigate: (path: string) => void; setLocale: (locale: Locale) => void; accountLocale: Locale
+  path: string; navigate: (path: string, options?: { replace?: boolean }) => void; setLocale: (locale: Locale) => void; accountLocale: Locale
 }) {
   const texts = useMessages()
   const t = texts.registration
@@ -117,7 +117,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   }
   // oxlint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (path !== '/register/athlete') void loadPrivacy() }, [])
-  // Recheck on browser Back; keep terminal link failures shown by the final step.
+  // Check the link on first load; terminal failures set their own state before navigating back here.
   // oxlint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (path === '/register/athlete' && linkState === 'checking') void checkLink() }, [path])
   useEffect(() => {
@@ -192,7 +192,9 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     try {
       await apiRequest('/user/registration/privacy', { method: 'POST', body: { version: privacy.version } })
       setAccepted(true)
-      navigate(linkToken && lookup?.state === 'ready' ? '/register/password' : '/register/identify')
+      const toPassword = Boolean(linkToken) && lookup?.state === 'ready'
+      // The link check already replaced the link page with this path; pushing it again would need two Backs.
+      navigate(toPassword ? '/register/password' : '/register/identify', { replace: toPassword && path === '/register/password' })
     } catch (error) {
       if (error instanceof ApiError && error.code === 'offline') setNetworkFailed(true)
       else setFailed(true)
@@ -223,7 +225,6 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       setUnavailable(null)
       if (failure.code === 'offline') {
         setNetworkFailed(true)
-        setLookupMessage(u.offlineForm)
       } else if (failure.status === 429) {
         if (failure.code === 'athlete_link_limit') { setLinkSent(null); setLinkLimit(true) }
         if (failure.retryAfter) startWaiting(failure.retryAfter)
@@ -265,7 +266,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       setPassword('')
       setConfirmation('')
       setPasswordErrors(false)
-      navigate('/register/password')
+      navigate('/register/password', { replace: true })
     } catch (error) {
       await loadPrivacy()
       const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
@@ -411,7 +412,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       <a href={privacy.store_url} target="_blank" rel="noopener noreferrer">{t.buy}<ExternalLink aria-hidden="true" /></a></div>
     : null
   const lookupStatus = <div className="registration-status" role="status">
-    {waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage}
+    {waiting ? u.waitText(dates.time(new Date(waitUntil)))
+      : lookupMessage || (offline && !passwordPage && !studentResult && !unavailable ? t.numberOfflineIntro : '')}
   </div>
 
   const a = t.athlete
@@ -616,7 +618,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
           <a href={`tel:${unavailable.phone}`} className="button button--link user-action">{t.unavailable.help(unavailable.phone)}</a>
         </form>
       </> : <>
-        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1><p>{t.identificationIntro}</p></div>
+        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1>
+          {offline ? <><p>{t.numberOfflineIntro}</p><p>{t.numberOfflineKept}</p></> : <p>{t.identificationIntro}</p>}</div>
         <form className="registration-identification-form" onSubmit={(event) => void findMembership(event)}>
           <div className="registration-number">
             <TextField label={t.number} placeholder={t.numberPlaceholder} value={number} readOnly={busy}

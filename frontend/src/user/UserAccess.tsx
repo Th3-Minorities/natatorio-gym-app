@@ -138,7 +138,7 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
 
   return <UserPage large offline={offline} back={mode === 'sign-in' ? '/welcome' : '/sign-in'}>
     <h1 tabIndex={-1}>{title}</h1>
-    {notice && <UserNotice title={notice[0]}>{notice[1]}</UserNotice>}
+    {notice && <UserNotice title={notice[0]} danger={problem === 'server'}>{notice[1]}</UserNotice>}
     {validating ? <UserLoading detail={t.validating} /> : <>
     <p className="user-description">{description}</p>
     <form ref={form} onSubmit={submit} noValidate aria-busy={busy} data-mode={mode}>

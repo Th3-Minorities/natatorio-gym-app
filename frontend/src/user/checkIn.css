@@ -101,7 +101,7 @@
 .check-in-id .check-in-badge { background: var(--surface); color: var(--check-in-member); }
 .check-in--athlete .check-in-id .check-in-badge { background: var(--surface); color: var(--hero); }
 .check-in .check-in-id .check-in-id__small { width: 100%; font-size: var(--spacing-12); line-height: var(--user-caption-line); }
-.check-in .check-in-id .check-in-id__category { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); width: 5.125rem; padding: var(--spacing-4) 0; border-radius: 999px; background: var(--surface); color: var(--check-in-member); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.check-in .check-in-id .check-in-id__category { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); width: auto; padding: var(--spacing-4) var(--spacing-8); border-radius: 999px; background: var(--surface); color: var(--check-in-member); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
 .check-in--athlete .check-in-id .check-in-id__category { color: var(--hero); }
 .check-in-id__category svg { width: 14px; height: 14px; }
 .check-in-id hr { background: var(--check-in-wave); opacity: 0.6; }
