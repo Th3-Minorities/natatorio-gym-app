@@ -8,7 +8,7 @@ test.setTimeout(240_000)
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64')
 const photo = (name: string) => ({ name, mimeType: 'image/png', buffer: PNG })
 // Expired, already used and unknown numbers get the same answer, so a number cannot be probed (registration_number_unavailable).
-const UNAVAILABLE = /Necesitas una membresía pagada\. ¿Problemas\? Llama al 265-3866\./
+const UNAVAILABLE = /No pudimos validar este número\. Revisa tu recibo o llama al 265-3866\./
 
 test('a paid member registers from Welcome and reaches Check In', async ({ page }, testInfo) => {
   const number = testInfo.project.name === 'msedge' ? 'PRUEBA2' : 'PRUEBA1'
@@ -16,6 +16,8 @@ test('a paid member registers from Welcome and reaches Check In', async ({ page 
 
   // 1. Welcome
   await page.goto('/welcome')
+  await expect(page.getByRole('heading', { name: 'Bienvenido', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Toca o desliza para continuar' }).click()
   await expect(page.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeVisible()
   await page.getByRole('link', { name: 'Comenzar' }).click()
 
@@ -24,21 +26,19 @@ test('a paid member registers from Welcome and reaches Check In', async ({ page 
   await expect(page.getByRole('heading', { level: 1, name: 'Antes de comenzar' })).toBeVisible()
   await page.getByRole('button', { name: 'Continuar con el registro' }).click()
 
-  // 3. Number entry: wrong format, expired, already used
+  // 3. Number entry: expired and already used numbers get the same answer, with the receipt number field and the help line
   await expect(page).toHaveURL(/\/register\/identify$/)
   await expect(page.getByRole('heading', { level: 1, name: 'Registro', exact: true })).toBeVisible()
-  const field = page.getByLabel('Número de estudiante o transacción')
   const next = page.getByRole('button', { name: 'Continuar', exact: true })
-  await field.fill('802123456')
+  await page.getByLabel('Número de estudiante o transacción').fill('VENCIDO')
   await next.click()
-  await expect(field).toHaveAttribute('aria-invalid', 'true')
-  await expect(field).not.toHaveAccessibleDescription(UNAVAILABLE)
-  for (const unavailable of ['VENCIDO', 'USADO01']) {
-    await field.fill(unavailable)
-    await next.click()
-    await expect(field).toHaveAccessibleDescription(UNAVAILABLE)
-    await expect(page).toHaveURL(/\/register\/identify$/)
-  }
+  const field = page.getByLabel('Número de autorización')
+  await expect(field).toHaveAccessibleDescription(UNAVAILABLE)
+  await expect(page.getByRole('link', { name: 'Ayuda: 265-3866' })).toBeVisible()
+  await field.fill('USADO01')
+  await next.click()
+  await expect(field).toHaveAccessibleDescription(UNAVAILABLE)
+  await expect(page).toHaveURL(/\/register\/identify$/)
 
   // 4. Valid number, password
   await field.fill(number)

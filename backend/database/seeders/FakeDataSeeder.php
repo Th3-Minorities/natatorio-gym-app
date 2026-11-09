@@ -44,6 +44,9 @@ class FakeDataSeeder extends Seeder
     /** The one active roster record nobody has claimed yet; registration finds this athlete. */
     public const FREE_STUDENT_NUMBER = '802000001';
 
+    /** The student number of a claimed roster record, for the athlete registration flow test (#152). */
+    public const CLAIMED_STUDENT_NUMBER = '802000002';
+
     public function run(): void
     {
         if (app()->environment('production')) {
@@ -147,7 +150,7 @@ class FakeDataSeeder extends Seeder
     /** @return list<Authorization> four claimed roster records; one free, one removed */
     private function athletes(AcademicTerm $term): array
     {
-        $records = RosterRecord::factory()->count(4)->create();
+        $records = RosterRecord::factory()->count(4)->sequence(['student_number' => self::CLAIMED_STUDENT_NUMBER], [], [], [])->create();
         // On the roster and unclaimed, with a fixed number so registration can be tried by hand.
         RosterRecord::factory()->create(['student_number' => self::FREE_STUDENT_NUMBER]);
         RosterRecord::factory()->removed()->create();
