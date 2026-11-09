@@ -7,6 +7,7 @@ use App\Models\FacilitySession;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -51,6 +52,32 @@ class FacilitySessions
     }
 
     /**
+     * Who is inside now, in Check In order, for S-01 (REQ-F-44): the same rule as occupancy(), so the list and the
+     * count always agree. Each row carries the name from the waiver and whether the authorization has a photo.
+     * search matches part of the name in any case; % and _ match only themselves.
+     *
+     * @return Collection<int, FacilitySession>
+     */
+    public function inside(Carbon $now, string $search = ''): Collection
+    {
+        return $this->whereActive(FacilitySession::query(), $now)
+            ->where('facility_sessions.started_at', '<=', $now->format('Y-m-d H:i:s.uP'))
+            ->leftJoin('waiver_acceptances', 'waiver_acceptances.user_id', '=', 'facility_sessions.user_id')
+            ->leftJoin('authorizations', 'authorizations.id', '=', 'facility_sessions.authorization_id')
+            ->when($search !== '', fn (Builder $query) => $query->where(
+                'waiver_acceptances.full_name', 'ilike', '%'.addcslashes($search, '%_\\').'%'
+            ))
+            ->orderBy('facility_sessions.started_at')->orderBy('facility_sessions.id')
+            ->get(['facility_sessions.*', 'waiver_acceptances.full_name', DB::raw('authorizations.photo_path IS NOT NULL AS has_photo')]);
+    }
+
+    /** One visit that is inside now, by the same rule, or null. */
+    public function insideById(int $id, Carbon $now): ?FacilitySession
+    {
+        return $this->whereActive(FacilitySession::query()->whereKey($id), $now)->first();
+    }
+
+    /**
      * @param  Builder<FacilitySession>  $query
      * @return Builder<FacilitySession>
      */
@@ -58,8 +85,8 @@ class FacilitySessions
     {
         $at = $now->format('Y-m-d H:i:s.uP');
 
-        return $query->where('status', 'active')
-            ->where('ends_at', '>', $at)
+        return $query->where('facility_sessions.status', 'active')
+            ->where('facility_sessions.ends_at', '>', $at)
             ->whereRaw('('.self::TERM_END.' IS NULL OR '.self::TERM_END.' > ?)', [$at])
             ->whereRaw('('.self::CLOSURE_START.' IS NULL OR '.self::CLOSURE_START.' > ?)', [$at]);
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ActiveSessionsController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\HealthController;
@@ -53,6 +54,9 @@ Route::prefix('staff')->group(function () {
         // S-01 shows the same occupancy as C-01 on the User side (REQ-F-41, #26).
         Route::get('/occupancy', OccupancyController::class);
         Route::post('/sessions/{session}/check-out', CheckOutController::class)->whereNumber('session');
+        // S-01's list of who is inside and each one's photo (#26, REQ-F-44, REQ-F-45).
+        Route::get('/sessions', [ActiveSessionsController::class, 'index']);
+        Route::get('/sessions/{session}/photo', [ActiveSessionsController::class, 'photo'])->where('session', '[0-9]{1,18}');
     });
 
     // Staff accounts screen (A-15, REQ-F-88).
