@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -256,10 +257,9 @@ class PaidRegistrationTest extends TestCase
         $this->rosterRecord();
         $this->acknowledge();
         $this->mock(MembershipStore::class)->shouldNotReceive('find');
-        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
-            ->assertOk()->assertExactJson(['state' => 'athlete']);
+        Notification::fake();
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => ' 802123456 '])
-            ->assertOk()->assertExactJson(['state' => 'athlete']);
+            ->assertOk()->assertJsonPath('state', 'athlete');
         $this->assertDatabaseCount('authorizations', 0);
         $this->assertDatabaseCount('users', 0);
     }
@@ -291,11 +291,12 @@ class PaidRegistrationTest extends TestCase
     public function test_student_number_failures_count_against_the_ip_limit_and_a_hit_returns_its_attempt(): void
     {
         config(['registration.ip_failures' => 2]);
-        $this->rosterRecord();
+        Notification::fake();
         Authorization::factory()->athlete($this->rosterRecord(['student_number' => '802000002']))->create();
         $this->acknowledge();
-        for ($i = 0; $i < 3; $i++) {
-            $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])->assertOk();
+        foreach (['802123456', '802123457', '802123458'] as $number) {
+            $this->rosterRecord(['student_number' => $number]);
+            $this->postJson('/api/user/registration/lookup', ['authorization_number' => $number])->assertOk();
         }
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802999999'])
             ->assertUnprocessable()->assertJsonPath('error.code', 'student_not_on_roster');

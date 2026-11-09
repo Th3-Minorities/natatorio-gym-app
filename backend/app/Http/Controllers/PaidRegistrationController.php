@@ -8,6 +8,7 @@ use App\Models\Authorization;
 use App\Models\ImportedMembership;
 use App\Models\User;
 use App\Models\WaiverAcceptance;
+use App\Services\AthleteLinks;
 use App\Services\PrivacyNotice;
 use App\Services\RegistrationLookup;
 use App\Services\RegistrationPhoto;
@@ -44,21 +45,28 @@ class PaidRegistrationController extends Controller
         return response()->noContent();
     }
 
-    private function requirePrivacy(Request $request): void
+    protected function requirePrivacy(Request $request): void
     {
         if ($request->session()->get('registration_privacy_accepted') !== config('registration.privacy_version')) {
             throw new ApiException('registration_privacy_required', 403);
         }
     }
 
-    public function lookup(Request $request, RegistrationLookup $lookup): JsonResponse
+    public function lookup(Request $request, RegistrationLookup $lookup, AthleteLinks $links): JsonResponse
     {
         $this->requirePrivacy($request);
-        $input = $request->validate(['authorization_number' => ['required', 'string', 'max:20']]);
+        $input = $request->validate([
+            'authorization_number' => ['required', 'string', 'max:20'],
+            'locale' => ['sometimes', 'string', Rule::in(['es', 'en'])],
+        ]);
         if (preg_match('/^\d{9}$/D', $input['authorization_number'])) {
-            $lookup->findStudent($input['authorization_number'], $request);
+            $record = $lookup->findStudent($input['authorization_number'], $request);
+            // The roster email already has an account: sign in instead; nothing is sent or claimed (E-70).
+            $result = $lookup->emailHasAccount($record->institutional_email)
+                ? ['state' => 'renewal', 'masked_email' => $lookup->mask($record->institutional_email)]
+                : ['state' => 'athlete', ...$links->send($record, $input['locale'] ?? 'es')];
 
-            return response()->json(['state' => 'athlete'])->header('Cache-Control', 'no-store');
+            return response()->json($result)->header('Cache-Control', 'no-store');
         }
 
         return response()->json($lookup->result($lookup->find($input['authorization_number'], $request)))->header('Cache-Control', 'no-store');
@@ -79,25 +87,7 @@ class PaidRegistrationController extends Controller
     public function complete(Request $request, RegistrationLookup $lookup, RegistrationPhoto $photos): JsonResponse
     {
         $this->requirePrivacy($request);
-        if (! config('registration.waiver.version')) {
-            throw new ApiException('registration_waiver_unavailable', 503);
-        }
-        $input = $request->validate([
-            'authorization_number' => ['required', 'string', 'max:20', 'not_regex:/^\d{9}$/'],
-            'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(10)->uncompromised()],
-            'password_confirmation' => ['required', 'string', 'max:255'],
-            'photo' => [
-                'bail', 'required', 'file', 'max:10240', 'mimetypes:image/jpeg,image/png,image/heic,image/heif',
-            ],
-            'waiver_accepted' => ['required', 'accepted'],
-            'waiver_version' => ['required', 'string', Rule::in([config('registration.waiver.version')])],
-            'emergency_contact_name' => ['required', 'string', 'max:255'],
-            'emergency_contact_phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9() .-]{7,30}$/', 'regex:/[0-9].*[0-9].*[0-9].*[0-9].*[0-9].*[0-9].*[0-9]/'],
-            'locale' => ['required', Rule::in(['es', 'en'])],
-        ]);
-        if (! config('registration.waiver.'.$input['locale'])) {
-            throw new ApiException('registration_waiver_unavailable', 503);
-        }
+        $input = $this->validateCompletion($request, ['authorization_number' => ['required', 'string', 'max:20', 'not_regex:/^\d{9}$/']]);
         $membership = $lookup->find($input['authorization_number'], $request);
         if ($lookup->hasAccount($membership)) {
             return response()->json($lookup->result($membership));
@@ -143,7 +133,38 @@ class PaidRegistrationController extends Controller
             throw $lookup->failed($request);
         }
 
-        // Start the same single-device User session as sign-in, after the account transaction committed.
+        return $this->signIn($request, $user);
+    }
+
+    /** The fields every registration path asks for in the final step (diagram 3), plus the number rules of that path. */
+    protected function validateCompletion(Request $request, array $numberRules): array
+    {
+        if (! config('registration.waiver.version')) {
+            throw new ApiException('registration_waiver_unavailable', 503);
+        }
+        $input = $request->validate([
+            ...$numberRules,
+            'password' => ['required', 'string', 'max:255', 'confirmed', Password::min(10)->uncompromised()],
+            'password_confirmation' => ['required', 'string', 'max:255'],
+            'photo' => [
+                'bail', 'required', 'file', 'max:10240', 'mimetypes:image/jpeg,image/png,image/heic,image/heif',
+            ],
+            'waiver_accepted' => ['required', 'accepted'],
+            'waiver_version' => ['required', 'string', Rule::in([config('registration.waiver.version')])],
+            'emergency_contact_name' => ['required', 'string', 'max:255'],
+            'emergency_contact_phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9() .-]{7,30}$/', 'regex:/[0-9].*[0-9].*[0-9].*[0-9].*[0-9].*[0-9].*[0-9]/'],
+            'locale' => ['required', Rule::in(['es', 'en'])],
+        ]);
+        if (! config('registration.waiver.'.$input['locale'])) {
+            throw new ApiException('registration_waiver_unavailable', 503);
+        }
+
+        return $input;
+    }
+
+    /** Start the same single-device User session as sign-in, after the account transaction committed. */
+    protected function signIn(Request $request, User $user): JsonResponse
+    {
         $user->forceFill(['remember_token' => Str::random(60)])->save();
         Auth::guard('web')->login($user, remember: true);
         $request->session()->regenerate();
@@ -154,7 +175,7 @@ class PaidRegistrationController extends Controller
         return response()->json($user->profile(), 201);
     }
 
-    private function discardPhoto(string $path): void
+    protected function discardPhoto(string $path): void
     {
         DB::table('pending_photo_deletions')->insert(['path' => $path]);
         app(UserPhotoCleanup::class)->deletePending([$path]);

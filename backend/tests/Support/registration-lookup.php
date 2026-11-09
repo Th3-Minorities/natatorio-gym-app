@@ -3,6 +3,7 @@
 use App\Exceptions\ApiErrorRenderer;
 use App\Http\Controllers\PaidRegistrationController;
 use App\Models\ImportedMembership;
+use App\Services\AthleteLinks;
 use App\Services\MembershipStore;
 use App\Services\RegistrationLookup;
 use Illuminate\Cache\RateLimiter;
@@ -55,7 +56,7 @@ if (trim(fgets(STDIN)) !== 'start') {
     throw new RuntimeException('Missing start barrier.');
 }
 try {
-    $response = $app->make(PaidRegistrationController::class)->lookup($request, $app->make(RegistrationLookup::class));
+    $response = $app->make(PaidRegistrationController::class)->lookup($request, $app->make(RegistrationLookup::class), $app->make(AthleteLinks::class));
 } catch (Throwable $error) {
     $response = ApiErrorRenderer::render($error);
     if (! in_array($response?->getStatusCode(), [422, 429], true)) {
