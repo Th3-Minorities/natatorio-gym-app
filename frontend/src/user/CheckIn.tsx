@@ -88,14 +88,10 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const [now, setNow] = useState(0)
   const [updatedAt, setUpdatedAt] = useState(() => Date.now())
   const clockOffset = useRef(0)
-  const lastTick = useRef<number | null>(null)
   const requestId = useRef(0)
   const loadedRef = useRef(false)
   const offline = !online || networkFailed
   const updateNow = useCallback((time: number) => {
-    const tick = performance.now()
-    if (lastTick.current !== null && tick - lastTick.current < 1000) return
-    lastTick.current = tick
     setNow((prev) => Math.max(prev, time))
   }, [])
   const syncClock = useCallback((time: number) => {
@@ -144,11 +140,18 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   }, [])
 
   const activeSessionId = status?.session?.id
+  const activeStartedAt = status?.session?.started_at
   useEffect(() => {
     if (activeSessionId === undefined || offline) return
-    const timer = setInterval(() => updateNow(Date.now() + clockOffset.current), 1000)
-    return () => clearInterval(timer)
-  }, [activeSessionId, offline, updateNow])
+    const started = new Date(activeStartedAt ?? '').getTime()
+    let timer: ReturnType<typeof setTimeout>
+    const schedule = () => {
+      const sinceBoundary = Number.isNaN(started) ? 0 : (((Date.now() + clockOffset.current - started) % 1000) + 1000) % 1000
+      timer = setTimeout(() => { updateNow(Date.now() + clockOffset.current); schedule() }, 1000 - sinceBoundary + 30)
+    }
+    schedule()
+    return () => clearTimeout(timer)
+  }, [activeSessionId, activeStartedAt, offline, updateNow])
 
   async function register() {
     if (!navigator.onLine) { setProblem('offline'); return }

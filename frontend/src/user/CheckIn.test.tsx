@@ -58,6 +58,62 @@ function hold(milliseconds = 1000) {
 const geolocation = () => navigator.geolocation.getCurrentPosition as ReturnType<typeof vi.fn>
 
 describe('U-01 Check In', () => {
+  it.each([999, 1001])('advances the duration one second at a time with %i ms timer jitter (999 reproduces GI-07, 1001 is a regression guard)', async (interval) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(Date.parse(session.started_at) + 500))
+    status = { ...idle, session }
+
+    window.history.replaceState({}, '', '/check-in')
+    await act(async () => { render(<UserApp />) })
+    expect(screen.getByText('00:00:00')).toBeInTheDocument()
+
+    for (let second = 1; second <= 6; second += 1) {
+      await act(async () => { vi.advanceTimersByTime(interval) })
+      expect(screen.getByText(`00:00:0${second}`)).toBeInTheDocument()
+    }
+  })
+
+  it('shows every second from 00:00:01 to 00:00:06 when the clock sits 10 ms before a boundary and ticks alternate 1005 and 995 ms', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(Date.parse(session.started_at) + 990))
+    status = { ...idle, session }
+
+    window.history.replaceState({}, '', '/check-in')
+    await act(async () => { render(<UserApp />) })
+    expect(screen.getByText('00:00:00')).toBeInTheDocument()
+
+    for (let second = 1; second <= 6; second += 1) {
+      await act(async () => { vi.advanceTimersByTime(second % 2 === 1 ? 1005 : 995) })
+      expect(screen.getByText(`00:00:0${second}`)).toBeInTheDocument()
+    }
+  })
+
+  it.each([1000, 2000])('keeps the duration monotonic when a server sync is %i ms behind', async (lag) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(Date.parse(session.started_at) + 4000))
+    status = { ...idle, session }
+    window.history.replaceState({}, '', '/check-in')
+    await act(async () => { render(<UserApp />) })
+    expect(screen.getByText('00:00:04')).toBeInTheDocument()
+    await act(async () => { vi.advanceTimersByTime(1030) })
+    expect(screen.getByText('00:00:05')).toBeInTheDocument()
+
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    fetchMock.mockImplementation(async (path: string, init?: RequestInit) => {
+      const response = await original(path, init)
+      if (path.endsWith('/check-in')) response.headers.set('Date', new Date(Date.now() - lag).toUTCString())
+      return response
+    })
+    await act(async () => { vi.advanceTimersByTime(100) })
+    const requests = fetchMock.mock.calls.length
+    await act(async () => { fireEvent(document, new Event('visibilitychange')) })
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(requests)
+    expect(screen.getByText('00:00:05')).toBeInTheDocument()
+    await act(async () => { vi.advanceTimersByTime(900) })
+    expect(screen.getByText(lag === 1000 ? '00:00:06' : '00:00:05')).toBeInTheDocument()
+  })
+
   it.each([false, true])('only reloads the status when retrying an offline load (active visit: %s)', async (active) => {
     const fetchMock = fetch as ReturnType<typeof vi.fn>
     const original = fetchMock.getMockImplementation() as Answer
