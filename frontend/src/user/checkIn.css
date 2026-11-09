@@ -29,7 +29,7 @@
 .check-in-panel { display: flex; align-items: center; gap: var(--user-space-6); height: 220px; padding: var(--spacing-16); border-radius: var(--spacing-20); background: var(--user-sage-soft); }
 .check-in-panel > div:first-child { display: flex; flex-direction: column; gap: var(--spacing-12); width: 138px; flex: none; }
 .check-in .check-in-panel p { color: var(--hero); font-size: var(--user-body-size); line-height: var(--user-body-line); }
-.check-in-panel__art { display: grid; place-items: center; flex: none; margin-left: 20px; width: 142.2px; height: 189.6px; }
+.check-in-panel__art { display: grid; place-items: center; flex: none; margin-inline: auto; width: 142.2px; height: 189.6px; }
 .check-in-panel__art img { width: 142.2px; height: 146.062px; }
 
 .check-in-notice { display: flex; align-items: center; gap: 10px; height: 62px; padding: var(--spacing-12); border: var(--user-border-width) solid var(--check-in-gold); border-radius: var(--spacing-12); background: var(--check-in-gold-soft); }
