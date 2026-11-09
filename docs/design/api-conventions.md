@@ -284,3 +284,57 @@ These routes are public, so each one has its own limit per IP, per minute: 10 fo
 ### Scheduled close
 
 The task `close-facility-sessions` runs every minute and is safe to repeat. An expired session keeps `ended_at` empty in the database, and the API answers with its `ends_at`. A session closed at the end of the term gets the midnight after the term's last day as `ended_at`.
+
+## 9. Academic terms and athlete roster
+
+Set up in GitHub issue #21. Requirements: REQ-F-21, REQ-F-49, REQ-F-51, REQ-F-100, REQ-NF-39.
+
+### Academic terms
+
+Only an Administrator calls these routes (`auth:staff`, `staff.active`, `role:admin`). A term is `{"id", "name", "starts_on", "ends_on", "status"}`, with dates as `YYYY-MM-DD` and `status` worked out against today in Puerto Rico: `active`, `upcoming` or `past`. Terms are never deleted (E-107), so there is no delete route.
+
+| Route | Body | Answer |
+|---|---|---|
+| `GET /api/staff/terms` | | `200` with `terms`, the latest start date first |
+| `POST /api/staff/terms` | `name`, `starts_on`, `ends_on` | `201` with the new `term` |
+| `PATCH /api/staff/terms/{id}` | `name`, `starts_on`, `ends_on` | `200` with the `term` |
+
+| Status | Code | When |
+|---|---|---|
+| 422 | `validation_failed` | `name` is missing or over 50 characters, a date is missing or not `YYYY-MM-DD`, or `ends_on` is before `starts_on` (`ends_on: ["after_or_equal"]`) |
+| 422 | `term_overlap` | The dates share a day with another term. `details.term` names it: `{"name", "starts_on", "ends_on"}`. A database constraint gives the same answer when two saves race |
+
+The audit log gets `term.create` and `term.update`. An update keeps only the fields that changed, and a save with no change writes no entry.
+
+### Athlete roster
+
+One list, entered by hand (E-116). An athlete is `{"id", "name", "sport", "student_number", "institutional_email", "status"}`, with `status` `active` or `withdrawn`. Staff read the list; only Administrators change it.
+
+| Route | Who | Body | Answer |
+|---|---|---|---|
+| `GET /api/staff/roster` | Staff and Administrators | `status` (`active`, `withdrawn` or `all`, `active` by default), `search` | `200` with `athletes` by name, and `active_count`. Staff always get the active athletes, whatever `status` says. `search` matches part of the name, in any case, or part of the student number |
+| `POST /api/staff/roster` | Administrators | `name`, `sport`, `student_number`, `institutional_email` | `201` with the new `athlete` |
+| `PATCH /api/staff/roster/{id}` | Administrators | the same four fields | `200` with the `athlete` |
+| `POST /api/staff/roster/{id}/withdraw` | Administrators | | `200` with the `athlete`. It revokes the athlete's active authorizations in terms that have not ended, with the reason `removed from roster`. An open visit stays open until it closes |
+| `POST /api/staff/roster/{id}/reinstate` | Administrators | `reason`, 10 to 1000 characters | `200` with the `athlete`. Only the authorizations the withdrawal revoked become active again |
+| `GET /api/staff/roster/download` | Administrators | `format`: `docx` or `pdf` | `200` with the file. See below |
+
+The four fields: `name` up to 255 characters, `sport` up to 50, `student_number` exactly 9 digits (E-160) and `institutional_email` a valid email up to 255 characters, saved in lower case. Any domain is accepted (the team's answer on #21).
+
+| Status | Code | When |
+|---|---|---|
+| 422 | `validation_failed` | A field breaks the rules above, for example `student_number: ["digits"]`, or `reason: ["min"]` |
+| 422 | `roster_student_number_taken` | Another athlete has the number, withdrawn ones included. `details.athlete` is `{"id", "name"}` |
+| 409 | `roster_status_changed` | Withdrawing an athlete already withdrawn, or reinstating one who is active: someone else changed it. The PWA reloads the list |
+| 409 | `roster_reinstate_active_authorization` | The person already has another active authorization in the same term. `details.term` is `{"name"}` |
+
+The audit log gets `roster.add`, `roster.update`, `roster.withdraw` and `roster.reinstate`. The reinstate entry keeps the reason.
+
+### Roster download
+
+`GET /api/staff/roster/download?format=docx` or `?format=pdf` builds the whole roster on the server (E-140): every athlete, active and withdrawn, by name, with name, sport, student number, institutional email and status, in the Administrator's language. Staff get `403 forbidden`, so the file never reaches them.
+
+- The answer is the file itself, with `Content-Disposition: attachment` and a name like `roster-atletas-2026-11-08.docx` (`athlete-roster-...` in English), and `Cache-Control: no-store, private`, because it holds personal data.
+- PhpWord writes the Word file and Dompdf the PDF. Every value is escaped, and Dompdf loads nothing from outside the page and runs no code.
+- The PWA asks with `Accept: application/json`, so a refusal still comes back as an error code.
+- A download changes nothing, so it writes no audit entry.
