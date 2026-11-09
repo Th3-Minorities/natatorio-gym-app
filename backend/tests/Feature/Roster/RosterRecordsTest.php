@@ -3,6 +3,7 @@
 namespace Tests\Feature\Roster;
 
 use App\Models\AuditLogEntry;
+use App\Models\EmailLink;
 use App\Models\RosterRecord;
 use App\Models\StaffAccount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -180,6 +181,30 @@ class RosterRecordsTest extends TestCase
         $entry = AuditLogEntry::query()->where('action', 'roster.update')->sole();
         $this->assertSame(['sport' => 'Voleibol'], $entry->before_values);
         $this->assertSame(['sport' => 'Natación'], $entry->after_values);
+    }
+
+    /**
+     * A link went to the old email, maybe a wrong one. Once the email changes, it must not create the account
+     * (post-merge review of #157, #137); the athlete asks for a new link, which goes to the new email.
+     */
+    public function test_a_new_email_cancels_the_open_links_sent_to_the_old_one(): void
+    {
+        $athlete = $this->athlete(self::ATHLETE);
+        $registration = EmailLink::factory()->athleteRegistration()->create(['roster_record_id' => $athlete->id]);
+        $soyAtleta = EmailLink::factory()->athleteLink()->create(['roster_record_id' => $athlete->id]);
+        $used = EmailLink::factory()->athleteRegistration()->create(['roster_record_id' => $athlete->id, 'used_at' => now()]);
+        $otherAthlete = EmailLink::factory()->athleteRegistration()->create();
+
+        $this->asAdmin('PATCH', "/api/staff/roster/{$athlete->id}", [...self::ATHLETE, 'sport' => 'Natación'])->assertOk();
+        $this->assertSame(4, EmailLink::query()->count(), 'Another field leaves the links alone.');
+
+        $this->asAdmin('PATCH', "/api/staff/roster/{$athlete->id}", [...self::ATHLETE, 'institutional_email' => 'alina.cruz@upr.edu'])
+            ->assertOk();
+
+        $this->assertModelMissing($registration);
+        $this->assertModelMissing($soyAtleta);
+        $this->assertModelExists($used);
+        $this->assertModelExists($otherAthlete);
     }
 
     public function test_saving_the_same_values_writes_no_log_entry(): void

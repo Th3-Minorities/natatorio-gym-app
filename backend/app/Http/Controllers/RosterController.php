@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exceptions\ApiException;
 use App\Models\Authorization;
+use App\Models\EmailLink;
 use App\Models\RosterRecord;
 use App\Services\AuditLog;
 use Illuminate\Database\Eloquent\Builder;
@@ -67,6 +68,12 @@ class RosterController extends Controller
             $before = $this->values($athlete);
             $athlete->fill($input)->save();
             $changed = array_flip(array_keys(array_diff_assoc($this->values($athlete), $before)));
+            // Links sent to the old email, maybe a wrong one, must not create the account; a new one goes to
+            // the new email (post-merge review of #157). Used links are history and stay.
+            if (isset($changed['institutional_email'])) {
+                EmailLink::query()->where('roster_record_id', $athlete->id)->whereNull('used_at')
+                    ->whereIn('purpose', ['athlete_registration', 'athlete_link'])->delete();
+            }
             if ($changed !== []) {
                 $log->record('roster.update', $athlete, array_intersect_key($before, $changed),
                     array_intersect_key($this->values($athlete), $changed));

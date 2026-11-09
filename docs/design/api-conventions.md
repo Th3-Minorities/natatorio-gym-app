@@ -314,7 +314,7 @@ One list, entered by hand (E-116). An athlete is `{"id", "name", "sport", "stude
 |---|---|---|---|
 | `GET /api/staff/roster` | Staff and Administrators | `status` (`active`, `withdrawn` or `all`, `active` by default), `search` | `200` with `athletes` by name, and `active_count`. Staff always get the active athletes, whatever `status` says. `search` matches part of the name, in any case, or part of the student number |
 | `POST /api/staff/roster` | Administrators | `name`, `sport`, `student_number`, `institutional_email` | `201` with the new `athlete` |
-| `PATCH /api/staff/roster/{id}` | Administrators | the same four fields | `200` with the `athlete` |
+| `PATCH /api/staff/roster/{id}` | Administrators | the same four fields | `200` with the `athlete`. A new `institutional_email` cancels the athlete's unused registration and "Soy atleta" links, which went to the old address |
 | `POST /api/staff/roster/{id}/withdraw` | Administrators | | `200` with the `athlete`. It revokes the athlete's active authorizations in terms that have not ended, with the reason `removed from roster`. An open visit stays open until it closes |
 | `POST /api/staff/roster/{id}/reinstate` | Administrators | `reason`, 10 to 1000 characters | `200` with the `athlete`. Only the authorizations the withdrawal revoked become active again |
 | `GET /api/staff/roster/download` | Administrators | `format`: `docx` or `pdf` | `200` with the file. See below |
