@@ -20,7 +20,7 @@ test.afterAll(() => {
   dropMarkedSlots()
 })
 
-const ABBREVIATION: Record<string, string> = { desktop: 'D', android: 'A', iphone: 'I' }
+const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
 /** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone; the inventory's E is Edge, not a project). */
 function only(devicesListed: string) {
   const device = ABBREVIATION[test.info().project.name]

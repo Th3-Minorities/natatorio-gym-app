@@ -28,7 +28,7 @@ function onlyOn(info: TestInfo, ...list: string[]) {
 
 const next = (page: Page) => page.getByRole('button', { name: 'Continuar', exact: true })
 const create = (page: Page) => page.getByRole('button', { name: 'Crear cuenta' })
-const numberField = (page: Page) => page.getByLabel(/Número de (estudiante o transacción|estudiante|autorización)/)
+const numberField = (page: Page) => page.getByLabel(/Número de (estudiante o autorización|estudiante|autorización)/)
 const previewImage = (page: Page) => page.getByRole('img', { name: 'Vista previa de la foto elegida' })
 const heading = (page: Page, name: string) => page.getByRole('heading', { level: 1, name, exact: true })
 
@@ -457,7 +457,10 @@ test.describe('athlete registration paths', () => {
     await expect(next(page)).toBeEnabled()
     await page.route('**/api/user/registration/lookup', (route) => route.abort('internetdisconnected'), { times: 1 })
     await next(page).click()
-    await expect(numberField(page)).toHaveAccessibleDescription(/Conéctate para continuar. Se conservan los datos ingresados./)
+    await expect(page.getByText('Sin conexión', { exact: true })).toBeVisible()
+    await expect(page.locator('.registration-intro')).toContainText('Conéctate para consultar tu número.')
+    await expect(page.locator('.registration-intro')).toContainText('Lo que escribiste se conserva mientras esta página siga abierta.')
+    await expect(page.locator('.field__error')).toHaveCount(0)
     await expect(numberField(page)).toHaveValue(athlete.number)
     await goOnline(page)
     await next(page).click()
@@ -491,7 +494,7 @@ test.describe('athlete registration paths', () => {
     await page.getByRole('button', { name: 'English', exact: true }).click()
     await page.getByRole('link', { name: 'Get started' }).click()
     await page.getByRole('button', { name: 'Continue registration' }).click()
-    await page.getByLabel('Student or transaction number').fill(athlete.number)
+    await page.getByLabel('Student or authorization number').fill(athlete.number)
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
     await expect(page.getByRole('heading', { level: 1, name: 'Check your email', exact: true })).toBeVisible()
     await expect(page.getByText('We sent a link to your institutional email.', { exact: true })).toBeVisible()
@@ -518,7 +521,7 @@ test.describe('athlete registration paths', () => {
     await expect(page.getByRole('button', { name: 'Verificando…' })).toBeDisabled()
     await acceptPrivacy(page)
     await expect(page.getByText(`¡Hola, ${athlete.name}!`)).toBeVisible()
-    await expect(page.getByLabel('Número de estudiante o transacción')).toHaveCount(0)
+    await expect(page.getByLabel('Número de estudiante o autorización')).toHaveCount(0)
   })
 
   test('AR-20 a link requested on the desktop opens on a phone that never saw the number step', async ({ page, browser, baseURL }, info) => {
@@ -706,7 +709,7 @@ test.describe('athlete registration paths', () => {
     expect(linkRows(athlete).used).toBe(false)
   })
 
-  test('AR-34 reloading the password step asks for the link again and Back from it does not stay on Verificando', async ({ page }, info) => {
+  test('AR-34 reloading the password step asks for the link again and Back from it leaves the link page without Verificando', async ({ page }, info) => {
     onlyOn(info, A, I)
     const { path } = freshLink()
     await openLink(page, path)
@@ -715,8 +718,9 @@ test.describe('athlete registration paths', () => {
     expect(page.url()).not.toContain('token=')
 
     await openLink(page, path)
-    for (let step = 0; step < 3 && !page.url().includes('/register/athlete'); step += 1) await page.goBack()
-    await expect(page).toHaveURL(/\/register\/athlete\?token=/)
+    await expect(page).toHaveURL(/\/register\/password$/)
+    await page.goBack()
+    await expect(page).toHaveURL(/\/register$/)
     await expect(heading(page, 'Verificando tu enlace')).toHaveCount(0, { timeout: 10_000 })
     await expect(page.getByRole('button', { name: 'Verificando…' })).toHaveCount(0)
 

@@ -65,7 +65,7 @@ jobs:
           docker compose exec -T app php artisan tinker --execute="App\Models\ScheduleSlot::factory()->create(['type' => 'special_hours', 'weekday' => null, 'start_time' => null, 'end_time' => null, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'text_es' => 'Horario abierto de las pruebas de flujo.']);"
 
       - run: npm ci
-      - run: npx playwright install --with-deps chromium msedge
+      - run: npx playwright install --with-deps chromium msedge firefox webkit
       - name: Set User browser test credentials
         run: grep -E '^E2E_USER_(EMAIL|PASSWORD)=' ../backend/.env.example >> "$GITHUB_ENV"
       # The User sign-in tests share one account and each sign-in ends the account's other sessions, so browsers run one at a time.

@@ -19,7 +19,7 @@ test.beforeAll(() => {
 })
 test.afterAll(() => dropMarkedSlots())
 
-const ABBREVIATION: Record<string, string> = { desktop: 'D', android: 'A', iphone: 'I' }
+const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
 /** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). */
 function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
@@ -515,8 +515,6 @@ test('GI-31 an empty gym shows 0 personas, Baja and an empty bar', async ({ page
     await expect(gymCount(page)).toHaveText('0')
     await expect(gymBadge(page)).toHaveText('Baja')
     await expect(gymBar(page)).toHaveAttribute('style', /width: 0%/)
-    // GI-NB5: es.ts has gym.empty "Sin actividad", but no requirement or design text asks for it and Gym.tsx never renders it.
-    test.info().annotations.push({ type: 'note', description: '"Sin actividad" (gym.empty) is not rendered at 0 people; no SRS or design text asks for it' })
   })
 })
 

@@ -31,7 +31,7 @@ test.afterAll(() => {
   dropMarkedSlots()
 })
 
-const ABBREVIATION: Record<string, string> = { desktop: 'D', android: 'A', iphone: 'I' }
+const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
 /** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone, T terminal: run once, on desktop). */
 function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
@@ -372,7 +372,7 @@ test('TR-11 the Términos, Gestionar atletas and Roster de atletas items go nowh
 
 // ============================================================================================== phone: student number lookup
 
-const LOOKUP_FIELD = (page: Page) => page.getByLabel(/Número de (estudiante o transacción|estudiante|autorización)/)
+const LOOKUP_FIELD = (page: Page) => page.getByLabel(/Número de (estudiante o autorización|estudiante|autorización)/)
 
 async function openIdentify(page: Page) {
   await page.goto('/register')

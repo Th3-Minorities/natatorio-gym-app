@@ -3,7 +3,7 @@ import { signInApi, createMember, type Member, type MemberOptions } from './setu
 
 // Helpers for the #152 app base path tests (e2e-paths/app-base.spec.ts): install help, installed app, offline.
 
-const ABBREVIATION: Record<string, string> = { desktop: 'D', android: 'A', iphone: 'I' }
+const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
 
 /** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). */
 export function only(devices: string) {

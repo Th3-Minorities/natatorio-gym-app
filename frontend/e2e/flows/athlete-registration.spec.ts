@@ -28,7 +28,7 @@ test('the student number lookup answers not on the roster, claimed, wrong length
 
   if (failures) {
     // 1. Not on the roster
-    await page.getByLabel('Número de estudiante o transacción').fill('900000000')
+    await page.getByLabel('Número de estudiante o autorización').fill('900000000')
     await Promise.all([lookup('900000000'), next.click()])
     await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu número' })).toBeVisible()
     await expect(page.getByLabel('Número de estudiante')).toHaveAccessibleDescription(
@@ -38,7 +38,7 @@ test('the student number lookup answers not on the roster, claimed, wrong length
     await page.getByRole('button', { name: 'Corregir número' }).click()
 
     // 2. Already claimed
-    await page.getByLabel('Número de estudiante o transacción').fill('802000002')
+    await page.getByLabel('Número de estudiante o autorización').fill('802000002')
     await Promise.all([lookup('802000002'), next.click()])
     await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu registro' })).toBeVisible()
     await expect(page.getByLabel('Número de estudiante')).toHaveAccessibleDescription('Este registro no está disponible para crear otra cuenta.')
@@ -48,7 +48,7 @@ test('the student number lookup answers not on the roster, claimed, wrong length
   }
 
   // 3. Wrong length: 8 digits is not a student number, so it is looked up as an Authorization Number
-  const field = page.getByLabel('Número de estudiante o transacción')
+  const field = page.getByLabel('Número de estudiante o autorización')
   if (failures) {
     await field.fill('80200000')
     await Promise.all([lookup('80200000'), next.click()])
@@ -62,7 +62,7 @@ test('the student number lookup answers not on the roster, claimed, wrong length
   // seeded link may be less than 300 s old, so there the answer is either N03-09 or the link limit (N03-10).
   const athlete = tinkerAvailable() ? createAthlete() : null
   const number = athlete?.number ?? '802000001'
-  await page.getByLabel(/Número de (estudiante o transacción|autorización)/).fill(number)
+  await page.getByLabel(/Número de (estudiante o autorización|autorización)/).fill(number)
   const [found] = await Promise.all([lookup(number), next.click()])
   if (found.status() === 429) {
     expect(athlete, 'a fresh roster record is never rate limited').toBeNull()

@@ -15,7 +15,7 @@ test.beforeAll(() => {
 })
 test.afterAll(() => dropMarkedSlots())
 
-const ABBREVIATION: Record<string, string> = { desktop: 'D', android: 'A', iphone: 'I' }
+const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
 /** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). */
 function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
@@ -867,7 +867,8 @@ test('CI-67 back online, the app recovers and a new hold opens the Gym ID after 
   const holdButton = page.locator(HOLD)
   await expect(retry.or(holdButton)).toBeVisible()
   if (await retry.isVisible()) await retry.click()
-  else await hold(page)
+  await expect(holdButton).toBeVisible()
+  await hold(page)
   await expectGymId(page)
   expect(calls.indexOf('GET')).toBeLessThan(calls.indexOf('POST'))
 })

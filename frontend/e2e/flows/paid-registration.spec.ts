@@ -32,7 +32,7 @@ test('a paid member registers from Welcome and reaches Check In', async ({ page 
   await expect(page).toHaveURL(/\/register\/identify$/)
   await expect(page.getByRole('heading', { level: 1, name: 'Registro', exact: true })).toBeVisible()
   const next = page.getByRole('button', { name: 'Continuar', exact: true })
-  await page.getByLabel('Número de estudiante o transacción').fill('VENCIDO')
+  await page.getByLabel('Número de estudiante o autorización').fill('VENCIDO')
   await next.click()
   const field = page.getByLabel('Número de autorización')
   await expect(field).toHaveAccessibleDescription(UNAVAILABLE)

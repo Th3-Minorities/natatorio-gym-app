@@ -9,7 +9,7 @@ import { checkInApi, deskCheckOut } from './setup-end-of-visit.ts'
 
 test.setTimeout(120_000)
 
-const ABBREVIATION: Record<string, string> = { desktop: 'D', android: 'A', iphone: 'I' }
+const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
 function only(devices: string) {
   test.skip(!devices.includes(ABBREVIATION[test.info().project.name]), `checked on ${devices} only`)
 }
