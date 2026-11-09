@@ -34,7 +34,8 @@ Route::prefix('user/registration')->middleware(EnsureRegistrationGuest::class)->
     // The page the athlete's email link opens (REQ-F-15).
     Route::post('/athlete/validate', [AthleteRegistrationController::class, 'validateLink'])
         ->name('user.registration.athlete.validate')->middleware('throttle:user.registration.athlete.validate');
-    Route::post('/athlete/complete', [AthleteRegistrationController::class, 'completeAthlete']);
+    Route::post('/athlete/complete', [AthleteRegistrationController::class, 'completeAthlete'])
+        ->name('user.registration.athlete.complete')->middleware('throttle:user.registration.athlete.complete');
 });
 
 // Staff and Administrator sign-in on the gym dashboard (N-11, REQ-F-52).

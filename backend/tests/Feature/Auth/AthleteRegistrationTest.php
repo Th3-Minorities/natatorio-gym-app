@@ -344,6 +344,15 @@ class AthleteRegistrationTest extends TestCase
         $this->assertDatabaseCount('roster_records', 1);
     }
 
+    public function test_the_final_step_allows_10_calls_a_minute_from_one_ip_and_the_11th_gets_429(): void
+    {
+        $this->acknowledge();
+        for ($i = 0; $i < 10; $i++) {
+            $this->postJson('/api/user/registration/athlete/complete', ['token' => 'x'])->assertUnprocessable();
+        }
+        $this->postJson('/api/user/registration/athlete/complete', ['token' => 'x'])->assertStatus(429);
+    }
+
     public function test_staff_and_signed_in_users_cannot_use_the_link_page(): void
     {
         $this->link($this->record(), 'token');
