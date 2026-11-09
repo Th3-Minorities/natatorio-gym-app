@@ -26,8 +26,15 @@ export type UserProfile = {
 type AccountType = 'paid' | 'athlete' | 'manual'
 
 type RouteContext = {
-  path: string; navigate: (path: string) => void; ended: (error: unknown) => boolean; profile: UserProfile | null; replaced: boolean;
-  deviceLocale: Locale; chooseLocale: (locale: Locale) => void; onSignedIn: (account: UserProfile) => void; account: ReactNode
+  path: string
+  navigate: (path: string) => void
+  ended: (error: unknown) => boolean
+  profile: UserProfile | null
+  replaced: boolean
+  deviceLocale: Locale
+  chooseLocale: (locale: Locale) => void
+  onSignedIn: (account: UserProfile) => void
+  account: ReactNode
 }
 type Route = { protected?: true; render: (context: RouteContext) => ReactNode }
 
@@ -211,7 +218,13 @@ export function UserApp() {
   // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
   return <I18nProvider locale={profile?.locale ?? deviceLocale}><div onClick={intercept}>
     <RouteScreen route={route} context={{
-      path, navigate, ended, profile, replaced, deviceLocale, chooseLocale,
+      path,
+      navigate,
+      ended,
+      profile,
+      replaced,
+      deviceLocale,
+      chooseLocale,
       onSignedIn: signedIn,
       account: <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline} disconnected={!online}
         retry={() => { setFailed(false); setLoading(true); void load() }} busy={busy} signOut={signOut} changeLocale={changeLocale} localeSaved={localeSaved}
