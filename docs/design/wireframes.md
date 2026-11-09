@@ -116,14 +116,16 @@ These screens use Gimnasio, Check-in and Mi cuenta tabs (E-164).
 
 ## Registration and authorization (#40)
 
-| Screen | Main flow | States and reference |
+| Screen | Main flow | States (loading, errors, no connection) |
 |---|---|---|
-| N-03 Register | [Unified number entry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-576) | [Receipt example](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4591-3505), [Lookup and validation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4591-3067), [Wait, connection and email](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4591-3619), [Number corrections](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4668-3955) |
+| N-03 Register | [Unified number entry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4510-3178) | [Receipt example](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4591-3505), [Lookup and validation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4591-3067), [Wait, connection and email](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4591-3619), [Number corrections](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4668-3955) |
 | N-05 Athlete email link | [First-time registration](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4596-3649), [Existing account](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4717-4168) | [First-time connection and retry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4628-3734), [Photo, linking and confirmation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4665-3767), [Linking errors and connection](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4667-3867) |
 | U-02 New term photo | [Upload and Staff review](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4668-9228) | [Photo errors and connection](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4669-5338), [Access changed during save](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4673-6247) |
 | U-06 Soy atleta | [Student number and email sent](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4658-4972) | [Sending, validation and connection](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4672-5581) |
 | U-07 Check In unavailable | [Expired or no active authorization](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4631-4458) | [Lookup, errors and connection](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4672-10003) |
-| U-08 Renew with an Authorization Number | [Photo and confirmation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4643-4618) | [Saving and retry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4647-8469), [Connection and camera](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4651-4850), [Photo rejection and access changes](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4673-6247) |
+| U-08 Renew with an Authorization Number | [Photo and confirmation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4643-4618) | [Saving and retry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4647-8469), [Connection and camera](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4651-4850), [Photo rejection and access changes (shared with U-02)](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4673-6247) |
+
+These screens are forms, so there is no empty state.
 
 ### First-time registration
 
@@ -132,21 +134,21 @@ The main sequence is Welcome → enter number → create password → identifica
 | Step | Current frame |
 |---|---|
 | 1. Welcome | [Expanded ES](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-95) |
-| 2. Enter number; membership purchase and help | [Unified number entry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-576) |
+| 2. Enter number; membership purchase and help | [Unified number entry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4510-3178) |
 | 3. Create password | [Password](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-411) |
 | 4. Identification photo | [Not selected](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6805), [Selected](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6885) |
 | 5. Waiver and emergency contact | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6948), [Accepted](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7085) |
 | 6. Save account, then install help | [Saving](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7162), [iPhone](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-792), [Android](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-869) |
 
-The number-entry frame contains “¿Aún no tienes membresía?”, the registration prerequisite, “Comprar membresía” and “Ayuda: 265-3866”. The purchase button opens the external store on a tap (E-184). The field routes exactly nine digits to athlete lookup and treats other entries as Authorization Numbers (E-153). A valid first-time athlete link in N-05 joins the flow at Create password.
+The number-entry frame contains “¿No tienes membresía?”, the registration prerequisite, “Comprar membresía” and “Ayuda: 265-3866”. The purchase button opens the external store on a tap (E-184). The field routes exactly nine digits to athlete lookup and treats other entries as Authorization Numbers (E-153). A valid first-time athlete link in N-05 joins the flow at Create password.
 
-Shared registration states cover [password validation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4593-3294), [photo permissions and errors](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4594-3411), [waiver, emergency contact and submission](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4595-3579), and [saving and connection loss](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7347).
+Shared registration states cover [password validation](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4593-3294), [photo permissions and errors](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4594-3411), [waiver, emergency contact and submission](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4595-3579), [photo or save error](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7223), [waiver and contact offline](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7287), and [saving and connection loss](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7347).
 
 ### Recovering access with an existing account
 
 U-07 shows “Check In no disponible” when authorization is expired or inactive. A valid Authorization Number opens U-08 for a new photo and confirmation. Soy atleta (U-06) sends a link to the institutional email and opens N-05 for verification, photo and linking to the existing account.
 
-When the account is still signed in, N-05 keeps the light layout and the Gimnasio, Check-in and Mi cuenta tabs. Continue opens U-01 after linking. If the account needs to sign in, the confirmation opens N-02. The green RUM header is used for sign-in and first-time registration.
+When the account is still signed in, N-05 keeps the Gimnasio, Check-in and Mi cuenta tabs. Continue opens U-01 after linking. If the account needs to sign in, the confirmation opens N-02.
 
 U-02 collects a new term photo or a replacement after Staff mark a photo as pending. With a pending mark, the confirmation shows that Staff approval is required before Check In.
 

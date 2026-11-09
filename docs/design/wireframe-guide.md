@@ -198,9 +198,7 @@ All four screens are Desk. Draw them desktop first.
 
 ### Issue 40: Registration
 
-Find the six screens, their states and recovery paths under [Registration and authorization (#40)](wireframes.md#registration-and-authorization-40).
-
-You draw 6 screens. N-04 (E-153) was removed: do not draw it.
+Find the six screens, their states and recovery paths under [Registration and authorization (#40)](wireframes.md#registration-and-authorization-40). N-04 (E-153) was removed: do not draw it.
 
 N-03 and N-05 are wizards inside one page: typed data stays in the page until the final save and is lost on reload (REG-8). Draw each step.
 

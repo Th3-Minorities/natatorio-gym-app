@@ -110,7 +110,7 @@ flowchart TD
 
 - U-07 replaces U-01 in the Check-in tab. The tabs stay Gimnasio, Check-in and Mi cuenta; occupancy stays on Gimnasio (E-164). A banner at the top says why there is no authorization and Check In is shown but grayed out (E-67). The Authorization Number field shows under both banners (E-97): a person whose authorization a release removed can claim the number again (REQ-F-74). If the number cannot be claimed, the message carries the contact number. I am an athlete shows under both banners (E-100).
 - Messages for a failed lookup are the ones of N-03 (REQ-F-71, F-72, F-73). A number that is not valid in the current term gets the same message as an invalid or claimed one (REG-9).
-- A link requested in U-06 opens N-05 to verify the link, collect the photo and confirm that the record is linked. The link preserves the current session. The confirmation offers Continue if the linked account is signed in on this device and Sign in otherwise. See the [recovery wireframes](wireframes.md#recovering-access-with-an-existing-account).
+- A link requested in U-06 opens N-05 to verify the link, collect the photo and confirm that the record is linked. Opening the link never signs a person in; it keeps a session that already exists on this device. The confirmation offers Continue if the linked account is signed in on this device and Sign in otherwise. See the [recovery wireframes](wireframes.md#recovering-access-with-an-existing-account).
 - A User with a manual authorization and no photo also gets U-02 before Check In (E-69).
 
 ### 4. Staff (staff account with the Staff role)
