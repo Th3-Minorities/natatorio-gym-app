@@ -205,6 +205,7 @@ export function AcademicTerms({ shell }: { shell: ShellProps }) {
   function table(list: Term[], titleId: string) {
     return (
       // Scrolls sideways on a narrow window; tabIndex lets the keyboard scroll it too (WCAG 2.1.1).
+      // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       <div className="team-table" role="region" aria-labelledby={titleId} tabIndex={0}>
         <table className="terms-table" aria-labelledby={titleId}>
           <thead>

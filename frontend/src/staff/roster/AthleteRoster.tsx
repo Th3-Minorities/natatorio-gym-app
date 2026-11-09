@@ -299,6 +299,7 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
   function table(athletes: Athlete[]) {
     return (
       // Scrolls sideways on a narrow window; tabIndex lets the keyboard scroll it too (WCAG 2.1.1).
+      // oxlint-disable-next-line jsx-a11y/no-noninteractive-tabindex
       <div className="team-table" role="region" aria-label={t.tableTitle} tabIndex={0} ref={tableRef}>
         <table className="roster-table" aria-label={t.tableTitle}>
           <thead>
