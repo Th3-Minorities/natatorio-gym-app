@@ -47,7 +47,8 @@
 
   /* User access and account screens, N-02, N-06, N-07, U-03 and U-05. */
   --user-sage-soft: #e8eddf;
-  --user-danger: #8e342c;
+  /* One error red in both apps (team, 2026-11-09): the #143 / N-11 banner text color. */
+  --user-danger: var(--danger-text);
   --user-width: 390px;
   --user-header-height: 112px;
   --user-large-header-height: 96px;

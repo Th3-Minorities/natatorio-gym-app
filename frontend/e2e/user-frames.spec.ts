@@ -170,7 +170,7 @@ test.describe('User screen states at 390x844', () => {
             await expect(input).toHaveCSS('background-color', 'rgb(255, 253, 248)')
             if (state === 'wrong') {
               // Figma 4490:3099: a wrong password marks both inputs.
-              await expect(input).toHaveCSS('border-color', 'rgb(142, 52, 44)')
+              await expect(input).toHaveCSS('border-color', 'rgb(141, 33, 42)')
               await expect(input).toHaveAttribute('aria-invalid', 'true')
             } else if (state !== 'invalid') await expect(input).toHaveCSS('border-color', 'rgb(217, 220, 203)')
           }
@@ -187,13 +187,13 @@ test.describe('User screen states at 390x844', () => {
         const email = page.getByLabel('Correo electrónico')
         await expect(email).toBeFocused()
         await expect(email).toHaveAccessibleDescription('Escribe un correo electrónico válido.')
-        await expect(email).toHaveCSS('border-color', 'rgb(142, 52, 44)')
+        await expect(email).toHaveCSS('border-color', 'rgb(141, 33, 42)')
         await expect(page.getByRole('alert')).toHaveCount(0)
         if (path === 'sign-in') {
           await expect(page.getByText('Este campo es obligatorio.', { exact: true })).toBeVisible()
           const password = page.getByLabel('Contraseña', { exact: true })
           await expect(password).toHaveAccessibleDescription('Este campo es obligatorio.')
-          await expect(password).toHaveCSS('border-color', 'rgb(142, 52, 44)')
+          await expect(password).toHaveCSS('border-color', 'rgb(141, 33, 42)')
         }
       }
       if (state === 'replaced') await fillAccess(page, 'sign-in')
