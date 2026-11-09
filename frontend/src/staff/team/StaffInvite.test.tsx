@@ -180,6 +180,22 @@ describe('inviting a person', () => {
     const alert = await within(dialog).findByRole('alert')
     expect(alert).toHaveTextContent(es.signIn.offlineTitle)
     expect(alert).toHaveTextContent(es.states.offlineRetryText)
+    expect(alert).not.toHaveClass('notice--error')
+  })
+
+  it('shows a refused invitation in the pink error notice', async () => {
+    fakeApi({
+      '/api/staff/me': () => json(lorena),
+      '/api/staff/accounts': () => json({ accounts: team }),
+      'POST /api/staff/accounts': () => apiError('server_error', 500),
+    })
+    render(<StaffApp />)
+
+    const dialog = await openInvite()
+    fill(dialog, 'Yariel Nieves León', 'yariel@example.com')
+    fireEvent.click(within(dialog).getByRole('button', { name: t.sendInvite }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveClass('notice--error')
   })
 
   it('goes back to sign-in when the session ended', async () => {

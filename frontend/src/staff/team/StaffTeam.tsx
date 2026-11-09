@@ -240,7 +240,7 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
             </section>
           )}
         </div>
-        {banner?.kind === 'failed' && <ProblemNotice problem={banner.error} />}
+        {banner?.kind === 'failed' && <ProblemNotice problem={banner.error} tone="error" />}
       </>
     )
   }

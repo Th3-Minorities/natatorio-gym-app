@@ -175,7 +175,9 @@ describe('changing a role', () => {
     const dialog = screen.getByRole('dialog', { name: t.changeRole })
     fireEvent.click(within(dialog).getByRole('button', { name: t.save }))
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(es.errors.staff_account_status_changed)
+    const refused = await within(dialog).findByRole('alert')
+    expect(refused).toHaveTextContent(es.errors.staff_account_status_changed)
+    expect(refused).toHaveClass('notice--error')
   })
 })
 
@@ -301,7 +303,9 @@ describe('reactivating an account', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: `${t.reactivate}, Damián Ruiz Solís` }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(es.errors.staff_account_status_changed)
+    const refused = await screen.findByRole('alert')
+    expect(refused).toHaveTextContent(es.errors.staff_account_status_changed)
+    expect(refused).toHaveClass('notice--error')
   })
 })
 
