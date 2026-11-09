@@ -67,9 +67,13 @@ class RegistrationLookup
             ]);
         }
 
-        return new ApiException($code, 422, [
-            'contact_number' => [$this->contactNumber()],
-        ]);
+        $errors = ['contact_number' => [$this->contactNumber()]];
+
+        return match ($code) {
+            'student_not_on_roster' => new ApiException('student_not_on_roster', 422, $errors),
+            'roster_record_claimed' => new ApiException('roster_record_claimed', 422, $errors),
+            default => new ApiException('registration_number_unavailable', 422, $errors),
+        };
     }
 
     public function contactNumber(): string
