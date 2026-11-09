@@ -398,14 +398,14 @@ function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (loca
     onPointerCancel: () => { startY.current = null },
     onClick: () => setExpanded(true),
   }
-  // N-01 offline (Figma 4546:2929): the connection banner spans the top and both actions stay visible but disabled. The collapsed sheet has no actions and stays as it is.
+  // N-01 offline (Figma 4546:2929): the connection banner sits in the open sheet under the handle and both actions stay visible but disabled. The collapsed sheet has no actions and stays as it is.
   const unavailable = (className: string, children: ReactNode) => <span className={className} role="link" aria-disabled="true">{children}</span>
   return <div className="user-app user-welcome">
-    {offline && expanded && <OfflineBanner />}
     <img className="user-welcome__illustration" src={welcomeIllustration} width={390} height={844} alt="" />
     <div className="user-welcome__brand"><strong>{t.brand}</strong><span>{t.brandName}</span><i aria-hidden="true" /></div>
     <main className={`user-welcome__sheet ${expanded ? '' : 'user-welcome__sheet--collapsed'}`} {...drag}>
       <span className="user-welcome__handle" aria-hidden="true" />
+      {offline && expanded && <OfflineBanner text={t.welcomeOffline} />}
       <h1 tabIndex={-1} ref={heading}>{expanded ? t.welcome : t.welcomeShort}</h1>
       {expanded ? <>
       <p>{t.welcomeDetail}</p>

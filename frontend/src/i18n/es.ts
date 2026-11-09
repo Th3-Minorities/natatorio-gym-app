@@ -113,7 +113,7 @@ export const es = {
     yesDelete: 'Sí, eliminar mi cuenta', activeTitle: 'Tienes una autorización activa',
     activeText: 'Tu autorización sigue vigente. Si deseas eliminar tu cuenta, contacta al Staff del gimnasio para que revisen tu caso.',
     returnToSettings: 'Volver a Ajustes', offlineDelete: 'Conéctate para eliminar la cuenta.',
-    welcomeShort: 'Bienvenido', welcomeHint: 'Toca o desliza para continuar',
+    welcomeShort: 'Bienvenido', welcomeHint: 'Toca o desliza para continuar', welcomeOffline: 'Sin conexión. Conéctate para continuar.',
     welcome: 'Bienvenido al gimnasio', welcomeDetail: 'Tu espacio para entrenar en el RUM.', haveAccount: '¿Ya tienes cuenta?',
     gym: 'Gimnasio', checkIn: 'Check-in', navigation: 'Navegación principal',
   },

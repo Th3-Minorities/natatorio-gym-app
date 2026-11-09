@@ -235,8 +235,11 @@
   display: inline-flex; align-items: center; min-height: var(--user-welcome-link-height); padding: 0 var(--user-input-padding);
   color: var(--primary); font: inherit; font-size: var(--user-label-size); line-height: var(--user-body-line); font-weight: var(--weight-medium); text-decoration: none;
 }
-/* N-01 offline (Figma 4546:2929): the banner overlays the top edge across the full width, and the two actions dim. */
-.user-welcome > .user-offline { position: absolute; z-index: 1; inset: 0 0 auto; margin: 0; }
+/* N-01 offline (Figma 4546:2929): the banner runs edge to edge right under the handle, and the two actions dim. */
+.user-welcome__sheet > .user-offline {
+  align-items: center; margin: calc(var(--spacing-8) - var(--spacing-32)) calc(-1 * var(--spacing-24)) var(--spacing-24);
+  padding: var(--spacing-8) var(--spacing-24);
+}
 .user-welcome .button[aria-disabled="true"], .user-welcome__access [aria-disabled="true"] { opacity: var(--user-disabled-opacity); cursor: not-allowed; }
 .user-welcome__language { display: flex; align-items: center; justify-content: center; gap: var(--spacing-4); margin-top: auto; color: var(--muted-foreground); }
 .user-welcome__language button { border: 0; background: none; cursor: pointer; color: var(--muted-foreground); }
