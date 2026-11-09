@@ -16,13 +16,15 @@ class ImportedMembershipFactory extends Factory
 {
     public function definition(): array
     {
+        $person = FakePerson::make();
+
         return [
             'import_id' => Import::factory(),
             'academic_term_id' => fn () => AcademicTerm::query()->value('id') ?? AcademicTerm::factory()->create()->id,
             'order_reference' => 'WC-'.fake()->unique()->numerify('######'),
             'authorization_number' => fake()->unique()->bothify('#####?'),
-            'name' => fake()->name(),
-            'email' => fake()->safeEmail(),
+            'name' => $person['name'],
+            'email' => $person['email'],
             'membership_details' => 'Membresía semestral',
             'member_group' => fake()->randomElement(['student', 'employee']),
             'order_status' => 'completed',
