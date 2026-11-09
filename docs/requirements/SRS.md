@@ -12,19 +12,15 @@
 
 ## Contents
 
-- Overview
-- Revision History
-- 1. Introduction
-- 2. Overall Description
-- 3. System Features
-- 4. Data Requirements
-- 5. External Interface Requirements
-- 6. Quality Attributes
-- 7. Internationalization and Localization Requirements
-- 8. Other Requirements
-- Appendix A: Glossary
-- Appendix B: Merged and Removed Requirements
-- Summary of Open Items
+<nav aria-label="Contents" markdown="1">
+
+[Overview](#overview) · [Revision history](#revision-history) · [Introduction](#1-introduction) · [Overall description](#2-overall-description)
+
+[System features](#3-system-features) · [Data requirements](#4-data-requirements) · [External interfaces](#5-external-interface-requirements) · [Quality attributes](#6-quality-attributes) · [Languages](#7-internationalization-and-localization-requirements) · [Other requirements](#8-other-requirements)
+
+[Glossary](#appendix-a-glossary) · [Merged and removed requirements](#appendix-b-merged-and-removed-requirements) · [Open items](#summary-of-open-items)
+
+</nav>
 
 ## Overview
 
@@ -64,6 +60,9 @@
 
 ## Revision History
 
+<details markdown="1">
+<summary>Show revision history</summary>
+
 | Name | Date | Reason For Changes | Version |
 |---|---|---|---|
 | Team | 2026-10-11 | First draft based on the proposal and the later changes | 0.1 |
@@ -89,6 +88,8 @@
 | Team | 2026-11-08 | Team decisions E-183 and E-184 (`team.md`): schedules and notices require sign in and are no longer public (REQ-F-55); the membership purchase button, the registration prerequisite and the help number move to the number-entry step of N-03 (REQ-F-91) | 0.22 |
 | Team | 2026-11-08 | Team decisions E-185 and E-186 (`team.md`): the privacy notice has one public read-only source that Mi cuenta also opens (E-185); the Check In load test peak is 50 in 5 minutes and the stress level is 100, which closes the pending peak number of REQ-NF-50 (REQ-NF-15, REQ-NF-50); the E-153 row above now says the student number has 9 digits, as E-160 decided (REQ-F-15) | 0.23 |
 | Team | 2026-11-09 | REQ-NF-33 now follows E-174: the language is chosen on the welcome screen and saved at registration, with no language step; it no longer says the User chooses it when creating the account | 0.24 |
+
+</details>
 
 ## 1. Introduction
 

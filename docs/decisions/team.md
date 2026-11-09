@@ -4,6 +4,14 @@
 **For:** the three team members.
 **How to use:** write the answer in the Answer row and fill Answered by and Date. Then update the status of each requirement in Affects in `docs/requirements/SRS.md`.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Scope](#scope-and-priorities) · [Accounts](#accounts-and-sign-in) · [Occupancy and Gym ID](#occupancy-and-gym-id) · [Data and security](#data-and-security) · [Testing](#quality-location-and-testing) · [Design reviews](#decisions-from-the-design-readiness-review-2026-10-14) · [CTI](#questions-after-the-cti-meeting) · [Athletic Activities](#decisions-after-the-athletic-activities-meeting-2026-11-04) · [WooCommerce](#woocommerce-import) · [Questions for advisors](#questions-for-the-professor-or-advisors) · [Team process](#team-process-not-requirements)
+
+</nav>
+
 | Section | Total | Answered | Open |
 |---|---|---|---|
 | Requirement questions | 16 | 16 | 0 |
