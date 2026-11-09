@@ -31,6 +31,16 @@ use Illuminate\Support\Str;
  */
 class FakeDataSeeder extends Seeder
 {
+    /** Fixed Authorization Numbers for the browser flow tests (#152): one unclaimed order per browser, one claimed, one expired. */
+    public const FREE_AUTHORIZATION_NUMBERS = ['PRUEBA1', 'PRUEBA2'];
+
+    public const CLAIMED_AUTHORIZATION_NUMBER = 'USADO01';
+
+    public const EXPIRED_AUTHORIZATION_NUMBER = 'VENCIDO';
+
+    /** The claimed order's account, with a current authorization and a photo, for the Check In flow tests. */
+    public const CHECK_IN_EMAIL = 'pago-activo@example.com';
+
     public function run(): void
     {
         if (app()->environment('production')) {
@@ -112,14 +122,20 @@ class FakeDataSeeder extends Seeder
         $import = Import::factory()->create(['file_name' => 'sync-de-prueba', 'created_count' => 8]);
         $groups = ['student', 'student', 'student', 'student', 'employee', 'employee', 'student', 'employee'];
 
-        $orders = collect($groups)->map(fn (string $group) => ImportedMembership::factory()->create([
+        $fixed = [
+            0 => ['authorization_number' => self::CLAIMED_AUTHORIZATION_NUMBER, 'email' => self::CHECK_IN_EMAIL],
+            6 => ['authorization_number' => self::FREE_AUTHORIZATION_NUMBERS[0]],
+            7 => ['authorization_number' => self::FREE_AUTHORIZATION_NUMBERS[1]],
+        ];
+        $orders = collect($groups)->map(fn (string $group, int $index) => ImportedMembership::factory()->create([
             'import_id' => $import->id,
             'academic_term_id' => $term->id,
             'member_group' => $group,
+            ...$fixed[$index] ?? [],
         ]));
 
-        return $orders->take(6)->map(function (ImportedMembership $order) use ($term) {
-            $user = $this->userWithWaiver();
+        return $orders->take(6)->map(function (ImportedMembership $order, int $index) use ($term) {
+            $user = $this->userWithWaiver($index === 0 ? ['email' => self::CHECK_IN_EMAIL] : []);
 
             return Authorization::factory()->paid($order)->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
         })->all();
@@ -162,6 +178,7 @@ class FakeDataSeeder extends Seeder
             'import_id' => Import::factory()->create(['file_name' => 'sync-de-prueba-pasado', 'created_count' => 1])->id,
             'academic_term_id' => $past->id,
             'paid_at' => today()->subMonths(5),
+            'authorization_number' => self::EXPIRED_AUTHORIZATION_NUMBER,
         ]);
         Authorization::factory()->paid($expired)->create(['user_id' => $this->userWithWaiver(['email' => 'pago-vencido@example.com'])->id, 'academic_term_id' => $past->id]);
 
