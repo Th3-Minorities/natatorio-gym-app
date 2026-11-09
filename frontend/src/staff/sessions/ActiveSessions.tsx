@@ -45,7 +45,7 @@ export function ActiveSessions({ shell }: { shell: ShellProps }) {
     <DashboardShell {...shellProps} title={t.title} description={t.description} action={chip || undefined}>
       {notice}
       <OccupancyCard occupancy={occupancy} />
-      <SessionsList navigate={shellProps.navigation?.onNavigate} />
+      <SessionsList navigate={shellProps.navigation?.onNavigate} onChange={occupancy.refresh} />
     </DashboardShell>
   )
 }

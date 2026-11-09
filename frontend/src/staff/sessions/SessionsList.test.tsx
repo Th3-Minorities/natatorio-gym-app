@@ -98,6 +98,25 @@ describe('S-01 list', () => {
     expect(callsTo(fetchMock, '/api/staff/sessions/11/check-out')).toEqual([['POST', undefined]])
   })
 
+  it('updates the occupancy card at once after a check-out, without waiting for the next poll', async () => {
+    let list = [camilaVisit, luisVisit]
+    openList({
+      [SESSIONS]: () => sessions(list)(),
+      '/api/staff/occupancy': () => json({ ...occupancy, count: list.length }),
+      'POST /api/staff/sessions/11/check-out': () => {
+        list = [luisVisit]
+        return json({ session: { id: 11, status: 'checked_out' } })
+      },
+    })
+    const card = await screen.findByRole('region', { name: t.inside })
+    await waitFor(() => expect(card).toHaveTextContent('2'))
+
+    fireEvent.click(await screen.findByRole('button', { name: `${t.checkOut}, Camila Rivera Santiago` }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.checkOut }))
+
+    await waitFor(() => expect(card.querySelector('strong')).toHaveTextContent('1'))
+  })
+
   it('says when the visit had already ended, and reloads', async () => {
     const fetchMock = openList({
       'POST /api/staff/sessions/11/check-out': () => apiError('check_out_session_not_active', 409),

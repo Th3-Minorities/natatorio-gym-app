@@ -36,7 +36,8 @@ function takeNewVisit(): number | null {
   return id
 }
 
-export function SessionsList({ navigate }: { navigate?: (path: string) => void }) {
+/** onChange: the list changed here (a check-out), so the occupancy card asks again instead of waiting for its poll. */
+export function SessionsList({ navigate, onChange }: { navigate?: (path: string) => void; onChange?: () => void }) {
   const texts = useMessages()
   const t = texts.activeSessions
   const dates = useDateFormat()
@@ -113,8 +114,9 @@ export function SessionsList({ navigate }: { navigate?: (path: string) => void }
       setProblem(error instanceof ApiError ? error : new ApiError('server_error', 500))
     } finally {
       setBusy(false)
-      // Someone else may have ended it: show what the list is now, behind the dialog.
+      // Someone else may have ended it: show what the list is now, behind the dialog, and the count with it.
       setAttempt((n) => n + 1)
+      onChange?.()
     }
   }
 

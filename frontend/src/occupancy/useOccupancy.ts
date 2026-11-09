@@ -30,6 +30,8 @@ export function useOccupancy(path: string, ended: (error: unknown) => boolean) {
   const online = useConnection()
   const [data, setData] = useState<Occupancy | null>(null)
   const [problem, setProblem] = useState<'offline' | 'error' | null>(null)
+  // Counts up to ask again at once, after a change on the same screen, like a check-out on S-01.
+  const [asked, setAsked] = useState(0)
 
   useEffect(() => {
     if (!online) return
@@ -61,8 +63,15 @@ export function useOccupancy(path: string, ended: (error: unknown) => boolean) {
       clearInterval(timer)
       document.removeEventListener('visibilitychange', visible)
     }
-  }, [online, ended, path])
+  }, [online, ended, path, asked])
 
   const offline = !online || problem === 'offline'
-  return { data, problem, online, offline, available: online && !problem && data !== null }
+  return {
+    data,
+    problem,
+    online,
+    offline,
+    available: online && !problem && data !== null,
+    refresh: () => setAsked((n) => n + 1),
+  }
 }
