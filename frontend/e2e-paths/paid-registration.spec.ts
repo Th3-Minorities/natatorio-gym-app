@@ -201,10 +201,11 @@ test.describe('paid member registration paths', () => {
     await expect(page).toHaveURL(/\/sign-in$/)
   })
 
-  test('PR-04 the privacy gate leads to the number step and shows the draft banner', async ({ page }, info) => {
+  test('PR-04 the privacy gate leads to the number step and shows the draft badge', async ({ page }, info) => {
     onlyOn(info, D, A, I)
     await openPrivacy(page)
-    await expect(page.getByText('BORRADOR · Pendiente de aprobación')).toBeVisible()
+    // Figma N-08 (4078:334) draws only the BORRADOR badge in the notice card; the longer draft line is for the compact view.
+    await expect(page.getByText('BORRADOR', { exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Continuar con el registro' }).click()
     await expect(page).toHaveURL(/\/register\/identify$/)
     await expect(page.getByRole('heading', { level: 1, name: 'Registro', exact: true })).toBeVisible()
