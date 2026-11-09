@@ -14,7 +14,6 @@ import { PrivacyNoticeCard } from './PrivacyNoticeCard'
 import { storedPrivacy, storePrivacy, type Privacy } from './privacyNotice'
 import { useConnection } from './useConnection'
 import { storedLocale, storeLocale } from './deviceLocale'
-import { isUserPath, REGISTRATION_PATHS } from './paths'
 import welcomeIllustration from './assets/welcome-illustration.svg'
 import './user.css'
 
@@ -25,6 +24,44 @@ export type UserProfile = {
 }
 
 type AccountType = 'paid' | 'athlete' | 'manual'
+
+type RouteContext = {
+  path: string; navigate: (path: string) => void; ended: (error: unknown) => boolean; profile: UserProfile | null; replaced: boolean;
+  deviceLocale: Locale; chooseLocale: (locale: Locale) => void; onSignedIn: (account: UserProfile) => void; account: ReactNode
+}
+type Route = { protected?: true; render: (context: RouteContext) => ReactNode }
+
+const access = (mode: 'sign-in' | 'recover' | 'reset'): Route => ({
+  render: (c) => <UserAccess key={c.path} mode={mode} replaced={c.replaced} navigate={c.navigate} onSignedIn={c.onSignedIn} />,
+})
+const account: Route = { protected: true, render: (c) => c.account }
+const register: Route = { render: (c) => <Registration path={c.path} navigate={c.navigate} /> }
+
+// One line per User path, sorted by path. A new screen adds its own line here and nothing else in the routing.
+const USER_ROUTES: Record<string, Route> = {
+  '/account': account,
+  '/account/delete': account,
+  '/account/privacy': account,
+  '/account/settings': account,
+  '/check-in': { protected: true, render: (c) => <CheckIn profile={c.profile} ended={c.ended} /> },
+  '/gym': { protected: true, render: (c) => <Gym ended={c.ended} /> },
+  '/install': { render: () => <InstallHelp /> },
+  '/privacy': register,
+  '/recover-password': access('recover'),
+  '/register': register,
+  '/register/contact': register,
+  '/register/identify': register,
+  '/register/password': register,
+  '/register/photo': register,
+  '/register/waiver': register,
+  '/reset-password': access('reset'),
+  '/sign-in': access('sign-in'),
+  '/welcome': { render: (c) => <Welcome locale={c.deviceLocale} chooseLocale={c.chooseLocale} /> },
+}
+
+function RouteScreen({ route, context }: { route: Route; context: RouteContext }) { return route.render(context) }
+
+const isUserPath = (path: string) => Object.hasOwn(USER_ROUTES, path)
 
 export function UserEntry({ children }: { children: ReactNode }) {
   return isUserPath(window.location.pathname) ? <UserApp /> : children
@@ -46,7 +83,8 @@ export function UserApp() {
   const online = useConnection()
   const epoch = useRef(0)
   const offline = !online || networkFailed
-  const protectedPath = path.startsWith('/account') || path === '/check-in' || path === '/gym'
+  const route = USER_ROUTES[path] ?? USER_ROUTES['/sign-in']
+  const protectedPath = route.protected === true
 
   const navigate = useCallback((next: string) => {
     window.history.pushState({}, '', next)
@@ -111,6 +149,10 @@ export function UserApp() {
     navigate(link.pathname + link.search)
   }
 
+  function signedIn(account: UserProfile) {
+    epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); navigate('/account')
+  }
+
   async function signOut() {
     if (busy || offline) return
     setBusy(true)
@@ -168,14 +210,14 @@ export function UserApp() {
   // The anchors inside handle the keyboard; this only turns their clicks into in-app navigation.
   // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
   return <I18nProvider locale={profile?.locale ?? deviceLocale}><div onClick={intercept}>
-    {path === '/install' ? <InstallHelp /> : REGISTRATION_PATHS.includes(path) ? <Registration path={path} navigate={navigate} /> : !protectedPath ? path === '/welcome' ? <Welcome locale={deviceLocale} chooseLocale={chooseLocale} /> : <UserAccess
-      key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
-      replaced={replaced} navigate={navigate} onSignedIn={(account) => {
-        epoch.current += 1; setProfile(account); setLoading(false); setFailed(false); setNetworkFailed(false); setReplaced(false); navigate('/account')
-      }} /> : path === '/gym' ? <Gym ended={ended} /> : path === '/check-in' ? <CheckIn profile={profile} ended={ended} /> : <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline} disconnected={!online}
-      retry={() => { setFailed(false); setLoading(true); void load() }} busy={busy} signOut={signOut} changeLocale={changeLocale} localeSaved={localeSaved}
-      confirmation={confirmation} confirm={() => setConfirmation(true)} cancelConfirmation={() => { setConfirmation(false); setActionFailed(false) }}
-      refused={refused} deleteAccount={deleteAccount} actionFailed={actionFailed} />}
+    <RouteScreen route={route} context={{
+      path, navigate, ended, profile, replaced, deviceLocale, chooseLocale,
+      onSignedIn: signedIn,
+      account: <AccountView path={path} profile={profile} loading={loading} failed={failed} offline={offline} disconnected={!online}
+        retry={() => { setFailed(false); setLoading(true); void load() }} busy={busy} signOut={signOut} changeLocale={changeLocale} localeSaved={localeSaved}
+        confirmation={confirmation} confirm={() => setConfirmation(true)} cancelConfirmation={() => { setConfirmation(false); setActionFailed(false) }}
+        refused={refused} deleteAccount={deleteAccount} actionFailed={actionFailed} />,
+    }} />
   </div></I18nProvider>
 }
 
