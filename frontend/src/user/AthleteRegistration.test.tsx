@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { UserApp } from './UserApp'
 
@@ -121,7 +121,7 @@ it('sends the link token, not a number, when the athlete creates the account', a
 
 it.each([
   ['athlete_link_expired', 'Tu enlace venció', ['Este enlace ya no es válido', 'Pedir otro enlace', 'Ayuda: 265-3866']],
-  ['athlete_link_invalid', 'Tu enlace venció', ['Este enlace ya no es válido']],
+  ['athlete_link_invalid', 'Este enlace ya no es válido', ['Pide un enlace nuevo para continuar.', 'Pedir otro enlace', 'Ayuda: 265-3866']],
   ['athlete_link_used', 'Este enlace ya se usó', ['Si completaste tu registro, inicia sesión con tu cuenta.', 'Iniciar sesión', 'Volver al registro']],
   ['athlete_link_replaced', 'Usa tu enlace más reciente', ['Revisa tu correo institucional', 'Abre el mensaje más reciente para continuar.', 'Pedir otro enlace']],
 ])('shows the N05 screen for %s', async (code, title, texts) => {
@@ -129,6 +129,17 @@ it.each([
   openLink()
   expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument()
   for (const text of texts) expect(screen.getByText(text)).toBeInTheDocument()
+})
+
+it('shows N05-02b with no notice for an invalid link and for a link with no token', async () => {
+  validate = () => json({ error: { code: 'athlete_link_invalid' } }, 422)
+  openLink()
+  await screen.findByRole('heading', { name: 'Este enlace ya no es válido' })
+  expect(screen.queryByText('Solicita otro enlace con tu número de estudiante.')).not.toBeInTheDocument()
+  cleanup()
+  window.history.replaceState({}, '', '/register/athlete')
+  render(<UserApp />)
+  expect(await screen.findByRole('heading', { name: 'Este enlace ya no es válido' })).toBeInTheDocument()
 })
 
 it('shows N05-05 with the contact number from the server when the record was claimed', async () => {

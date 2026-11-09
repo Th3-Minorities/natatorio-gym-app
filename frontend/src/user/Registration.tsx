@@ -13,11 +13,11 @@ import './registration.css'
 type Lookup = { state: 'ready'; name: string; masked_email: string } | { state: 'renewal'; masked_email: string }
   | { state: 'athlete'; masked_email: string; resend_in: number }
 type StudentResult = { claimed: boolean; phone: string }
-// The page the athlete's email link opens: N05-01 checking, N05-02 expired (also an unknown link), N05-03 used,
-// N05-04 replaced, N05-05 claimed, N05-06 offline and N05-07 error.
-type LinkState = 'checking' | 'expired' | 'used' | 'replaced' | 'claimed' | 'offline' | 'error'
+// The page the athlete's email link opens: N05-01 checking, N05-02 expired, N05-02b invalid (unknown, garbled or
+// removed from the roster), N05-03 used, N05-04 replaced, N05-05 claimed, N05-06 offline and N05-07 error.
+type LinkState = 'checking' | 'expired' | 'invalid' | 'used' | 'replaced' | 'claimed' | 'offline' | 'error'
 const LINK_STATES: Record<string, LinkState> = {
-  athlete_link_invalid: 'expired', athlete_link_expired: 'expired', athlete_link_used: 'used',
+  athlete_link_invalid: 'invalid', athlete_link_expired: 'expired', athlete_link_used: 'used',
   athlete_link_replaced: 'replaced', roster_record_claimed: 'claimed',
 }
 type Unavailable = { phone: string }
@@ -102,6 +102,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     setLookupMessage('')
     setStudentResult(null)
     setUnavailable(null)
+    if (lookup?.state === 'renewal') setLookup(null)
   }
 
   function loadPrivacy() {
@@ -215,7 +216,6 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       // A number typed here replaces an earlier athlete link on this page.
       setLinkToken(null)
       if (result.state === 'ready') { setPassword(''); setConfirmation(''); setPasswordErrors(false); navigate('/register/password') }
-      else setLookupMessage(t.renewal(result.masked_email))
     } catch (error) {
       if (generation !== lookupGeneration.current) return
       const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
@@ -254,7 +254,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   }
 
   async function checkLink() {
-    if (!linkToken) { setLinkState('expired'); return }
+    if (!linkToken) { setLinkState('invalid'); return }
     setLinkState('checking')
     try {
       const { name } = await apiRequest<{ name: string }>('/user/registration/athlete/validate', { method: 'POST', body: { token: linkToken } })
@@ -332,7 +332,6 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       const result = await apiRequest<{ state?: string; masked_email?: string }>(linkToken ? '/user/registration/athlete/complete' : '/user/registration/complete', { method: 'POST', body: form })
       if (result?.state === 'renewal' && result.masked_email) {
         setLookup({ state: 'renewal', masked_email: result.masked_email })
-        setLookupMessage(t.renewal(result.masked_email))
         navigate('/register/identify')
       } else navigate('/install?registered')
     } catch (error) {
@@ -424,6 +423,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     const signIn = (variant: string) => <a href="/sign-in" className={`button button--${variant} user-action`}>{t.student.signIn}</a>
     if (linkState === 'expired') return linkStatus('/register', a.expiredTitle, a.expiredIntro, <>
       <UserNotice title={a.expiredNotice}>{a.expiredDetail}</UserNotice>{newLink}{help('button--link')}</>)
+    if (linkState === 'invalid') return linkStatus('/register', a.invalidTitle, a.expiredIntro, <>{newLink}{help('button--link')}</>)
     if (linkState === 'used') return linkStatus('/register', a.usedTitle, a.usedIntro, <>
       {signIn('primary')}<a href="/register" className="button button--secondary user-action">{t.backToRegistration}</a></>)
     if (linkState === 'replaced') return linkStatus('/register', a.replacedTitle, a.replacedIntro, <>
@@ -556,6 +556,11 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     </form>
   </>, u.offlineBanner)
 
+  // Figma N03-04 (4591:3403): the number belongs to an existing account, for athletes and paid members alike.
+  if (lookup?.state === 'renewal') return linkStatus('/register', t.renewalTitle, t.renewalIntro, <>
+    <UserNotice title={t.renewalEmail}>{lookup.masked_email}</UserNotice><p className="registration-body">{t.renewalNotUsed}</p>
+    <a href="/sign-in" className="button button--primary user-action">{t.student.signIn}</a>
+    <Button className="user-action" variant="secondary" onClick={() => setLookup(null)}>{t.backToRegistration}</Button></>)
   if (!passwordPage && linkLimit) return linkStatus('/register', a.limitTitle, a.limitIntro, <>
     <UserNotice title={a.limitRetry(dates.time(new Date(waitUntil)))}>{a.limitDetail}</UserNotice>
     <Button className="user-action" disabled={busy || offline || waiting} onClick={() => void findMembership()}>{a.request}</Button>
