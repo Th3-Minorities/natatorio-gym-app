@@ -54,6 +54,31 @@ it('allows letters and any length and uses the imported name without rendering H
   expect(screen.queryByLabelText('Contacto de emergencia')).not.toBeInTheDocument()
 })
 
+it('shows the short offline banner on the number step and keeps the entered number', async () => {
+  render(<UserApp />)
+  await reachIdentification()
+  const field = screen.getByLabelText('Número de estudiante o transacción')
+  fireEvent.change(field, { target: { value: '12345A' } })
+  expect(screen.queryByText(/Sin conexión/)).not.toBeInTheDocument()
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+  fireEvent(window, new Event('offline'))
+  expect(screen.getByText('Sin conexión').closest('[role="status"]')).toHaveTextContent(/^Sin conexión$/)
+  expect(field).toHaveValue('12345A')
+  expect(screen.getByRole('button', { name: 'Continuar' })).toBeDisabled()
+})
+
+it('does not show an offline banner on the password step', async () => {
+  render(<UserApp />)
+  await reachIdentification()
+  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '12345A' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  await screen.findByRole('heading', { name: 'Crea una contraseña' })
+  Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+  fireEvent(window, new Event('offline'))
+  expect(screen.getByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
+  expect(screen.queryByText(/Sin conexión/)).not.toBeInTheDocument()
+})
+
 it('does not save an account when the password step continues to the photo', async () => {
   render(<UserApp />)
   await reachIdentification()

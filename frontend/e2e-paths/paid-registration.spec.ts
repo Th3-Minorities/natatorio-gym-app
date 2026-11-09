@@ -476,7 +476,8 @@ test.describe('paid member registration paths', () => {
 
     await page.route('**/api/user/registration/lookup', (route) => route.abort('internetdisconnected'), { times: 1 })
     await next(page).click()
-    await expect(page.getByText('Conéctate para continuar. Se conservan los datos ingresados.')).toBeVisible()
+    // The text shows twice: as the field error and in the status region that announces it.
+    await expect(numberField(page)).toHaveAccessibleDescription(/Conéctate para continuar. Se conservan los datos ingresados./)
     await expect(numberField(page)).toHaveValue('PR23TEST')
   })
 

@@ -576,7 +576,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
 
   return <div className={`registration ${passwordPage ? 'registration--password' : 'registration--identification'}`}>
     {lookupStatus}
-    <UserPage large back={passwordPage ? '/register/identify' : '/register'}>
+    <UserPage large back={passwordPage ? '/register/identify' : '/register'} offline={!passwordPage && offline} offlineText={u.offlineBanner}>
       {passwordPage ? <>
         <div className="registration-intro"><p className="registration-greeting">{t.hello(lookup.name)}</p>
           <h1 tabIndex={-1}>{t.createPassword}</h1><p>{t.passwordIntro}</p></div>
