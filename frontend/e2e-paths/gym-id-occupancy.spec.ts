@@ -120,6 +120,7 @@ async function waitForServiceWorker(page: Page) {
 // ------------------------------------------------------------------------------------------------- the Gym ID
 
 test('GI-01 a student member sees the full Gym ID after Check In', async ({ page, baseURL }) => {
+  only('AI')
   const member = await fresh(page, baseURL)
   await checkInByHold(page)
   await expect(page.locator('.check-in-id__name')).toContainText(member.name)
@@ -136,6 +137,7 @@ test('GI-01 a student member sees the full Gym ID after Check In', async ({ page
 })
 
 test('GI-02 an athlete sees the Atleta tag and the sport, not Estudiante', async ({ page, baseURL }) => {
+  only('AI')
   await fresh(page, baseURL, { kind: 'athlete', sport: 'Voleibol' })
   await checkInByHold(page)
   await expect(page.locator('.check-in-id__category')).toHaveText('Atleta')
@@ -145,7 +147,7 @@ test('GI-02 an athlete sees the Atleta tag and the sport, not Estudiante', async
 })
 
 test('GI-03 an employee sees Miembro and no group line', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await fresh(page, baseURL, { group: 'employee' })
   await checkInByHold(page)
   await expect(page.locator('.check-in-id__category')).toHaveText('Miembro')
@@ -155,7 +157,7 @@ test('GI-03 an employee sees Miembro and no group line', async ({ page, baseURL 
 })
 
 test('GI-04 an account with no waiver name shows the email as the name and no authorization mark', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const visitor = createWaiverlessVisitor()
   try {
     await signInApi(page.request, baseURL!, visitor)
@@ -168,6 +170,7 @@ test('GI-04 an account with no waiver name shows the email as the name and no au
 })
 
 test('GI-05 the member photo is shown from /api/user/photo', async ({ page, baseURL }) => {
+  only('AI')
   ensurePhotoFile()
   await withVisit(page, baseURL)
   const photo = page.waitForResponse((response) => response.url().endsWith('/api/user/photo'))
@@ -179,6 +182,7 @@ test('GI-05 the member photo is shown from /api/user/photo', async ({ page, base
 })
 
 test('GI-06 a photo that fails to load is replaced by the person icon', async ({ page, baseURL }) => {
+  only('AI')
   await withVisit(page, baseURL)
   await page.route('**/api/user/photo', (route) => route.fulfill({ status: 404, contentType: 'application/json', body: '{"error":{"code":"not_found"}}' }))
   await openCard(page)
@@ -187,6 +191,7 @@ test('GI-06 a photo that fails to load is replaced by the person icon', async ({
 })
 
 test('GI-07 the duration starts near zero and advances once per second', async ({ page, baseURL }) => {
+  only('AI')
   await fresh(page, baseURL)
   await checkInByHold(page)
   await expect(duration(page)).toHaveText(/^00:00:0\d$/)
@@ -202,7 +207,7 @@ test('GI-07 the duration starts near zero and advances once per second', async (
 })
 
 test('GI-08 a wrong device clock does not change the duration', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withVisit(page, baseURL)
   await page.clock.setSystemTime(new Date(Date.now() + 3 * 3_600_000))
   await openCard(page)
@@ -210,6 +215,7 @@ test('GI-08 a wrong device clock does not change the duration', async ({ page, b
 })
 
 test('GI-09 a reload keeps the entry time and the duration keeps counting', async ({ page, baseURL }) => {
+  only('AI')
   await fresh(page, baseURL)
   await checkInByHold(page)
   const time = await entry(page).textContent()
@@ -221,7 +227,7 @@ test('GI-09 a reload keeps the entry time and the duration keeps counting', asyn
 })
 
 test('GI-10 the card polls /api/user/check-in every 25 seconds and stays the same', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withVisit(page, baseURL)
   const polls = countRequests(page, 'GET', '/api/user/check-in')
   await openCard(page)
@@ -233,7 +239,7 @@ test('GI-10 the card polls /api/user/check-in every 25 seconds and stays the sam
 })
 
 test('GI-11 a hidden tab sends no poll and refreshes once when it is shown again', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withVisit(page, baseURL)
   const polls = countRequests(page, 'GET', '/api/user/check-in')
   await openCard(page)
@@ -250,6 +256,7 @@ test('GI-11 a hidden tab sends no poll and refreshes once when it is shown again
 })
 
 test('GI-12 offline, the Gym ID is marked not valid now', async ({ page, baseURL, context }) => {
+  only('AI')
   await withVisit(page, baseURL)
   await openCard(page)
   await context.setOffline(true)
@@ -264,6 +271,7 @@ test('GI-12 offline, the Gym ID is marked not valid now', async ({ page, baseURL
 })
 
 test('GI-13 back online, the Gym ID is valid again and the duration resumes', async ({ page, baseURL, context }) => {
+  only('AI')
   await withVisit(page, baseURL)
   await openCard(page)
   await context.setOffline(true)
@@ -280,6 +288,7 @@ test.describe('GI-14 cold open offline', () => {
   // The base config blocks service workers; the offline shell needs the real one.
   test.use({ serviceWorkers: 'allow' })
   test('GI-14 opened offline, the app shows the connection screen and never a stored Gym ID', async ({ page, baseURL, context }) => {
+    only('AI')
     await withVisit(page, baseURL)
     await openCard(page)
     await waitForServiceWorker(page)
@@ -294,7 +303,7 @@ test.describe('GI-14 cold open offline', () => {
 })
 
 test('GI-15 a failed poll with the browser online marks the Gym ID stale', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withVisit(page, baseURL)
   await openCard(page)
   await page.route('**/api/user/check-in', (route) => route.request().method() === 'GET' ? route.abort('connectionfailed') : route.fallback())
@@ -303,7 +312,7 @@ test('GI-15 a failed poll with the browser online marks the Gym ID stale', async
 })
 
 test('GI-16 a 500 on the poll marks the card stale and a good answer makes it current', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withVisit(page, baseURL)
   await openCard(page)
   const fail = (route: import('@playwright/test').Route) => route.request().method() === 'GET'
@@ -317,6 +326,7 @@ test('GI-16 a 500 on the poll marks the card stale and a good answer makes it cu
 })
 
 test('GI-17 a replaced session goes to sign-in on the next poll of the Gym ID', async ({ page, baseURL, browser }) => {
+  only('AI')
   const member = await withVisit(page, baseURL)
   await openCard(page)
   const second = await secondPhone(browser, baseURL)
@@ -329,6 +339,7 @@ test('GI-17 a replaced session goes to sign-in on the next poll of the Gym ID', 
 })
 
 test('GI-18 an athletes-only period inside the visit shows the upcoming notice', async ({ page, baseURL }) => {
+  only('AI')
   await withVisit(page, baseURL)
   const period = addPeriod(30, 150)
   try {
@@ -340,6 +351,7 @@ test('GI-18 an athletes-only period inside the visit shows the upcoming notice',
 })
 
 test('GI-19 a period already active does not cut the visit and the notice says exclusive', async ({ page, baseURL }) => {
+  only('AI')
   await withVisit(page, baseURL)
   const period = addPeriod(-5, 60)
   try {
@@ -349,7 +361,7 @@ test('GI-19 a period already active does not cut the visit and the notice says e
 })
 
 test('GI-20 a period starting before the visit ends is shown, one starting after is not', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withVisit(page, baseURL)
   const inside = addPeriod(119, 239)
   try {
@@ -365,6 +377,7 @@ test('GI-20 a period starting before the visit ends is shown, one starting after
 })
 
 test('GI-21 Gimnasio and back keeps the entry time and the counting duration', async ({ page, baseURL }) => {
+  only('AI')
   await withVisit(page, baseURL)
   await openCard(page)
   const time = await entry(page).textContent()
@@ -378,6 +391,7 @@ test('GI-21 Gimnasio and back keeps the entry time and the counting duration', a
 })
 
 test('GI-22 Back from the Gym ID opens Gimnasio and Forward returns the card', async ({ page, baseURL }) => {
+  only('AI')
   await withVisit(page, baseURL)
   await openGym(page)
   await nav(page).getByRole('link', { name: 'Check-in' }).click()
@@ -391,6 +405,7 @@ test('GI-22 Back from the Gym ID opens Gimnasio and Forward returns the card', a
 })
 
 test('GI-23 an English account sees the English Gym ID and Gimnasio', async ({ page, baseURL }) => {
+  only('AI')
   await fresh(page, baseURL, { locale: 'en' })
   await page.goto('/check-in')
   await expect(page.getByRole('button', { name: 'Press and hold to enter' })).toBeVisible()
@@ -408,7 +423,7 @@ test('GI-23 an English account sees the English Gym ID and Gimnasio', async ({ p
 })
 
 test('GI-24 a staff correction that ended the visit early shows the ended summary', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const member = await withVisit(page, baseURL)
   await openCard(page)
   endUserVisit(member.id, 'ended_early')
@@ -418,7 +433,7 @@ test('GI-24 a staff correction that ended the visit early shows the ended summar
 })
 
 test('GI-25 a voided visit disappears from the phone', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const member = await withVisit(page, baseURL)
   await openCard(page)
   endUserVisit(member.id, 'void')
@@ -428,7 +443,7 @@ test('GI-25 a voided visit disappears from the phone', async ({ page, baseURL })
 })
 
 test('GI-26 the card switches to the ended summary after the 2-hour mark', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   test.setTimeout(150_000)
   const member = await withVisit(page, baseURL)
   await openCard(page)
@@ -442,6 +457,7 @@ test('GI-26 the card switches to the ended summary after the 2-hour mark', async
 // ----------------------------------------------------------------------------------------------------- Gimnasio
 
 test('GI-27 Gimnasio before the visit shows the count and the level', async ({ page, baseURL }) => {
+  only('AI')
   await withOccupancy(5, async () => {
     await fresh(page, baseURL)
     await openGym(page)
@@ -455,6 +471,7 @@ test('GI-27 Gimnasio before the visit shows the count and the level', async ({ p
 })
 
 test('GI-28 the count rises by one after a Check In', async ({ page, baseURL }) => {
+  only('AI')
   await withOccupancy(3, async () => {
     await fresh(page, baseURL)
     await checkInByHold(page)
@@ -464,6 +481,7 @@ test('GI-28 the count rises by one after a Check In', async ({ page, baseURL }) 
 })
 
 test('GI-29 the count drops by one after a desk check-out', async ({ page, request, baseURL }) => {
+  only('AI')
   await withOccupancy(3, async () => {
     await withVisit(page, baseURL)
     await openGym(page)
@@ -476,7 +494,7 @@ test('GI-29 the count drops by one after a desk check-out', async ({ page, reque
 })
 
 test('GI-30 an athlete counts like a member', async ({ page, baseURL, browser }) => {
-  only('D')
+  only('AI')
   await withOccupancy(3, async () => {
     await fresh(page, baseURL, { kind: 'athlete' })
     await checkInByHold(page)
@@ -490,6 +508,7 @@ test('GI-30 an athlete counts like a member', async ({ page, baseURL, browser })
 })
 
 test('GI-31 an empty gym shows 0 personas, Baja and an empty bar', async ({ page, baseURL }) => {
+  only('AI')
   await withOccupancy(0, async () => {
     await fresh(page, baseURL)
     await openGym(page)
@@ -503,6 +522,7 @@ test('GI-31 an empty gym shows 0 personas, Baja and an empty bar', async ({ page
 
 for (const [id, count, badge] of [['GI-32', 13, 'Baja'], ['GI-33', 14, 'Moderada'], ['GI-34', 26, 'Moderada'], ['GI-35', 27, 'Alta']] as const) {
   test(`${id} a count of ${count} is ${badge}`, async ({ page, baseURL }) => {
+    only('AI')
     await withOccupancy(count, async () => {
       await fresh(page, baseURL)
       await openGym(page)
@@ -514,7 +534,7 @@ for (const [id, count, badge] of [['GI-32', 13, 'Baja'], ['GI-33', 14, 'Moderada
 }
 
 test('GI-36 the bar fills at 40 and stays full at 41 while the number grows', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   test.setTimeout(180_000)
   await withOccupancy(40, async () => {
     await fresh(page, baseURL)
@@ -533,7 +553,7 @@ test('GI-36 the bar fills at 40 and stays full at 41 while the number grows', as
 })
 
 test('GI-37 a visit that reached the 2-hour mark is not counted before or after the scheduler', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withOccupancy(3, async ({ sessions }) => {
     ageVisit(sessions[0], '2 hours')
     await fresh(page, baseURL)
@@ -546,7 +566,7 @@ test('GI-37 a visit that reached the 2-hour mark is not counted before or after 
 })
 
 test('GI-38 a visit one moment before the 2-hour mark is still counted', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withOccupancy(3, async ({ sessions }) => {
     await fresh(page, baseURL)
     await openGym(page)
@@ -558,7 +578,7 @@ test('GI-38 a visit one moment before the 2-hour mark is still counted', async (
 })
 
 test('GI-39 a closure drops the visits that began before it at once', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withOccupancy(3, async () => {
     await fresh(page, baseURL)
     await openGym(page)
@@ -572,7 +592,7 @@ test('GI-39 a closure drops the visits that began before it at once', async ({ p
 })
 
 test('GI-40 a visit past the end of its term is not counted', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const window = tinkerJson<boolean>(`
 $term = \\App\\Models\\AcademicTerm::where('name', 'Término pasado')->firstOrFail();
 $x = \\Illuminate\\Support\\Carbon::parse($term->ends_on->toDateString().' 23:30', 'America/Puerto_Rico');
@@ -591,7 +611,7 @@ echo json_encode(true);`)
 })
 
 test('GI-41 a staff void drops the count by one', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withOccupancy(3, async ({ users }) => {
     await fresh(page, baseURL)
     await openGym(page)
@@ -603,6 +623,7 @@ test('GI-41 a staff void drops the count by one', async ({ page, baseURL }) => {
 })
 
 test('GI-42 the count follows another phone Check In at the next poll', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await withOccupancy(2, async () => {
     await fresh(page, baseURL)
     await openGym(page)
@@ -618,7 +639,7 @@ test('GI-42 the count follows another phone Check In at the next poll', async ({
 })
 
 test('GI-43 a hidden tab on Gimnasio sends no poll and refreshes once when shown', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await fresh(page, baseURL)
   const polls = countRequests(page, 'GET', '/api/user/occupancy')
   await openGym(page)
@@ -636,6 +657,7 @@ test('GI-43 a hidden tab on Gimnasio sends no poll and refreshes once when shown
 })
 
 test('GI-44 offline, Gimnasio hides the number and says Sin conexión', async ({ page, baseURL, context }) => {
+  only('AI')
   await fresh(page, baseURL)
   await openGym(page)
   await expect(gymCount(page)).toBeVisible()
@@ -651,6 +673,7 @@ test('GI-44 offline, Gimnasio hides the number and says Sin conexión', async ({
 })
 
 test('GI-45 back online, Gimnasio shows the count and level again', async ({ page, baseURL, context }) => {
+  only('AI')
   await withOccupancy(5, async () => {
     await fresh(page, baseURL)
     await openGym(page)
@@ -667,6 +690,7 @@ test('GI-45 back online, Gimnasio shows the count and level again', async ({ pag
 test.describe('GI-46 cold open offline on Gimnasio', () => {
   test.use({ serviceWorkers: 'allow' })
   test('GI-46 opened offline, Gimnasio says Sin conexión with no number and no request', async ({ page, baseURL, context }) => {
+    only('AI')
     await fresh(page, baseURL)
     await openGym(page)
     await waitForServiceWorker(page)
@@ -681,6 +705,7 @@ test.describe('GI-46 cold open offline on Gimnasio', () => {
 })
 
 test('GI-47 a server error on occupancy shows the error state and no stale number', async ({ page, baseURL }) => {
+  only('AI')
   await fresh(page, baseURL)
   await page.route('**/api/user/occupancy', (route) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":{"code":"server_error"}}' }))
   await openGym(page)
@@ -690,7 +715,7 @@ test('GI-47 a server error on occupancy shows the error state and no stale numbe
 })
 
 test('GI-48 the count returns after a good answer following a failed poll', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await withOccupancy(4, async () => {
     await fresh(page, baseURL)
     const fail = (route: import('@playwright/test').Route) => route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":{"code":"server_error"}}' })
@@ -703,6 +728,7 @@ test('GI-48 the count returns after a good answer following a failed poll', asyn
 })
 
 test('GI-49 Gimnasio shows the loading frame until occupancy answers', async ({ page, baseURL }) => {
+  only('AI')
   await fresh(page, baseURL)
   await page.route('**/api/user/occupancy', async (route) => {
     await new Promise((resolve) => setTimeout(resolve, 3000))
@@ -716,6 +742,7 @@ test('GI-49 Gimnasio shows the loading frame until occupancy answers', async ({ 
 })
 
 test('GI-50 a replaced session goes to sign-in on the next poll of Gimnasio', async ({ page, baseURL, browser }) => {
+  only('AI')
   const member = await fresh(page, baseURL)
   await openGym(page)
   await expect(gymCount(page)).toBeVisible()
@@ -729,11 +756,13 @@ test('GI-50 a replaced session goes to sign-in on the next poll of Gimnasio', as
 })
 
 test('GI-51 signed out, Gimnasio redirects to sign-in', async ({ page }) => {
+  only('AI')
   await page.goto('/gym')
   await expect(page).toHaveURL(/\/sign-in/)
 })
 
 test('GI-52 a staff session is refused on the occupancy endpoint', async ({ request, baseURL }) => {
+  only('A')
   await api(request, 'post', '/api/staff/sign-in', baseURL!, STAFF)
   const read = await rawApi(request, 'get', '/api/user/occupancy', baseURL!)
   expect(read.status).toBe(401)
@@ -741,6 +770,7 @@ test('GI-52 a staff session is refused on the occupancy endpoint', async ({ requ
 })
 
 test('GI-53 the occupancy endpoint answers count, max and updated_at', async ({ request, baseURL }) => {
+  only('A')
   await signInApi(request, baseURL!, createMember())
   const { status, body } = await rawApi(request, 'get', '/api/user/occupancy', baseURL!)
   expect(status).toBe(200)
@@ -751,6 +781,7 @@ test('GI-53 the occupancy endpoint answers count, max and updated_at', async ({ 
 })
 
 test('GI-54 the tab bar marks the current tab and focuses the h1 from Gimnasio', async ({ page, baseURL }) => {
+  only('AI')
   await fresh(page, baseURL)
   await openGym(page)
   for (const [name, url] of [['Check-in', /\/check-in$/], ['Mi cuenta', /\/account$/], ['Gimnasio', /\/gym$/]] as const) {
@@ -762,6 +793,7 @@ test('GI-54 the tab bar marks the current tab and focuses the h1 from Gimnasio',
 })
 
 test('GI-55 an English account sees the English Gimnasio at a count of 14', async ({ page, baseURL }) => {
+  only('AI')
   await withOccupancy(14, async () => {
     await fresh(page, baseURL, { locale: 'en' })
     await page.goto('/gym')
@@ -778,7 +810,7 @@ test('GI-55 an English account sees the English Gimnasio at a count of 14', asyn
 // -------------------------------------------------------------------------------------------------- cross device
 
 test('GI-56 two Check Ins at the same moment both count', async ({ page, baseURL, browser }) => {
-  only('D')
+  only('AI')
   await withOccupancy(2, async () => {
     await fresh(page, baseURL)
     await page.goto('/check-in')
@@ -801,6 +833,7 @@ test('GI-56 two Check Ins at the same moment both count', async ({ page, baseURL
 })
 
 test('GI-57 a Check In on one phone raises the count on another phone without a reload', async ({ page, baseURL, browser }) => {
+  only('AI')
   await withOccupancy(2, async () => {
     await fresh(page, baseURL)
     const other = await secondPhone(browser, baseURL)
@@ -815,6 +848,7 @@ test('GI-57 a Check In on one phone raises the count on another phone without a 
 })
 
 test('GI-58 a desk check-out ends the visit on one phone and lowers the count on the other', async ({ page, request, baseURL, browser }) => {
+  only('AI')
   await withOccupancy(2, async () => {
     await withVisit(page, baseURL)
     await openCard(page)

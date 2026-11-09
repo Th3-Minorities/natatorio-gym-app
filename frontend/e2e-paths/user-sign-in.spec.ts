@@ -151,6 +151,7 @@ function longEmail(total: number): string {
 // ---------------------------------------------------------------------------------------------- valid sign in
 
 test('SI-01 a User signs in with the right password and reaches Check In with one tap', async ({ page }) => {
+  only('AI')
   await signInUser(page, SEEDED_USER.email, SEEDED_USER.password)
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Check-in' }).click()
   await expect(page).toHaveURL(/\/check-in$/)
@@ -159,7 +160,7 @@ test('SI-01 a User signs in with the right password and reaches Check In with on
 })
 
 test('SI-02 Mi cuenta shows the badge and access line of each account type', async ({ page }) => {
-  only('D')
+  only('AI')
   const athlete = tinkerJson<string>(`echo json_encode(\\App\\Models\\RosterRecord::where('student_number', '802000002')->value('institutional_email'));`)
   const current = 'Acceso vigente · Término actual'
   const none = 'Sin autorización activa'
@@ -186,6 +187,7 @@ test('SI-02 Mi cuenta shows the badge and access line of each account type', asy
 // -------------------------------------------------------------------------------------------- refused sign in
 
 test('SI-03 a wrong password shows the notice, keeps the email and stays on Sign in', async ({ page }) => {
+  only('AI')
   const user = createUser()
   await attempt(page, user.email, 'no-es-la-contraseña')
   await expectWrong(page)
@@ -193,19 +195,19 @@ test('SI-03 a wrong password shows the notice, keeps the email and stays on Sign
 })
 
 test('SI-04 an unknown email gets the same notice', async ({ page }) => {
-  only('D')
+  only('AI')
   await attempt(page, `nadie-${unique()}@example.com`, 'cualquier contraseña')
   await expectWrong(page)
 })
 
 test('SI-05 staff credentials do not sign in as a User', async ({ page }) => {
-  only('D')
+  only('AI')
   await attempt(page, 'admin@example.com', 'password')
   await expectWrong(page)
 })
 
 test('SI-06 the email is case insensitive and trimmed', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await attempt(page, user.email.toUpperCase().replace('@EXAMPLE.COM', '@Example.COM'), user.password)
   await expectAccount(page)
@@ -215,7 +217,7 @@ test('SI-06 the email is case insensitive and trimmed', async ({ page }) => {
 })
 
 test('SI-07 the password is case sensitive and never trimmed', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser({ password: 'Una Frase Larga 07' })
   await attempt(page, user.email, user.password.toUpperCase())
   await expectWrong(page)
@@ -226,7 +228,7 @@ test('SI-07 the password is case sensitive and never trimmed', async ({ page }) 
 // ----------------------------------------------------------------------------------------------- field checks
 
 test('SI-08 empty fields are answered by the server under each missing field and focus the first', async ({ page }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   await openSignIn(page)
   await signInButton(page).click()
@@ -244,7 +246,7 @@ test('SI-08 empty fields are answered by the server under each missing field and
 })
 
 test('SI-09 email format: nombre@ and nombre are invalid, a@b passes the format', async ({ page }) => {
-  only('D')
+  only('AI')
   await attempt(page, 'nombre@', 'cualquier contraseña')
   await expect(page.getByText(INVALID_EMAIL, { exact: true })).toBeVisible()
   await attempt(page, 'nombre', 'cualquier contraseña')
@@ -256,7 +258,7 @@ test('SI-09 email format: nombre@ and nombre are invalid, a@b passes the format'
 })
 
 test('SI-10 email length: the field stops at 255 and the server refuses a 255 and a 256 character address', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   // The inventory expected the 255 character address to reach the account lookup; the server's email rule refuses it first
   // (addresses much shorter than 255 characters already fail that rule), so the notice is the invalid email one.
   const email = longEmail(255)
@@ -278,7 +280,7 @@ test('SI-10 email length: the field stops at 255 and the server refuses a 255 an
 })
 
 test('SI-11 password length: 255 characters sign in, the 256th is refused', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const user = createUser({ password: 'p'.repeat(255) })
   await openSignIn(page)
   await emailField(page).fill(user.email)
@@ -293,14 +295,14 @@ test('SI-11 password length: 255 characters sign in, the 256th is refused', asyn
 })
 
 test('SI-12 a non-ASCII password signs in', async ({ page }) => {
-  only('DAI')
+  only('AI')
   const user = createUser({ password: 'contraseña-ñandú-🙂-123' })
   await attempt(page, user.email, user.password)
   await expectAccount(page)
 })
 
 test('SI-13 hostile input is shown as text, runs no script and never makes a 500', async ({ page }) => {
-  only('D')
+  only('AI')
   const dialogs: string[] = []
   const statuses: number[] = []
   page.on('dialog', (dialog) => { dialogs.push(dialog.message()); void dialog.dismiss() })
@@ -321,6 +323,7 @@ test('SI-13 hostile input is shown as text, runs no script and never makes a 500
 // ------------------------------------------------------------------------------------- the one active session
 
 test('SI-19 a second phone replaces the first one', async ({ page, browser, baseURL }) => {
+  only('AI')
   const user = createUser()
   await signInUser(page, user.email, user.password)
   const second = await secondPhone(browser, baseURL)
@@ -333,7 +336,7 @@ test('SI-19 a second phone replaces the first one', async ({ page, browser, base
 })
 
 test('SI-20 the replaced phone finds out by itself when it regains focus', async ({ page, browser, baseURL }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   await signInUser(page, user.email, user.password)
   const second = await secondPhone(browser, baseURL)
@@ -345,7 +348,7 @@ test('SI-20 the replaced phone finds out by itself when it regains focus', async
 })
 
 test('SI-21 ping-pong: the first phone signs in again and the second becomes the replaced one', async ({ page, browser, baseURL }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await signInUser(page, user.email, user.password)
   const second = await secondPhone(browser, baseURL)
@@ -360,8 +363,8 @@ test('SI-21 ping-pong: the first phone signs in again and the second becomes the
   } finally { await closeAll(second.context) }
 })
 
-test('SI-22 the open visit belongs to the account, so the second phone shows it', async ({ page, browser, baseURL }, info) => {
-  test.skip(info.project.name === 'iphone', 'the inventory lists D + A or I')
+test('SI-22 the open visit belongs to the account, so the second phone shows it', async ({ page, browser, baseURL }) => {
+  only('AI')
   const member = createMember()
   await fakeLocation(page, INSIDE)
   await signInApi(page.request, baseURL!, member)
@@ -371,7 +374,7 @@ test('SI-22 the open visit belongs to the account, so the second phone shows it'
   await expect(page.locator('.check-in-lead')).toHaveText('¡Tu entrada quedó registrada!')
   expect(sessionCount(member, true)).toBe(1)
 
-  const second = await browser.newContext({ baseURL, ...(info.project.name === 'desktop' ? devices['Pixel 7'] : devices['Desktop Chrome']) })
+  const second = await browser.newContext({ baseURL, ...devices['Pixel 7'] })
   try {
     const phone = await second.newPage()
     await fakeLocation(phone, INSIDE)
@@ -385,7 +388,7 @@ test('SI-22 the open visit belongs to the account, so the second phone shows it'
 })
 
 test('SI-23 an expired short session resumes from the remember cookie unless another device signed in', async ({ page, browser, baseURL }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   await signInUser(page, user.email, user.password)
   expireSession(user)
@@ -403,6 +406,7 @@ test('SI-23 an expired short session resumes from the remember cookie unless ano
 // ------------------------------------------------------------------------------------------------- sign out
 
 test('SI-24 after Cerrar sesión every protected URL goes to Sign in and Back shows no account data', async ({ page }) => {
+  only('AI')
   const user = createUser()
   await signInUser(page, user.email, user.password)
   await page.getByRole('link', { name: /^Ajustes/ }).click()
@@ -422,7 +426,7 @@ test('SI-24 after Cerrar sesión every protected URL goes to Sign in and Back sh
 })
 
 test('SI-25 a signed out person opening Check In or Gym lands on a plain Sign in', async ({ page }) => {
-  only('D')
+  only('AI')
   for (const path of ['/check-in', '/gym']) {
     await page.goto(path)
     await expect(page, path).toHaveURL(/\/sign-in$/)
@@ -432,7 +436,7 @@ test('SI-25 a signed out person opening Check In or Gym lands on a plain Sign in
 })
 
 test('SI-26 Sign in stays reachable while signed in and Back from Mi cuenta returns to the form without signing out', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await signInApi(page.request, baseURL!, user)
   await openSignIn(page)
@@ -447,7 +451,7 @@ test('SI-26 Sign in stays reachable while signed in and Back from Mi cuenta retu
 })
 
 test('SI-27 a deleted account cannot sign in and an open session ends', async ({ page, browser, baseURL }) => {
-  only('D')
+  only('AI')
   const deleted = createUser({ deleted: true })
   await attempt(page, deleted.email, deleted.password)
   await expectWrong(page)
@@ -462,14 +466,14 @@ test('SI-27 a deleted account cannot sign in and an open session ends', async ({
 })
 
 test('SI-28 an account without a password cannot sign in', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser({ password: null })
   await attempt(page, user.email, 'cualquier contraseña')
   await expectWrong(page)
 })
 
 test('SI-29 an English account opens in English and the language switch is saved on the account', async ({ page, browser, baseURL }) => {
-  only('DAI')
+  only('AI')
   const user = createUser({ locale: 'en' })
   await attempt(page, user.email, user.password)
   await expect(page).toHaveURL(/\/account$/)
@@ -485,7 +489,7 @@ test('SI-29 an English account opens in English and the language switch is saved
 })
 
 test('SI-30 offline the form keeps its values and waits for the connection', async ({ page, context }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   await openSignIn(page)
   await context.setOffline(true)
@@ -503,7 +507,7 @@ test('SI-30 offline the form keeps its values and waits for the connection', asy
 })
 
 test('SI-31 a server error on sign in tells the person something went wrong and re-enables the button', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await page.route('**/api/user/sign-in', (route) => route.fulfill(serverError))
   await attempt(page, user.email, user.password)
@@ -514,7 +518,7 @@ test('SI-31 a server error on sign in tells the person something went wrong and 
 })
 
 test('SI-32 an expired CSRF token is refreshed and the sign in goes through', async ({ page }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   await openSignIn(page)
   await page.context().clearCookies()
@@ -525,7 +529,7 @@ test('SI-32 an expired CSRF token is refreshed and the sign in goes through', as
 })
 
 test('SI-33 a double tap sends one request and shows Iniciando sesión', async ({ page }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   await page.route('**/api/user/sign-in', async (route) => { await new Promise((resolve) => setTimeout(resolve, 1500)); await route.continue() })
   const requests = countRequests(page, 'POST', '/api/user/sign-in')
@@ -541,7 +545,7 @@ test('SI-33 a double tap sends one request and shows Iniciando sesión', async (
 })
 
 test('SI-34 the entry points: Welcome, the back arrow, Comenzar and the registration link', async ({ page }) => {
-  only('DAI')
+  only('AI')
   await page.goto('/welcome')
   await page.getByRole('button', { name: /Toca o desliza para continuar/ }).click()
   await page.getByRole('link', { name: 'Iniciar sesión', exact: true }).click()
@@ -558,7 +562,7 @@ test('SI-34 the entry points: Welcome, the back arrow, Comenzar and the registra
 })
 
 test('SI-35 the password toggle shows and hides the text', async ({ page }) => {
-  only('DAI')
+  only('AI')
   await openSignIn(page)
   await passwordField(page).fill('una contraseña')
   await expect(passwordField(page)).toHaveAttribute('type', 'password')
@@ -575,7 +579,7 @@ test('SI-35 the password toggle shows and hides the text', async ({ page }) => {
 // ---------------------------------------------------------------------------------------- forgotten password
 
 test('SI-36 a forgotten password is reset from the email link and the new password signs in', async ({ page }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   const newPassword = `una frase nueva ${unique()}`
   await openSignIn(page)
@@ -598,7 +602,7 @@ test('SI-36 a forgotten password is reset from the email link and the new passwo
 })
 
 test('SI-37 an unknown email gets the same received screen and no email', async ({ page }) => {
-  only('D')
+  only('AI')
   const address = `nadie-${unique()}@example.com`
   await page.goto('/recover-password')
   await emailField(page).fill(address)
@@ -609,7 +613,7 @@ test('SI-37 an unknown email gets the same received screen and no email', async 
 })
 
 test('SI-38 the recovery email field: empty, invalid and valid', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await page.goto('/recover-password')
   const send = page.getByRole('button', { name: 'Enviar enlace', exact: true })
@@ -624,7 +628,7 @@ test('SI-38 the recovery email field: empty, invalid and valid', async ({ page }
 })
 
 test('SI-39 a server error on the recovery request shows the notice and keeps the email', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await page.route('**/api/user/password/email', (route) => route.fulfill(serverError))
   await page.goto('/recover-password')
@@ -636,7 +640,7 @@ test('SI-39 a server error on the recovery request shows the notice and keeps th
 })
 
 test('SI-41 the broker sends one reset email per minute and a second one after the minute', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const send = async () => {
     await page.goto('/recover-password')
@@ -655,7 +659,7 @@ test('SI-41 the broker sends one reset email per minute and a second one after t
 })
 
 test('SI-42 a reset link works at 59 minutes and has expired at 61', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   ageResetToken(user.email, 59 * 60)
@@ -667,7 +671,7 @@ test('SI-42 a reset link works at 59 minutes and has expired at 61', async ({ pa
 })
 
 test('SI-43 a used link shows the expired screen', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   await page.goto(link)
@@ -678,7 +682,7 @@ test('SI-43 a used link shows the expired screen', async ({ page }) => {
 })
 
 test('SI-44 a missing or wrong link shows the expired screen and the email case does not matter', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const other = createUser()
   const link = await requestLink(page, user.email)
@@ -694,7 +698,7 @@ test('SI-44 a missing or wrong link shows the expired screen and the email case 
 })
 
 test('SI-45 the link is checked first and the button waits for it', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   await page.route('**/api/user/password/validate', async (route) => { await new Promise((resolve) => setTimeout(resolve, 2000)); await route.continue() })
@@ -707,7 +711,7 @@ test('SI-45 the link is checked first and the button waits for it', async ({ pag
 })
 
 test('SI-46 the new password needs 10 characters and a matching confirmation', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   await page.goto(link)
@@ -721,7 +725,7 @@ test('SI-46 the new password needs 10 characters and a matching confirmation', a
 })
 
 test('SI-47 a compromised new password shows the same field error', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   // Mocked: the real answer needs outbound network from the app container (Laravel falls back to accepting).
@@ -735,7 +739,7 @@ test('SI-47 a compromised new password shows the same field error', async ({ pag
 })
 
 test('SI-48 a 255 character new password is saved and signs in', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   const long = 'n'.repeat(255)
@@ -747,7 +751,7 @@ test('SI-48 a 255 character new password is saved and signs in', async ({ page }
 })
 
 test('SI-49 a reset ends the other session and only the new password works', async ({ page, browser, baseURL }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await signInUser(page, user.email, user.password)
   const second = await secondPhone(browser, baseURL)
@@ -766,7 +770,7 @@ test('SI-49 a reset ends the other session and only the new password works', asy
 })
 
 test('SI-50 the reset link opened offline keeps the values and is checked again on reconnect', async ({ page, context }) => {
-  only('DAI')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   await openSignIn(page)
@@ -784,7 +788,7 @@ test('SI-50 the reset link opened offline keeps the values and is checked again 
 })
 
 test('SI-51 saving the new password does not sign in', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   const link = await requestLink(page, user.email)
   await page.goto(link)
@@ -798,7 +802,7 @@ test('SI-51 saving the new password does not sign in', async ({ page }) => {
 // -------------------------------------------------------------------------------------- other accounts and errors
 
 test('SI-52 a staff sign in survives the User signing in and out in the same browser', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await api(page.request, 'post', '/api/staff/sign-in', baseURL!, STAFF)
   expect((await rawApi(page.request, 'get', '/api/staff/me', baseURL!)).status).toBe(200)
@@ -813,7 +817,7 @@ test('SI-52 a staff sign in survives the User signing in and out in the same bro
 })
 
 test('SI-53 an account that fails to load offers Reintentar', async ({ page }) => {
-  only('D')
+  only('AI')
   const user = createUser()
   await page.route('**/api/user/me', (route) => route.fulfill(serverError))
   await attempt(page, user.email, user.password)
@@ -831,7 +835,7 @@ test.describe('lockouts, run last', () => {
   test.afterEach(() => flushCache())
 
   test('SI-14 nine failures still allow the right password, ten start a wait that ends', async ({ page, baseURL }) => {
-    only('D')
+    only('AI')
     test.setTimeout(240_000)
     const nine = createUser()
     await fail(page, baseURL, nine.email, 9)
@@ -849,7 +853,7 @@ test.describe('lockouts, run last', () => {
   })
 
   test('SI-15 the wait follows the email to another browser, whatever its case', async ({ page, browser, baseURL }) => {
-    only('D')
+    only('AI')
     const user = createUser()
     await fail(page, baseURL, user.email, 10)
     const second = await secondPhone(browser, baseURL)
@@ -860,7 +864,7 @@ test.describe('lockouts, run last', () => {
   })
 
   test('SI-16 ten failures across ten emails lock the IP even for a right password', async ({ page, baseURL }) => {
-    only('D')
+    only('AI')
     const user = createUser()
     for (let i = 0; i < 10; i++) await fail(page, baseURL, `nadie-${unique()}@example.com`, 1)
     await attempt(page, user.email, user.password)
@@ -868,7 +872,7 @@ test.describe('lockouts, run last', () => {
   })
 
   test('SI-17 a right password clears only the account count: 4 + 4 failures never lock', async ({ page, request, baseURL }) => {
-    only('D')
+    only('AI')
     const user = createUser()
     for (let i = 0; i < 4; i++) {
       const { status } = await rawApi(request, 'post', '/api/user/sign-in', baseURL!, { email: user.email, password: 'incorrecta-' + i })
@@ -884,7 +888,7 @@ test.describe('lockouts, run last', () => {
   })
 
   test('SI-18 each new lockout waits longer: 60, 300, 900 and 3600 seconds', async ({ request, baseURL }) => {
-    only('D')
+    only('A')
     const user = createUser()
     for (const wait of [60, 300, 900, 3600]) {
       for (let i = 0; i < 10; i++) {
@@ -901,7 +905,7 @@ test.describe('lockouts, run last', () => {
   })
 
   test('SI-40 the eleventh recovery request in a minute is refused with the wait notice', async ({ page, baseURL }) => {
-    only('D')
+    only('AI')
     const user = createUser()
     for (let i = 0; i < 10; i++) {
       const { status } = await rawApi(page.request, 'post', '/api/user/password/email', baseURL!, { email: `nadie-${unique()}@example.com` })

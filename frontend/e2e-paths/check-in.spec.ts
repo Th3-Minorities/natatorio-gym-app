@@ -89,6 +89,7 @@ const visibilityPoll = (page: Page) => page.evaluate(() => document.dispatchEven
 // ------------------------------------------------------------------------------------------ valid check ins
 
 test('CI-01 paid student inside the gym gets the Gym ID', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   await hold(page)
   await expectGymId(page)
@@ -97,6 +98,7 @@ test('CI-01 paid student inside the gym gets the Gym ID', async ({ page, baseURL
 })
 
 test('CI-02 athlete gets the Gym ID with the sport and no student line', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { kind: 'athlete', sport: 'Voleibol' })
   await hold(page)
   await expectGymId(page)
@@ -106,7 +108,7 @@ test('CI-02 athlete gets the Gym ID with the sport and no student line', async (
 })
 
 test('CI-03 paid employee gets the Gym ID tagged Miembro with no group line', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { group: 'employee' })
   await hold(page)
   await expectGymId(page)
@@ -115,7 +117,7 @@ test('CI-03 paid employee gets the Gym ID tagged Miembro with no group line', as
 })
 
 test('CI-04 manual employee with a photo gets the Gym ID tagged Miembro', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { kind: 'manual', group: 'employee' })
   await hold(page)
   await expectGymId(page)
@@ -126,63 +128,70 @@ test('CI-04 manual employee with a photo gets the Gym ID tagged Miembro', async 
 // -------------------------------------------------------------------------------------- accuracy and radius
 
 test('CI-05 accuracy exactly 50 m is accepted', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, { ...INSIDE, accuracy: 50 })
   await hold(page)
   await expectGymId(page)
 })
 
 test('CI-06 accuracy 50.01 m is refused as too coarse', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, { ...INSIDE, accuracy: 50.01 })
   await hold(page)
   await expectRefusal(page, 'Necesitamos mayor precisión', 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.', 'Intentar de nuevo')
 })
 
 test('CI-07 accuracy exactly 0 m is accepted', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, {}, { ...INSIDE, accuracy: 0 })
   await hold(page)
   await expectGymId(page)
 })
 
 test('CI-08 accuracy 500 m is refused as too coarse', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, COARSE)
   await hold(page)
   await expectRefusal(page, 'Necesitamos mayor precisión')
 })
 
 test('CI-09 49.93 m north of the center is inside the radius', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, NORTH_INSIDE)
   await hold(page)
   await expectGymId(page)
 })
 
 test('CI-10 50.04 m north of the center is outside the radius', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, NORTH_OUTSIDE)
   await hold(page)
   await expectRefusal(page, 'Acércate al gimnasio', 'Debes estar dentro del área del gimnasio para registrar tu entrada.', 'Intentar de nuevo')
 })
 
 test('CI-11 49.96 m east of the center is inside the radius', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, {}, EAST_INSIDE)
   await hold(page)
   await expectGymId(page)
 })
 
 test('CI-12 50.07 m east of the center is outside the radius', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, {}, EAST_OUTSIDE)
   await hold(page)
   await expectRefusal(page, 'Acércate al gimnasio')
 })
 
 test('CI-13 one kilometer away is refused as outside', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, OUTSIDE)
   await hold(page)
   await expectRefusal(page, 'Acércate al gimnasio')
 })
 
 test('CI-14 outside, then inside: Intentar de nuevo opens the Gym ID with one visit', async ({ page, baseURL }) => {
+  only('AI')
   const member = await begin(page, baseURL, {}, OUTSIDE)
   await hold(page)
   await expectRefusal(page, 'Acércate al gimnasio')
@@ -193,7 +202,7 @@ test('CI-14 outside, then inside: Intentar de nuevo opens the Gym ID with one vi
 })
 
 test('CI-15 poor accuracy is reported before the distance', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, {}, { ...OUTSIDE, accuracy: 500 })
   await hold(page)
   await expectRefusal(page, 'Necesitamos mayor precisión')
@@ -203,6 +212,7 @@ test('CI-15 poor accuracy is reported before the distance', async ({ page, baseU
 // ------------------------------------------------------------------------------------ location permission
 
 test('CI-16 denied location shows the permission screen and sends nothing', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, DENIED)
   const posts = countRequests(page, 'POST', '/api/user/check-in')
   await hold(page)
@@ -215,12 +225,14 @@ test('CI-16 denied location shows the permission screen and sends nothing', asyn
 })
 
 test('CI-17 the real browser permission denial shows the same screen', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, null)
   await hold(page)
   await expectRefusal(page, 'Activa el permiso de ubicación')
 })
 
 test('CI-18 the location help dialog opens, closes and returns focus', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, DENIED)
   await hold(page)
   const opener = page.getByRole('button', { name: 'Ver cómo activar ubicación' })
@@ -241,6 +253,7 @@ test('CI-18 the location help dialog opens, closes and returns focus', async ({ 
 })
 
 test('CI-19 denied, then granted: Reintentar asks the API and registers', async ({ page, baseURL }) => {
+  only('AI')
   const webkit = test.info().project.name === 'iphone'
   // WebKit keeps a denied geolocation permission for the page, so on the iPhone project the grant is faked.
   if (webkit) test.info().annotations.push({ type: 'note', description: 'WebKit cannot regrant geolocation after a denial: the grant is faked with a location mock' })
@@ -260,7 +273,7 @@ test('CI-19 denied, then granted: Reintentar asks the API and registers', async 
 })
 
 test('CI-20 an unanswered permission prompt keeps the locating state', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const member = createMember()
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'geolocation', { configurable: true, value: { getCurrentPosition() { /* never answers */ } } })
@@ -279,20 +292,21 @@ test('CI-20 an unanswered permission prompt keeps the locating state', async ({ 
 const unavailable = (page: Page) => expectRefusal(page, 'No pudimos obtener tu ubicación', 'Espera un momento y vuelve a intentarlo desde el gimnasio.', 'Intentar de nuevo')
 
 test('CI-21 position unavailable (code 2) shows the unavailable screen', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, UNAVAILABLE)
   await hold(page)
   await unavailable(page)
 })
 
 test('CI-22 position timeout (code 3) shows the unavailable screen', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, {}, TIMEOUT)
   await hold(page)
   await unavailable(page)
 })
 
 test('CI-23 a browser with no geolocation shows the unavailable screen', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const member = createMember()
   await page.addInitScript(() => { delete (Navigator.prototype as unknown as Record<string, unknown>).geolocation })
   await signInApi(page.request, baseURL!, member)
@@ -303,6 +317,7 @@ test('CI-23 a browser with no geolocation shows the unavailable screen', async (
 })
 
 test('CI-24 unavailable, then inside: Intentar de nuevo opens the Gym ID', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, {}, UNAVAILABLE)
   await hold(page)
   await unavailable(page)
@@ -314,6 +329,7 @@ test('CI-24 unavailable, then inside: Intentar de nuevo opens the Gym ID', async
 // ------------------------------------------------------------------------------------------ hold gesture
 
 test('CI-25 releasing at 900 ms cancels: no request, no refusal', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   const posts = countRequests(page, 'POST', '/api/user/check-in')
   // WebKit takes about 100 ms to deliver the release, so the press is shortened there to keep it under one second at the page.
@@ -325,6 +341,7 @@ test('CI-25 releasing at 900 ms cancels: no request, no refusal', async ({ page,
 })
 
 test('CI-26 holding 1100 ms sends one request and opens the Gym ID', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   const posts = countRequests(page, 'POST', '/api/user/check-in')
   await hold(page, 1100)
@@ -333,7 +350,7 @@ test('CI-26 holding 1100 ms sends one request and opens the Gym ID', async ({ pa
 })
 
 test('CI-27 moving focus away before one second cancels the hold', async ({ page, baseURL }) => {
-  only('D')
+  only('AI') // moved to phones 2026-11-09 (keyboard row, was desktop only)
   await begin(page, baseURL)
   const posts = countRequests(page, 'POST', '/api/user/check-in')
   await page.locator(HOLD).focus()
@@ -347,7 +364,7 @@ test('CI-27 moving focus away before one second cancels the hold', async ({ page
 })
 
 test('CI-28 holding Enter with auto-repeat sends one request', async ({ page, baseURL }) => {
-  only('D')
+  only('AI') // moved to phones 2026-11-09 (keyboard row, was desktop only)
   await begin(page, baseURL)
   const posts = countRequests(page, 'POST', '/api/user/check-in')
   await page.locator(HOLD).focus()
@@ -361,7 +378,7 @@ test('CI-28 holding Enter with auto-repeat sends one request', async ({ page, ba
 })
 
 test('CI-29 a click with no pointer press (screen reader) registers at once', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   await page.locator(HOLD).evaluate((element) => (element as HTMLElement).click())
   await expectGymId(page)
@@ -394,6 +411,7 @@ test('CI-30 a touch long press registers and opens no context menu', async ({ pa
 })
 
 test('CI-31 pressing again while registering sends exactly one request', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   let posts = 0
   await page.route('**/api/user/check-in', async (route) => {
@@ -414,6 +432,7 @@ test('CI-31 pressing again while registering sends exactly one request', async (
 const authorizationRefusal = (page: Page) => expectRefusal(page, 'Tu acceso no está vigente', 'No encontramos una autorización vigente para registrar tu entrada.')
 
 test('CI-32 a paid member whose term ended is refused', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { authorization: 'ended' })
   await hold(page)
   await authorizationRefusal(page)
@@ -422,20 +441,21 @@ test('CI-32 a paid member whose term ended is refused', async ({ page, baseURL }
 })
 
 test('CI-33 an account with no authorization row is refused', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { authorization: 'none' })
   await hold(page)
   await authorizationRefusal(page)
 })
 
 test('CI-34 a revoked paid authorization is refused', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { authorization: 'revoked' })
   await hold(page)
   await authorizationRefusal(page)
 })
 
 test('CI-35 a removed athlete gets the athlete refusal with a text-only action', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { kind: 'athlete', authorization: 'revoked' })
   await hold(page)
   await expect(heading(page, 'Tu acceso de atleta no está vigente')).toBeVisible()
@@ -445,6 +465,7 @@ test('CI-35 a removed athlete gets the athlete refusal with a text-only action',
 })
 
 test('CI-36 Revisar mi acceso opens Mi cuenta without an active authorization', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { authorization: 'ended' })
   await hold(page)
   await page.getByRole('link', { name: 'Revisar mi acceso' }).click()
@@ -454,7 +475,7 @@ test('CI-36 Revisar mi acceso opens Mi cuenta without an active authorization', 
 })
 
 test('CI-37 the last day of the term still allows Check In', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const old = setCurrentTermEnd(0)
   try {
     await begin(page, baseURL)
@@ -464,7 +485,7 @@ test('CI-37 the last day of the term still allows Check In', async ({ page, base
 })
 
 test('CI-38 the day after the term ended refuses Check In', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const old = setCurrentTermEnd(-1)
   try {
     await begin(page, baseURL)
@@ -474,7 +495,7 @@ test('CI-38 the day after the term ended refuses Check In', async ({ page, baseU
 })
 
 test('CI-39 an authorization only in a future term is refused', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { authorization: 'future' })
   await hold(page)
   await authorizationRefusal(page)
@@ -483,6 +504,7 @@ test('CI-39 an authorization only in a future term is refused', async ({ page, b
 // ---------------------------------------------------------------------------------------------------- photo
 
 test('CI-40 a missing term photo asks for a new photo', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { kind: 'manual', group: 'employee', photo: false })
   await hold(page)
   await expect(heading(page, 'Necesitamos una foto nueva')).toBeVisible()
@@ -492,6 +514,7 @@ test('CI-40 a missing term photo asks for a new photo', async ({ page, baseURL }
 })
 
 test('CI-41 a pending photo asks for a new photo', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { photoPending: true })
   await hold(page)
   await expect(heading(page, 'Tu foto necesita actualizarse')).toBeVisible()
@@ -499,7 +522,7 @@ test('CI-41 a pending photo asks for a new photo', async ({ page, baseURL }) => 
 })
 
 test('CI-42 after the pending photo is cleared, a reload and a new hold open the Gym ID', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const member = await begin(page, baseURL, { photoPending: true })
   await hold(page)
   await expect(heading(page, 'Tu foto necesita actualizarse')).toBeVisible()
@@ -513,7 +536,7 @@ test('CI-42 after the pending photo is cleared, a reload and a new hold open the
 // ---------------------------------------------------------------------------------------- order of checks
 
 test('CI-43 the authorization is checked before the location', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { authorization: 'ended' }, OUTSIDE)
   await hold(page)
   await authorizationRefusal(page)
@@ -521,14 +544,14 @@ test('CI-43 the authorization is checked before the location', async ({ page, ba
 })
 
 test('CI-44 the photo is checked before the location', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { photoPending: true }, OUTSIDE)
   await hold(page)
   await expect(heading(page, 'Tu foto necesita actualizarse')).toBeVisible()
 })
 
 test('CI-45 a closure is checked before the location', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, {}, OUTSIDE)
   const closure = addClosure()
   try {
@@ -540,6 +563,7 @@ test('CI-45 a closure is checked before the location', async ({ page, baseURL })
 // ----------------------------------------------------------------------------------------- hours and closure
 
 test('CI-46 a closure shows the neutral closed screen', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   const closure = addClosure()
   try {
@@ -552,7 +576,7 @@ test('CI-46 a closure shows the neutral closed screen', async ({ page, baseURL }
 })
 
 test('CI-47 two minutes before closing time the gym is open', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   const removed = setHoursEndingIn(2)
   test.skip(removed === null, 'needs-clock: too close to midnight for a same-day closing time')
@@ -563,7 +587,7 @@ test('CI-47 two minutes before closing time the gym is open', async ({ page, bas
 })
 
 test('CI-48 two minutes after closing time the gym is closed', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   const removed = setHoursEndingIn(-2)
   test.skip(removed === null, 'needs-clock: too close to midnight for a same-day closing time')
@@ -586,6 +610,7 @@ const exclusiveView = async (page: Page) => {
 }
 
 test('CI-49 a member during an athletes-only period sees the exclusive view', async ({ page, baseURL }) => {
+  only('AI')
   const member = await begin(page, baseURL)
   const period = addPeriod(-10, 60)
   try {
@@ -596,6 +621,7 @@ test('CI-49 a member during an athletes-only period sees the exclusive view', as
 })
 
 test('CI-50 an athlete during an athletes-only period gets the Gym ID', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { kind: 'athlete' })
   const period = addPeriod(-10, 60)
   try {
@@ -606,7 +632,7 @@ test('CI-50 an athlete during an athletes-only period gets the Gym ID', async ({
 })
 
 test('CI-51 a manual member during an athletes-only period sees the exclusive view', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { kind: 'manual', group: 'employee' })
   const period = addPeriod(-10, 60)
   try {
@@ -616,7 +642,7 @@ test('CI-51 a manual member during an athletes-only period sees the exclusive vi
 })
 
 test('CI-52 the exclusive view returns to the hold button when the period ends', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   const period = addPeriod(-10, 60)
   try {
@@ -630,6 +656,7 @@ test('CI-52 the exclusive view returns to the hold button when the period ends',
 })
 
 test('CI-53 an athletes-only period starting in 59 minutes shows the notice', async ({ page, baseURL }) => {
+  only('AI')
   const period = addPeriod(59, 179)
   try {
     await begin(page, baseURL)
@@ -641,7 +668,7 @@ test('CI-53 an athletes-only period starting in 59 minutes shows the notice', as
 })
 
 test('CI-54 an athletes-only period starting in 61 minutes shows no notice', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const period = addPeriod(61, 181)
   try {
     await begin(page, baseURL)
@@ -650,7 +677,7 @@ test('CI-54 an athletes-only period starting in 61 minutes shows no notice', asy
 })
 
 test('CI-55 a closure wins over an athletes-only period', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   const closure = addClosure()
   const period = addPeriod(-10, 60)
@@ -661,7 +688,7 @@ test('CI-55 a closure wins over an athletes-only period', async ({ page, baseURL
 })
 
 test('CI-56 an athletes-only period outside regular hours opens the gym for athletes only', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL, { kind: 'athlete' })
   const removed = setHoursEndingIn(-2)
   test.skip(removed === null, 'needs-clock: too close to midnight for a same-day closing time')
@@ -681,7 +708,7 @@ test('CI-56 an athletes-only period outside regular hours opens the gym for athl
 // ------------------------------------------------------------------------------------ repeated and several
 
 test('CI-57 a repeated Check In through the API returns the same visit', async ({ request, baseURL }) => {
-  only('D')
+  only('A')
   const member = createMember()
   await signInApi(request, baseURL!, member)
   const first = await api(request, 'post', '/api/user/check-in', baseURL!, INSIDE)
@@ -693,6 +720,7 @@ test('CI-57 a repeated Check In through the API returns the same visit', async (
 })
 
 test('CI-58 reloading at the Gym ID keeps the entry time', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   await hold(page)
   await expectGymId(page)
@@ -703,7 +731,7 @@ test('CI-58 reloading at the Gym ID keeps the entry time', async ({ page, baseUR
 })
 
 test('CI-59 with an open visit the API ignores bad location numbers', async ({ request, baseURL }) => {
-  only('D')
+  only('A')
   const member = createMember()
   await signInApi(request, baseURL!, member)
   const first = await api(request, 'post', '/api/user/check-in', baseURL!, INSIDE)
@@ -713,6 +741,7 @@ test('CI-59 with an open visit the API ignores bad location numbers', async ({ r
 })
 
 test('CI-60 a second phone on the same account shows the same Gym ID', async ({ page, baseURL, browser }) => {
+  only('AI')
   const member = await begin(page, baseURL)
   await hold(page)
   await expectGymId(page)
@@ -728,6 +757,7 @@ test('CI-60 a second phone on the same account shows the same Gym ID', async ({ 
 })
 
 test('CI-61 the first phone returns to sign-in after a second sign-in', async ({ page, baseURL, browser }) => {
+  only('AI')
   const member = await begin(page, baseURL)
   await hold(page)
   await expectGymId(page)
@@ -742,6 +772,7 @@ test('CI-61 the first phone returns to sign-in after a second sign-in', async ({
 })
 
 test('CI-62 Back after Check In shows Mi cuenta and Forward shows the same Gym ID', async ({ page, baseURL }) => {
+  only('AI')
   const member = createMember()
   await fakeLocation(page, INSIDE)
   await signInApi(page.request, baseURL!, member)
@@ -761,7 +792,7 @@ test('CI-62 Back after Check In shows Mi cuenta and Forward shows the same Gym I
 })
 
 test('CI-63 two simultaneous requests create one visit', async ({ request, baseURL }) => {
-  only('D')
+  only('A')
   const member = createMember()
   await signInApi(request, baseURL!, member)
   const [one, two] = await Promise.all([
@@ -774,6 +805,7 @@ test('CI-63 two simultaneous requests create one visit', async ({ request, baseU
 })
 
 test('CI-64 re-entry after a desk check-out is a new visit', async ({ page, request, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   await hold(page)
   await expectGymId(page)
@@ -793,6 +825,7 @@ test('CI-64 re-entry after a desk check-out is a new visit', async ({ page, requ
 const offlineScreen = (page: Page) => expectRefusal(page, 'Necesitas conexión', 'Conéctate a internet para verificar y registrar tu entrada.', 'Reintentar conexión')
 
 test('CI-65 offline when pressing shows the connection screen and sends nothing', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   const posts = countRequests(page, 'POST', '/api/user/check-in')
   await page.context().setOffline(true)
@@ -806,6 +839,7 @@ test.describe('CI-66 offline at page load', () => {
   // The base config blocks service workers; the offline shell needs the real one.
   test.use({ serviceWorkers: 'allow' })
   test('CI-66 offline at page load shows the connection screen', async ({ page, baseURL }) => {
+    only('AI')
     await begin(page, baseURL)
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready
@@ -820,6 +854,7 @@ test.describe('CI-66 offline at page load', () => {
 })
 
 test('CI-67 back online, the app recovers and a new hold opens the Gym ID after asking the API first', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   await page.context().setOffline(true)
   await hold(page)
@@ -838,7 +873,7 @@ test('CI-67 back online, the app recovers and a new hold opens the Gym ID after 
 })
 
 test('CI-68 an aborted request shows the connection screen', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   await page.route('**/api/user/check-in', (route) => route.request().method() === 'POST' ? route.abort('connectionfailed') : route.fallback())
   await hold(page)
@@ -846,7 +881,7 @@ test('CI-68 an aborted request shows the connection screen', async ({ page, base
 })
 
 test('CI-69 a lost response is recovered by the retry without a second visit', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const member = await begin(page, baseURL)
   let posts = 0
   await page.route('**/api/user/check-in', async (route) => {
@@ -865,6 +900,7 @@ test('CI-69 a lost response is recovered by the retry without a second visit', a
 })
 
 test('CI-70 a server error shows the send error screen', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   await page.route('**/api/user/check-in', (route) => route.request().method() === 'POST'
     ? route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: { code: 'server_error' } }) }) : route.fallback())
@@ -873,7 +909,7 @@ test('CI-70 a server error shows the send error screen', async ({ page, baseURL 
 })
 
 test('CI-71 an HTML proxy page (502) is treated as offline', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   await page.route('**/api/user/check-in', (route) => route.request().method() === 'POST'
     ? route.fulfill({ status: 502, contentType: 'text/html', body: '<html><body>Bad gateway</body></html>' }) : route.fallback())
@@ -890,7 +926,7 @@ async function sendOutside(request: import('@playwright/test').APIRequestContext
 }
 
 test('CI-72 ten requests in a minute are all answered, none throttled', async ({ request, baseURL }) => {
-  only('D')
+  only('A')
   const member = createMember()
   await signInApi(request, baseURL!, member)
   const answers = await sendOutside(request, baseURL, 10)
@@ -901,7 +937,7 @@ test('CI-72 ten requests in a minute are all answered, none throttled', async ({
 })
 
 test('CI-73 the eleventh request in a minute shows the wait screen', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   await sendOutside(page.request, baseURL, 10)
   await hold(page)
@@ -912,6 +948,7 @@ test('CI-73 the eleventh request in a minute shows the wait screen', async ({ pa
 // ------------------------------------------------------------------------------------ sessions and access
 
 test('CI-74 a Check In from a replaced session goes to sign-in', async ({ page, baseURL, browser }) => {
+  only('AI')
   const member = await begin(page, baseURL)
   const second = await secondPhone(browser, baseURL)
   try {
@@ -923,6 +960,7 @@ test('CI-74 a Check In from a replaced session goes to sign-in', async ({ page, 
 })
 
 test('CI-75 signed out, Check In redirects to sign-in and sign-in lands on Mi cuenta', async ({ page }) => {
+  only('AI')
   const member = createMember()
   await page.goto('/check-in')
   await expect(page).toHaveURL(/\/sign-in/)
@@ -931,7 +969,7 @@ test('CI-75 signed out, Check In redirects to sign-in and sign-in lands on Mi cu
 })
 
 test('CI-76 a staff session is refused on the user Check In endpoint', async ({ request, baseURL }) => {
-  only('D')
+  only('A')
   await api(request, 'post', '/api/staff/sign-in', baseURL!, STAFF)
   const read = await rawApi(request, 'get', '/api/user/check-in', baseURL!)
   const write = await rawApi(request, 'post', '/api/user/check-in', baseURL!, INSIDE)
@@ -942,7 +980,7 @@ test('CI-76 a staff session is refused on the user Check In endpoint', async ({ 
 })
 
 test('CI-77 out-of-range numbers are a validation error and create no visit', async ({ request, baseURL }) => {
-  only('D')
+  only('A')
   const member = createMember()
   await signInApi(request, baseURL!, member)
   for (const body of [{ latitude: 90.0001, longitude: -67.141, accuracy: 12 }, { latitude: 18.211, longitude: -180.0001, accuracy: 12 }, { latitude: 18.211, longitude: -67.141, accuracy: -1 }]) {
@@ -953,7 +991,7 @@ test('CI-77 out-of-range numbers are a validation error and create no visit', as
 })
 
 test('CI-78 missing location numbers answer location_required', async ({ request, baseURL }) => {
-  only('D')
+  only('A')
   const member = createMember()
   await signInApi(request, baseURL!, member)
   const answer = await rawApi(request, 'post', '/api/user/check-in', baseURL!, {})
@@ -964,6 +1002,7 @@ test('CI-78 missing location numbers answer location_required', async ({ request
 // ------------------------------------------------------------------------------------------ device and data
 
 test('CI-79 an English account sees the English Check In texts', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL, { locale: 'en' }, OUTSIDE)
   await expect(page.getByRole('button', { name: 'Press and hold to enter' })).toBeVisible()
   await hold(page)
@@ -975,6 +1014,7 @@ test('CI-79 an English account sees the English Check In texts', async ({ page, 
 })
 
 test('CI-80 the tab bar opens each screen, marks the current tab and focuses the h1', async ({ page, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   const bar = page.getByRole('navigation', { name: 'Navegación principal' })
   for (const [name, url] of [['Gimnasio', /\/gym$/], ['Mi cuenta', /\/account$/], ['Check-in', /\/check-in$/]] as const) {
@@ -986,7 +1026,7 @@ test('CI-80 the tab bar opens each screen, marks the current tab and focuses the
 })
 
 test('CI-81 coordinates are never stored or logged', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const where = { latitude: 18.211003, longitude: -67.141007, accuracy: 12 }
   const member = await begin(page, baseURL, {}, where)
   await hold(page)
@@ -1008,6 +1048,7 @@ echo json_encode($hits);`)
 // ---------------------------------------------------------------------------------------- cross device
 
 test('CI-82 a desk check-out ends the visit on the phone', async ({ page, request, baseURL }) => {
+  only('AI')
   await begin(page, baseURL)
   await hold(page)
   await expectGymId(page)
@@ -1017,7 +1058,7 @@ test('CI-82 a desk check-out ends the visit on the phone', async ({ page, reques
 })
 
 test('CI-83 an Administrator check-out also ends the visit', async ({ page, request, baseURL }) => {
-  only('D')
+  only('AI')
   await begin(page, baseURL)
   await hold(page)
   await expectGymId(page)

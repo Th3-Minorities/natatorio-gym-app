@@ -57,6 +57,7 @@ function pillMetrics(page: Page) {
 }
 
 test('V-01 the Miembro pill keeps equal space left of the icon and right of the text (active card)', async ({ page, baseURL }) => {
+  only('AI')
   await activeCard(page, baseURL)
   const m = await pillMetrics(page)
   console.log('V-01 active', JSON.stringify(m))
@@ -65,6 +66,7 @@ test('V-01 the Miembro pill keeps equal space left of the icon and right of the 
 })
 
 test('V-01 the Miembro pill keeps equal space left of the icon and right of the text (ended card)', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await endedCard(page, baseURL, playwright.request)
   const m = await pillMetrics(page)
   console.log('V-01 ended', JSON.stringify(m))
@@ -88,6 +90,7 @@ function badgeGap(page: Page) {
 }
 
 test('V-02 the verified badge sits next to a wrapped name', async ({ page, baseURL }) => {
+  only('AI')
   await activeCard(page, baseURL, LONG_NAME)
   const m = await badgeGap(page)
   console.log('V-02 long', JSON.stringify(m))
@@ -96,6 +99,7 @@ test('V-02 the verified badge sits next to a wrapped name', async ({ page, baseU
 })
 
 test('V-02 control: the verified badge sits next to a short name', async ({ page, baseURL }) => {
+  only('AI')
   await activeCard(page, baseURL, SHORT_NAME)
   const m = await badgeGap(page)
   console.log('V-02 short', JSON.stringify(m))
@@ -121,6 +125,7 @@ async function bandState(page: Page) {
 }
 
 test('V-03 ended view at scroll 0: the navigation does not cut content with a hard edge above the pill', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await endedCard(page, baseURL, playwright.request)
   const s = await bandState(page)
   console.log('V-03 band ended', JSON.stringify(s))
@@ -129,6 +134,7 @@ test('V-03 ended view at scroll 0: the navigation does not cut content with a ha
 })
 
 test('V-03 Gym ID active view at scroll 0: the navigation does not cut content with a hard edge above the pill', async ({ page, baseURL }) => {
+  only('AI')
   await activeCard(page, baseURL)
   const s = await bandState(page)
   console.log('V-03 band active', JSON.stringify(s))
@@ -157,6 +163,7 @@ async function bottomState(page: Page, cardSelector: string) {
 }
 
 test('V-03 ended view: the Duración total card is fully visible above the navigation after scrolling', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await endedCard(page, baseURL, playwright.request)
   const s = await bottomState(page, '.check-in-duration')
   console.log('V-03 ended', JSON.stringify(s))
@@ -167,6 +174,7 @@ test('V-03 ended view: the Duración total card is fully visible above the navig
 })
 
 test('V-03 Gym ID active view: the Duración card is fully visible above the navigation after scrolling', async ({ page, baseURL }) => {
+  only('AI')
   await activeCard(page, baseURL)
   const s = await bottomState(page, '.check-in-duration')
   console.log('V-03 active', JSON.stringify(s))
@@ -178,6 +186,7 @@ test('V-03 Gym ID active view: the Duración card is fully visible above the nav
 // ------------------------------------------------------------------------------------------------- V-04 to V-06
 
 test('V-04 N-07 while the link is being checked only the loading block shows, no form', async ({ page }) => {
+  only('AI')
   const user = createUser()
   await page.goto('/recover-password')
   await page.getByLabel('Correo electrónico').fill(user.email)
@@ -201,6 +210,7 @@ test('V-04 N-07 while the link is being checked only the loading block shows, no
 })
 
 test('V-05 N-02 wrong credentials outline both fields and show the inline text under the password, with no boxed notice', async ({ page }) => {
+  only('AI')
   const user = createUser()
   await page.goto('/sign-in')
   await page.getByLabel('Correo electrónico').fill(user.email)

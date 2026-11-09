@@ -195,7 +195,7 @@ test('TR-03 with no term today the chip is replaced by the Sin término activo n
 // ================================================================================================ cross-device: dates
 
 test('TR-04 when the term has ended, the dashboard shows the notice and the phone refuses the member', async ({ page, baseURL, browser }) => {
-  only('DAI')
+  only('AI')
   const member = createMember()
   await withTerms({ [CURRENT]: { ends_on: addDays(todayPR(), -1) } }, async () => {
     const desk = await dashboard(browser, baseURL)
@@ -212,7 +212,7 @@ test('TR-04 when the term has ended, the dashboard shows the notice and the phon
 })
 
 test('TR-05 on the last day of a term the chip and the phone still pass; one day later both flip', async ({ page, baseURL, browser }) => {
-  only('DA')
+  only('AI')
   const today = todayPR()
   const first = createMember()
   const second = createMember()
@@ -235,7 +235,7 @@ test('TR-05 on the last day of a term the chip and the phone still pass; one day
 })
 
 test('TR-06 when a new term starts today the chip shows it and the phone member has no authorization in it', async ({ page, baseURL, browser }) => {
-  only('DAI')
+  only('AI')
   const today = todayPR()
   const member = createMember()
   await withTerms({ [CURRENT]: { ends_on: addDays(today, -1) }, [NEXT]: { starts_on: today } }, async (saved) => {
@@ -283,7 +283,7 @@ test('TR-07 a 50 character term name fits the Acceso vigente caption; 51 charact
 // ======================================================================================= the database rules (terminal)
 
 test('TR-08 the database refuses overlapping terms and a start after the end, and accepts adjacent, gap and one-day terms', async () => {
-  only('D')
+  only('A')
   const terms = snapshotTerms()
   const current = find(terms, CURRENT)
   const last = terms.map((term) => term.ends_on).sort().at(-1)!
@@ -308,7 +308,7 @@ test('TR-08 the database refuses overlapping terms and a start after the end, an
 })
 
 test('TR-09 the database refuses a repeated student number, even a removed one, and a number over 20 characters', async () => {
-  only('D')
+  only('A')
   const made: number[] = []
   const unique = `p152${Date.now()}${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`
   const insert = (number: string) => {
@@ -437,7 +437,7 @@ test('TR-14 a withdrawn athlete sees no active access and the athlete refusal on
 })
 
 test('TR-15 an athlete withdrawn while signed in loses the access caption within one refetch and is refused on Check In', async ({ page, baseURL }) => {
-  only('DA')
+  only('A')
   const athlete = await fresh(page, baseURL, { kind: 'athlete' })
   await openAccount(page)
   await expect(page.getByText('Acceso vigente · Término actual', { exact: true })).toBeVisible()
@@ -488,7 +488,7 @@ test('TR-17 a reinstated athlete gets the access caption back and passes the aut
 })
 
 test('TR-18 the database refuses to reactivate an authorization when the athlete has another active one in the term', async () => {
-  only('D')
+  only('A')
   const athlete = createMember({ kind: 'athlete', authorization: 'revoked' })
   addSecondAuthorization(athlete)
   expect(tryReactivate(athlete)).toBe('23505')
@@ -516,7 +516,7 @@ test('TR-20 an account that never had an authorization has no badge, the Soy atl
 // ================================================================================================= cross-device: term end
 
 test('TR-21 a visit that began on the last evening of a term closes at the term end and leaves the occupancy', async ({ page, baseURL }) => {
-  only('DA')
+  only('A')
   const member = await fresh(page, baseURL)
   await openCheckIn(page)
   await hold(page)

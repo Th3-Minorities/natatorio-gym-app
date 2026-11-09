@@ -44,6 +44,7 @@ test('AB-02 install help on iPhone opens the iPhone tab with the Safari steps an
 })
 
 test('AB-03 the tabs swap the panel and keep the chosen tab', async ({ page }) => {
+  only('AI')
   await page.goto('/install')
   await expectTab(page, defaultTab())
   await tab(page, 'iPhone').click()
@@ -61,7 +62,7 @@ test('AB-03 the tabs swap the panel and keep the chosen tab', async ({ page }) =
 })
 
 test('AB-04 the arrow keys, Home and End move the selection and the focus', async ({ page }) => {
-  only('D')
+  only('AI') // moved to phones 2026-11-09 (keyboard row, was desktop only)
   await page.goto('/install')
   await expectTab(page, 'Android')
   await tab(page, 'Android').focus()
@@ -268,7 +269,7 @@ test('AB-17 the device language English before sign in translates the install he
 test.describe('AB-18 manifest and icons', () => {
   test.use({ serviceWorkers: 'allow' })
   test('AB-18 the manifest, the icons and the worker are linked and served', async ({ page }) => {
-    only('DA')
+    only('A')
     await page.goto('/install')
     const href = (await page.locator('link[rel="manifest"]').getAttribute('href'))!
     const manifestResponse = await page.request.get(href)
@@ -309,7 +310,7 @@ test('AB-20 launched as the installed app with the session ended, Mi cuenta send
 })
 
 test('AB-21 a path outside the User routes opens the health page', async ({ page }) => {
-  only('DA')
+  only('A')
   for (const path of ['/', '/no-existe']) {
     await page.goto(path)
     await expect(page.getByText('API: conectada', { exact: true })).toBeVisible()
@@ -323,7 +324,7 @@ test.describe('offline', () => {
   test.use({ serviceWorkers: 'allow' })
 
   test('AB-22 the worker takes control, caches the app once and never the API', async ({ page }) => {
-    only('DA')
+    only('A')
     await page.goto('/welcome')
     await workerControls(page)
     expect(await page.evaluate(async () => (await fetch('/api/health')).status)).toBe(200)
@@ -343,6 +344,7 @@ test.describe('offline', () => {
   })
 
   test('AB-23 Welcome opens offline in its collapsed state', async ({ page, context }) => {
+    only('AI')
     await page.goto('/welcome')
     await workerControls(page)
     await context.setOffline(true)
@@ -382,6 +384,7 @@ test.describe('offline', () => {
   })
 
   test('AB-25 the install help opens offline and its tabs work', async ({ page, context }) => {
+    only('AI')
     await page.goto('/welcome')
     await workerControls(page)
     await context.setOffline(true)

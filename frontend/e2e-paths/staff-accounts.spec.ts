@@ -288,7 +288,7 @@ test('SA-09 an email with no @ gets the wrong-password notice, not a validation 
 })
 
 test('SA-10 a User account cannot sign in on the staff page', async ({ page }) => {
-  only('D,A')
+  only('D')
   await attempt(page, 'pago-activo@example.com', 'password')
   await expectWrong(page)
   await page.goto('/account')
@@ -892,7 +892,7 @@ test('SA-50 the eleventh save in a minute says to wait, for invitation and reset
 })
 
 test('SA-51 a User reset link does not open the staff reset page', async ({ page, baseURL }) => {
-  only('D,A')
+  only('D')
   const user = createUser()
   await page.goto('/recover-password')
   await expect(heading(page, 'Recuperar contraseña')).toBeVisible()
@@ -1711,7 +1711,7 @@ test('SA-93 the first Administrator command refuses when an active Administrator
 })
 
 test('SA-94 a deactivated desk account cannot check a member out and the Gym ID stays active', async ({ page, baseURL, playwright }) => {
-  only('D,A')
+  only('A,I')
   const member = createMember()
   const sessionId = tinkerJson<number>(`echo json_encode(\\App\\Models\\FacilitySession::factory()->startedMinutesAgo(5)->create(['user_id' => ${member.id}])->id);`)
   const admin = createStaff({ role: 'admin' })

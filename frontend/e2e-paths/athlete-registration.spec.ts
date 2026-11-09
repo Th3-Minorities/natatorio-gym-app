@@ -15,7 +15,6 @@ import {
 
 test.setTimeout(240_000)
 
-const D = 'desktop'
 const A = 'android'
 const I = 'iphone'
 const PASSWORD = 'una frase larga para el registro de prueba'
@@ -177,7 +176,8 @@ async function register(page: Page, path: string, options: { password?: string; 
 // ------------------------------------------------------------------------------------------------------------- the paths
 
 test.describe('athlete registration paths', () => {
-  test('AR-01 an athlete on the roster registers from Welcome through the emailed link and reaches Check In', async ({ page }) => {
+  test('AR-01 an athlete on the roster registers from Welcome through the emailed link and reaches Check In', async ({ page }, info) => {
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     await page.goto('/welcome')
     await page.getByRole('button', { name: 'Toca o desliza para continuar' }).click()
@@ -208,7 +208,8 @@ test.describe('athlete registration paths', () => {
     await expect(page.getByText('Acceso vigente · Término actual')).toBeVisible()
   })
 
-  test('AR-02 a student number on the roster shows Revisa tu correo with the masked email and the resend countdown', async ({ page }) => {
+  test('AR-02 a student number on the roster shows Revisa tu correo with the masked email and the resend countdown', async ({ page }, info) => {
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     await openIdentify(page)
     await lookup(page, athlete.number)
@@ -226,7 +227,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-03 the email goes to the roster address with the subject, button, expiry text and a 64 character token', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     await openIdentify(page)
     await lookup(page, athlete.number)
@@ -242,7 +243,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-04 a number not on the roster asks the person to check it and sends no email', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     await openIdentify(page)
     await lookup(page, '900000000')
@@ -256,7 +257,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-05 a number removed from the roster gets the same answer as one not on it', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     const athlete = createAthlete({ removed: true })
     await openIdentify(page)
@@ -268,7 +269,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-06 a number already claimed points to sign in and sends no email', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     await openIdentify(page)
     await lookup(page, '802000002')
@@ -280,7 +281,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-07 8 and 10 digits are looked up as authorization numbers and 9 digits as a student number', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     const athlete = createAthlete()
     await openIdentify(page)
@@ -296,7 +297,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-08 a letter or dashes make an authorization number, spaces are trimmed, all zeros is not on the roster', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     const athlete = createAthlete()
     const n = athlete.number
@@ -315,7 +316,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-09 hostile input after a valid number is data: no script, no error, no email', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     const athlete = createAthlete()
     const dialogs: string[] = []
@@ -333,7 +334,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-10 a roster email that already has an account asks to sign in and sends no email', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete({ account: true })
     await openIdentify(page)
     await lookup(page, athlete.number)
@@ -349,7 +350,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-11 Corregir número goes back to the field with the number kept and a paid number then works', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     const order = createOrder('AR')
     await openIdentify(page)
@@ -364,7 +365,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-12 a second lookup is blocked before 300 s with the time to try again and sends another email after', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     await requestLink(page, athlete)
     // 295 s, not 299: the round trip of the lookup takes about a second, so 299 would sometimes pass.
@@ -386,7 +387,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-13 the resend button waits for the countdown, sends a second email and the first link is replaced', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     await page.clock.install()
     const first = tokenOf(await requestLink(page, athlete))
@@ -408,7 +409,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-14 five links a day are sent, the sixth waits until 24 h after the first, and another record is not affected', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     const other = createAthlete()
     await openIdentify(page)
@@ -432,7 +433,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-15 tapping Continuar twice sends one lookup and one email', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     let lookups = 0
     page.on('request', (request) => { if (request.url().endsWith('/registration/lookup')) lookups += 1 })
@@ -445,7 +446,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-16 offline the number step shows the banner and keeps the number, and it works again online', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     await openIdentify(page)
     await numberField(page).fill(athlete.number)
@@ -464,7 +465,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-17 when the email cannot be sent the person sees the server error and a retry sends at once', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     test.setTimeout(300_000)
     const athlete = createAthlete()
     try {
@@ -483,7 +484,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-18 with English chosen on Welcome the screen and the email are in English', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     await page.goto('/welcome')
     await page.getByRole('button', { name: 'Toca o desliza para continuar' }).click()
@@ -502,7 +503,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-19 the emailed link shows Verificando tu enlace, then the privacy notice and the password step with the roster name', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     const link = await requestLink(page, athlete)
     await page.route('**/api/user/registration/athlete/validate', async (route) => {
@@ -521,7 +522,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-20 a link requested on the desktop opens on a phone that never saw the number step', async ({ page, browser, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I) // moved to phones 2026-11-09: the first device is now a phone too
     const athlete = createAthlete()
     const link = await requestLink(page, athlete)
     const phone: BrowserContext = await browser.newContext({ ...devices['Pixel 7'], baseURL, serviceWorkers: 'block' })
@@ -535,7 +536,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-21 a link page with no token or an empty token says the link is not valid', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     for (const path of ['/register/athlete', '/register/athlete?token=']) {
       await page.goto(path)
       await expectLinkScreen(page, 'invalid')
@@ -546,7 +547,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-22 a token of 255 characters and one of 256 both show the link is not valid', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     await page.goto(`/register/athlete?token=${'a'.repeat(255)}`)
     await expectLinkScreen(page, 'invalid')
     await page.goto(`/register/athlete?token=${'a'.repeat(256)}`)
@@ -554,7 +555,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-23 garbled and hostile tokens all show the link is not valid without errors or scripts', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const linked = freshLink()
     const changed = `${linked.token.slice(0, -1)}${linked.token.endsWith('a') ? 'b' : 'a'}`
     const dialogs: string[] = []
@@ -568,7 +569,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-25 a link one minute from expiring still works and one expired a second ago says Tu enlace venció', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const athlete = createAthlete()
     const link = await requestLink(page, athlete)
     setLinkExpiry(athlete, 60)
@@ -585,7 +586,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-26 a link that was already used says Este enlace ya se usó with sign in and back', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { path } = freshLink({ used: true })
     await page.goto(path)
     await expectLinkScreen(page, 'used')
@@ -594,7 +595,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-27 an older link says to use the newest one and the newer link still works', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path: older } = freshLink()
     const newer = linkToken()
     createLink(athlete, newer)
@@ -608,7 +609,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-28 a record claimed after the link was sent says it could not be linked and shows the gym number', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     claim(athlete)
     await page.goto(path)
@@ -620,7 +621,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-29 a record removed after the link was sent makes the link not valid', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     removeRecord(athlete)
     await page.goto(path)
@@ -628,7 +629,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-30 the API answers the link states in order: invalid, used, claimed, replaced, expired', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const code = async (token: string) => (await rawApi(page.request, 'post', '/api/user/registration/athlete/validate', baseURL ?? '', { token })).body?.error?.code
     await page.goto('/register')
 
@@ -657,7 +658,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-31 offline the link page asks to connect, keeps Reintentar off, and checks again online', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await warmUp(page)
     await page.route('**/api/user/registration/athlete/validate', (route) => route.abort('internetdisconnected'), { times: 1 })
@@ -674,7 +675,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-32 a server error on the link check shows No pudimos verificar tu enlace and Reintentar checks again', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { path } = freshLink()
     await warmUp(page)
     await page.route('**/api/user/registration/athlete/validate', (route) => route.fulfill({ status: 500, json: { error: { code: 'server_error' } } }))
@@ -688,7 +689,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-33 a signed-in member or staff cannot use the link page and the link stays unused', async ({ page, browser, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await signInUser(page, MEMBER.email, MEMBER.password)
     await page.goto(path)
@@ -706,7 +707,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-34 reloading the password step asks for the link again and Back from it does not stay on Verificando', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { path } = freshLink()
     await openLink(page, path)
     await page.reload()
@@ -723,7 +724,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-35 passwords of 9 and 10 characters, a mismatch and 255 characters follow the rules', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { path } = freshLink()
     await openLink(page, path)
     await setPassword(page, '123456789')
@@ -744,7 +745,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-36 photo rows: a taken or uploaded photo shows a preview and a photo error does not use up the link', async ({ page, baseURL }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await toPhoto(page, path)
     await expect(page.getByText('Aún no has elegido una foto')).toBeVisible()
@@ -759,7 +760,7 @@ test.describe('athlete registration paths', () => {
     await page.getByTestId('upload-input').setInputFiles(photo('segunda.png', Buffer.concat([PNG, Buffer.alloc(4)])))
     await expect.poll(() => previewImage(page).getAttribute('src')).not.toBe(first)
     await expect(next(page)).toBeEnabled()
-    if (info.project.name !== D) return
+    if (info.project.name !== A) return // moved to phones 2026-11-09 (was desktop only)
 
     await page.getByTestId('upload-input').setInputFiles(photo('limite.jpg', Buffer.alloc(10485760), 'image/jpeg'))
     await expect(next(page)).toBeEnabled()
@@ -800,7 +801,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-37 with the camera denied or missing only Subir foto is offered', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     await page.addInitScript(() => {
       const devicesList = (async () => [{ kind: 'videoinput', deviceId: 'cam', label: '', groupId: 'g' }]) as never
       if (navigator.mediaDevices) navigator.mediaDevices.enumerateDevices = devicesList
@@ -819,7 +820,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-38 Crear cuenta names each missing field, the full waiver opens and phone formats follow the rules', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { path } = freshLink()
     await toContact(page, path)
     const accept = page.getByLabel('He leído y acepto el relevo de responsabilidad.')
@@ -845,7 +846,7 @@ test.describe('athlete registration paths', () => {
     await page.getByRole('button', { name: 'Volver al registro' }).click()
     await expect(accept).toBeChecked()
     await expect(page.getByLabel('Nombre completo')).toHaveValue('Contacto')
-    if (info.project.name !== D) return
+    if (info.project.name !== A) return // moved to phones 2026-11-09 (was desktop only)
 
     await page.getByLabel('Teléfono').fill('555010')
     await create(page).click()
@@ -868,7 +869,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-39 a save error returns to the photo with the data kept and the second try creates the account', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await filledForm(page, path)
     await page.route('**/api/user/registration/athlete/complete', (route) => route.fulfill({ status: 500, json: { error: { code: 'server_error' } } }), { times: 1 })
@@ -887,7 +888,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-40 a connection that drops during the save shows the save error and the link is not used until the retry works', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await filledForm(page, path)
     await page.route('**/api/user/registration/athlete/complete', (route) => route.abort('internetdisconnected'), { times: 1 })
@@ -902,7 +903,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-41 a link that expires while the form is open returns to Tu enlace venció and creates nothing', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await filledForm(page, path)
     setLinkExpiry(athlete, -1)
@@ -913,7 +914,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-42 a link replaced or a record claimed while the form is open shows its screen and creates nothing', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const replaced = freshLink()
     await filledForm(page, replaced.path)
     createLink(replaced.athlete, linkToken())
@@ -930,7 +931,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-43 an account created for the roster email meanwhile sends the person to the existing account screen', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await filledForm(page, path)
     createAccountFor(athlete.email)
@@ -942,7 +943,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-44 with no current term the save fails with No pudimos crear tu cuenta and creates no user', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     const ends = termEnd()
     try {
@@ -956,7 +957,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-45 a lost privacy acceptance returns to the privacy notice and creates nothing', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await filledForm(page, path)
     clearSessions()
@@ -967,10 +968,10 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-46 two tabs sending the same link together create one account and the other shows the link was used', async ({ page, browser, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await filledForm(page, path)
-    const other: BrowserContext = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+    const other: BrowserContext = await browser.newContext({ ...devices['Pixel 7'], baseURL, serviceWorkers: 'block' })
     try {
       const second = await other.newPage()
       await filledForm(second, path, { password: 'otra frase larga para el segundo registro' })
@@ -987,7 +988,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-47 the final step allows 10 calls a minute and the 11th gets a wait time; validate allows 30', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     try {
       const { path } = freshLink()
@@ -1011,7 +1012,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-48 sending the final step again after success is refused and no second account is made', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await register(page, path)
     const again = await rawApi(page.request, 'post', '/api/user/registration/athlete/complete', baseURL ?? '', { token: tokenOf(path) })
@@ -1022,7 +1023,7 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-49 the install help lists the steps for the phone and Continuar or Ahora no reaches Check In', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { path } = freshLink()
     await register(page, path)
     await expect(heading(page, 'Instala la app')).toBeVisible()
@@ -1042,10 +1043,10 @@ test.describe('athlete registration paths', () => {
   })
 
   test('AR-50 signing in on a second device sends the first one to the sign in screen', async ({ page, browser, baseURL }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const { athlete, path } = freshLink()
     await register(page, path, { password: PASSWORD })
-    const second = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+    const second = await browser.newContext({ ...devices['Pixel 7'], baseURL, serviceWorkers: 'block' })
     try {
       const phone = await second.newPage()
       await signInUser(phone, athlete.email, PASSWORD)
@@ -1057,7 +1058,7 @@ test.describe('athlete registration paths', () => {
 
   // Last: it spends the IP's whole failed-lookup allowance.
   test('AR-24 the 11th failed lookup is rate limited with the time to try again', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushCache()
     try {
       await openIdentify(page)

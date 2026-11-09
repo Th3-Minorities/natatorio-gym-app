@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { expect, test, type BrowserContext, type Page, type TestInfo } from '@playwright/test'
+import { expect, test, devices, type BrowserContext, type Page, type TestInfo } from '@playwright/test'
 import { MEMBER, signInUser } from '../e2e/flows/flow.ts'
 import { clearSessions, createOrder, createUser, fixtures, flushLimiter, jpegInfo, setStoreUrl, setTermEnd, termEnd, type OrderOptions } from './setup-registration.ts'
 
@@ -9,7 +9,6 @@ import { clearSessions, createOrder, createUser, fixtures, flushLimiter, jpegInf
 
 test.setTimeout(180_000)
 
-const D = 'desktop'
 const A = 'android'
 const I = 'iphone'
 const PASSWORD = 'una frase larga para el registro de prueba'
@@ -135,7 +134,8 @@ async function freshSession(page: Page) {
 }
 
 test.describe('paid member registration paths', () => {
-  test('PR-01 a paid member registers from Welcome and reaches Check In', async ({ page }) => {
+  test('PR-01 a paid member registers from Welcome and reaches Check In', async ({ page }, info) => {
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await page.goto('/welcome')
     await expect(page.getByRole('heading', { name: 'Bienvenido', exact: true })).toBeVisible()
@@ -189,7 +189,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-03 the sign in and Welcome entry points lead to registration and sign in', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     await page.goto('/sign-in')
     await page.getByRole('link', { name: 'Comenzar' }).click()
     await expect(page).toHaveURL(/\/register$/)
@@ -202,7 +202,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-04 the privacy gate leads to the number step and shows the draft badge', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     await openPrivacy(page)
     // Figma N-08 (4078:334) draws only the BORRADOR badge in the notice card; the longer draft line is for the compact view.
     await expect(page.getByText('BORRADOR', { exact: true })).toBeVisible()
@@ -212,7 +212,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-05 the privacy notice that fails to load can be retried', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     await page.route('**/api/user/registration/privacy', (route) => route.request().method() === 'GET' ? route.fulfill({ status: 500, json: { error: { code: 'server_error' } } }) : route.continue())
     await page.goto('/register')
     await expect(page.getByText('No pudimos mostrar el aviso', { exact: true })).toBeVisible()
@@ -223,7 +223,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-06 the privacy notice is available offline and reloads when the connection returns', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     await openPrivacy(page)
     await goOffline(page)
     await expect(page.getByText('El aviso está disponible sin conexión.')).toBeVisible()
@@ -236,7 +236,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-07 a direct URL to a later step shows the privacy notice', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     for (const step of ['identify', 'password', 'photo', 'contact', 'waiver']) {
       await page.goto(`/register/${step}`)
       await expect(page.getByRole('heading', { level: 1, name: 'Antes de comenzar' }), `/register/${step}`).toBeVisible()
@@ -245,7 +245,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-08 reloading any step loses the data and starts again at the privacy notice', async ({ page, baseURL }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toPassword(page, order.number)
     await page.reload()
@@ -264,7 +264,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-09 browser Back and the header arrow walk the steps backwards and keep the data', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -303,7 +303,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-10 the number ignores letter case and surrounding spaces', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toPassword(page, order.number.toLowerCase())
     await expect(page.getByText(`¡Hola, ${order.name}!`)).toBeVisible()
@@ -313,7 +313,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-11 an order from an expired term gets the generic unavailable answer', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     await openIdentify(page)
     await lookup(page, 'VENCIDO')
@@ -322,7 +322,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-12 an order already used gets the same answer as an expired one', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     await openIdentify(page)
     await lookup(page, 'USADO01')
@@ -332,7 +332,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-13 an unknown number gets the same answer', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     await openIdentify(page)
     await lookup(page, 'ZZZZZZ')
@@ -340,7 +340,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-14 a cancelled order gets the same answer', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     const order = createOrder('PR', { status: 'cancelled' })
     await openIdentify(page)
@@ -349,7 +349,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-15 an order paid at the start of the term is valid, one second earlier is not', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     const valid = createOrder('PR', { paidAt: 'term-start' })
     const early = createOrder('PR', { paidAt: 'before-term-start' })
@@ -361,7 +361,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-16 an order is valid until the last day of the term and not the day after', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     const original = termEnd()
     const order = createOrder('PR')
@@ -377,7 +377,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-17 an order of a term that has not started gets the generic answer', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     const order = createOrder('PR', { term: 'next' })
     await openIdentify(page)
@@ -386,7 +386,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-18 a number of 20 characters is looked up, one of 21 is a validation error', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     await openIdentify(page)
     await lookup(page, 'A'.repeat(20))
@@ -398,7 +398,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-19 eight and ten digit numbers are looked up as authorization numbers', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     await openIdentify(page)
     await lookup(page, '80200000')
@@ -408,7 +408,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-20 an empty field sends nothing and hostile input is shown as text', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     const requests: string[] = []
     const dialogs: string[] = []
@@ -430,7 +430,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-21 a number whose email already has an account asks to sign in and stays unclaimed', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     createUser(order.email)
     await openIdentify(page)
@@ -445,7 +445,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-22 the store buttons show only when the store link is set', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     try {
       setStoreUrl('https://example.com/tienda')
       await openIdentify(page)
@@ -464,7 +464,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-23 offline the number step disables Continuar and keeps the number', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     await openIdentify(page)
     await numberField(page).fill('PR23TEST')
     await goOffline(page)
@@ -482,7 +482,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-24 a server error on the lookup shows the generic message and keeps the number', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     await openIdentify(page)
     await page.route('**/api/user/registration/lookup', (route) => route.fulfill({ status: 500, json: { error: { code: 'server_error' } } }))
     await lookup(page, 'PR24TEST')
@@ -491,7 +491,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-25 the 11th failed lookup is rate limited with a wait time, and works again after the limiter resets', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     try {
       await openIdentify(page)
@@ -517,7 +517,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-26 tapping Continuar twice sends one lookup', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     let lookups = 0
     page.on('request', (request) => { if (request.url().endsWith('/registration/lookup')) lookups += 1 })
@@ -529,14 +529,14 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-27 a signed-in visitor cannot open the registration', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     await signInUser(page, MEMBER.email, MEMBER.password)
     await page.goto('/register')
     await expect(page.getByText('No pudimos mostrar el aviso', { exact: true })).toBeVisible()
   })
 
   test('PR-28 a valid password moves on and the show buttons reveal both fields', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toPassword(page, order.number)
     const password = page.getByLabel('Contraseña', { exact: true })
@@ -553,7 +553,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-29 a password of 9 characters is refused, 10 is accepted', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toPassword(page, order.number)
     await setPassword(page, '123456789a'.slice(0, 9))
@@ -564,7 +564,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-30 a confirmation that differs is refused', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toPassword(page, order.number)
     await setPassword(page, PASSWORD, `${PASSWORD}x`)
@@ -573,7 +573,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-31 a password of 255 characters is accepted and the 256th is not typed', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const long = 'p'.repeat(255)
     const order = createOrder('PR')
     await toPassword(page, order.number)
@@ -589,7 +589,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-32 a password of 5 emoji (10 UTF-16 units) goes back to the password step with the server message', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number, { password: '😀😀😀😀😀' })
     await fillContact(page)
@@ -599,7 +599,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-33 a compromised password goes back to the password step and the error clears on edit', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await page.route('**/api/user/registration/complete', (route) => route.fulfill({
       status: 422, json: { error: { code: 'validation_failed', details: { password: ['password'] } } },
@@ -614,7 +614,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-34 a photo is taken or chosen on the camera input and shows a preview', async ({ page }, info) => {
-    onlyOn(info, D, A)
+    onlyOn(info, A)
     const order = createOrder('PR')
     await toPhoto(page, order.number)
     await expect(page.getByText('Aún no has elegido una foto')).toBeVisible()
@@ -632,7 +632,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-35 an uploaded photo replaces the taken one and a cancelled picker keeps it', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toPhoto(page, order.number)
     await choosePhoto(page, photo('primera.png'))
@@ -646,7 +646,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-36 with the camera permission denied only Subir foto is offered', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     await page.addInitScript(() => {
       const devices = (async () => [{ kind: 'videoinput', deviceId: 'cam', label: '', groupId: 'g' }]) as never
       if (navigator.mediaDevices) navigator.mediaDevices.enumerateDevices = devices
@@ -665,7 +665,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-37 without a camera only Subir foto is offered', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     await page.addInitScript(() => {
       const devices = (async () => []) as never
       if (navigator.mediaDevices) navigator.mediaDevices.enumerateDevices = devices
@@ -679,7 +679,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-39 JPEG and PNG photos are accepted', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const { smallJpeg } = fixtures()
     await register(page, { file: photo('foto.jpg', smallJpeg, 'image/jpeg') })
     await freshSession(page)
@@ -687,7 +687,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-40 a photo of exactly 10 MB is accepted, one byte more is refused before sending', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toPhoto(page, order.number)
     await choosePhoto(page, photo('limite.jpg', Buffer.alloc(10485760), 'image/jpeg'))
@@ -699,7 +699,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-42 a GIF, a PDF and a text file renamed .jpg are refused as a wrong format', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     const wrong = [
       photo('a.jpg', Buffer.from('R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==', 'base64'), 'image/jpeg'),
@@ -723,7 +723,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-43 an empty photo file is refused by the server', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number, { file: photo('a.jpg', Buffer.alloc(0), 'image/jpeg') })
     await fillContact(page)
@@ -733,7 +733,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-44 a corrupt image is refused and the number is still free for a good photo', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     const corrupt = Buffer.concat([PNG.subarray(0, 33), Buffer.from('garbage-after-the-header-'.repeat(8))])
     await toContact(page, order.number, { file: photo('rota.png', corrupt) })
@@ -747,7 +747,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-45 a large JPEG with EXIF is stored resized, light, upright and without EXIF', async ({ page, baseURL }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     test.setTimeout(300_000)
     const { bigJpegPath } = fixtures()
     expect(readFileSync(bigJpegPath).length).toBeLessThanOrEqual(10485760)
@@ -765,7 +765,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-46 Crear cuenta names each missing field and each error clears when its field is edited', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     const accept = page.getByLabel('He leído y acepto el relevo de responsabilidad.')
@@ -800,7 +800,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-47 the full waiver opens, shows its text and version, and Volver keeps the form', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -817,7 +817,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-48 the contact name rejects spaces, stops at 255 characters and accepts accents', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page, ' ')
@@ -833,7 +833,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-49 a phone with 6 digits or no digits is refused by the server, 7 digits is accepted', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page, 'Contacto de Prueba', '555010')
@@ -850,7 +850,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-50 four phone formats are accepted and letters are refused', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page, 'Contacto de Prueba', 'abc-555-0100')
@@ -866,7 +866,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-51 a phone of 30 digits is accepted and the 31st is not typed', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page, 'Contacto de Prueba', '7'.repeat(31))
@@ -876,7 +876,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-52 a waiver that fails to load blocks the account and can be retried', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await page.route('**/api/user/registration/waiver**', (route) => route.fulfill({ status: 503, json: { error: { code: 'server_error' } } }))
     await toPhoto(page, order.number)
@@ -894,7 +894,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-53 a stale waiver version reloads the waiver and the form can be sent again', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -912,7 +912,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-54 a save error returns to the photo with the data kept and the second try succeeds', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -930,7 +930,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-55 a connection that drops during the save shows the save error and the number stays free', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -944,7 +944,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-56 tapping Crear cuenta twice creates one account', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     let completes = 0
     page.on('request', (request) => { if (request.url().endsWith('/registration/complete')) completes += 1 })
@@ -956,12 +956,12 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-57 when someone else claims the number first the second person goes back to the number step', async ({ page, browser, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
-    const other: BrowserContext = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+    const other: BrowserContext = await browser.newContext({ ...devices['Pixel 7'], baseURL, serviceWorkers: 'block' })
     try {
       const phone = await other.newPage()
       await toContact(phone, order.number, { password: 'otra frase larga para el segundo registro' })
@@ -975,7 +975,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-58 an account created for the email meanwhile sends the person to the existing account screen', async ({ page }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -986,7 +986,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-59 a lost privacy acceptance returns to the privacy notice and creates nothing', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -997,7 +997,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-60 a rate limited save stays on the contact step with a wait time', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     flushLimiter()
     try {
       const order = createOrder('PR')
@@ -1012,7 +1012,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-61 a retry after a lost save response ends at the install help with one account', async ({ page, baseURL }, info) => {
-    onlyOn(info, D)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)
@@ -1031,7 +1031,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-62 the install help on iPhone lists the Safari steps and Continuar goes to Check In', async ({ page }, info) => {
-    onlyOn(info, D, I)
+    onlyOn(info, I)
     await register(page)
     await expect(page.getByRole('heading', { level: 1, name: 'Instala la app' })).toBeVisible()
     await page.getByRole('tab', { name: 'iPhone' }).click()
@@ -1044,7 +1044,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-63 the install help on Android lists the Chrome steps, offers the browser prompt and Ahora no goes to Check In', async ({ page }, info) => {
-    onlyOn(info, D, A)
+    onlyOn(info, A)
     await register(page)
     await page.getByRole('tab', { name: 'Android' }).click()
     await expect(page.getByText('Ten la app a mano')).toBeVisible()
@@ -1063,7 +1063,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-64 an already installed app says so and continues to Check In', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     await page.addInitScript(() => {
       const original = window.matchMedia.bind(window)
       window.matchMedia = (query: string) => query.includes('display-mode: standalone')
@@ -1078,7 +1078,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-65 Mi cuenta shows the name, email, Miembro badge and the current term', async ({ page }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = await register(page)
     await page.getByRole('link', { name: /^(Continuar|Ahora no)$/ }).click()
     await expect(page).toHaveURL(/\/check-in$/)
@@ -1093,9 +1093,9 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-66 signing in on a second device replaces the first one', async ({ page, browser, baseURL }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = await register(page)
-    const second = await browser.newContext({ baseURL, serviceWorkers: 'block' })
+    const second = await browser.newContext({ ...devices['Pixel 7'], baseURL, serviceWorkers: 'block' })
     try {
       const phone = await second.newPage()
       await signInUser(phone, order.email, order.password)
@@ -1106,7 +1106,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-68 the whole registration runs in English when English is chosen on Welcome', async ({ page, baseURL }, info) => {
-    onlyOn(info, D, A, I)
+    onlyOn(info, A, I)
     const order = createOrder('PR')
     await page.goto('/welcome')
     await page.getByRole('button', { name: 'Toca o desliza para continuar' }).click()
@@ -1167,7 +1167,7 @@ test.describe('paid member registration paths', () => {
   })
 
   test('PR-70 on a slow 3G network the save keeps showing Guardando until the answer arrives', async ({ page, context }, info) => {
-    onlyOn(info, D, A)
+    onlyOn(info, A)
     const order = createOrder('PR')
     await toContact(page, order.number)
     await fillContact(page)

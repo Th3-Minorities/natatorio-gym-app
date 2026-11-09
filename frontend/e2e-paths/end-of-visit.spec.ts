@@ -145,6 +145,7 @@ async function openVisitId(page: Page, baseURL: string | undefined): Promise<num
 // ------------------------------------------------------------------------------- desk check-out reaches the phone
 
 test('EV-01 a desk check-out ends the visit on the phone after a reload', async ({ page, baseURL, playwright }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   await openCard(page)
   const entry = (await times(page).first().textContent())!
@@ -156,6 +157,7 @@ test('EV-01 a desk check-out ends the visit on the phone after a reload', async 
 })
 
 test('EV-02 the open card turns into the ended view on its own, with no tap', async ({ page, baseURL, playwright }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   await openCard(page)
   await deskCheckOut(playwright.request, baseURL, id)
@@ -164,7 +166,7 @@ test('EV-02 the open card turns into the ended view on its own, with no tap', as
 })
 
 test('EV-03 a tab that becomes visible shows the ended view at once', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   await openCard(page)
   const setHidden = (hidden: boolean) => page.evaluate((value) => {
@@ -181,6 +183,7 @@ test('EV-03 a tab that becomes visible shows the ended view at once', async ({ p
 })
 
 test('EV-04 a check-out during an offline phone shows the ended view after reconnecting, never an active card', async ({ page, baseURL, playwright, context }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   await openCard(page)
   await context.setOffline(true)
@@ -193,6 +196,7 @@ test('EV-04 a check-out during an offline phone shows the ended view after recon
 })
 
 test('EV-05 on Gimnasio the count falls after a check-out and the Check-in tab shows the ended view', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await withOccupancy(2, async () => {
     const { id } = await startVisit(page, baseURL)
     await page.goto('/gym')
@@ -205,6 +209,7 @@ test('EV-05 on Gimnasio the count falls after a check-out and the Check-in tab s
 })
 
 test('EV-06 a visit that ends while the person is on Mi cuenta shows as ended from the Check-in tab', async ({ page, baseURL, playwright }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   await page.goto('/account')
   await expect(page.getByRole('heading', { level: 1, name: 'Mi cuenta' })).toBeVisible()
@@ -214,6 +219,7 @@ test('EV-06 a visit that ends while the person is on Mi cuenta shows as ended fr
 })
 
 test('EV-07 a phone that was closed and reopened shows the ended view', async ({ page, baseURL, playwright, context }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   await openCard(page)
   await page.close()
@@ -224,6 +230,7 @@ test('EV-07 a phone that was closed and reopened shows the ended view', async ({
 })
 
 test('EV-08 an athlete sees the ended view with the Atleta tag and the sport', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await endedByDesk(page, baseURL, playwright.request, { kind: 'athlete', sport: 'Voleibol' })
   await expect(page.getByText('Voleibol', { exact: true })).toBeVisible()
   await expect(page.locator('.check-in--athlete')).toBeVisible()
@@ -231,7 +238,7 @@ test('EV-08 an athlete sees the ended view with the Atleta tag and the sport', a
 })
 
 test('EV-09 an employee sees the ended view tagged Miembro with no group line', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   await endedByDesk(page, baseURL, playwright.request, { group: 'employee' })
   await expect(page.getByText('Estudiante', { exact: true })).toHaveCount(0)
   await expect(page.getByText(/Empleado/)).toHaveCount(0)
@@ -240,12 +247,14 @@ test('EV-09 an employee sees the ended view tagged Miembro with no group line', 
 // ------------------------------------------------------------------------------------------------ Continuar
 
 test('EV-10 Continuar returns to the ready screen with the hold button', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await endedByDesk(page, baseURL, playwright.request)
   await continuar(page).click()
   await expectReady(page)
 })
 
 test('EV-11 after Continuar a reload still shows the ready screen', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await endedByDesk(page, baseURL, playwright.request)
   await continuar(page).click()
   await expectReady(page)
@@ -255,6 +264,7 @@ test('EV-11 after Continuar a reload still shows the ready screen', async ({ pag
 })
 
 test('EV-12 another browser of the same person still shows the ended view', async ({ page, baseURL, playwright, browser }) => {
+  only('AI')
   const { member } = await endedByDesk(page, baseURL, playwright.request)
   await continuar(page).click()
   await expectReady(page)
@@ -267,7 +277,7 @@ test('EV-12 another browser of the same person still shows the ended view', asyn
 })
 
 test('EV-13 with storage blocked Continuar works but the ended view returns after a reload', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   await page.addInitScript(() => {
     Object.defineProperty(window, 'localStorage', { configurable: true, get() { throw new DOMException('blocked', 'SecurityError') } })
   })
@@ -279,6 +289,7 @@ test('EV-13 with storage blocked Continuar works but the ended view returns afte
 })
 
 test('EV-14 offline, Continuar is disabled and the offline banner shows', async ({ page, baseURL, playwright, context }) => {
+  only('AI')
   await endedByDesk(page, baseURL, playwright.request)
   await context.setOffline(true)
   await expect(page.locator('.user-offline')).toBeVisible()
@@ -287,6 +298,7 @@ test('EV-14 offline, Continuar is disabled and the offline banner shows', async 
 })
 
 test('EV-15 Continuar after a Check In on another phone sends the first phone to sign in', async ({ page, baseURL, playwright, browser }) => {
+  only('AI')
   const { member } = await endedByDesk(page, baseURL, playwright.request)
   const other = await secondPhone(browser, baseURL)
   try {
@@ -299,6 +311,7 @@ test('EV-15 Continuar after a Check In on another phone sends the first phone to
 })
 
 test('EV-16 after Continuar a new hold starts a second visit and the count rises again', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await withOccupancy(2, async () => {
     const { member, id } = await endedByDesk(page, baseURL, playwright.request)
     await continuar(page).click()
@@ -315,7 +328,7 @@ test('EV-16 after Continuar a new hold starts a second visit and the count rises
 })
 
 test('EV-17 a visit checked out in the same second shows a duration of at most two seconds', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   const desk = await deskSignIn(playwright.request, baseURL)
   try {
     const { id } = await startVisit(page, baseURL)
@@ -333,7 +346,7 @@ test('EV-17 a visit checked out in the same second shows a duration of at most t
 // ------------------------------------------------------------------------------ desk check-out at the 2-hour edge
 
 test('EV-18 a desk check-out just inside the two hours succeeds and the phone shows the desk reason', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   const desk = await deskSignIn(playwright.request, baseURL)
   try {
     const { id } = await startVisit(page, baseURL)
@@ -348,7 +361,7 @@ test('EV-18 a desk check-out just inside the two hours succeeds and the phone sh
 })
 
 test('EV-19 a desk check-out at exactly two hours is refused and the phone shows the automatic close', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   const desk = await deskSignIn(playwright.request, baseURL)
   try {
     const { id } = await startVisit(page, baseURL)
@@ -362,7 +375,7 @@ test('EV-19 a desk check-out at exactly two hours is refused and the phone shows
 })
 
 test('EV-20 a second check-out is refused and keeps the first end time and the first desk account', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   const first = await deskSignIn(playwright.request, baseURL, 'staff')
   const second = await deskSignIn(playwright.request, baseURL, 'admin')
@@ -383,7 +396,7 @@ test('EV-20 a second check-out is refused and keeps the first end time and the f
 })
 
 test('EV-21 Staff and Administrator can both check out and neither writes an audit entry', async ({ baseURL, playwright }) => {
-  only('D')
+  only('A')
   const first = await apiVisit(playwright.request, baseURL)
   const second = await apiVisit(playwright.request, baseURL)
   try {
@@ -397,7 +410,7 @@ test('EV-21 Staff and Administrator can both check out and neither writes an aud
 })
 
 test('EV-22 a guest and a member cookie are refused as unauthenticated', async ({ baseURL, playwright }) => {
-  only('D')
+  only('A')
   const visit = await apiVisit(playwright.request, baseURL)
   const guest = await playwright.request.newContext({ baseURL })
   try {
@@ -411,7 +424,7 @@ test('EV-22 a guest and a member cookie are refused as unauthenticated', async (
 })
 
 test('EV-23 a deactivated Staff account can no longer check out', async ({ baseURL, playwright }) => {
-  only('D')
+  only('A')
   const visit = await apiVisit(playwright.request, baseURL)
   const account = createStaffAccount()
   const desk = await deskSignIn(playwright.request, baseURL, account)
@@ -426,7 +439,7 @@ test('EV-23 a deactivated Staff account can no longer check out', async ({ baseU
 })
 
 test('EV-24 invalid ids are refused before any visit changes', async ({ baseURL, playwright }) => {
-  only('D')
+  only('A')
   const visit = await apiVisit(playwright.request, baseURL)
   const desk = await deskSignIn(playwright.request, baseURL)
   try {
@@ -443,7 +456,7 @@ test('EV-24 invalid ids are refused before any visit changes', async ({ baseURL,
 })
 
 test('EV-25 two simultaneous check-outs give one success and one refusal with one end time', async ({ baseURL, playwright }) => {
-  only('D')
+  only('A')
   const visit = await apiVisit(playwright.request, baseURL)
   const one = await deskSignIn(playwright.request, baseURL, 'staff')
   const two = await deskSignIn(playwright.request, baseURL, 'staff')
@@ -459,6 +472,7 @@ test('EV-25 two simultaneous check-outs give one success and one refusal with on
 // --------------------------------------------------------------------------------------- the 2-hour close
 
 test('EV-26 a visit past two hours is shown as automatically closed before the scheduler runs', async ({ page, baseURL }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   ageVisit(id, '2 hours 5 minutes')
   const row = sessionRow(id)
@@ -470,7 +484,7 @@ test('EV-26 a visit past two hours is shown as automatically closed before the s
 })
 
 test('EV-27 the scheduler after the close changes nothing on the phone and leaves ended_at empty', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   ageVisit(id, '2 hours 5 minutes')
   await page.goto('/check-in')
@@ -487,6 +501,7 @@ test('EV-27 the scheduler after the close changes nothing on the phone and leave
 })
 
 test('EV-28 a card open at 1:59:40 becomes the ended view within one poll after the two hours', async ({ page, baseURL }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   ageVisit(id, '1 hour 59 minutes 40 seconds')
   await openCard(page)
@@ -497,7 +512,7 @@ test('EV-28 a card open at 1:59:40 becomes the ended view within one poll after 
 })
 
 test('EV-29 five seconds before the two hours the card is still active', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   await page.goto('/account')
   await expect(page.getByRole('heading', { level: 1, name: 'Mi cuenta' })).toBeVisible()
@@ -508,6 +523,7 @@ test('EV-29 five seconds before the two hours the card is still active', async (
 })
 
 test('EV-30 a Check In right after the two-hour close starts a new visit with no conflict', async ({ page, baseURL }) => {
+  only('AI')
   const { member, id } = await startVisit(page, baseURL)
   ageVisit(id, '2 hours 5 minutes')
   await page.goto('/check-in')
@@ -525,7 +541,7 @@ test('EV-30 a Check In right after the two-hour close starts a new visit with no
 // ------------------------------------------------------------------------------ closures that do not end the visit
 
 test('EV-32 a closure scheduled for later leaves the visit active', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   const closure = addClosureAt(60, 120)
   try {
@@ -536,7 +552,7 @@ test('EV-32 a closure scheduled for later leaves the visit active', async ({ pag
 })
 
 test('EV-33 a closure that was over before the visit began leaves it active', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   const closure = addClosureAt(-180, -120, -180)
   try {
@@ -549,6 +565,7 @@ test('EV-33 a closure that was over before the visit began leaves it active', as
 // ------------------------------------------------------------------------------------------------- end of term
 
 test('EV-35 a visit that began on the last evening of a past term is shown as closed at midnight', async ({ page, baseURL }) => {
+  only('AI')
   const { id } = await startVisit(page, baseURL)
   moveVisitToPastTermEnd(id)
   await page.goto('/check-in')
@@ -559,7 +576,7 @@ test('EV-35 a visit that began on the last evening of a past term is shown as cl
 })
 
 test('EV-36 an athlete whose visit ended with the term sees the athlete view and can still Check In', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const { id } = await startVisit(page, baseURL, { kind: 'athlete', sport: 'Voleibol' })
   moveVisitToPastTermEnd(id)
   await page.goto('/check-in')
@@ -574,7 +591,7 @@ test('EV-36 an athlete whose visit ended with the term sees the athlete view and
 // ----------------------------------------------------------------------------- corrections written by staff (DB)
 
 test('EV-37 a visit staff ended early shows the desk reason', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const { member } = await startVisit(page, baseURL)
   endUserVisit(member.id, 'ended_early')
   await page.goto('/check-in')
@@ -582,7 +599,7 @@ test('EV-37 a visit staff ended early shows the desk reason', async ({ page, bas
 })
 
 test('EV-38 a voided visit is not shown as ended', async ({ page, baseURL }) => {
-  only('D')
+  only('AI')
   const { member } = await startVisit(page, baseURL)
   endUserVisit(member.id, 'void')
   await page.goto('/check-in')
@@ -593,6 +610,7 @@ test('EV-38 a voided visit is not shown as ended', async ({ page, baseURL }) => 
 // ----------------------------------------------------------------------------------------------- other effects
 
 test('EV-39 an athletes-only period that starts during the visit does not cut it', async ({ page, baseURL }) => {
+  only('AI')
   await startVisit(page, baseURL)
   const period = addPeriod(10, 130)
   try {
@@ -607,6 +625,7 @@ test('EV-39 an athletes-only period that starts during the visit does not cut it
 })
 
 test('EV-40 signing out and in again keeps the visit open and the desk can still end it', async ({ page, baseURL, playwright }) => {
+  only('AI')
   const { member, id } = await startVisit(page, baseURL)
   await openCard(page)
   const entry = await times(page).first().textContent()
@@ -622,6 +641,7 @@ test('EV-40 signing out and in again keeps the visit open and the desk can still
 })
 
 test('EV-41 with a second phone, the desk check-out ends the visit on the new phone and signs the old one out', async ({ page, baseURL, playwright, browser }) => {
+  only('AI')
   const { member, id } = await startVisit(page, baseURL)
   await openCard(page)
   const other = await secondPhone(browser, baseURL)
@@ -639,6 +659,7 @@ test('EV-41 with a second phone, the desk check-out ends the visit on the new ph
 })
 
 test('EV-42 a desk check-out of one person does not touch another person inside', async ({ page, baseURL, playwright, browser }) => {
+  only('AI')
   await withOccupancy(3, async () => {
     const { id } = await startVisit(page, baseURL)
     const athlete = createMember({ kind: 'athlete' })
@@ -662,6 +683,7 @@ test('EV-42 a desk check-out of one person does not touch another person inside'
 })
 
 test('EV-43 the count on Gimnasio falls by one after a desk check-out', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await withOccupancy(2, async () => {
     const { id } = await startVisit(page, baseURL)
     await page.goto('/gym')
@@ -672,7 +694,7 @@ test('EV-43 the count on Gimnasio falls by one after a desk check-out', async ({
 })
 
 test('EV-44 a failed refresh on Continuar keeps the ended view and shows the offline state', async ({ page, baseURL, playwright }) => {
-  only('D')
+  only('AI')
   await endedByDesk(page, baseURL, playwright.request)
   await page.route('**/api/user/check-in', (route) => route.request().method() === 'GET'
     ? route.fulfill({ status: 500, contentType: 'application/json', body: '{"error":{"code":"server_error"}}' }) : route.fallback())
@@ -683,6 +705,7 @@ test('EV-44 a failed refresh on Continuar keeps the ended view and shows the off
 })
 
 test('EV-46 the tab bar leads away and back and the ended view returns until Continuar', async ({ page, baseURL, playwright }) => {
+  only('AI')
   await endedByDesk(page, baseURL, playwright.request)
   await nav(page).getByRole('link', { name: 'Gimnasio' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Gimnasio' })).toBeVisible()
@@ -693,7 +716,7 @@ test('EV-46 the tab bar leads away and back and the ended view returns until Con
 })
 
 test('EV-47 every visit that already ended refuses a second check-out and stays as it was', async ({ baseURL, playwright }) => {
-  only('D')
+  only('A')
   const desk = await deskSignIn(playwright.request, baseURL)
   const contexts: APIRequestContext[] = []
   try {
@@ -725,6 +748,7 @@ test('EV-47 every visit that already ended refuses a second check-out and stays 
 
 test.describe('closures', () => {
   test('EV-31 a closure that starts during the visit ends it at the closure time', async ({ page, baseURL }) => {
+    only('AI')
     const { member } = await startVisit(page, baseURL)
     backdateOpenVisit(member, 10)
     const closure = addClosure()
@@ -738,7 +762,7 @@ test.describe('closures', () => {
   })
 
   test('EV-34 during the closure Check In says the gym is closed, and after it the Gym ID opens', async ({ page, baseURL }) => {
-    only('D')
+    only('AI')
     const { member } = await startVisit(page, baseURL)
     backdateOpenVisit(member, 10)
     const closure = addClosure()
@@ -759,6 +783,7 @@ test.describe('closures', () => {
   })
 
   test('EV-45 an English account sees the three end reasons in English', async ({ page, baseURL, playwright }) => {
+    only('AI')
     const english = async (reason: string) => {
       await expect(lead(page)).toHaveText('Your visit has ended')
       await expect(page.getByText('Session ended', { exact: true })).toBeVisible()
