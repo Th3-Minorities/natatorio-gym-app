@@ -374,7 +374,7 @@ export const es = {
     overlapText: (name: string, start: string, end: string) =>
       `Este período se solapa con ${name} (${start} - ${end}). Ajusta las fechas antes de guardar.`,
     fixDates: 'Corregir fechas',
-    // Read by screen readers and shown above the list after a save. Not drawn in Figma.
+    // Shown in the confirmation card above the list and announced (Figma 4745:2051).
     saved: (name: string) => `${name} se guardó.`,
   },
 
@@ -442,7 +442,7 @@ export const es = {
     withdrawText: 'El Gym ID deja de valer de inmediato. No podrá hacer nuevos Check In. Su sesión activa, si existe, permanece abierta hasta su cierre.',
     withdrawMeta: (number: string, sport: string) => `${number} · ${sport}`,
     withdrawConfirm: 'Retirar atleta',
-    // Read by screen readers only: the row itself shows the change.
+    // Shown in the confirmation card above the list and announced (Figma 4745:2109).
     withdrawn: (name: string) => `${name} se retiró del roster.`,
     // Restituir, Figma 101:1248, 101:1285 and 101:1383.
     reinstate: 'Restituir',
@@ -475,7 +475,7 @@ export const es = {
     wordName: 'Word',
     pdfName: 'PDF',
     preparing: 'Preparando archivo…',
-    // Not drawn: said after the browser receives the file.
+    // Shown in the confirmation card above the list and announced (Figma 4745:2125).
     downloaded: 'Se descargó el roster.',
   },
 

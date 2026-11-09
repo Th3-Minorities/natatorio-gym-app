@@ -95,7 +95,9 @@ describe('withdrawing an athlete', () => {
     fireEvent.click(screen.getByRole('button', { name: `${t.withdraw}, ${alina.name}` }))
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.withdrawConfirm }))
 
-    expect(await within(screen.getByRole('dialog')).findByText(es.errors.roster_status_changed)).toBeInTheDocument()
+    const changed = await within(screen.getByRole('dialog')).findByText(es.errors.roster_status_changed)
+    // The pink error banner, as N-11 draws its errors (Figma 4745:2133).
+    expect(changed.closest('.notice')).toHaveClass('notice--error')
     await waitFor(() => expect(callsTo(fetchMock, ALL).length).toBeGreaterThan(before))
   })
 })

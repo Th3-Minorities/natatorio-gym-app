@@ -23,9 +23,12 @@ function save(blob: Blob, filename: string) {
   const link = document.createElement('a')
   link.href = url
   link.download = filename
+  // On the page while it is clicked, as iPhone Safari needs; the URL lives 60 seconds, since revoking it at once can
+  // cancel the download there.
+  document.body.append(link)
   link.click()
-  // The browser has started the download by now; the object URL is no longer needed.
-  setTimeout(() => URL.revokeObjectURL(url), 0)
+  link.remove()
+  setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
 export function DownloadDialog({ onClose, onDownloaded, onError }: DownloadDialogProps) {

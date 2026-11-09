@@ -48,17 +48,6 @@
   color: var(--muted-foreground);
 }
 
-.roster-saved {
-  margin: 0;
-  padding: var(--spacing-16) var(--spacing-20);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--foreground);
-  font-size: 14px;
-  font-weight: var(--weight-medium);
-  line-height: 21px;
-}
 
 .roster-modal-chip {
   align-self: flex-start;

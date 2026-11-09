@@ -26,7 +26,7 @@ function file(name: string, type: string) {
     })
 }
 
-let saved: { href: string; download: string }[] = []
+let saved: { href: string; download: string; onPage: boolean }[] = []
 
 beforeEach(() => {
   document.cookie = 'XSRF-TOKEN=token; path=/'
@@ -34,7 +34,7 @@ beforeEach(() => {
   saved = []
   vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:roster'), revokeObjectURL: vi.fn() }))
   vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
-    saved.push({ href: this.href, download: this.download })
+    saved.push({ href: this.href, download: this.download, onPage: document.body.contains(this) })
   })
 })
 
@@ -71,7 +71,8 @@ describe('downloading the roster', () => {
     expect(within(dialog).getByText(t.preparingText(t.wordName))).toBeInTheDocument()
     expect(within(dialog).getByRole('button', { name: t.preparing })).toHaveAttribute('aria-disabled', 'true')
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-    expect(saved).toEqual([{ href: 'blob:roster', download: 'roster-atletas-2026-11-08.docx' }])
+    expect(saved).toEqual([{ href: 'blob:roster', download: 'roster-atletas-2026-11-08.docx', onPage: true }])
+    expect(document.querySelector('a[download]')).toBeNull()
     expect(screen.getByRole('status')).toHaveTextContent(t.downloaded)
     expect(callsTo(fetchMock, '/api/staff/roster/download?format=docx')).toHaveLength(1)
   })
@@ -85,7 +86,7 @@ describe('downloading the roster', () => {
     expect(within(dialog).getByRole('button', { name: t.pdf })).toHaveAttribute('aria-pressed', 'true')
     fireEvent.click(within(dialog).getByRole('button', { name: t.downloadConfirm }))
 
-    await waitFor(() => expect(saved).toEqual([{ href: 'blob:roster', download: 'roster-atletas-2026-11-08.pdf' }]))
+    await waitFor(() => expect(saved).toEqual([{ href: 'blob:roster', download: 'roster-atletas-2026-11-08.pdf', onPage: true }]))
     expect(callsTo(fetchMock, '/api/staff/roster/download?format=pdf')).toHaveLength(1)
   })
 

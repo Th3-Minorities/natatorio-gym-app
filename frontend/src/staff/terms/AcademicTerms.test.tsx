@@ -147,7 +147,10 @@ describe('creating and editing a term', () => {
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(await screen.findByRole('table', { name: t.currentTitle })).toHaveTextContent('Agosto - diciembre 2026')
-    expect(screen.getByRole('status')).toHaveTextContent(t.saved('Agosto - diciembre 2026'))
+    const status = screen.getByRole('status')
+    expect(within(status).getByText(t.saved('Agosto - diciembre 2026'))).toBeInTheDocument()
+    // The card carries the active term chip, like every A-04 state (Figma 4745:2051).
+    expect(within(status).getByText('Agosto - diciembre 2026', { selector: '.team-chip' })).toBeInTheDocument()
     expect(callsTo(fetchMock, '/api/staff/terms').filter(([method]) => method === 'POST')).toEqual([
       ['POST', { name: 'Agosto - diciembre 2026', starts_on: '2026-08-10', ends_on: '2026-12-18' }],
     ])

@@ -5,6 +5,7 @@ import { DashboardShell } from '../../dashboard/DashboardShell'
 import { useMessages } from '../../i18n'
 import { useConnection } from '../../user/useConnection'
 import { useDocumentTitle } from '../useDocumentTitle'
+import { SavedCard } from '../SavedCard'
 import { useStaffSession } from '../useStaffSession'
 import type { ShellProps } from '../team/StaffTeam'
 import { TermStatus } from '../team/TermStatus'
@@ -196,7 +197,7 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
       </div>
       {/* One live region that is always on the page: a region added together with its text is often not read (WCAG 4.1.3). */}
       <div className="team-live" role="status">
-        {saved && <p className="roster-saved">{saved}</p>}
+        {saved && <SavedCard text={saved} />}
         {load.status === 'ready' && !online && (
           <section className="state">
             <h2 className="state__title">{texts.states.offlineTitle}</h2>

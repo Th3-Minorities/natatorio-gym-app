@@ -247,7 +247,9 @@ describe('adding and editing athletes', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: t.saveChanges }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
-    expect(screen.getByRole('status')).toHaveTextContent(t.saved('Alina Mercado Cruz'))
+    const status = screen.getByRole('status')
+    expect(within(status).getByText(t.saved('Alina Mercado Cruz'))).toBeInTheDocument()
+    expect(within(status).getByText('Agosto - diciembre 2026', { selector: '.team-chip' })).toBeInTheDocument()
     expect(callsTo(fetchMock, '/api/staff/roster/1')).toEqual([
       ['PATCH', { name: alina.name, sport: 'Natación', student_number: alina.student_number, institutional_email: alina.institutional_email }],
     ])
