@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
-import { ArrowLeft, ArrowRight, ChevronDown, ChevronRight, Download, Heart, History, Settings, ShieldCheck, UserRound, type LucideIcon } from 'lucide-react'
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react'
+import { ArrowRight, ArrowUp, ChevronDown, ChevronRight, Download, Heart, History, Settings, ShieldCheck, UserRound, type LucideIcon } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { Button, LoadingState } from '../components'
 import { useDateFormat } from '../format/dateTime'
@@ -9,7 +9,7 @@ import { CheckIn } from './CheckIn'
 import { Gym } from './Gym'
 import { UserAccess } from './UserAccess'
 import { Registration } from './Registration'
-import { UserLoading, UserNotice, UserPage } from './ui'
+import { AccountHeading, OfflineBanner, UserLoading, UserNotice, UserPage } from './ui'
 import { PrivacyNoticeCard } from './PrivacyNoticeCard'
 import { storedPrivacy, storePrivacy, type Privacy } from './privacyNotice'
 import { useConnection } from './useConnection'
@@ -266,13 +266,6 @@ function DeleteConfirmation({ busy, offline, failed, onConfirm, onCancel }: {
   </dialog>
 }
 
-function AccountHeading({ title, back, backLabel }: { title: string; back: string; backLabel: string }) {
-  return <div className="user-account-heading">
-    <a href={back} className="user-back" aria-label={backLabel}><ArrowLeft aria-hidden="true" /></a>
-    <h1 tabIndex={-1}>{title}</h1>
-  </div>
-}
-
 // N-08 from My account (Figma 4468:2653). The notice texts live in the app; only the version and draft flag come from the API.
 // The last answer is kept on the device so the page still opens offline, as its caption says.
 function AccountPrivacy() {
@@ -388,23 +381,44 @@ function AccountRow({ icon: Icon, title, detail, href }: { icon: LucideIcon; tit
   return href ? <a className="user-account-row" href={href}>{content}</a> : <div className="user-account-row">{content}</div>
 }
 
+const SWIPE_UP = 30
+
+/** N-01 starts collapsed (Figma 4078:11); a tap (on click) or a swipe up on the sheet opens it (4078:95). */
 function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (locale: Locale) => void }) {
   const t = useMessages().user
+  const offline = !useConnection()
+  const [expanded, setExpanded] = useState(false)
+  const heading = useRef<HTMLHeadingElement>(null)
+  const startY = useRef<number | null>(null)
+  useEffect(() => { if (expanded) heading.current?.focus() }, [expanded])
+  const drag = expanded ? {} : {
+    onPointerDown: (event: PointerEvent<HTMLElement>) => { if (event.button !== 0) return; startY.current = event.clientY; event.currentTarget.setPointerCapture?.(event.pointerId) },
+    onPointerMove: (event: PointerEvent<HTMLElement>) => { if (startY.current !== null && startY.current - event.clientY >= SWIPE_UP) setExpanded(true) },
+    onPointerUp: () => { startY.current = null },
+    onPointerCancel: () => { startY.current = null },
+    onClick: () => setExpanded(true),
+  }
+  // N-01 offline (Figma 4546:2929): the connection banner sits in the open sheet under the handle and both actions stay visible but disabled. The collapsed sheet has no actions and stays as it is.
+  const unavailable = (className: string, children: ReactNode) => <span className={className} role="link" aria-disabled="true">{children}</span>
   return <div className="user-app user-welcome">
     <img className="user-welcome__illustration" src={welcomeIllustration} width={390} height={844} alt="" />
     <div className="user-welcome__brand"><strong>{t.brand}</strong><span>{t.brandName}</span><i aria-hidden="true" /></div>
-    <main className="user-welcome__sheet">
+    <main className={`user-welcome__sheet ${expanded ? '' : 'user-welcome__sheet--collapsed'}`} {...drag}>
       <span className="user-welcome__handle" aria-hidden="true" />
-      <h1 tabIndex={-1}>{t.welcome}</h1>
+      {offline && expanded && <OfflineBanner text={t.welcomeOffline} />}
+      <h1 tabIndex={-1} ref={heading}>{expanded ? t.welcome : t.welcomeShort}</h1>
+      {expanded ? <>
       <p>{t.welcomeDetail}</p>
       {/* The privacy step of registration (#22) lives at /register. */}
-      <a className="button button--primary user-welcome__start" href="/register">{t.begin}<ArrowRight size={16} aria-hidden="true" /></a>
-      <p className="user-welcome__access">{t.haveAccount}<a href="/sign-in">{t.signIn}</a></p>
+      {offline ? unavailable('button button--primary user-welcome__start', <>{t.begin}<ArrowRight size={16} aria-hidden="true" /></>)
+        : <a className="button button--primary user-welcome__start" href="/register">{t.begin}<ArrowRight size={16} aria-hidden="true" /></a>}
+      <p className="user-welcome__access">{t.haveAccount}{offline ? unavailable('', t.signIn) : <a href="/sign-in">{t.signIn}</a>}</p>
       <div className="user-welcome__language">
         <button type="button" lang="es" aria-pressed={locale === 'es'} onClick={() => chooseLocale('es')}>{t.spanish}</button>
         <span aria-hidden="true">/</span>
         <button type="button" lang="en" aria-pressed={locale === 'en'} onClick={() => chooseLocale('en')}>{t.english}</button>
       </div>
+      </> : <button type="button" className="user-welcome__hint" onClick={() => setExpanded(true)}>{t.welcomeHint}<ArrowUp size={16} aria-hidden="true" /></button>}
     </main>
   </div>
 }
