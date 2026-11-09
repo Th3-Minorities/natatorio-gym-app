@@ -22,8 +22,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
-use Tests\Concerns\CallsTheApiFromThePwa;
 use RuntimeException;
+use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
 
 /** Athlete registration by email link (diagram 4, REQ-F-15, REQ-F-17, E-73). */

@@ -28,6 +28,7 @@ class AthleteLinks
             // Locked, so two requests at once cannot both pass the limit.
             RosterRecord::query()->lockForUpdate()->findOrFail($record->id);
             $this->ensureBelowLimit($record);
+
             return EmailLink::query()->create([
                 'purpose' => 'athlete_registration',
                 'token_hash' => hash('sha256', $token),
