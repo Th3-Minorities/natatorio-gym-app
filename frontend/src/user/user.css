@@ -15,6 +15,10 @@
   .user-app--large { border-radius: var(--spacing-32) var(--spacing-32) var(--user-large-radius) var(--user-large-radius); }
 }
 .user-app--access { background: var(--hero); }
+/* iOS Safari tints the status bar from the page background, so the strip above the green header stays green (Discussion #142). */
+@media (max-width: 599.98px) {
+  :root:has(.user-app--access), :root:has(.user-app--access) body { background: var(--hero); }
+}
 .user-header {
   display: flex;
   flex: none;
