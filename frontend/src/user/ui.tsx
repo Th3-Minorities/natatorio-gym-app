@@ -71,14 +71,20 @@ export function PasswordField({ label, placeholder, value, onChange, error, auto
 }) {
   const t = useMessages().user
   const [visible, setVisible] = useState(false)
-  const hintId = useId()
+  const inputId = useId()
+  const hintId = `${inputId}-hint`
+  const errorId = `${inputId}-error`
   const Icon = visible ? EyeOff : Eye
+  // Figma REG-03: the grey hint sits above the red error; REG-01: an error that repeats the hint shows once.
+  const showHint = !!hint && hint !== error
+  const described = [hint ? (showHint ? hintId : undefined) : describedBy, error ? errorId : undefined].filter(Boolean).join(' ')
   return <div className="user-password">
-    <TextField label={label} placeholder={placeholder} type={visible ? 'text' : 'password'} value={value}
-      autoComplete={autoComplete} maxLength={255} error={error} aria-describedby={hint && !error ? hintId : describedBy}
+    <TextField id={inputId} label={label} placeholder={placeholder} type={visible ? 'text' : 'password'} value={value}
+      autoComplete={autoComplete} maxLength={255} aria-invalid={error ? true : undefined} aria-describedby={described || undefined}
       onChange={(event) => onChange(event.target.value)} required />
     <Button variant="link" className="user-password__toggle" aria-label={visible ? t.hidePassword : t.showPassword}
       aria-pressed={visible} onClick={() => setVisible(!visible)}><Icon aria-hidden="true" size={16} absoluteStrokeWidth /></Button>
-    {hint && !error && <p id={hintId} className="user-caption">{hint}</p>}
+    {showHint && <p id={hintId} className="user-caption">{hint}</p>}
+    {error && <p id={errorId} className="field__error">{error}</p>}
   </div>
 }

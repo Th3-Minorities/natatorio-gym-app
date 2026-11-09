@@ -46,7 +46,7 @@ it('allows letters and any length and uses the imported name without rendering H
   expect(screen.queryByLabelText('Contacto de emergencia')).not.toBeInTheDocument()
 })
 
-it('does not save an account when validating the password at the last drawn step', async () => {
+it('does not save an account when the password step continues to the photo', async () => {
   render(<UserApp />)
   await reachIdentification()
   fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '12345A' } })
@@ -55,8 +55,24 @@ it('does not save an account when validating the password at the last drawn step
   fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'a long password' } })
   fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'a long password' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  expect(await screen.findByRole('heading', { name: 'Tu foto de identificación' })).toBeInTheDocument()
   expect(requests.some((request) => request.path.endsWith('/complete'))).toBe(false)
-  expect(screen.getByLabelText('Contraseña')).toHaveValue('a long password')
+})
+
+it('shows the short password sentence once, as the error with no grey hint above it', async () => {
+  render(<UserApp />)
+  await reachIdentification()
+  fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '12345A' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  await screen.findByRole('heading', { name: 'Crea una contraseña' })
+  fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'short' } })
+  fireEvent.change(screen.getByLabelText('Confirmar contraseña'), { target: { value: 'short' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  const field = screen.getByLabelText('Contraseña')
+  expect(field).toHaveAttribute('aria-invalid', 'true')
+  expect(screen.getAllByText('Usa al menos 10 caracteres.')).toHaveLength(1)
+  const described = field.getAttribute('aria-describedby')!.split(' ')
+  expect(described.map((id) => document.getElementById(id)?.className)).toEqual(['field__error'])
 })
 
 it('protects direct registration URLs with the privacy step', async () => {

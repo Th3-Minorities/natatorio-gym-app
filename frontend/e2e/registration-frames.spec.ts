@@ -62,7 +62,7 @@ test.describe('paid registration screen states', () => {
   }
 })
 
-test('paid registration stops at the last drawn step without claiming the number', async ({ page }) => {
+test('paid registration reaches the photo step without claiming the number', async ({ page }) => {
   let completed = false
   await page.route((url) => url.pathname.startsWith('/api/'), async (route) => {
     const endpoint = new URL(route.request().url()).pathname
@@ -81,6 +81,6 @@ test('paid registration stops at the last drawn step without claiming the number
   await page.getByLabel('Contraseña', { exact: true }).fill('a long password')
   await page.getByLabel('Confirmar contraseña', { exact: true }).fill('a long password')
   await page.getByRole('button', { name: 'Continuar', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Crea una contraseña' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tu foto de identificación' })).toBeVisible()
   expect(completed).toBe(false)
 })

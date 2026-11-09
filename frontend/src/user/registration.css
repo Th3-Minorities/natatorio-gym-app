@@ -63,3 +63,24 @@
   padding: 0; margin: calc(-1 * var(--user-border-width)); overflow: hidden;
   clip-path: inset(50%); white-space: nowrap; border: 0;
 }
+/* Steps after the password: photo, waiver and contact, saving and errors (Figma B.02, B.03, B.08, B.09). */
+.registration--photo .user-app--large .user-content { gap: var(--spacing-32); }
+.registration--contact .user-app--large .user-content { padding-top: var(--spacing-24); gap: var(--spacing-12); }
+.registration--status .user-app--large .user-content { padding-top: var(--spacing-24); gap: var(--spacing-16); }
+.registration--step .user-content > p, .registration-form > p, .registration-version { font-size: var(--user-body-size); line-height: var(--user-body-line); color: var(--muted-foreground); }
+.registration-form { display: flex; flex-direction: column; gap: var(--spacing-12); }
+.registration--step .registration-caption { font-size: var(--user-label-size); line-height: var(--spacing-20); color: var(--muted-foreground); }
+.registration-photo { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 112px; text-align: center; }
+.registration-photo .user-avatar { margin-top: 0; overflow: hidden; }
+.registration-photo .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.registration-alert { display: flex; flex-direction: column; gap: var(--spacing-8); padding: var(--spacing-12); border: var(--user-border-width) solid var(--user-danger); border-radius: var(--spacing-20); background: var(--check-in-danger-soft); }
+.registration-alert p { font-size: var(--user-body-size); line-height: var(--user-body-line); color: var(--foreground); }
+.registration-alert .registration-alert__title { display: flex; align-items: center; gap: var(--spacing-8); font-size: var(--spacing-16); font-weight: var(--user-weight-semibold); color: var(--user-danger); }
+.registration-alert__title svg { width: var(--spacing-20); height: var(--spacing-20); flex: none; }
+.registration-form > .registration-label { font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--weight-medium); color: var(--foreground); }
+.registration-check { display: flex; align-items: center; gap: var(--spacing-12); min-height: var(--user-touch); font-size: var(--user-label-size); line-height: var(--spacing-20); color: var(--muted-foreground); }
+.registration-check input { width: 22px; height: var(--spacing-16); margin: 0; flex: none; accent-color: var(--muted-foreground); }
+.registration-form > .registration-field-error { font-size: var(--user-label-size); line-height: var(--spacing-20); color: var(--user-danger); }
+.registration--contact .user-content .field__input { border-color: var(--border); }
+.registration--contact .user-content .field__input[aria-invalid="true"] { border-color: var(--user-danger); }
+.registration-document { display: flex; flex-direction: column; gap: var(--spacing-16); height: 360px; overflow-y: auto; padding: var(--spacing-12); font-size: var(--user-body-size); line-height: var(--user-body-line); color: var(--muted-foreground); }

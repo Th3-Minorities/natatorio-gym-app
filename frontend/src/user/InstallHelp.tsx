@@ -24,6 +24,8 @@ export function InstallHelp() {
   const installed = standalone || accepted
   const [platform, setPlatform] = useState<Platform>(() => /iPhone|iPad|iPod/.test(navigator.userAgent) ? 'iphone' : 'android')
   const tabs = useRef<Record<Platform, HTMLButtonElement | null>>({ iphone: null, android: null })
+  // Right after registration (E-165) every exit leads to Check In; from Mi cuenta it returns there.
+  const [done] = useState(() => new URLSearchParams(window.location.search).has('registered') ? '/check-in' : '/account')
 
   async function install() {
     if (!prompt) return
@@ -44,11 +46,11 @@ export function InstallHelp() {
     tabs.current[next]?.focus()
   }
 
-  if (installed) return <UserPage large back="/account">
+  if (installed) return <UserPage large back={done}>
     <div className="install-done">
       <span className="install-done__check"><Check aria-hidden="true" /></span>
       <h1 tabIndex={-1}>{t.installedTitle}</h1><p>{t.installedText}</p><p>{t.installedHelp}</p>
-      <a href="/account" className="button button--primary user-action">{t.continue}</a>
+      <a href={done} className="button button--primary user-action">{t.continue}</a>
     </div>
   </UserPage>
 
@@ -56,7 +58,7 @@ export function InstallHelp() {
     { Icon: Compass, text: t.safari }, { Icon: Share, text: t.share, detail: t.shareDetail },
     { Icon: SquarePlus, text: t.addHome }, { Icon: Check, text: t.confirmAdd },
   ]
-  return <UserPage large back="/account"><div className="install">
+  return <UserPage large back={done}><div className="install">
     <div className="install-intro"><h1 tabIndex={-1}>{t.title}</h1><p>{t.description}</p></div>
     <div className="install-identity"><span className="install-icon"><img src={dumbbell} alt="" width="32" height="32" /></span><strong>{t.appName}</strong></div>
     <div className="install-tabs" role="tablist" aria-label={t.platform}>
@@ -77,6 +79,6 @@ export function InstallHelp() {
         <div className="install-chrome"><strong>{t.chromeTitle}</strong><div>{t.chromeSteps.map((step) => <p key={step}>{step}</p>)}</div></div>
       </>}
     </div>
-    <a href="/account" className="install-skip">{platform === 'iphone' ? t.continue : t.notNow}</a>
+    <a href={done} className="install-skip">{platform === 'iphone' ? t.continue : t.notNow}</a>
   </div></UserPage>
 }

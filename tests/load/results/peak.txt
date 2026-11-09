@@ -1,0 +1,47 @@
+occupancy: 3 before, 53 after 50 users
+
+  █ THRESHOLDS 
+
+    checks
+    ✓ 'rate==1' rate=100.00%
+
+    http_req_duration{name:check_in}
+    ✓ 'p(95)<3000' p(95)=1.61s
+
+    http_req_failed{name:check_in}
+    ✓ 'rate<0.01' rate=0.00%
+
+    http_req_failed{name:occupancy}
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 202     0.436937/s
+    checks_succeeded...: 100.00% 202 out of 202
+    checks_failed......: 0.00%   0 out of 202
+
+    ✓ signed in
+    ✓ round 1 creates a session
+    ✓ occupancy answers
+    ✓ round 2 returns the same session
+    ✓ occupancy rose by the users
+
+    HTTP
+    http_req_duration..............: avg=694.37ms min=112.11ms med=451.97ms p(90)=1.46s    p(95)=2.24s p(99)=3.83s max=5.45s
+      { expected_response:true }...: avg=694.37ms min=112.11ms med=451.97ms p(90)=1.46s    p(95)=2.24s p(99)=3.83s max=5.45s
+      { name:check_in }............: avg=553.41ms min=137.01ms med=419.4ms  p(90)=660.38ms p(95)=1.61s p(99)=2.52s max=5.45s
+    http_req_failed................: 0.00%  0 out of 254
+      { name:check_in }............: 0.00%  0 out of 100
+      { name:occupancy }...........: 0.00%  0 out of 52
+    http_reqs......................: 254    0.549416/s
+
+    EXECUTION
+    iteration_duration.............: avg=3m27s    min=1m0s     med=3m27s    p(90)=5m25s    p(95)=5m39s p(99)=5m51s max=5m54s
+    iterations.....................: 50     0.108153/s
+    vus............................: 0      min=0        max=50
+    vus_max........................: 50     min=50       max=50
+
+    NETWORK
+    data_received..................: 356 kB 769 B/s
+    data_sent......................: 337 kB 729 B/s
