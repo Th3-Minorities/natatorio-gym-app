@@ -37,7 +37,7 @@ class ApiErrorRenderer
         return match (true) {
             // A response built on purpose is sent as it is.
             $e instanceof HttpResponseException => null,
-            $e instanceof ApiException => self::response($e->status, $e->errorCode, $e->details),
+            $e instanceof ApiException => self::response($e->status, $e->errorCode, $e->details, $e->headers),
             $e instanceof ValidationException => self::response(
                 $e->status,
                 'validation_failed',

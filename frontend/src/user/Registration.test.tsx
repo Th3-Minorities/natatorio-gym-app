@@ -49,7 +49,7 @@ it('allows letters and any length and uses the imported name without rendering H
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
   expect(screen.getByText('¡Hola, [Nombre]!')).toBeInTheDocument()
-  expect(requests.find((request) => request.path.endsWith('/lookup'))?.body).toEqual({ authorization_number: 'A' })
+  expect(requests.find((request) => request.path.endsWith('/lookup'))?.body).toEqual({ authorization_number: 'A', locale: 'es' })
   expect(screen.queryByLabelText('Correo electrónico')).not.toBeInTheDocument()
   expect(screen.queryByLabelText('Contacto de emergencia')).not.toBeInTheDocument()
 })
@@ -143,7 +143,7 @@ it('shows the N03-02 state with the server contact number and retries the edited
   fireEvent.change(field, { target: { value: 'AB12C4' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
-  expect(requests.at(-1)?.body).toEqual({ authorization_number: 'AB12C4' })
+  expect(requests.at(-1)?.body).toEqual({ authorization_number: 'AB12C4', locale: 'es' })
 })
 
 async function reachUnavailable() {
@@ -235,20 +235,17 @@ it('restores the signed-out page language when leaving English privacy', async (
   expect(document.documentElement.lang).toBe('es')
 })
 
-it.each(['123456789', ' 987654321 '])('sends student number %s to the lookup and shows no error for an athlete on the roster', async (number) => {
+it.each(['123456789', ' 987654321 '])('sends student number %s to the lookup and shows N03-09 for an athlete on the roster', async (number) => {
   render(<UserApp />)
   await reachIdentification()
   vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
     requests.push({ path, body: init?.body ? JSON.parse(String(init.body)) : null })
-    return json({ state: 'athlete' })
+    return json({ state: 'athlete', masked_email: 'm***z@upr.edu', resend_in: 300 })
   }))
   fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: number } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
-  await waitFor(() => expect(requests.some((request) => request.path.endsWith('/lookup'))).toBe(true))
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled())
-  expect(screen.getByRole('heading', { name: 'Registro' })).toBeInTheDocument()
-  expect(screen.getByRole('status')).toBeEmptyDOMElement()
-  expect(screen.getByLabelText('Número de estudiante o transacción')).not.toHaveAttribute('aria-invalid')
+  expect(await screen.findByRole('heading', { name: 'Revisa tu correo' })).toBeInTheDocument()
+  expect(requests.find((request) => request.path.endsWith('/lookup'))?.body).toEqual({ authorization_number: number, locale: 'es' })
 })
 
 it('shows the N03-03 state with the server contact number when the student is not on the roster', async () => {
@@ -362,22 +359,31 @@ it('looks up ten digits as an authorization number', async () => {
   fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: '1234567890' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
-  expect(requests.find((request) => request.path.endsWith('/lookup'))?.body).toEqual({ authorization_number: '1234567890' })
+  expect(requests.find((request) => request.path.endsWith('/lookup'))?.body).toEqual({ authorization_number: '1234567890', locale: 'es' })
 })
 
-it('announces the masked account and keeps renewal on identification', async () => {
+it('shows N03-04 with the masked account email, and both ways back reach an empty identification step', async () => {
   render(<UserApp />)
   await reachIdentification()
   vi.stubGlobal('fetch', vi.fn(async () => json({ state: 'renewal', masked_email: 'c***@upr.edu' })))
   fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'A' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
-  await waitFor(() => expect(screen.getByRole('button', { name: 'Continuar' })).toBeEnabled())
-  expect(screen.getByRole('heading', { name: 'Registro' })).toBeInTheDocument()
-  expect(screen.getByRole('status')).toHaveTextContent('Ya tienes una cuenta con c***@upr.edu. Inicia sesión para añadir esta membresía.')
+  expect(await screen.findByRole('heading', { name: 'Ya tienes una cuenta' })).toBeInTheDocument()
+  expect(screen.getByText('Inicia sesión para añadir esta autorización a tu cuenta.')).toBeInTheDocument()
+  expect(screen.getByText('Correo de la cuenta')).toBeInTheDocument()
+  expect(screen.getByText('c***@upr.edu')).toBeInTheDocument()
+  expect(screen.getByText('Todavía no hemos usado tu número ni vinculado tu registro.')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
+  fireEvent.click(screen.getByRole('button', { name: 'Volver al registro' }))
+  expect(await screen.findByRole('heading', { name: 'Registro' })).toBeInTheDocument()
+  expect(screen.getByLabelText('Número de estudiante o transacción')).toHaveValue('A')
+  fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
+  await screen.findByRole('heading', { name: 'Ya tienes una cuenta' })
   fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
   expect(await screen.findByRole('heading', { name: 'Antes de comenzar' })).toBeInTheDocument()
   expect(screen.queryByText(/c\*\*\*@upr\.edu/)).not.toBeInTheDocument()
   await reachIdentification()
+  expect(screen.getByRole('heading', { name: 'Registro' })).toBeInTheDocument()
   expect(screen.getByRole('status')).toBeEmptyDOMElement()
   fireEvent.change(screen.getByLabelText('Número de estudiante o transacción'), { target: { value: 'B' } })
   let finishLookup!: (response: Response) => void
