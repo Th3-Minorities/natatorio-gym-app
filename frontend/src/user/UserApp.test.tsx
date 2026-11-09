@@ -201,6 +201,53 @@ describe('N-06 and N-07', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar contraseña' })).toBeEnabled())
   })
 
+  it.each([false, true])('revalidates an offline reset link on reconnect (expired: %s)', async (expired) => {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    let finish!: (response: Response) => void
+    const validate = vi.fn()
+      .mockRejectedValueOnce(new TypeError('network'))
+      .mockImplementation(() => new Promise<Response>((resolve) => { finish = resolve }))
+    answer = (path) => {
+      expect(path).toBe('/api/user/password/validate')
+      return validate()
+    }
+    open('/reset-password?token=token&email=user%40example.com')
+    await screen.findByText(es.user.offlineForm)
+    await waitFor(() => expect(screen.queryByText(es.user.validating)).toBeNull())
+    expect(validate).toHaveBeenCalledTimes(1)
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    await waitFor(() => expect(validate).toHaveBeenCalledTimes(2))
+    expect(screen.getByText(es.user.validating)).toBeInTheDocument()
+    const submit = screen.getByRole('button', { name: es.user.save })
+    expect(submit).toBeDisabled()
+    fireEvent.submit(submit.closest('form')!)
+    expect(fetch).not.toHaveBeenCalledWith('/api/user/password/reset', expect.anything())
+
+    await act(async () => finish(expired ? error('user_reset_link_invalid') : new Response(null, { status: 204 })))
+    if (expired) {
+      expect(await screen.findByRole('heading', { name: es.user.expiredTitle })).toBeInTheDocument()
+    } else {
+      await waitFor(() => expect(submit).toBeEnabled())
+      await act(async () => { fireEvent(window, new Event('online')) })
+      expect(validate).toHaveBeenCalledTimes(2)
+    }
+  })
+
+  it('keeps the expired screen when the connection returns', async () => {
+    const validate = vi.fn()
+      .mockResolvedValueOnce(error('user_reset_link_invalid'))
+      .mockResolvedValue(new Response('<html>', { status: 502 }))
+    answer = () => validate()
+    open('/reset-password?token=used&email=user%40example.com')
+    expect(await screen.findByRole('heading', { name: es.user.expiredTitle })).toBeInTheDocument()
+
+    await act(async () => { fireEvent(window, new Event('online')) })
+    expect(validate).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('heading', { name: es.user.expiredTitle })).toBeInTheDocument()
+  })
+
   it('shows expired or used links with the drawn recovery actions', async () => {
     answer = async () => error('user_reset_link_invalid')
     open('/reset-password?token=used&email=user%40example.com')

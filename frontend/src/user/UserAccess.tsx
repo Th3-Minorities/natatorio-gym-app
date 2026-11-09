@@ -24,6 +24,8 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   const [busy, setBusy] = useState(false)
   const [received, setReceived] = useState(false)
   const [validating, setValidating] = useState(mode === 'reset')
+  const [validationAttempt, setValidationAttempt] = useState(0)
+  const validated = useRef(false)
   const [problem, setProblem] = useState<Problem>(replaced ? 'replaced' : null)
   const [waitUntil, setWaitUntil] = useState<Date | null>(null)
   const [waiting, setWaiting] = useState(false)
@@ -42,19 +44,32 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   }, [waitUntil])
 
   useEffect(() => {
-    const reconnect = () => setProblem((current) => current === 'offline' ? null : current)
+    const reconnect = () => {
+      setProblem((current) => current === 'offline' ? null : current)
+      if (mode === 'reset' && !validated.current) {
+        setValidating(true)
+        setValidationAttempt((current) => current + 1)
+      }
+    }
     window.addEventListener('online', reconnect)
     return () => window.removeEventListener('online', reconnect)
-  }, [])
+  }, [mode])
 
   useEffect(() => {
     if (mode !== 'reset') return
     let active = true
-    apiRequest('/user/password/validate', { method: 'POST', body: { email: resetEmail, token } }).catch((error: unknown) => {
-      if (active) setProblem(error instanceof ApiError && error.code === 'offline' ? 'offline' : 'expired')
+    validated.current = false
+    setValidating(true)
+    apiRequest('/user/password/validate', { method: 'POST', body: { email: resetEmail, token } }).then(() => {
+      if (active) validated.current = true
+    }).catch((error: unknown) => {
+      if (!active) return
+      const unreachable = error instanceof ApiError && error.code === 'offline'
+      if (!unreachable) validated.current = true
+      setProblem(unreachable ? 'offline' : 'expired')
     }).finally(() => { if (active) setValidating(false) })
     return () => { active = false }
-  }, [mode, resetEmail, token])
+  }, [mode, resetEmail, token, validationAttempt])
 
   useLayoutEffect(() => {
     if (Object.keys(fields).length > 0) form.current?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
