@@ -28,6 +28,7 @@ export const en: Messages = {
       claimedBody: (phone: string) => `If you already have an account, sign in. If you need to check the link, call ${phone}.`,
       signIn: 'Sign in', changeNumber: 'Change number',
     },
+    unavailable: { intro: 'Use the authorization number on your receipt.', label: 'Authorization number', help: (phone: string) => `Help: ${phone}` },
     numberHint: 'Authorization number: 6 or 7 characters, may contain letters.',
     paymentDescription: 'Payment description ·', receiptNumber: 'Authorization number:', exampleNumber: '4K7Q2B',
     numberUnavailable: (phone: string) => `We could not validate this number. Check your receipt or call ${phone}.`,

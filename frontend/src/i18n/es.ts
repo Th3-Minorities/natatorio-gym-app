@@ -26,6 +26,7 @@ export const es = {
       claimedBody: (phone: string) => `Si ya tienes cuenta, inicia sesión. Si necesitas revisar el vínculo, llama al ${phone}.`,
       signIn: 'Iniciar sesión', changeNumber: 'Cambiar número',
     },
+    unavailable: { intro: 'Usa el número de autorización de tu recibo.', label: 'Número de autorización', help: (phone: string) => `Ayuda: ${phone}` },
     numberHint: 'Número de autorización: 6 o 7 caracteres, puede tener letras.',
     paymentDescription: 'Descripción del pago ·', receiptNumber: 'Número de autorización:', exampleNumber: '4K7Q2B',
     numberUnavailable: (phone: string) => `No pudimos validar este número. Revisa tu recibo o llama al ${phone}.`,

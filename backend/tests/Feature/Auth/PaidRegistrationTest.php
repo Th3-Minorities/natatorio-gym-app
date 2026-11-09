@@ -258,6 +258,8 @@ class PaidRegistrationTest extends TestCase
         $this->mock(MembershipStore::class)->shouldNotReceive('find');
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
             ->assertOk()->assertExactJson(['state' => 'athlete']);
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => ' 802123456 '])
+            ->assertOk()->assertExactJson(['state' => 'athlete']);
         $this->assertDatabaseCount('authorizations', 0);
         $this->assertDatabaseCount('users', 0);
     }
@@ -290,33 +292,42 @@ class PaidRegistrationTest extends TestCase
     {
         config(['registration.ip_failures' => 2]);
         $this->rosterRecord();
+        Authorization::factory()->athlete($this->rosterRecord(['student_number' => '802000002']))->create();
         $this->acknowledge();
         for ($i = 0; $i < 3; $i++) {
             $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])->assertOk();
         }
-        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802999999'])->assertUnprocessable();
-        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802999998'])->assertUnprocessable();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802999999'])
+            ->assertUnprocessable()->assertJsonPath('error.code', 'student_not_on_roster');
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802000002'])
+            ->assertUnprocessable()->assertJsonPath('error.code', 'roster_record_claimed');
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802999997'])->assertTooManyRequests()->assertHeader('Retry-After');
         $this->assertSame(2, RateLimiter::attempts('registration:global'));
     }
 
-    public function test_a_student_number_is_sent_as_data_and_the_roster_is_only_read(): void
+    public function test_a_nine_digit_prefix_with_sql_or_script_after_it_is_data_not_an_athlete_match(): void
     {
         $record = $this->rosterRecord();
         $this->acknowledge();
-        $this->postJson('/api/user/registration/lookup', ['authorization_number' => "80212345' OR 1=1"])
-            ->assertUnprocessable()->assertJsonPath('error.code', 'registration_number_unavailable');
-        $this->assertDatabaseHas('roster_records', ['id' => $record->id, 'student_number' => '802123456']);
+        foreach (["802123456' OR 1=1", '802123456<script>'] as $payload) {
+            $this->postJson('/api/user/registration/lookup', ['authorization_number' => $payload])
+                ->assertUnprocessable()->assertJsonMissing(['state' => 'athlete'])
+                ->assertJsonPath('error.code', 'registration_number_unavailable');
+        }
+        $this->assertDatabaseHas('roster_records', ['id' => $record->id, 'student_number' => '802123456', 'removed_at' => null]);
+        $this->assertDatabaseCount('roster_records', 1);
     }
 
     public function test_staff_and_signed_in_users_cannot_look_up_a_student_number(): void
     {
         $this->rosterRecord();
         $this->actingAs(StaffAccount::factory()->create(), 'staff');
-        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])->assertForbidden();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
+            ->assertForbidden()->assertJsonPath('error.code', 'forbidden');
         $this->app['auth']->forgetGuards();
         $this->actingAs(User::factory()->create(), 'web');
-        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])->assertForbidden();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
+            ->assertForbidden()->assertJsonPath('error.code', 'forbidden');
     }
 
     public function test_ten_digits_are_looked_up_as_an_authorization_number(): void
