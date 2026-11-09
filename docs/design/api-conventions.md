@@ -2,6 +2,14 @@
 
 Rules every backend route follows, so errors and routes look the same across features. Set up in GitHub issue #47. Requirements: REQ-NF-10, REQ-NF-12.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Routes](#1-routes) · [Errors](#2-error-format) · [Database](#3-database-work-laravel-defaults-versus-our-data-model) · [Commands](#4-commands) · [CI](#5-ci) · [Staff sign-in](#6-staff-sign-in-roles-and-the-audit-log) · [Staff accounts](#7-staff-accounts-invitations-and-password-reset) · [Check-out](#8-check-out-and-session-end)
+
+</nav>
+
 ## 1. Routes
 
 - Every backend route is under `/api`. The proxy sends `/api` to Laravel and everything else to the PWA (architecture.md, D2). Routes go in `backend/routes/api.php`, written without the prefix: `Route::get('/health', ...)` answers at `/api/health`.
