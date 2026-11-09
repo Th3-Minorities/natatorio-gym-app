@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Exceptions\ApiException;
 use App\Models\Authorization;
 use App\Models\FacilitySession;
+use App\Models\User;
+use App\Services\AuditLog;
 use App\Services\FacilitySessions;
+use App\Services\StaffPeople;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,7 +20,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class ActiveSessionsController extends Controller
 {
-    public function __construct(private FacilitySessions $sessions) {}
+    public function __construct(private FacilitySessions $sessions, private StaffPeople $people) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -48,12 +51,41 @@ class ActiveSessionsController extends Controller
         return Storage::disk('local')->response($path, null, ['Cache-Control' => 'private, no-store']);
     }
 
+    /** S-02 (121:3142): the visit, active or not, and the person with what Staff may see (REQ-NF-19). */
+    public function show(int $session): JsonResponse
+    {
+        $visit = $this->sessions->find($session) ?? throw new ApiException('not_found', 404);
+        $user = User::query()->findOrFail($visit->user_id);
+        $authorization = $visit->authorization_id ? Authorization::query()->find($visit->authorization_id) : null;
+
+        return response()->json([
+            'session' => $this->sessions->data($visit),
+            'person' => $this->people->person($user, $authorization, emergencyContact: true),
+        ]);
+    }
+
+    /** "Terminar antes" (122:3058): the visit ends now and is kept with its real length (REQ-F-48). */
+    public function endEarly(Request $request, string $session, AuditLog $log): JsonResponse
+    {
+        return $this->correct($request, $session, 'ended_early', $log);
+    }
+
+    /** "Anular" (122:3076): a Check In made by mistake stops counting; the record stays (REQ-F-48). */
+    public function void(Request $request, string $session, AuditLog $log): JsonResponse
+    {
+        return $this->correct($request, $session, 'void', $log);
+    }
+
+    private function correct(Request $request, string $session, string $status, AuditLog $log): JsonResponse
+    {
+        $visit = $this->sessions->correct($session, $status, $request->user('staff'), $log);
+
+        return response()->json(['session' => $this->sessions->data($visit)]);
+    }
+
     /** The chip on each row (121:3066): Atleta, Socio estudiante, Socio empleado or Acceso manual (E-148). */
     private function type(FacilitySession $session): string
     {
-        return match ($session->authorization_type) {
-            'athlete', 'manual' => $session->authorization_type,
-            default => $session->member_group === 'employee' ? 'employee' : 'student',
-        };
+        return StaffPeople::type($session->authorization_type, $session->member_group);
     }
 }

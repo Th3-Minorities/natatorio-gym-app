@@ -116,6 +116,41 @@ class FacilitySessions
         });
     }
 
+    /**
+     * A Staff correction on an active visit (REQ-F-48): end it now (ended_early) or void it (void). The visit is kept
+     * either way, and a void one stops counting in occupancy and statistics. Logged with who did it (REQ-NF-39).
+     */
+    public function correct(string $id, string $status, StaffAccount $staff, AuditLog $log): FacilitySession
+    {
+        return DB::transaction(function () use ($id, $status, $staff, $log) {
+            $session = $this->query()->whereKey($id)->lockForUpdate()->firstOrFail();
+            // Resolve time after obtaining the lock, as for a check-out.
+            $now = $this->databaseNow();
+            $this->resolveEnd($session, $now);
+            if ($session->status !== 'active') {
+                throw new ApiException('check_out_session_not_active', 409);
+            }
+
+            DB::table('facility_sessions')->where('id', $session->id)->update([
+                'status' => $status,
+                'ended_at' => DB::raw('clock_timestamp()'),
+                'updated_at' => $now->format('Y-m-d H:i:s.uP'),
+            ]);
+            $log->record($status === 'void' ? 'session.void' : 'session.end_early', $session,
+                ['status' => 'active'], ['status' => $status], null, $staff);
+
+            return $session->refresh();
+        });
+    }
+
+    /** One visit, active or not, with how it ended even before the scheduler runs. */
+    public function find(int $id): ?FacilitySession
+    {
+        $session = $this->query()->whereKey($id)->first();
+
+        return $session ? $this->resolveEnd($session) : null;
+    }
+
     /** Three conditional bulk updates; no session rows are loaded into memory. Safe to repeat. */
     public function closeDue(?Carbon $at = null): void
     {

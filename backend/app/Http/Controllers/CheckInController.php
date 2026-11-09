@@ -6,14 +6,13 @@ use App\Exceptions\ApiException;
 use App\Models\Authorization;
 use App\Models\FacilitySession;
 use App\Models\User;
+use App\Services\CheckIns;
 use App\Services\FacilitySessions;
 use App\Services\GymSchedule;
 use App\Support\GymBoundary;
-use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Check In with location (REQ-F-33, REQ-F-36, REQ-F-37). The checks run in the order of check-in-flows D1.
@@ -21,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  */
 class CheckInController extends Controller
 {
-    public function __construct(private FacilitySessions $sessions, private GymSchedule $schedule) {}
+    public function __construct(private FacilitySessions $sessions, private GymSchedule $schedule, private CheckIns $checkIns) {}
 
     public function show(Request $request): JsonResponse
     {
@@ -48,57 +47,18 @@ class CheckInController extends Controller
             'accuracy' => ['nullable', 'numeric', 'min:0'],
         ]);
 
-        try {
-            [$session, $created] = DB::transaction(function () use ($user, $location) {
-                if ($session = $this->activeSession($user)) {
-                    return [$session, false];
-                }
-                $authorization = $this->checkEligibility($user, $location);
-                // A term end or closure may have ended a visit before the scheduler ran; free its time range first.
-                $this->sessions->closeDueFor($user);
-                $session = FacilitySession::query()->create([
-                    'user_id' => $user->id,
-                    'authorization_id' => $authorization->id,
-                    'authorization_type' => $authorization->type,
-                    'member_group' => $this->memberGroup($authorization),
-                    'sport' => $authorization->type === 'athlete' ? $authorization->rosterRecord->sport : null,
-                    'status' => 'active',
-                ]);
-
-                return [$session->fresh(), true];
-            });
-        } catch (QueryException $e) {
-            // A simultaneous Check In won the exclusion constraint: answer with its session (REQ-F-37).
-            if (($e->errorInfo[0] ?? null) !== '23P01' || ! ($session = $this->activeSession($user))) {
-                throw $e;
-            }
-            $created = false;
-        }
+        [$session, $created] = $this->checkIns->start($user, null, fn () => $this->checkLocation($location));
 
         return response()->json($this->body($session, $user), $created ? 201 : 200);
     }
 
-    /** @param array<string, mixed> $location */
-    private function checkEligibility(User $user, array $location): Authorization
+    /**
+     * The location checks, after the shared rules (CheckIns::eligible) and only for the User's own Check In.
+     *
+     * @param  array<string, mixed>  $location
+     */
+    private function checkLocation(array $location): void
     {
-        $authorization = $user->currentAuthorization() ?? throw new ApiException('check_in_no_authorization', 403);
-        if ($authorization->photo_path === null) {
-            throw new ApiException('check_in_photo_required', 409);
-        }
-        if ($authorization->photo_pending_at !== null) {
-            throw new ApiException('check_in_photo_pending', 409);
-        }
-
-        $now = now();
-        // An athletes-only period outside regular hours opens the gym for athletes (G-28).
-        if ($this->schedule->state($now) === 'closed') {
-            throw new ApiException('check_in_gym_closed', 409);
-        }
-        // Manual authorizations count as paid members (E-126).
-        if ($authorization->type !== 'athlete' && ($period = $this->schedule->covering($now, 'athletes_only'))) {
-            throw new ApiException('check_in_athletes_only', 409, $this->period($period));
-        }
-
         if (! isset($location['latitude'], $location['longitude'], $location['accuracy'])) {
             throw new ApiException('location_required', 422);
         }
@@ -108,8 +68,6 @@ class CheckInController extends Controller
         if (! GymBoundary::contains($location['latitude'], $location['longitude'])) {
             throw new ApiException('check_in_outside_boundary', 403);
         }
-
-        return $authorization;
     }
 
     /** Active until check-out, two hours, or the end of the term, even before the scheduler runs. */
@@ -130,20 +88,10 @@ class CheckInController extends Controller
             'session' => $session ? ['id' => $session->id, 'started_at' => $session->started_at->toISOString(), 'status' => 'active'] : null,
             'athletes_period' => $this->athletesPeriod($session),
             'account_type' => $authorization ? ($authorization->type === 'athlete' ? 'athlete' : 'member') : null,
-            'member_group' => $authorization ? $this->memberGroup($authorization) : null,
+            'member_group' => $authorization ? CheckIns::memberGroup($authorization) : null,
             // From the roster record, as the session copies it (E-147).
             'sport' => $authorization?->type === 'athlete' ? $authorization->rosterRecord->sport : null,
         ];
-    }
-
-    /** Student or employee for paid and manual authorizations (E-148); none for athletes. */
-    private function memberGroup(Authorization $authorization): ?string
-    {
-        return match ($authorization->type) {
-            'paid' => $authorization->importedMembership->member_group,
-            'manual' => $authorization->member_group,
-            default => null,
-        };
     }
 
     /** The period now, or the next one within the notice minutes or before the active session ends (REQ-F-83, E-161). */

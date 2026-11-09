@@ -392,6 +392,8 @@ export const es = {
     check_in_photo_pending: 'El personal marcó tu foto como pendiente. Carga una foto nueva desde tu teléfono.',
     check_in_athletes_only: 'Check-in disponible al terminar este periodo.',
     check_out_session_not_active: 'Esta visita ya terminó.',
+    // S-03 "Ya tiene una sesión activa" (Figma 4288:1695).
+    check_in_session_active: 'Esta persona ya tiene una sesión activa.',
     location_required: 'Espera un momento y vuelve a intentarlo desde el gimnasio.',
     check_in_low_accuracy: 'La ubicación recibida no tiene suficiente precisión para confirmar tu llegada.',
     check_in_outside_boundary: 'Debes estar dentro del área del gimnasio para registrar tu entrada.',
