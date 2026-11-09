@@ -15,6 +15,13 @@ export function UserHeader({ back = '/sign-in' }: { back?: string }) {
   </header>
 }
 
+export function AccountHeading({ title, back, backLabel }: { title: string; back: string; backLabel: string }) {
+  return <div className="user-account-heading">
+    <a href={back} className="user-back" aria-label={backLabel}><ArrowLeft aria-hidden="true" /></a>
+    <h1 tabIndex={-1}>{title}</h1>
+  </div>
+}
+
 export function UserNotice({ title, children, success = false, informational = false }: { title: string; children: string; success?: boolean; informational?: boolean }) {
   const Icon = success ? Check : TriangleAlert
   return <div className="user-notice">{success || informational ? <div className="notice" role="status">
@@ -29,13 +36,17 @@ export function UserLoading({ detail }: { detail: string }) {
   </div>
 }
 
+export function OfflineBanner({ text }: { text?: string }) {
+  const t = useMessages().user
+  return <div className="user-offline" role="status"><WifiOff aria-hidden="true" size={18} absoluteStrokeWidth /><span>{text ?? t.offline}</span></div>
+}
+
 export function UserPage({ children, header = true, large = false, offline = false, offlineText, back, className = '', current = 'account' }: {
   children: ReactNode; header?: boolean; large?: boolean; offline?: boolean; offlineText?: string; back?: string; className?: string; current?: Destination
 }) {
-  const t = useMessages().user
   return <div className={`user-app ${header ? 'user-app--access' : 'user-app--account'} ${large ? 'user-app--large' : ''} ${className}`}>
     {header ? <UserHeader back={back} /> : !offline && <div className="user-top" />}
-    {offline && <div className="user-offline" role="status"><WifiOff aria-hidden="true" size={18} absoluteStrokeWidth /><span>{offlineText ?? t.offline}</span></div>}
+    {offline && <OfflineBanner text={offlineText} />}
     <main className="user-content">{children}</main>
     {!header && <UserNavigation current={current} />}
   </div>

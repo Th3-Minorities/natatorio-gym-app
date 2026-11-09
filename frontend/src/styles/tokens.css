@@ -98,6 +98,8 @@
   /* N-01 welcome (Figma 179:6068). */
   --user-handle: #c8cbba;
   --user-welcome-sheet-height: 416px;
+  --user-welcome-collapsed-height: 204px;
+  --user-welcome-hint-height: 56px;
   --user-welcome-sheet-radius: 26px;
   --user-welcome-brand-top: 110px;
   --user-welcome-brand-size: 48px;

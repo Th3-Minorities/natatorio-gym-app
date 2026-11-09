@@ -312,12 +312,12 @@ Decision: A, nginx. It already runs in the docker-compose setup. The certificate
 
 **Status:** Decided (team, 2026-10-19), A.
 
-Laravel packages add their own paths by default: Sanctum's CSRF cookie route and Fortify's sign in, registration and password reset routes are not under `/api`.
+Laravel packages add their own paths by default: Sanctum's CSRF cookie route is not under `/api`.
 
 - **A. Move them under `/api`** with the route prefix setting of each package. The proxy needs two rules: `/api` to Laravel, everything else to the PWA (with `index.html` as fallback for app routes).
 - **B. Keep the defaults** and list each path in the proxy. More rules, and paths like `/login` can clash with PWA routes.
 
-Decision: A. One simple rule, and it matches the glossary ("API under `/api`"). Sanctum, Fortify, Policies and the OpenAPI contract stay as written in `context.md`. Confirm the prefix settings when the project is set up.
+Decision: A. One simple rule, and it matches the glossary ("API under `/api`"). Sanctum, Policies and the OpenAPI contract stay as written in `context.md`. Confirm the prefix settings when the project is set up.
 
 ### D3: How scheduled tasks run
 

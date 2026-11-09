@@ -11,7 +11,7 @@ Two answers are still pending and touch almost every diagram:
 
 Mail is assumed available (E-61). CTI described a path: the server runs a mail service (CTI suggests Postfix) and sends through CTI's mail gateway once CTI authorizes the VM (M-07, answered in principle). The authorization is still to be requested, and SPF and DKIM were not discussed. If CTI does not authorize the VM, the fallback is an external provider, which needs approval (M-11). Every email link depends on it: athlete registration (diagram 4), "I am an athlete" (diagram 7, E-58) and password reset.
 
-Before an account exists, the welcome screen (N-01) has a Spanish / English switch, Spanish by default (E-159). The choice stays on the device and applies to every screen before sign in, and it is preselected when the language is asked at account creation (E-64). After sign in, the account language applies.
+Before an account exists, the welcome screen (N-01) has a Spanish / English switch, Spanish by default (E-159). The choice stays on the device, applies before sign in and is saved to the new account without another language step (E-174). After sign in, the account language applies.
 
 ## Diagrams
 
@@ -35,8 +35,7 @@ flowchart TD
   HAS -->|"no"| PW["Create a password<br/>minimum 10 characters, no mixing rules,<br/>64 or more allowed, compromised passwords refused"]
   PW --> PH["Take a photo now or upload one<br/>JPEG, PNG or HEIC, up to 10 MB.<br/>Screen says it cannot be changed"]
   PH --> WV["Accept the waiver and give an emergency contact,<br/>name and phone"]
-  WV --> LG["Choose language, Spanish or English;<br/>it can be changed later in the account preferences"]
-  LG --> FIN[["Final step: save photo, then account and claim<br/>diagram 3"]]
+  WV --> FIN[["Final step: save photo, then account and claim<br/>diagram 3"]]
   FIN -->|"photo rejected or not saved"| PF["Stay on the photo step, typed data kept in the page,<br/>message with the cause, retry.<br/>Nothing claimed"]
   PF --> PH
   FIN -->|"number claimed meanwhile"| M1
@@ -44,9 +43,9 @@ flowchart TD
   M1 -.->|"real owner whose number was taken"| RO["Owner takes the account back with password reset<br/>by email to the payment email.<br/>Or an Administrator releases the number"]
 ```
 
-**About this diagram:** The person is not signed in; the privacy notice (REQ-NF-25, text pending G-24) comes before any field, and password, photo, waiver and emergency contact stay in the page until the final step sends them in one request (REQ-F-13, F-17, F-60, NF-24, F-26). The screen has one field (REG-14, E-153): exactly 9 digits is a student number and continues in diagram 4; the app looks up anything else as an Authorization Number, with no length check. Messages follow REQ-F-72, F-73, F-18 (invalid or claimed), REQ-F-22 with REG-9 (an ended-term number gets the same message), REQ-F-71 (pause), REQ-F-70 with REG-3 (masking), REQ-F-78 with REG-4 (email already has an account) and REG-8 (photo failure). The first line is E-92 and the store button is E-96 and E-126; the photo step is E-69; the password rules are E-63; the language step is E-64, and the welcome screen has a language switch, Spanish by default (E-159). The dotted path is REQ-F-75 (needs mail) and REQ-F-74.
+**About this diagram:** The person is not signed in; the privacy notice (REQ-NF-25, text pending G-24) comes before any field, and password, photo, waiver and emergency contact stay in the page until the final step sends them in one request (REQ-F-13, F-17, F-60, NF-24, F-26). The screen has one field (REG-14, E-153): exactly 9 digits is a student number and continues in diagram 4; the app looks up anything else as an Authorization Number, with no length check. Messages follow REQ-F-72, F-73, F-18 (invalid or claimed), REQ-F-22 with REG-9 (an ended-term number gets the same message), REQ-F-71 (pause), REQ-F-70 with REG-3 (masking), REQ-F-78 with REG-4 (email already has an account) and REG-8 (photo failure). The first line is E-92 and the store button is E-96 and E-126; the photo step is E-69; the password rules are E-63; the language is inherited from Welcome (E-174), which has a language switch, Spanish by default (E-159). The dotted path is REQ-F-75 (needs mail) and REQ-F-74.
 
-Notes: the term comes from the paid date of the order (REQ-F-22). A person who has just paid registers at once: when the number is not in the app yet, the lookup asks the store right then (diagram 2, REQ-F-97, E-127). The member never types or changes the account email (REQ-F-11). The welcome screen and the screens up to the language step use the language chosen with the switch, Spanish by default, because the account language does not exist yet (E-159). The store button appears only while a term runs, because the store sells only then (G-26, E-126). The password rule has no mixing rules and allows at least 64 characters. NIST SP 800-63B-4 asks for at least 15 characters for single-factor passwords; the team chose 10 as a documented deviation for phone use. The compromised-password check is an external call that sends only part of a hash. SRS 2.4 and REQ-NF-51 say so (E-98), and a test must cover the case where that service does not answer (#30).
+Notes: the term comes from the paid date of the order (REQ-F-22). A person who has just paid registers at once: when the number is not in the app yet, the lookup asks the store right then (diagram 2, REQ-F-97, E-127). The member never types or changes the account email (REQ-F-11). Welcome and all screens before account creation use the language chosen with the switch, Spanish by default. The new account stores that choice (E-159, E-174). The store button appears only while a term runs, because the store sells only then (G-26, E-126). The password rule has no mixing rules and allows at least 64 characters. NIST SP 800-63B-4 asks for at least 15 characters for single-factor passwords; the team chose 10 as a documented deviation for phone use. The compromised-password check is an external call that sends only part of a hash. SRS 2.4 and REQ-NF-51 say so (E-98), and a test must cover the case where that service does not answer (#30).
 
 Note on message M1: When a person paid but the receipt never arrived, the message also gives the procedure (call, visit, bring the receipt) in words the gym writes, with the contact number (G-25). Only Administrators add the person by hand after seeing the receipt, because desk staff change often (E-114, REQ-F-87).
 
@@ -155,14 +154,13 @@ flowchart TD
   V -->|"valid"| PW["Create a password<br/>same rules as diagram 1"]
   PW --> PH["Take a photo now or upload one.<br/>Screen says it cannot be changed"]
   PH --> WV["Waiver and emergency contact"]
-  WV --> LG["Choose language, Spanish or English;<br/>it can be changed later in the account preferences"]
-  LG --> FIN[["Final step, diagram 3"]]
+  WV --> FIN[["Final step, diagram 3"]]
   FIN -->|"photo failed"| PH
   FIN -->|"saved"| OK["Account email is the roster email.<br/>Athlete authorization for the term.<br/>Link marked used. Signed in"]
   X4 --> START
 ```
 
-**About this diagram:** This link is the only way for an athlete to register: there is no in-person code, and if the link fails the athlete calls the office at 265-3866 (E-117). The student number is typed in the one registration field of diagram 1 (REG-14, E-153). Drawn with the decided option of REG-5 (E-69): only the student number is asked before the link; password, photo and waiver come after the link is opened and are saved together, so there is never an authorization without a photo (E-69; REQ-F-15, NF-25, NF-24, F-26, F-60). The language step is E-64, and the welcome screen has a language switch, Spanish by default (E-159). The request limit is REG-7 (E-73) and the link rules are REG-6 (pending); messages follow REQ-F-76, F-73, F-18, SRS 3.3 errors and REG-4 (E-70). The first line is E-92. The link needs mail (assumed available, E-61).
+**About this diagram:** This link is the only way for an athlete to register: there is no in-person code, and if the link fails the athlete calls the office at 265-3866 (E-117). The student number is typed in the one registration field of diagram 1 (REG-14, E-153). Drawn with the decided option of REG-5 (E-69): only the student number is asked before the link; password, photo and waiver come after the link is opened and are saved together, so there is never an authorization without a photo (E-69; REQ-F-15, NF-25, NF-24, F-26, F-60). The language is inherited from Welcome without another step (E-174); Welcome has a language switch, Spanish by default (E-159). The request limit is REG-7 (E-73) and the link rules are REG-6 (pending); messages follow REQ-F-76, F-73, F-18, SRS 3.3 errors and REG-4 (E-70). The first line is E-92. The link needs mail (assumed available, E-61).
 
 Notes: the account exists only after the final step that follows opening the link (REQ-F-15). The final step checks the link again, so a link that expires while the form is open creates no account. Athletes do not buy a membership (REQ-F-25), but the registration screen is the same for both kinds of person, so the store button of diagram 1 stays on it (E-153). A paid member who types a student number gets the message of X1.
 
@@ -420,7 +418,7 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 
 ### REG-13: Language of the welcome and sign-in screens
 
-**Decided (E-159, replaces E-103).** The welcome screen (N-01) has a Spanish / English switch, Spanish by default. The choice stays on the device and applies to every screen before sign in. In the language step when the account is created (E-64) that choice comes preselected. After sign in, the account language applies. Drawn in diagrams 1, 4 and 5.
+**Decided (E-159, refined by E-174; replaces E-103).** Welcome (N-01) has a Spanish / English switch, Spanish by default. The choice stays on the device and applies before sign in. Registration saves that choice to the account without another language step. After sign in, the account language applies and can be changed in Ajustes. Drawn in diagrams 1 and 4; diagram 5 is removed.
 
 ### REG-14: One registration number field (E-153)
 
@@ -490,9 +488,9 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-61 (mail assumed available) | intro; 1, 4, 7; REG-12 |
 | E-62 (Staff one-time code) | Replaced by E-117: 5 (removed); REG-11 |
 | E-63 (password rules) | 1, 4 |
-| E-64 (language chosen at account creation) | 1, 4 |
+| E-64, E-174 (language inherited from Welcome and saved at account creation) | 1, 4 |
 | E-67 (banners for a User with no active authorization) | 6 |
-| E-103 (N-01 and N-02 in Spanish before an account exists) | intro; 1, 4; REG-13 |
+| E-103 (N-01 and N-02 in Spanish before an account exists; replaced by E-159) | intro; 1, 4; REG-13 |
 | E-106 (account kept when a release removes the only authorization) | 6 (notes); 9. Authorization states; Gap 14 |
 | E-68, E-94 (one active authorization per User per term) | 6, 7, 9; Gaps 8, 11 |
 | E-69 (photo with the registration, athlete data after the link, new term, manual grant photo) | 1, 4, 7, 8, 9; REG-5; REG-10; Gaps 2, 13 |
@@ -517,4 +515,6 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-127 (paid memberships from the store's API; lookup asks the store) | 1 (notes), 2, 9. Authorization states |
 | E-128 (Authorization Number with letters, unique across all orders; length not checked) | 1, 2; REG-14; Gap 6 |
 | E-153 (one registration screen and field) | 1, 2, 4; REG-14 |
+| E-159 (Spanish / English switch on Welcome, refined by E-174) | intro; 1, 4; REG-13 |
+| E-160 (a student number has exactly 9 digits) | 1, 2, 4; REG-14 |
 | E-184 (purchase, prerequisite and help on number entry; original Welcome layout) | 1; intro |

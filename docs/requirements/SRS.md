@@ -2,13 +2,13 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.22 draft, not approved
+**Version:** 0.24 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
 **Organization:** Department of Computer Science and Engineering, University of Puerto Rico at Mayagüez (UPRM)
 
-**Date:** 2026-11-08
+**Date:** 2026-11-09
 
 ## Contents
 
@@ -80,13 +80,15 @@
 | Team | 2026-11-05 | Team decisions E-145 to E-151 (`team.md`), from the review of the #13 migrations: retention without blocked database links (REQ-NF-05), void a wrong manual entry (REQ-F-95), sport copied onto each visit (REQ-F-61), student or employee on each manual grant (REQ-F-87), no names in the sync record (REQ-F-99), reactivating a staff account and keeping the last Administrator (REQ-F-88) | 0.12 |
 | Team | 2026-11-06 | Team decision E-152 (`team.md`): dates and times follow the Figma wireframes, in the short form of each language (REQ-NF-38 rewritten) | 0.13 |
 | Team | 2026-11-06 | Team decision E-154 (`team.md`): API error texts live only in the PWA translation files and the API sends only a code (REQ-NF-34 rewritten) | 0.13 |
-| Team | 2026-11-05 | Team decision E-153 (`team.md`), which replaces E-112: registration is one screen with one field; exactly 10 digits is a student number (athlete registration), anything else is an Authorization Number, whose length is not checked (REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91; REQ-F-10 and the glossary no longer fix the length at 6 characters, E-128) | 0.14 |
+| Team | 2026-11-05 | Team decision E-153 (`team.md`), which replaces E-112: registration is one screen with one field; exactly 9 digits is a student number (athlete registration), anything else is an Authorization Number, whose length is not checked (REQ-F-15, REQ-F-71, REQ-F-76, REQ-F-91; REQ-F-10 and the glossary no longer fix the length at 6 characters, E-128) | 0.14 |
 | Team | 2026-11-06 | Team decisions E-155 and E-156 (`team.md`): the waiver is accepted with an on-screen checkbox now, and a drawn signature is added for the Final report after research (REQ-F-60); no "15 minutes left" notice | 0.15 |
 | Team | 2026-11-07 | User Check In wireframes, E-163 and E-164: elapsed duration, no term on the Gym ID, normal Check In after a visit, offline update time and occupancy on Gimnasio (REQ-F-40, REQ-NF-26) | 0.18 |
 | Team | 2026-11-07 | Team decisions E-159 and E-160 (`team.md`): a Spanish / English switch on the welcome screen before sign in, replacing E-103 (REQ-NF-33); the student number has 9 digits, correcting E-153 (REQ-F-15) | 0.19 |
 | Team | 2026-11-07 | Team decision E-161 (`team.md`): the athletes-only notice also shows on the Check In screen in the 60 minutes before a period starts, without a session (REQ-F-83) | 0.20 |
 | Team | 2026-11-08 | Team decisions E-166 to E-182 (`team.md`): staff password reset by email link (REQ-F-06), Authorization Number lookup ignores letter case (REQ-F-10), Staff approve the new photo of a "photo pending" account (REQ-F-94), a closure ends sessions when it starts (REQ-F-38, REQ-F-55), time inside on the active sessions list (REQ-F-44), Staff and Administrator screens are desktop only (REQ-NF-10), the offline Gym ID card is an exception to WCAG AA text contrast (REQ-NF-13), emergency list of Authorization Numbers (new REQ-F-103), nginx as the proxy | 0.21 |
 | Team | 2026-11-08 | Team decisions E-183 and E-184 (`team.md`): schedules and notices require sign in and are no longer public (REQ-F-55); the membership purchase button, the registration prerequisite and the help number move to the number-entry step of N-03 (REQ-F-91) | 0.22 |
+| Team | 2026-11-08 | Team decisions E-185 and E-186 (`team.md`): the privacy notice has one public read-only source that Mi cuenta also opens (E-185); the Check In load test peak is 50 in 5 minutes and the stress level is 100, which closes the pending peak number of REQ-NF-50 (REQ-NF-15, REQ-NF-50); the E-153 row above now says the student number has 9 digits, as E-160 decided (REQ-F-15) | 0.23 |
+| Team | 2026-11-09 | REQ-NF-33 now follows E-174: the language is chosen on the welcome screen and saved at registration, with no language step; it no longer says the User chooses it when creating the account | 0.24 |
 
 ## 1. Introduction
 
@@ -454,7 +456,7 @@ Screens by role follow the Overview table. Detailed screen design: design phase.
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-15 | The system shall serve about 150 people per day. This is an assumption: the real numbers are unknown, and measuring them is one purpose of the app. | N/A | High | Clear. Number for the Check In concurrency test: design (G-05) | Proposal:104 |
+| REQ-NF-15 | The system shall serve about 150 people per day. This is an assumption: the real numbers are unknown, and measuring them is one purpose of the app. | N/A | High | Clear. Peak and stress numbers for the Check In load test: E-186 (REQ-NF-50) | Proposal:104 |
 | REQ-NF-16 | The Check In button shall be usable in under 3 seconds on mobile data on a mid-range phone. | N/A | High | Clear. Test phone and network: design | Proposal:433; Team decision |
 
 ### 6.3 Security
@@ -487,7 +489,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 
 | ID | Requirement | Proposal priority | Final priority | Status | Source |
 |---|---|---|---|---|---|
-| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it when creating the account and can change it later in the profile preferences. Before an account exists, the welcome screen offers Spanish or English; the choice is kept on the device and applies to the screens before sign in, and it is the preselected answer when the account's language is asked. After sign in, the account language applies. Each staff account stores its own language, changed in the account's preferences on the dashboard. The User app has no language button in the top bar. | N/A | High | Clear | Team decision (E-64, E-104, E-114, E-159) |
+| REQ-NF-33 | The interface shall be in Spanish by default, and English shall be available for all texts. Each account stores one language. The User chooses it on the welcome screen, which offers Spanish or English before an account exists. The device keeps the choice and uses it on the screens before sign in, and registration saves it to the account without another language step. The User can change it later in the profile preferences. After sign in, the account language applies. Each staff account stores its own language, changed in the account's preferences on the dashboard. The User app has no language button in the top bar. | N/A | High | Clear | Team decision (E-64, E-104, E-114, E-159, E-174) |
 | REQ-NF-34 | All frontend and backend texts shall be in translation files from the start. API error texts shall live only in the PWA translation files, and the API shall send only a code. The backend shall translate what does not pass through the PWA, such as emails. | N/A | High | Clear | Team decision (E-154) |
 | REQ-NF-35 | Emails shall be sent in the language chosen by the User. | N/A | High | Clear | Team decision |
 | REQ-NF-36 | The page language attribute shall change together with the texts (WCAG 3.1.1). | N/A | High | Clear | Review gap |
@@ -513,7 +515,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 | REQ-NF-43 | Location and PWA behavior shall be tested on real phones. | N/A | High | Clear | Proposal:515 |
 | REQ-NF-44 | Each test plan case shall be linked to an objective and shall use controlled datasets. | N/A | High | Clear | Proposal:515, 573-575 |
 | REQ-NF-49 | Before the release, gym staff and real users (paid members and athletes) shall run the main flows on their own phones and computers: registration, Check In, Gym ID, Staff-assisted Check In and store sync. The gym records whether each flow is accepted. | N/A | High | Pending: who takes part and when (gym) | Professor feedback |
-| REQ-NF-50 | A load test shall run simultaneous Check Ins above the expected peak. At most one session per User shall be created and the occupancy shall stay correct. | N/A | High | Pending: peak number (REQ-NF-15, G-05), fixed in design (team) | Professor feedback |
+| REQ-NF-50 | A load test shall run simultaneous Check Ins at the peak of 50 in 5 minutes and at the stress level of 100 in 5 minutes (E-186). At most one session per User shall be created and the occupancy shall stay correct. | N/A | High | Clear. Peak and stress numbers: E-186 | Professor feedback |
 
 ### 8.3 Legal, Intellectual Property and Privacy
 
