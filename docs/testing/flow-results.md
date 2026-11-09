@@ -1,6 +1,6 @@
 # Flow test results
 
-Results of issue #152: every flow in the midterm scope, from its first screen to its last. Each flow has one automated browser test in `frontend/e2e/flows/`, which runs in CI with the other browser tests on the seeded test data. The Manual column is for the run on real phones: an iPhone with Safari and an Android phone with Chrome, or a desktop browser for the Staff and Administrator flows.
+Results of issue #152: every flow in the midterm scope, from its first screen to its last. Each flow has one automated browser test in `frontend/e2e/flows/`, which runs in CI with the other browser tests on the seeded test data. The Manual column is for the run on real phones: an iPhone with Safari and an Android phone with Chrome, or a desktop browser for the Staff and Administrator flows. Every flow also has a path table in [flow-paths.md](flow-paths.md): one row per path, tested with a test technique, on each device.
 
 ## How to run them
 
@@ -36,13 +36,15 @@ docker compose exec app php artisan tinker --execute="App\Models\ScheduleSlot::f
 
 Without the row the tests still check the closed answer and skip the later steps, as they would in a run outside the hours. An athletes-only period (Saturday 8:00 to 12:00) still keeps members out, with or without the row, so the Check In step for it is not automated.
 
-Result words: pass, fail, skipped (with the reason in the row), not built (the screen is not on `main` yet), pending (not run yet).
+Result words: pass, fail, skipped (with the reason in the row), not built (the screen is not on `main` yet), not automated (only a real phone can do it), pending (not run yet).
 
-The CI column holds the local run of 2026-11-09, in Chromium and Edge, on a fresh seed with the special-hours row added the way CI adds it, run the same way CI runs them (`--workers=1`). It ran at night Puerto Rico time, outside the seeded hours, so the passes in the Check In, Gym ID and end of visit tests prove the row works. Result: 16 passed, 2 skipped (the Terms and roster test, in both browsers). The rows marked skipped below are not run by any test.
+The CI column holds the Frontend workflow run of 2026-11-09 on this branch, commit `34508d1` ([run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778)). The user app flows ran in the Android (Pixel 7) and iPhone (iPhone 13) browser jobs, the dashboard flows in the Chrome, Edge, Firefox and Safari jobs, each with `--workers=1` and two retries. The workflow seeds the database and adds the special-hours row, so the Check In, Gym ID and end of visit tests run at any hour. A step is pass when its test passed on every device of its flow. No step failed. The rows marked skipped below are not run by any test in CI.
 
 ## 1. Paid member registration
 
 Test: `paid-registration.spec.ts`
+
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#1-paid-member-registration). Bugs the path tests found, fixed and retested: PR-23 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19487648), fixed in `1c12007`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -63,19 +65,25 @@ Test: `paid-registration.spec.ts`
 
 ## 2. Athlete registration
 
-Test: `athlete-registration.spec.ts`. It covers the student number lookup. The athlete email link and the account that follows are not built yet (an athlete on the roster stays on the number entry), so those steps are not built. The API allows 10 failed lookups per IP in 15 minutes and the paid registration test spends 4 of them across the two browsers, so only Chromium runs steps 1, 2 and 4; Edge runs step 3.
+Test: `athlete-registration.spec.ts`. It covers the student number lookup, the emailed link and the account it creates. The API allows 10 failed lookups per IP in 15 minutes, so only the desktop path runs look up the numbers that fail (steps 1 to 3). In CI the seeded student number `802000001` can have a link less than 300 seconds old, so step 4 can answer "Espera para pedir otro enlace" instead, and the test accepts both. Only a local stack makes a new roster record per run, so only there the test goes on to step 6.
+
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#2-athlete-registration). Bugs the path tests found, fixed and retested: AR-20 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490187), fixed in `7dcd4c0`); AR-34 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490192), fixed in `7dcd4c0`); AR-22 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490197), fixed in `7dcd4c0`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
-| 1 | Enter a student number that is not on the roster | `900000000` | "Revisa tu número", "No apareces en la lista de atletas. Consulta al Departamento de Actividades Atléticas: 265-3866.", Ver ejemplo del recibo and Corregir número | pass | pending |
-| 2 | Enter a student number already claimed | `802000002` | "Revisa tu registro", "Este registro no está disponible para crear otra cuenta.", Iniciar sesión and Cambiar número | pass | pending |
-| 3 | Enter a student number on the roster, unclaimed | `802000001` | No error and no new screen; the API answers the athlete state | pass | pending |
-| 4 | Enter 8 digits | `80200000` | Looked up as an Authorization Number: "No pudimos validar este número. Revisa tu recibo o llama al 265-3866." | pass | pending |
-| 5 | Open the athlete email link, expired and used links, create the account | none | Not built: `main` has no athlete email link | not built | not built |
+| 1 | Enter a student number that is not on the roster | `900000000` | "Revisa tu número", "No apareces en la lista de atletas. Consulta al Departamento de Actividades Atléticas: 265-3866.", Ver ejemplo del recibo and Corregir número | skipped: lookup limit, run by the path tests | pending |
+| 2 | Enter a student number already claimed | `802000002` | "Revisa tu registro", "Este registro no está disponible para crear otra cuenta.", Iniciar sesión and Cambiar número | skipped: lookup limit, run by the path tests | pending |
+| 3 | Enter 8 digits | `80200000` | Looked up as an Authorization Number: "No pudimos validar este número. Revisa tu recibo o llama al 265-3866." | skipped: lookup limit, run by the path tests | pending |
+| 4 | Enter a student number on the roster, unclaimed | `802000001` | "Revisa tu correo", "Enviamos un enlace a tu correo institucional.", and the Reenviar en 04:xx button disabled | pass | pending |
+| 5 | Open the email link | the link in the email to the roster address | "Antes de comenzar", then "Crea una contraseña" with "¡Hola, [name]!" | pass | pending |
+| 6 | Enter a password, add a photo, accept the waiver, fill the emergency contact, tap Crear cuenta | `una frase larga para el registro de prueba`, a PNG, `Contacto de Prueba`, `787-555-0100` | Install help, "Instala la app" | skipped: needs a new roster record per run, only on a local stack | pending |
+| 7 | Tap Soy atleta in Mi cuenta to add athlete access to an existing account | none | Not built: the row does nothing on `main` | not built | not built |
 
 ## 3. User sign in
 
 Test: `user-sign-in.spec.ts`
+
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#3-user-sign-in). Bugs the path tests found, fixed and retested: SI-50 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19488756), fixed in `d3d1eef`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -91,6 +99,8 @@ Test: `user-sign-in.spec.ts`
 
 Test: `check-in.spec.ts`
 
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#4-check-in). Bugs the path tests found, fixed and retested: CI-66 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6735515910), fixed in `8d1c3f7`); CI-18 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6735696177), fixed in `8d1c3f7`).
+
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
 | 1 | Hold Check In with no current authorization | `pago-vencido@example.com`, inside the gym | "Tu acceso no está vigente", Revisar mi acceso goes to Mi cuenta | pass | pending |
@@ -105,6 +115,8 @@ Test: `check-in.spec.ts`
 
 Test: `gym-id-occupancy.spec.ts`
 
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#5-gym-id-and-occupancy). Bugs the path tests found, fixed and retested: GI-07 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19501881), fixed in `34508d1`).
+
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
 | 1 | Open Gimnasio | `pago-activo@example.com` | Count, level (Baja, Moderada, Alta by thirds of 40) and update time | pass | pending |
@@ -117,6 +129,8 @@ Test: `gym-id-occupancy.spec.ts`
 ## 6. End of a visit
 
 Test: `end-of-visit.spec.ts`
+
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#6-end-of-a-visit). No bug found by the path tests.
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -131,9 +145,11 @@ Test: `end-of-visit.spec.ts`
 
 Test: `app-base.spec.ts`
 
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#7-app-base). No bug found by the path tests.
+
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
-| 1 | Open the install help | none | "Instalar app", Android steps on a non-iPhone | pass | pending |
+| 1 | Open the install help | none | "Instalar app", the Android tab on Android and the iPhone tab on an iPhone | pass | pending |
 | 2 | Choose iPhone | none | Safari steps, Volver a Mi cuenta goes to Mi cuenta | pass | pending |
 | 3 | Read the manifest | none | "Gym RUM", standalone, starts at Mi cuenta | pass | pending |
 | 4 | Open the install help in the installed app | iOS standalone flag | "¡Todo listo!" | pass | pending |
@@ -143,6 +159,8 @@ Test: `app-base.spec.ts`
 ## 8. Staff accounts
 
 Test: `staff-accounts.spec.ts`
+
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Chrome, Edge, Firefox and Safari browser jobs. Paths: [flow-paths.md](flow-paths.md#8-staff-accounts). No bug found by the path tests.
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -157,6 +175,8 @@ Test: `staff-accounts.spec.ts`
 ## 9. Terms and athlete roster
 
 Test: `terms-roster.spec.ts`, skipped.
+
+CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Chrome, Edge, Firefox and Safari browser jobs: the test is skipped because `main` has no Terms or roster screen, so every step is not built. Paths: [flow-paths.md](flow-paths.md#9-terms-and-athlete-roster). No bug found by the path tests.
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
