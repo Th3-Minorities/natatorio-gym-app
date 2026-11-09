@@ -5,7 +5,7 @@ Rules every backend route follows, so errors and routes look the same across fea
 ## 1. Routes
 
 - Every backend route is under `/api`. The proxy sends `/api` to Laravel and everything else to the PWA (architecture.md, D2). Routes go in `backend/routes/api.php`, written without the prefix: `Route::get('/health', ...)` answers at `/api/health`.
-- Laravel packages that add their own paths (Sanctum, Fortify) must be moved under `/api` with their prefix setting (D2).
+- Laravel packages that add their own paths (Sanctum) must be moved under `/api` with their prefix setting (D2).
 - Paths use lowercase nouns with hyphens: `/api/check-ins`, `/api/schedule-slots/{id}`.
 - Requests and responses are JSON. The PWA sends `Accept: application/json`.
 - Dates and times in JSON are ISO 8601 in UTC, ending in `Z`, which is Laravel's default (`2026-10-27T01:00:00.000000Z`). The PWA converts them to Puerto Rico time before showing them, in the format of REQ-NF-38 (`5 nov 2026, 8:30 a. m.` in Spanish, `Nov 5, 2026, 8:30 AM` in English).
@@ -124,7 +124,7 @@ Set up in GitHub issue #16. Requirements: REQ-F-07, REQ-F-52, REQ-F-88, REQ-NF-1
 
 ### Staff sign-in
 
-Staff and Administrators sign in with their own staff account (data-model.md, D13). Laravel keeps it on a separate guard, `staff`, on the `staff_accounts` table, so a staff sign-in and a User sign-in never mix. Staff sign-in does not use Fortify, which stays free for the User sign-in (#15).
+Staff and Administrators sign in with their own staff account (data-model.md, D13). Laravel keeps it on a separate guard, `staff`, on the `staff_accounts` table, so a staff sign-in and a User sign-in never mix.
 
 The PWA calls `GET /api/sanctum/csrf-cookie` first and then sends the `X-XSRF-TOKEN` header on every POST. Sanctum starts a cookie session only when the page calling the API is on the same address as the API. By default (`config/sanctum.php`, `stateful`) that means the address the request came to, which covers the dev server, the phone tunnel and the UPRM subdomain, plus `APP_URL` and the usual localhost addresses. Setting `SANCTUM_STATEFUL_DOMAINS` replaces that whole list, so leave it unset. A page on another site gets no session, and its sign-in answers `419 session_expired`.
 

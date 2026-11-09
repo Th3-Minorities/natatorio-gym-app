@@ -95,7 +95,7 @@ E-183 removes schedules and notices from all signed-out flows. E-184 keeps the o
 - N-02: [Wait after failed attempts](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2091), [Signed in on another device](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2180). Wrong credentials use red field outlines and one generic message, without revealing whether the email has an account.
 - N-06: [Request received](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4099-2335) gives the same answer whether or not the email has an account.
 - N-08: the text is a draft pending gym approval (G-24); it remains readable without a connection.
-- N-09: opens once right after account creation and from the Instalar app row in U-03 (E-165). If the app is already installed it shows the installed state: [Already installed](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-919) from registration, and the Mi cuenta variants above. Back, Continuar and Ahora no lead to U-03. Hide the direct install button when the browser has no install event.
+- N-09: opens once right after account creation and from the Instalar app row in U-03 (E-165). If the app is already installed it shows the installed state: [Already installed](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-919) from registration, and the Mi cuenta variants above. From registration, Back, Continuar and Ahora no lead to Check In (U-01), not to U-03 (E-165). Hide the direct install button when the browser has no install event.
 
 ### Account and preferences
 
@@ -121,7 +121,7 @@ The main sequence confirmed in E-184 is Welcome → enter number → create pass
 | Step | Current frame |
 |---|---|
 | 1. Welcome | [Expanded ES](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-95) |
-| 2. Enter number; membership purchase and help | [Unified number entry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-576) |
+| 2. Enter number; membership purchase and help | [Unified number entry](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4510-3178) |
 | 3. Create password | [Password](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4078-411) |
 | 4. Identification photo | [Not selected](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6805), [Selected](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6885) |
 | 5. Waiver and emergency contact | [Form](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-6948), [Accepted](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM?node-id=4445-7085) |
