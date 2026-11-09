@@ -40,7 +40,7 @@
 .registration-hint svg { width: var(--user-body-line); height: var(--user-body-line); color: var(--muted-foreground); flex: none; }
 .registration-hint p { font-size: var(--user-label-size); line-height: var(--spacing-20); }
 .registration .registration-number .field { gap: var(--spacing-8); }
-.registration-hint--flagged svg, .registration-hint--flagged p { color: var(--user-danger); }
+.registration-body { font-size: var(--user-body-size); line-height: var(--user-body-line); color: var(--muted-foreground); }
 .registration .registration-number .field__input[aria-invalid="true"] { border-color: var(--user-danger); }
 .registration-help { font-size: var(--registration-caption-size); line-height: var(--spacing-20); }
 .registration-receipt { border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-12); padding: var(--spacing-12); display: flex; flex-direction: column; gap: var(--user-space-6); }

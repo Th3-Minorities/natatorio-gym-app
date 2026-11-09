@@ -54,7 +54,12 @@ class PaidRegistrationController extends Controller
     public function lookup(Request $request, RegistrationLookup $lookup): JsonResponse
     {
         $this->requirePrivacy($request);
-        $input = $request->validate(['authorization_number' => ['required', 'string', 'max:20', 'not_regex:/^\d{9}$/']]);
+        $input = $request->validate(['authorization_number' => ['required', 'string', 'max:20']]);
+        if (preg_match('/^\d{9}$/D', $input['authorization_number'])) {
+            $lookup->findStudent($input['authorization_number'], $request);
+
+            return response()->json(['state' => 'athlete'])->header('Cache-Control', 'no-store');
+        }
 
         return response()->json($lookup->result($lookup->find($input['authorization_number'], $request)))->header('Cache-Control', 'no-store');
     }
