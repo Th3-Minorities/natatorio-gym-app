@@ -1,5 +1,7 @@
 # Natatorio Gym App
 
+[Visit the project website](https://th3-minorities.github.io/natatorio-gym-app/) for the project overview and progress.
+
 To find a document or read an ID like `REQ-F-12`, `E-31` or `S-01`, start with [docs/README.md](docs/README.md).
 
 ## Local containers
