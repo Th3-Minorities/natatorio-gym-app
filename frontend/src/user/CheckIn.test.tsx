@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserApp } from './UserApp'
 import styles from './checkIn.css?raw'
+/** The name is split so its last word stays with the badge; match the whole name on its paragraph. */
+const fullName = (name: string) => (_: string, element: Element | null) => element?.tagName === 'P' && element.textContent === name
 
 const member = {
   name: 'Daniel Rivera', email: 'daniel@email.com', locale: 'es',
@@ -117,7 +119,7 @@ describe('U-01 Check In', () => {
   it('shows the member initial state (4104:95)', async () => {
     await open()
     expect(await screen.findByText('¿Listo para entrenar?')).toBeInTheDocument()
-    expect(await screen.findByText('Daniel Rivera')).toBeInTheDocument()
+    expect(await screen.findByText(fullName('Daniel Rivera'))).toBeInTheDocument()
     expect(screen.getByText('Miembro')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Autorización activa' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Registra tu entrada' })).toBeInTheDocument()
@@ -144,7 +146,7 @@ describe('U-01 Check In', () => {
     status = { ...idle, account_type: 'athlete' }
     await open()
     expect(await screen.findByText('Atleta')).toBeInTheDocument()
-    expect(await screen.findByText('Valeria Ramos')).toBeInTheDocument()
+    expect(await screen.findByText(fullName('Valeria Ramos'))).toBeInTheDocument()
     expect(document.querySelector('.check-in--athlete')).not.toBeNull()
   })
 
@@ -203,7 +205,7 @@ describe('U-01 Check In', () => {
     expect(screen.getByText('Confirmamos tu llegada al gimnasio.')).toBeInTheDocument()
     expect(screen.getByText('Permite la ubicación si el navegador lo solicita.')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Obteniendo ubicación')
-    expect(screen.getByText('Daniel Rivera')).toBeInTheDocument()
+    expect(screen.getByText(fullName('Daniel Rivera'))).toBeInTheDocument()
 
     act(() => { found({ coords: { latitude: 18.2101, longitude: -67.1408, accuracy: 12 } } as GeolocationPosition) })
     expect(await screen.findByRole('button', { name: 'Registrando entrada…' })).toBeInTheDocument()

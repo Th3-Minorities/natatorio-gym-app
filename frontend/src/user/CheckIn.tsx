@@ -304,13 +304,20 @@ function Action({ href, onClick, disabled, secondary, children }: { href?: strin
   return <span className={className}>{children}</span>
 }
 
+// The badge is an atomic inline, so the line could break before it; the last word and the badge stay together.
+function NameWithBadge({ name, badgeLabel }: { name?: string | null; badgeLabel: string | null }) {
+  const text = name ?? ''
+  const cut = text.lastIndexOf(' ') + 1
+  const badge = badgeLabel !== null && <span className="check-in-badge" role="img" aria-label={badgeLabel}><Check aria-hidden="true" /></span>
+  return <>{text.slice(0, cut)}<span className="check-in-name-end">{text.slice(cut)}{badge}</span></>
+}
+
 function Identity({ profile, athlete, authorized }: { profile: UserProfile | null; athlete: boolean; authorized: boolean }) {
   const t = useMessages()
   return <div className="check-in-identity">
     <Photo profile={profile} />
     <div>
-      <p className="check-in-identity__name"><span>{profile?.name ?? profile?.email}</span>
-        {authorized && <span className="check-in-badge" role="img" aria-label={t.user.activeAuthorization}><Check aria-hidden="true" /></span>}</p>
+      <p className="check-in-identity__name"><NameWithBadge name={profile?.name ?? profile?.email} badgeLabel={authorized ? t.user.activeAuthorization : null} /></p>
       <p>{athlete ? t.checkIn.athlete : t.checkIn.member}</p>
     </div>
   </div>
@@ -375,8 +382,7 @@ function Confirmed({ profile, athlete, startedAt, heading, detail, period, now, 
       <img className="check-in-id__waves" src={lastSession ? athlete ? endedAthleteId : endedMemberId : idWaves} alt="" />
       <p className="check-in-id__state">{lastSession ? <DoorOpen aria-hidden="true" /> : <Check aria-hidden="true" />}<span>{lastSession ? t.sessionEnded : offline ? t.invalidNow : t.sessionActive}</span></p>
       <Photo profile={profile} large />
-      <p className="check-in-id__name"><span>{profile?.name ?? profile?.email}</span>
-        {profile?.authorization && <span className="check-in-badge" role="img" aria-label={user.activeAuthorization}><Check aria-hidden="true" /></span>}</p>
+      <p className="check-in-id__name"><NameWithBadge name={profile?.name ?? profile?.email} badgeLabel={profile?.authorization ? user.activeAuthorization : null} /></p>
       {profile?.name && <p className="check-in-id__small">{profile.email}</p>}
       <p className="check-in-id__category"><UserRound aria-hidden="true" /><span>{athlete ? t.athlete : t.member}</span></p>
       {/* Figma draws "Estudiante" (4104:719) and the sport (4199:3403); no frame draws the employee word. */}
