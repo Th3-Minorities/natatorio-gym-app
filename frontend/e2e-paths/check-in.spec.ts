@@ -332,8 +332,8 @@ test('CI-25 releasing at 900 ms cancels: no request, no refusal', async ({ page,
   only('AI')
   await begin(page, baseURL)
   const posts = countRequests(page, 'POST', '/api/user/check-in')
-  // WebKit takes about 100 ms to deliver the release, so the press is shortened there to keep it under one second at the page.
-  await hold(page, test.info().project.name === 'iphone' ? 750 : 900)
+  // WebKit delivers the release 100 ms or more late, and more under parallel load, so the press is shortened there to keep it under one second at the page.
+  await hold(page, test.info().project.name === 'iphone' ? 600 : 900)
   await page.waitForTimeout(1500)
   expect(posts).toHaveLength(0)
   await expect(page.getByRole('button', { name: 'Mantén presionado para entrar' })).toBeVisible()

@@ -1007,11 +1007,15 @@ test.describe('athlete registration paths', () => {
       await expect(create(page)).toBeDisabled()
 
       flushCache()
-      for (let call = 1; call <= 30; call += 1) {
-        const answer = await rawApi(page.request, 'post', '/api/user/registration/athlete/validate', baseURL ?? '', { token: 'x' })
-        expect(answer.status, `validate ${call}`).toBe(422)
-      }
-      expect((await rawApi(page.request, 'post', '/api/user/registration/athlete/validate', baseURL ?? '', { token: 'x' })).status).toBe(429)
+      // The limit is a one-minute window, so the 31 calls go out with the headers built once: with rawApi each call costs
+      // about 750 ms and a loaded machine would let the window expire before the 31st.
+      const first = await rawApi(page.request, 'post', '/api/user/registration/athlete/validate', baseURL ?? '', { token: 'x' })
+      expect(first.status, 'validate 1').toBe(422)
+      const xsrf = decodeURIComponent((await page.request.storageState()).cookies.find((cookie) => cookie.name === 'XSRF-TOKEN')?.value ?? '')
+      const headers = { Accept: 'application/json', Referer: `${baseURL}/`, 'X-XSRF-TOKEN': xsrf }
+      const validate = async () => (await page.request.post('/api/user/registration/athlete/validate', { headers, data: { token: 'x' } })).status()
+      for (let call = 2; call <= 30; call += 1) expect(await validate(), `validate ${call}`).toBe(422)
+      expect(await validate()).toBe(429)
     } finally { flushCache() }
   })
 

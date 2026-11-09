@@ -64,14 +64,17 @@ test('AB-03 the tabs swap the panel and keep the chosen tab', async ({ page }) =
 test('AB-04 the arrow keys, Home and End move the selection and the focus', async ({ page }) => {
   only('AI') // moved to phones 2026-11-09 (keyboard row, was desktop only)
   await page.goto('/install')
-  await expectTab(page, 'Android')
-  await tab(page, 'Android').focus()
+  // The help opens on the tab of the device (iPhone on iPhone, Android otherwise); the order is iPhone, Android and the keys wrap.
+  const shown = (await tab(page, 'iPhone').getAttribute('aria-selected')) === 'true' ? 'iPhone' : 'Android'
+  const other = shown === 'iPhone' ? 'Android' : 'iPhone'
+  await expectTab(page, shown)
+  await tab(page, shown).focus()
   await page.keyboard.press('ArrowRight')
-  await expectTab(page, 'iPhone')
-  await expect(tab(page, 'iPhone')).toBeFocused()
+  await expectTab(page, other)
+  await expect(tab(page, other)).toBeFocused()
   await page.keyboard.press('ArrowLeft')
-  await expectTab(page, 'Android')
-  await expect(tab(page, 'Android')).toBeFocused()
+  await expectTab(page, shown)
+  await expect(tab(page, shown)).toBeFocused()
   await page.keyboard.press('Home')
   await expectTab(page, 'iPhone')
   await expect(tab(page, 'iPhone')).toBeFocused()
@@ -531,6 +534,10 @@ test.describe('offline', () => {
 
   test('AB-32 the same shell opens the dashboard sign in offline and blocks the button', async ({ page, context }) => {
     only('D')
+    // Firefox does not apply context.setOffline to the requests the service worker sends: /api/staff/me reached the server (401, fromServiceWorker)
+    // with navigator.onLine false, so the app has no failed call to show. Playwright limitation, see https://github.com/microsoft/playwright/issues/2311
+    // and the service worker notes in https://playwright.dev/docs/api/class-browsercontext. Chromium and WebKit run the row.
+    test.skip(test.info().project.name === 'desktop-firefox', 'Playwright does not cut the service worker network in Firefox')
     await page.goto('/welcome')
     await workerControls(page)
     await page.goto('/staff')
