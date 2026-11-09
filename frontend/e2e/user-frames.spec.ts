@@ -178,8 +178,10 @@ test.describe('User screen states at 390x844', () => {
           for (const toggle of await toggles.all()) await expect(toggle).toBeVisible()
         }
       }
+      // E-188: error notices (server failure, expired link, deletion refused) use the pink banner of #143; informational ones stay neutral.
+      const errorNotice = state === 'server' || state === 'expired' || (path === 'account/delete' && state === 'active')
       for (const notice of await page.locator('.user-notice .notice').all()) {
-        await expect(notice).toHaveCSS('background-color', 'rgb(255, 253, 248)')
+        await expect(notice).toHaveCSS('background-color', errorNotice ? 'rgb(249, 228, 229)' : 'rgb(255, 253, 248)')
       }
       if (state === 'invalid' && path !== 'reset-password') {
         const email = page.getByLabel('Correo electrónico')

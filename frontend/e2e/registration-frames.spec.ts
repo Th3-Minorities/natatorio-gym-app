@@ -28,7 +28,10 @@ test.describe('paid registration screen states', () => {
       })
       await page.goto('/register')
       if (scenario === 'privacy-loading') await expect(page.getByText('Cargando el aviso…')).toBeVisible()
-      else if (scenario === 'privacy-error') await expect(page.getByText('No pudimos mostrar el aviso')).toBeVisible()
+      else if (scenario === 'privacy-error') {
+        await expect(page.getByText('No pudimos mostrar el aviso')).toBeVisible()
+        await expect(page.locator('.user-notice .notice')).toHaveCSS('background-color', 'rgb(249, 228, 229)')
+      }
       else {
         await expect(page.getByRole('heading', { name: 'Antes de comenzar' })).toBeVisible()
         if (scenario === '179-6139' || scenario === '179-6216') {

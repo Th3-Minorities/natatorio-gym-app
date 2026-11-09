@@ -429,19 +429,19 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     const newLink = <a href="/register" className="button button--primary user-action">{a.newLink}</a>
     const signIn = (variant: string) => <a href="/sign-in" className={`button button--${variant} user-action`}>{t.student.signIn}</a>
     if (linkState === 'expired') return linkStatus('/register', a.expiredTitle, a.expiredIntro, <>
-      <UserNotice title={a.expiredNotice}>{a.expiredDetail}</UserNotice>{newLink}{help('button--link')}</>)
+      <UserNotice title={a.expiredNotice} danger>{a.expiredDetail}</UserNotice>{newLink}{help('button--link')}</>)
     if (linkState === 'invalid') return linkStatus('/register', a.invalidTitle, a.expiredIntro, <>{newLink}{help('button--link')}</>)
     if (linkState === 'used') return linkStatus('/register', a.usedTitle, a.usedIntro, <>
       {signIn('primary')}<a href="/register" className="button button--secondary user-action">{t.backToRegistration}</a></>)
     if (linkState === 'replaced') return linkStatus('/register', a.replacedTitle, a.replacedIntro, <>
       <UserNotice title={a.replacedNotice}>{a.replacedDetail}</UserNotice>{newLink}</>)
     if (linkState === 'claimed') return linkStatus('/register', a.claimedTitle, a.claimedIntro, <>
-      {phone && <UserNotice title={a.claimedNotice}>{a.claimedDetail(phone)}</UserNotice>}{help('button--primary')}{signIn('secondary')}</>)
+      {phone && <UserNotice title={a.claimedNotice} danger>{a.claimedDetail(phone)}</UserNotice>}{help('button--primary')}{signIn('secondary')}</>)
     if (linkState === 'offline') return linkStatus('/register', a.offlineTitle, a.offlineIntro, <>
       <UserNotice title={a.offlineNotice}>{a.offlineDetail}</UserNotice>
       <Button className="user-action" disabled={offline} onClick={() => void checkLink()}>{u.retry}</Button></>, u.offlineBanner)
     if (linkState === 'error') return linkStatus('/register', a.errorTitle, a.errorIntro, <>
-      <UserNotice title={a.errorNotice}>{a.errorDetail}</UserNotice>
+      <UserNotice title={a.errorNotice} danger>{a.errorDetail}</UserNotice>
       <Button className="user-action" onClick={() => void checkLink()}>{u.retry}</Button></>)
     return linkStatus('/register', a.verifyingTitle, a.verifyingIntro, <>
       <UserNotice title={a.verifyingNotice}>{a.verifyingDetail}</UserNotice>
@@ -463,7 +463,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
               else navigate('/welcome')
             }}>{u.back}</Button>
           </> : failed ? <>
-            <UserNotice title={t.errorTitle}>{t.errorDetail}</UserNotice>
+            <UserNotice title={t.errorTitle} danger>{t.errorDetail}</UserNotice>
             <Button className="user-action" onClick={() => { setFailed(false); setPrivacy(null); void loadPrivacy() }}>{u.retry}</Button>
             <a href="/welcome" className="button button--secondary user-action">{u.back}</a>
           </> : <UserLoading detail={t.loading} />}
@@ -493,7 +493,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   </>)
   if ((photoPage || contactPage) && saveFailed) return step('registration--status', '/register/contact', <>
     <div className="registration-intro"><h1 tabIndex={-1}>{t.saveFailed}</h1><p>{t.saveFailedIntro}</p></div>
-    <UserNotice title={t.notCompleted}>{t.notCompletedText}</UserNotice><p>{t.keepOpen}</p>
+    <UserNotice title={t.notCompleted} danger>{t.notCompletedText}</UserNotice><p>{t.keepOpen}</p>
     <Button className="user-action" onClick={() => { setSaveFailed(false); navigate('/register/photo') }}>{t.backToPhoto}</Button>
   </>)
   if (photoPage) {

@@ -130,7 +130,7 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   // Figma 4099:2377 and 4099:2335 draw these two results without the form, in the compact layout.
   if (expired || received) return <UserPage offline={offline} back="/sign-in">
     <h1 tabIndex={-1}>{title}</h1>
-    {expired ? <UserNotice title={t.expiredNotice}>{t.expiredText}</UserNotice> : <UserNotice title={t.received} success>{t.spam}</UserNotice>}
+    {expired ? <UserNotice title={t.expiredNotice} danger>{t.expiredText}</UserNotice> : <UserNotice title={t.received} success>{t.spam}</UserNotice>}
     {received && <p>{description}</p>}
     {expired && <a className="button button--primary user-action" href="/recover-password">{t.requestAgain}</a>}
     <a className={`button ${expired ? 'button--secondary' : 'button--primary'} user-action`} href="/sign-in">{t.returnToSignIn}</a>

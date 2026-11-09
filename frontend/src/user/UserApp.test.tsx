@@ -324,6 +324,7 @@ describe('N-06 and N-07', () => {
     answer = async () => error('user_reset_link_invalid')
     open('/reset-password?token=used&email=user%40example.com')
     expect(await screen.findByRole('heading', { name: 'El enlace ya no es válido' })).toBeInTheDocument()
+    expect(screen.getByText('Solicita un nuevo enlace').closest('.user-notice')).toHaveClass('user-notice--danger')
     // Figma 4099:2377: compact layout, no password fields.
     expect(screen.getByRole('main').closest('.user-app')).not.toHaveClass('user-app--large')
     expect(screen.queryByLabelText('Nueva contraseña')).toBeNull()
@@ -509,6 +510,7 @@ describe('U-03 and U-05', () => {
     open('/account')
     expect(screen.getByText('Cargando tu cuenta…')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar tu cuenta')
+    expect(screen.getByRole('alert').closest('.user-notice')).toHaveClass('user-notice--danger')
     answer = async () => json(account)
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
     expect(await screen.findByText(account.name)).toBeInTheDocument()
