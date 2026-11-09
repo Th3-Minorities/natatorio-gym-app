@@ -115,10 +115,11 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       else setFailed(true)
     })
   }
-  useEffect(() => { void loadPrivacy() }, [])
-  // Checks the link once, when the page the email opens loads.
   // oxlint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (path === '/register/athlete') void checkLink() }, [])
+  useEffect(() => { if (path !== '/register/athlete') void loadPrivacy() }, [])
+  // Recheck on browser Back; keep terminal link failures shown by the final step.
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (path === '/register/athlete' && linkState === 'checking') void checkLink() }, [path])
   useEffect(() => {
     if (!linkSent || now >= linkSent.resendAt) return
     const timer = setTimeout(() => setNow(Date.now()), 1000)
@@ -254,17 +255,21 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   }
 
   async function checkLink() {
-    if (!linkToken) { setLinkState('invalid'); return }
+    if (!linkToken) { setLinkState('invalid'); void loadPrivacy(); return }
     setLinkState('checking')
     try {
       const { name } = await apiRequest<{ name: string }>('/user/registration/athlete/validate', { method: 'POST', body: { token: linkToken } })
+      // The POST establishes the CSRF session before the notice records that it was shown.
+      await loadPrivacy()
       setLookup({ state: 'ready', name, masked_email: '' })
       setPassword('')
       setConfirmation('')
       setPasswordErrors(false)
       navigate('/register/password')
     } catch (error) {
+      await loadPrivacy()
       const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
+      if (failure.code === 'validation_failed') { setLinkState('invalid'); return }
       if (!showLinkFailure(failure)) {
         if (failure.code === 'offline') setNetworkFailed(true)
         setLinkState(failure.code === 'offline' ? 'offline' : 'error')

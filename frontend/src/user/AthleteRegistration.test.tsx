@@ -99,6 +99,56 @@ it('checks the link (N05-01), then shows privacy and the password step with the 
   expect(screen.getByText('¡Hola, Marta <b>Ruiz</b>!')).toBeInTheDocument()
 })
 
+it('AR-20 accepts privacy in the same session when the emailed link opens without cookies', async () => {
+  document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/'
+  document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/register'
+  expect(document.cookie).not.toContain('XSRF-TOKEN=')
+  let session = ''
+  let noticeSession = ''
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
+    if (path.endsWith('/sanctum/csrf-cookie')) {
+      session = 'csrf-session'
+      document.cookie = 'XSRF-TOKEN=fresh; path=/'
+      return new Response(null, { status: 204 })
+    }
+    if (path.endsWith('/registration/privacy')) {
+      if (init?.method === 'POST') {
+        return noticeSession === session
+          ? new Response(null, { status: 204 })
+          : json({ error: { code: 'registration_privacy_required' } }, 403)
+      }
+      noticeSession = session || 'privacy-session'
+      return json({ version: 'draft', draft: true, store_url: null, contact_number: '265-3866' })
+    }
+    if (path.endsWith('/athlete/validate')) return json({ name: 'Marta Ruiz' })
+    throw new Error(`Unexpected request: ${path}`)
+  }))
+  openLink()
+  fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
+  expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
+  document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/'
+})
+
+it('AR-34 rechecks the link when browser Back returns from the password step', async () => {
+  openLink('tok123')
+  fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
+  await screen.findByRole('heading', { name: 'Crea una contraseña' })
+  await act(async () => {
+    window.history.go(-2)
+    await new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }))
+  })
+  expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
+  expect(calls.filter((call) => call.path.endsWith('/athlete/validate'))).toHaveLength(2)
+})
+
+it('AR-22 shows N05-02b when a 256-character token fails API validation', async () => {
+  validate = () => json({ error: { code: 'validation_failed', details: { token: ['max.string'] } } }, 422)
+  openLink('x'.repeat(256))
+  expect(await screen.findByRole('heading', { name: 'Este enlace ya no es válido' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Pedir otro enlace' })).toHaveAttribute('href', '/register')
+  expect(calls.find((call) => call.path.endsWith('/athlete/validate'))?.body).toEqual({ token: 'x'.repeat(256) })
+})
+
 it('sends the link token, not a number, when the athlete creates the account', async () => {
   openLink('tok123')
   fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
