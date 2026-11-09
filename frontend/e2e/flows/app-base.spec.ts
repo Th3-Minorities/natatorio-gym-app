@@ -10,7 +10,10 @@ test('the install help shows both phones, the installed app says so, and the app
   // 1. Install help, Android steps (a desktop browser is not an iPhone)
   await page.goto('/install')
   await expect(page.getByRole('heading', { level: 1, name: 'Instalar app' })).toBeVisible()
-  await expect(page.getByRole('tab', { name: 'Android' })).toHaveAttribute('aria-selected', 'true')
+  // The install help preselects the tab of the device: iPhone on the iPhone user agent, Android everywhere else
+  const preselected = test.info().project.name === 'iphone' ? 'iPhone' : 'Android'
+  await expect(page.getByRole('tab', { name: preselected })).toHaveAttribute('aria-selected', 'true')
+  await page.getByRole('tab', { name: 'Android' }).click()
   await expect(page.getByText('Ten la app a mano', { exact: true })).toBeVisible()
   await expect(page.getByText('2. Toca Instalar y crear acceso directo.', { exact: true })).toBeVisible()
 
