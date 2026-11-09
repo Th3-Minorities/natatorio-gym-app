@@ -37,6 +37,8 @@ export type DashboardNavigation = {
   onNavigate: (path: string) => void
   /** S-01, the dashboard home (#26). */
   activeSessions: string
+  /** S-03, find a person and the assisted Check In (#26). */
+  findPerson: string
   staffAccounts: string
 }
 
@@ -143,7 +145,7 @@ export function DashboardShell({
             navigation={navigation}
             items={[
               { label: staff.activeSessions, icon: Activity, accent: true, href: navigation?.activeSessions },
-              { label: staff.searchPerson, icon: Search, accent: true },
+              { label: staff.searchPerson, icon: Search, accent: true, href: navigation?.findPerson },
               { label: staff.athleteRoster, icon: Users },
             ]}
           />

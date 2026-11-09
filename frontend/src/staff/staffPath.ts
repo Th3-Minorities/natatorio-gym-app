@@ -9,6 +9,22 @@ export const STAFF_PATH = '/staff'
 /** A-15, the Administrator's staff accounts screen (#84). The proxy serves the app for it, so it opens directly. */
 export const STAFF_TEAM_PATH = '/staff/equipo'
 
+/** S-03, find a person and the assisted Check In (#26). */
+export const STAFF_FIND_PATH = '/staff/buscar'
+
+/** S-02 for one visit (#26): /staff/sesiones/11. */
+export const STAFF_SESSIONS_PATH = '/staff/sesiones'
+
+export function staffSessionPath(id: number): string {
+  return `${STAFF_SESSIONS_PATH}/${id}`
+}
+
+/** The visit id in an S-02 address, or null. */
+export function sessionIdIn(pathname: string): number | null {
+  const match = /^\/staff\/sesiones\/(\d{1,18})$/.exec(pathname)
+  return match ? Number(match[1]) : null
+}
+
 /** The N-11 pages for a forgotten password and the email links (#84). The emails link to the last two. */
 export const STAFF_FORGOT_PATH = '/staff/recuperar'
 export const STAFF_INVITE_PATH = '/staff/invitacion'

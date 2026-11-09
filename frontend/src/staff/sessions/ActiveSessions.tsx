@@ -10,9 +10,10 @@ import { useDocumentTitle } from '../useDocumentTitle'
 import { useStaffSession } from '../useStaffSession'
 import '../team/staffTeam.css'
 import './activeSessions.css'
+import { SessionsList } from './SessionsList'
 
-// S-01 "Sesiones activas" (Figma 121:2841), the dashboard home for Staff and Administrators (#26). For now the
-// "Gimnasio abierto" chip and the occupancy card; the sessions list and check-out come later.
+// S-01 "Sesiones activas" (Figma 121:2841), the dashboard home for Staff and Administrators (#26): the "Gimnasio
+// abierto" chip, the occupancy card and the list of who is inside.
 
 type OccupancyState = ReturnType<typeof useOccupancy>
 
@@ -44,6 +45,7 @@ export function ActiveSessions({ shell }: { shell: ShellProps }) {
     <DashboardShell {...shellProps} title={t.title} description={t.description} action={chip || undefined}>
       {notice}
       <OccupancyCard occupancy={occupancy} />
+      <SessionsList navigate={shellProps.navigation?.onNavigate} />
     </DashboardShell>
   )
 }

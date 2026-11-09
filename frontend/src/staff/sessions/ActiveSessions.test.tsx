@@ -26,7 +26,12 @@ afterEach(() => {
 })
 
 function openScreen(routes: Parameters<typeof fakeApi>[0] = {}, account: object = lorena) {
-  const fetchMock = fakeApi({ '/api/staff/me': () => json(account), [OCCUPANCY]: () => json(occupancy), ...routes })
+  const fetchMock = fakeApi({
+    '/api/staff/me': () => json(account),
+    [OCCUPANCY]: () => json(occupancy),
+    '/api/staff/sessions': () => json({ sessions: [] }),
+    ...routes,
+  })
   render(<StaffApp />)
   return fetchMock
 }

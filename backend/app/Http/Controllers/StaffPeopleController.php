@@ -29,7 +29,9 @@ class StaffPeopleController extends Controller
 
         return response()->json([
             'people' => $this->people->search(trim($input['search']))
-                ->map(fn (User $user) => $this->people->person($user))->values()->all(),
+                // Two people can share a name: the masked email tells them apart (E-72, Figma 4288:1573).
+                ->map(fn (User $user) => [...$this->people->person($user), 'masked_email' => StaffPeople::mask($user->email)])
+                ->values()->all(),
         ]);
     }
 

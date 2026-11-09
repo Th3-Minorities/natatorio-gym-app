@@ -83,7 +83,9 @@ class StaffAssistedCheckInTest extends TestCase
         $luis = $this->person('Luis Méndez', Authorization::factory()->paid()->create());
         $this->person('Elena Santiago', Authorization::factory()->paid()->create(), 'elena@example.com');
 
-        $this->send('GET', '/api/staff/people?search=m%C3%A9ndez')->assertOk()->assertJsonPath('people.*.user_id', [$luis->id]);
+        // Two people can share a name, so each match carries the email, masked as on every Staff screen (E-72, 4288:1573).
+        $this->send('GET', '/api/staff/people?search=m%C3%A9ndez')->assertOk()->assertJsonPath('people.*.user_id', [$luis->id])
+            ->assertJsonPath('people.0.masked_email', 'p***n@example.com');
     }
 
     public function test_a_search_finds_nobody_for_an_unknown_number_or_wildcards(): void

@@ -6,7 +6,10 @@ import { SignInLayout } from './SignInLayout'
 import { StaffSessionProvider } from './StaffSession'
 import { StaffSignIn } from './StaffSignIn'
 import { ForgotPasswordPage, SetPasswordPage } from './access/StaffAccessPages'
+import { FindPerson } from './people/FindPerson'
 import {
+  sessionIdIn,
+  STAFF_FIND_PATH,
   STAFF_FORGOT_PATH,
   STAFF_INVITE_PATH,
   STAFF_PATH,
@@ -16,6 +19,7 @@ import {
   type Navigate,
 } from './staffPath'
 import { ActiveSessions } from './sessions/ActiveSessions'
+import { SessionDetail } from './sessions/SessionDetail'
 import { StaffTeam } from './team/StaffTeam'
 import { useStaffSession, type StaffAccount } from './useStaffSession'
 
@@ -35,7 +39,14 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     document.querySelector<HTMLElement>('#dashboard-content h1')?.focus()
   }, [path])
 
-  const navigation = { currentPath: path, onNavigate: navigate, activeSessions: STAFF_PATH, staffAccounts: STAFF_TEAM_PATH }
+  const navigation = {
+    currentPath: path,
+    onNavigate: navigate,
+    activeSessions: STAFF_PATH,
+    findPerson: STAFF_FIND_PATH,
+    staffAccounts: STAFF_TEAM_PATH,
+  }
+  const visitId = sessionIdIn(path)
   // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
   const onTeam = account.role === 'admin' && path === STAFF_TEAM_PATH
 
@@ -59,6 +70,9 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
   if (onTeam) return <StaffTeam shell={shell} />
   // S-01, the first screen after sign-in for both roles (#26).
   if (path === STAFF_PATH) return <ActiveSessions shell={shell} />
+  // S-03 and S-02, for both roles (#26).
+  if (path === STAFF_FIND_PATH) return <FindPerson shell={shell} />
+  if (visitId !== null) return <SessionDetail key={visitId} shell={shell} sessionId={visitId} />
 
   const { notice, ...shellProps } = shell
   return (

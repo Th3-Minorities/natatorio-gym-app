@@ -7,6 +7,7 @@ use App\Models\RosterRecord;
 use App\Models\User;
 use App\Models\WaiverAcceptance;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 /**
  * The person as Staff see them on S-02 and S-03 (#26): photo, authorization, waiver acceptance and, on S-02 only, the
@@ -81,6 +82,17 @@ class StaffPeople
             'athlete', 'manual' => $authorizationType,
             default => $memberGroup === 'employee' ? 'employee' : 'student',
         };
+    }
+
+    /** "p***n@example.com": the first and last letter before the @, as registration masks it (E-72, E-81). */
+    public static function mask(?string $email): ?string
+    {
+        if ($email === null || ! str_contains($email, '@')) {
+            return null;
+        }
+        [$local, $domain] = explode('@', $email, 2);
+
+        return Str::substr($local, 0, 1).'***'.(Str::length($local) > 1 ? Str::substr($local, -1) : '').'@'.$domain;
     }
 
     private function latest(User $user): ?Authorization
