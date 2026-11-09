@@ -60,6 +60,9 @@ jobs:
           # The staff sign-in test (#16) signs in with the seeder's fake accounts.
           docker compose exec -T app php artisan migrate --force
           docker compose exec -T app php artisan db:seed --force
+          # The flow tests (#152) need the gym open whenever CI runs. The seeded hours are Monday to Friday, 6:00 to 22:00, so this
+          # test database gets one special-hours row around now. It is not in the demo seed.
+          docker compose exec -T app php artisan tinker --execute="App\Models\ScheduleSlot::factory()->create(['type' => 'special_hours', 'weekday' => null, 'start_time' => null, 'end_time' => null, 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'text_es' => 'Horario abierto de las pruebas de flujo.']);"
 
       - run: npm ci
       - run: npx playwright install --with-deps chromium msedge
