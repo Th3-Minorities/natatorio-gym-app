@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Models\WaiverAcceptance;
 use App\Notifications\AthleteRegistrationLink;
 use App\Services\RegistrationPhoto;
+use Illuminate\Contracts\Notifications\Dispatcher;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\CallsTheApiFromThePwa;
+use RuntimeException;
 use Tests\TestCase;
 
 /** Athlete registration by email link (diagram 4, REQ-F-15, REQ-F-17, E-73). */
@@ -170,6 +172,18 @@ class AthleteRegistrationTest extends TestCase
         Notification::assertSentOnDemandTimes(AthleteRegistrationLink::class, 5);
         $this->travel(24 * 60 - 29)->minutes();
         $lookup()->assertOk();
+    }
+
+    public function test_a_link_that_could_not_be_sent_is_removed_and_does_not_use_up_the_limits(): void
+    {
+        $this->record();
+        $this->acknowledge();
+        $this->mock(Dispatcher::class)->shouldReceive('send')->once()->andThrow(new RuntimeException('Mail server down.'));
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])->assertStatus(500);
+        $this->assertDatabaseCount('email_links', 0);
+        $this->mock(Dispatcher::class)->shouldReceive('send')->once();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])->assertOk();
+        $this->assertDatabaseCount('email_links', 1);
     }
 
     public function test_the_limit_is_per_student_number(): void

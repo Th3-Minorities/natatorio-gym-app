@@ -7,8 +7,7 @@ return [
     'window_seconds' => 900,
     'slow_milliseconds' => 500,
     'privacy_version' => 'draft',
-    // Athlete email link (REQ-F-15). The limits are E-73. The validity is REG-6, still pending: 24 hours is the
-    // recommended option until the team decides.
+    // Athlete email link (REQ-F-15). The limits are E-73. The validity is REG-6: 24 hours, decided by the team.
     'athlete_link_hours' => 24,
     'athlete_link_resend_seconds' => 300,
     'athlete_links_per_day' => 5,

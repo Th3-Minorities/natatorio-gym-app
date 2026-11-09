@@ -10,6 +10,7 @@ use App\Notifications\AthleteRegistrationLink;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use Throwable;
 
 /**
  * The link sent to the roster email proves the athlete owns the record (REQ-F-15). Earlier links are kept,
@@ -23,18 +24,24 @@ class AthleteLinks
     public function send(RosterRecord $record, string $locale): array
     {
         $token = Str::random(64);
-        DB::transaction(function () use ($record, $token) {
+        $emailLink = DB::transaction(function () use ($record, $token) {
             // Locked, so two requests at once cannot both pass the limit.
             RosterRecord::query()->lockForUpdate()->findOrFail($record->id);
             $this->ensureBelowLimit($record);
-            EmailLink::query()->create([
+            return EmailLink::query()->create([
                 'purpose' => 'athlete_registration',
                 'token_hash' => hash('sha256', $token),
                 'roster_record_id' => $record->id,
                 'expires_at' => now()->addHours(config('registration.athlete_link_hours')),
             ]);
         });
-        Notification::route('mail', $record->institutional_email)->notify(new AthleteRegistrationLink($token, $locale));
+        try {
+            Notification::route('mail', $record->institutional_email)->notify(new AthleteRegistrationLink($token, $locale));
+        } catch (Throwable $error) {
+            // A link that never left must not use up the resend and daily limits.
+            $emailLink->delete();
+            throw $error;
+        }
 
         return ['masked_email' => $this->lookup->mask($record->institutional_email), 'resend_in' => config('registration.athlete_link_resend_seconds')];
     }
