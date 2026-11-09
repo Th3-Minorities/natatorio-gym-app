@@ -38,14 +38,30 @@ class FacilitySessions
 
     public function activeFor(User $user): ?FacilitySession
     {
-        $now = $this->databaseNow()->format('Y-m-d H:i:s.uP');
-        $session = $this->query()->where('user_id', $user->id)->where('status', 'active')
-            ->where('ends_at', '>', $now)
-            ->whereRaw('('.self::TERM_END.' IS NULL OR '.self::TERM_END.' > ?)', [$now])
-            ->whereRaw('('.self::CLOSURE_START.' IS NULL OR '.self::CLOSURE_START.' > ?)', [$now])
-            ->orderByDesc('started_at')->orderByDesc('id')->first();
+        $now = $this->databaseNow();
 
-        return $session;
+        return $this->whereActive($this->query()->where('user_id', $user->id), $now)
+            ->orderByDesc('started_at')->orderByDesc('id')->first();
+    }
+
+    /** Visits inside the gym now. Same rule as activeFor(), for everyone, so a closure or term end counts before the scheduler runs. */
+    public function occupancy(Carbon $now): int
+    {
+        return $this->whereActive(FacilitySession::query(), $now)->where('started_at', '<=', $now->format('Y-m-d H:i:s.uP'))->count();
+    }
+
+    /**
+     * @param  Builder<FacilitySession>  $query
+     * @return Builder<FacilitySession>
+     */
+    private function whereActive(Builder $query, Carbon $now): Builder
+    {
+        $at = $now->format('Y-m-d H:i:s.uP');
+
+        return $query->where('status', 'active')
+            ->where('ends_at', '>', $at)
+            ->whereRaw('('.self::TERM_END.' IS NULL OR '.self::TERM_END.' > ?)', [$at])
+            ->whereRaw('('.self::CLOSURE_START.' IS NULL OR '.self::CLOSURE_START.' > ?)', [$at]);
     }
 
     public function checkOut(string $id, StaffAccount $staff): FacilitySession

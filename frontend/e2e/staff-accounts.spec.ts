@@ -1,17 +1,12 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Locator, type Page } from '@playwright/test'
+import { expectNoViolations } from './axe.ts'
 
 // #84: the staff accounts screen (A-15) and the N-11 email link pages, through the proxy, the real API
 // and Mailpit. Each run invites a new fake address (e2e-...@example.com), so the dev list grows by one.
 
 test.setTimeout(240_000)
 
-const WCAG = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']
 const ADMIN = { email: 'admin@example.com', name: 'Administradora de prueba' }
-
-async function expectNoViolations(page: Page) {
-  expect((await new AxeBuilder({ page }).withTags(WCAG).analyze()).violations).toEqual([])
-}
 
 async function signIn(page: Page, email: string, password: string) {
   await page.goto('/staff')

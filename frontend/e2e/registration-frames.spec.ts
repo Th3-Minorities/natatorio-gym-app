@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { expectNoViolations } from './axe.ts'
 
 const shots = process.env.USER_SCREENSHOT_DIR
 const scenarios = ['179-6122', '179-6139', '179-6216', 'privacy-english', 'privacy-loading', 'privacy-error', 'privacy-offline'] as const
@@ -57,13 +57,12 @@ test.describe('paid registration screen states', () => {
         await mkdir(shots, { recursive: true })
         await page.screenshot({ path: join(shots, `${scenario}-${testInfo.project.name}.png`) })
       }
-      const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()
-      expect(results.violations).toEqual([])
+      await expectNoViolations(page)
     })
   }
 })
 
-test('paid registration stops at the last drawn step without claiming the number', async ({ page }) => {
+test('paid registration reaches the photo step without claiming the number', async ({ page }) => {
   let completed = false
   await page.route((url) => url.pathname.startsWith('/api/'), async (route) => {
     const endpoint = new URL(route.request().url()).pathname
@@ -82,6 +81,6 @@ test('paid registration stops at the last drawn step without claiming the number
   await page.getByLabel('Contraseña', { exact: true }).fill('a long password')
   await page.getByLabel('Confirmar contraseña', { exact: true }).fill('a long password')
   await page.getByRole('button', { name: 'Continuar', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Crea una contraseña' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Tu foto de identificación' })).toBeVisible()
   expect(completed).toBe(false)
 })

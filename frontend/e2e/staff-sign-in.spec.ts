@@ -1,5 +1,5 @@
-import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
+import { expectNoViolations } from './axe.ts'
 
 // #16: the staff sign-in at /staff, through the proxy and the real API, like the desk computer.
 // Uses the fake accounts of the database seeder (password "password"), never real people.
@@ -46,6 +46,7 @@ test('Staff do not see the Administration items', async ({ page }) => {
 
   await expect(page.getByText(`${STAFF.name} · Staff`)).toBeVisible()
   await expect(page.getByText('Sesiones activas')).toBeVisible()
+  await expectNoViolations(page)
   await expect(page.getByText('Registro de auditoría')).toHaveCount(0)
 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
@@ -84,14 +85,13 @@ test('the sign-in works with the keyboard alone', async ({ page }) => {
 })
 
 test('N-11 and the signed-in dashboard have no automated WCAG 2.2 AA violations', async ({ page }) => {
-  const wcag = ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']
   await openSignIn(page)
 
-  expect((await new AxeBuilder({ page }).withTags(wcag).analyze()).violations).toEqual([])
+  await expectNoViolations(page)
 
   await signIn(page, ADMIN.email, 'password')
   await expect(page.getByText(`${ADMIN.name} · Administrador`)).toBeVisible()
-  expect((await new AxeBuilder({ page }).withTags(wcag).analyze()).violations).toEqual([])
+  await expectNoViolations(page)
 
   await page.getByRole('button', { name: 'Cerrar sesión' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeVisible()

@@ -220,6 +220,13 @@ describe('N-06 and N-07', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guardar contraseña' }))
     expect(await screen.findByText('Usa al menos 10 caracteres y evita contraseñas comprometidas.')).toBeInTheDocument()
     expect(screen.getByText('Las contraseñas deben coincidir.')).toBeInTheDocument()
+    const field = screen.getByLabelText('Nueva contraseña')
+    const described = field.getAttribute('aria-describedby')!.split(' ')
+    const [hint, fieldError] = described.map((id) => document.getElementById(id)!)
+    expect(hint.compareDocumentPosition(fieldError) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(described.map((id) => document.getElementById(id)?.textContent)).toEqual([
+      'Usa al menos 10 caracteres.', 'Usa al menos 10 caracteres y evita contraseñas comprometidas.',
+    ])
     expectAccessLayout(2, false)
   })
 

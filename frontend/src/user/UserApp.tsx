@@ -165,6 +165,8 @@ export function UserApp() {
     storeLocale(locale)
   }
 
+  // The anchors inside handle the keyboard; this only turns their clicks into in-app navigation.
+  // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
   return <I18nProvider locale={profile?.locale ?? deviceLocale}><div onClick={intercept}>
     {path === '/install' ? <InstallHelp /> : REGISTRATION_PATHS.includes(path) ? <Registration path={path} navigate={navigate} /> : !protectedPath ? path === '/welcome' ? <Welcome locale={deviceLocale} chooseLocale={chooseLocale} /> : <UserAccess
       key={path} mode={path === '/recover-password' ? 'recover' : path === '/reset-password' ? 'reset' : 'sign-in'}
