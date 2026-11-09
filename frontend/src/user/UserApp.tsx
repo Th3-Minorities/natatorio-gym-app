@@ -9,7 +9,7 @@ import { CheckIn } from './CheckIn'
 import { Gym } from './Gym'
 import { UserAccess } from './UserAccess'
 import { Registration } from './Registration'
-import { AccountHeading, UserLoading, UserNotice, UserPage } from './ui'
+import { AccountHeading, OfflineBanner, UserLoading, UserNotice, UserPage } from './ui'
 import { PrivacyNoticeCard } from './PrivacyNoticeCard'
 import { storedPrivacy, storePrivacy, type Privacy } from './privacyNotice'
 import { useConnection } from './useConnection'
@@ -386,6 +386,7 @@ const SWIPE_UP = 30
 /** N-01 starts collapsed (Figma 4078:11); a tap (on click) or a swipe up on the sheet opens it (4078:95). */
 function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (locale: Locale) => void }) {
   const t = useMessages().user
+  const offline = !useConnection()
   const [expanded, setExpanded] = useState(false)
   const heading = useRef<HTMLHeadingElement>(null)
   const startY = useRef<number | null>(null)
@@ -397,7 +398,10 @@ function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (loca
     onPointerCancel: () => { startY.current = null },
     onClick: () => setExpanded(true),
   }
+  // N-01 offline (Figma 4546:2929): the connection banner spans the top and both actions stay visible but disabled. The collapsed sheet has no actions and stays as it is.
+  const unavailable = (className: string, children: ReactNode) => <span className={className} role="link" aria-disabled="true">{children}</span>
   return <div className="user-app user-welcome">
+    {offline && expanded && <OfflineBanner />}
     <img className="user-welcome__illustration" src={welcomeIllustration} width={390} height={844} alt="" />
     <div className="user-welcome__brand"><strong>{t.brand}</strong><span>{t.brandName}</span><i aria-hidden="true" /></div>
     <main className={`user-welcome__sheet ${expanded ? '' : 'user-welcome__sheet--collapsed'}`} {...drag}>
@@ -406,8 +410,9 @@ function Welcome({ locale, chooseLocale }: { locale: Locale; chooseLocale: (loca
       {expanded ? <>
       <p>{t.welcomeDetail}</p>
       {/* The privacy step of registration (#22) lives at /register. */}
-      <a className="button button--primary user-welcome__start" href="/register">{t.begin}<ArrowRight size={16} aria-hidden="true" /></a>
-      <p className="user-welcome__access">{t.haveAccount}<a href="/sign-in">{t.signIn}</a></p>
+      {offline ? unavailable('button button--primary user-welcome__start', <>{t.begin}<ArrowRight size={16} aria-hidden="true" /></>)
+        : <a className="button button--primary user-welcome__start" href="/register">{t.begin}<ArrowRight size={16} aria-hidden="true" /></a>}
+      <p className="user-welcome__access">{t.haveAccount}{offline ? unavailable('', t.signIn) : <a href="/sign-in">{t.signIn}</a>}</p>
       <div className="user-welcome__language">
         <button type="button" lang="es" aria-pressed={locale === 'es'} onClick={() => chooseLocale('es')}>{t.spanish}</button>
         <span aria-hidden="true">/</span>

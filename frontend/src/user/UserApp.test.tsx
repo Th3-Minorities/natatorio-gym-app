@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserApp, UserEntry } from './UserApp'
+import { es } from '../i18n/es'
 
 const account = {
   name: 'María Rodríguez', email: 'm***z@upr.edu', locale: 'es', account_type: null, authorization: null,
@@ -471,6 +472,24 @@ describe('User destinations', () => {
     expect(screen.queryByText('Health page')).toBeNull()
     expect(screen.queryByText('Instalar app')).toBeNull()
     expect(screen.queryByText(/Ayuda para instalar/)).toBeNull()
+  })
+
+  it('disables Comenzar and Iniciar sesión under a connection banner while offline and enables them when it returns (4546:2929)', () => {
+    open('/welcome')
+    expandWelcome()
+    expect(screen.queryByRole('status')).toBeNull()
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    act(() => { fireEvent(window, new Event('offline')) })
+    expect(screen.getByRole('status')).toHaveTextContent(es.user.offline)
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('link', { name: 'Comenzar' })).not.toHaveAttribute('href')
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).not.toHaveAttribute('href')
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    act(() => { fireEvent(window, new Event('online')) })
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
   })
 
   it('expands the welcome sheet with a tap or an upward swipe, not with a short drag', () => {
