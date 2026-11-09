@@ -58,6 +58,7 @@ All documents are in the `docs` folder.
 | The proposal and its original drawings | [capstone_proposal folder](capstone_proposal/). The `v0` folder inside is the version we submitted, kept as it was |
 | How to set up the tools we use | [setup folder](setup/) |
 | How to run the code | The [README at the top of the repository](../README.md) |
+| Results of the browser tests of each flow, from its first screen to its last | [Flow test results](testing/flow-results.md) |
 
 ### How each part of the app works
 

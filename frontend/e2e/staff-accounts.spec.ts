@@ -1,5 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { expectNoViolations } from './axe.ts'
+import { lastEmailTo, linkIn } from './mail.ts'
 
 // #84: the staff accounts screen (A-15) and the N-11 email link pages, through the proxy, the real API
 // and Mailpit. Each run invites a new fake address (e2e-...@example.com), so the dev list grows by one.
@@ -30,25 +31,6 @@ async function sendInvitation(page: Page, dialog: Locator) {
   await dialog.getByRole('button', { name: 'Enviar invitación' }).click()
   const response = await answer
   expect(response.ok(), `POST /api/staff/accounts answered ${response.status()}: ${await response.text()}`).toBe(true)
-}
-
-/** The newest email Mailpit caught for an address that holds a link to path, as plain text. Waits, since an older email can arrive first. */
-async function lastEmailTo(page: Page, address: string, path: string): Promise<string> {
-  let text = ''
-  await expect(async () => {
-    const found = await (await page.request.get(`/mailpit/api/v1/search?query=${encodeURIComponent(`to:${address}`)}&limit=1`)).json()
-    expect(found.messages.length).toBeGreaterThan(0)
-    const message = await (await page.request.get(`/mailpit/api/v1/message/${found.messages[0].ID}`)).json()
-    text = message.Text
-    expect(text).toContain(path)
-  }).toPass({ timeout: 60_000 })
-  return text
-}
-
-function linkIn(text: string, path: string): string {
-  const match = text.match(new RegExp(`https?://\\S+${path}\\?\\S+`))
-  if (!match) throw new Error(`No ${path} link in the email`)
-  return new URL(match[0]).pathname + new URL(match[0]).search
 }
 
 test('an Administrator invites a person, who creates a password and signs in', async ({ page }) => {
