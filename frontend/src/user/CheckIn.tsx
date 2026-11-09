@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type MouseEventHandler, type RefObject } from 'react'
 import { Camera, Check, Clock, DoorOpen, LockKeyhole, MapPin, TriangleAlert, UserRound, WifiOff, type LucideIcon } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { useDateFormat } from '../format/dateTime'
@@ -75,7 +75,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const [loaded, setLoaded] = useState(false)
   const [problem, setProblem] = useState<Problem | null>(null)
   const [busy, setBusy] = useState(false)
-  const [help, setHelp] = useState(false)
+  const [help, setHelp] = useState<HTMLButtonElement | null>(null)
   const [phase, setPhase] = useState<'locating' | 'registering' | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
   const online = useConnection()
@@ -90,6 +90,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const clockOffset = useRef(0)
   const lastTick = useRef<number | null>(null)
   const requestId = useRef(0)
+  const loadedRef = useRef(false)
   const offline = !online || networkFailed
   const updateNow = useCallback((time: number) => {
     const tick = performance.now()
@@ -123,11 +124,11 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
         if (error instanceof ApiError && error.code === 'offline') setProblem('offline')
       }
       return null
-    } finally { if (id === requestId.current) setLoaded(true) }
+    } finally { if (id === requestId.current) { loadedRef.current = true; setLoaded(true) } }
   }, [ended, syncClock])
 
   useEffect(() => {
-    if (!online) return
+    if (!online) { if (!loadedRef.current) setProblem((current) => current ?? 'offline'); return }
     let disposed = false
     queueMicrotask(() => { if (!disposed && !document.hidden) void refresh() })
     const check = () => { if (navigator.onLine && !document.hidden) void refresh(true) }
@@ -241,9 +242,9 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
       <Action href={problem === 'authorization' && !athlete ? '/account' : undefined}
         onClick={RETRYABLE.includes(problem!) ? retry : undefined} disabled={busy}>{message.action}</Action>
       {problem === 'denied' && <>
-        <Action secondary onClick={() => setHelp(true)}>{t.problems.denied.help}</Action>
+        <Action secondary onClick={(event) => setHelp(event.currentTarget)}>{t.problems.denied.help}</Action>
         <p className="check-in-caption">{t.deniedNote}</p>
-        {help && <LocationHelp onClose={() => setHelp(false)} />}
+        {help && <LocationHelp returnFocusTo={help} onClose={() => setHelp(null)} />}
       </>}
     </>}
     {view === 'exclusive' && period && <>
@@ -296,7 +297,7 @@ function Note({ icon: Svg, children }: { icon: LucideIcon; children: string }) {
  * "Ver horarios" becomes a link with #28 (schedules); "Actualizar foto" with the U-02 photo screen;
  * "Ver cómo activar ubicación" with the location help screen; "Ver información de contacto" with the gym contact screen.
  */
-function Action({ href, onClick, disabled, secondary, children }: { href?: string; onClick?: () => void; disabled?: boolean; secondary?: boolean; children: string }) {
+function Action({ href, onClick, disabled, secondary, children }: { href?: string; onClick?: MouseEventHandler<HTMLButtonElement>; disabled?: boolean; secondary?: boolean; children: string }) {
   const className = `button check-in-action ${secondary ? 'check-in-action--secondary' : ''}`
   if (href) return <a className={className} href={href}>{children}</a>
   if (onClick) return <button type="button" className={className} disabled={disabled} onClick={onClick}>{children}</button>

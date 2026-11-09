@@ -56,6 +56,64 @@ function hold(milliseconds = 1000) {
 const geolocation = () => navigator.geolocation.getCurrentPosition as ReturnType<typeof vi.fn>
 
 describe('U-01 Check In', () => {
+  it('mounts offline, shows Necesitas conexión and loads when reconnected', async () => {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    await open()
+    expect(await screen.findByRole('heading', { name: 'Necesitas conexión' })).toBeInTheDocument()
+    expect(screen.getByText('Conéctate a internet para verificar y registrar tu entrada.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar conexión' })).toBeInTheDocument()
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    expect(await screen.findByRole('heading', { name: 'Registra tu entrada' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+  })
+
+  it('shows the offline problem when disconnected before the first status loads', async () => {
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    fetchMock.mockImplementation((path: string, init?: RequestInit) =>
+      path.endsWith('/check-in') ? new Promise<Response>(() => {}) : original(path, init))
+    await open()
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/check-in'), expect.anything()))
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    expect(await screen.findByRole('heading', { name: 'Necesitas conexión' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar conexión' })).toBeInTheDocument()
+
+    fetchMock.mockImplementation(original)
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    expect(await screen.findByRole('heading', { name: 'Registra tu entrada' })).toBeInTheDocument()
+  })
+
+  it('keeps the loaded ready screen when the connection drops', async () => {
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    await act(async () => {})
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mantén presionado para entrar' })).toBeInTheDocument()
+  })
+
+  it('keeps an existing refusal when the connection drops and returns', async () => {
+    post = async () => refuse('check_in_no_authorization')
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    expect(await screen.findByRole('heading', { name: 'Tu acceso no está vigente' })).toBeInTheDocument()
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    await act(async () => {})
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    await act(async () => {})
+    expect(screen.getByRole('heading', { name: 'Tu acceso no está vigente' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+  })
+
   it('shows the member initial state (4104:95)', async () => {
     await open()
     expect(await screen.findByText('¿Listo para entrenar?')).toBeInTheDocument()
@@ -299,6 +357,24 @@ describe('U-01 Check In', () => {
 
     fireEvent.click(opener)
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar ayuda' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(opener).toHaveFocus()
+  })
+
+  it.each(['button', 'Escape'])('returns focus to the unfocused location help opener after closing with %s', async (closeWith) => {
+    position = (_, failure) => failure({ code: 1 } as GeolocationPositionError)
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    const opener = await screen.findByRole('button', { name: 'Ver cómo activar ubicación' })
+    ;(document.activeElement as HTMLElement).blur()
+    expect(document.body).toHaveFocus()
+    fireEvent.click(opener)
+    expect(screen.getByRole('dialog')).toHaveFocus()
+
+    if (closeWith === 'Escape') fireEvent.keyDown(document, { key: 'Escape' })
+    else fireEvent.click(screen.getByRole('button', { name: 'Cerrar ayuda' }))
+
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(opener).toHaveFocus()
   })
