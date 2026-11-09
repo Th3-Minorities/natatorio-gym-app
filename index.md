@@ -2,24 +2,21 @@
 title: Natatorio Gym App
 ---
 
-An app for the Weight Gym (Gimnasio de Pesas) at the UPRM Natatorio Complex. It is our Capstone project for CIIC 4151 at the University of Puerto Rico at Mayagüez.
+An installable web app for the Weight Gym at the UPRM Natatorio Complex, built as a Capstone project for CIIC 4151 at the University of Puerto Rico at Mayagüez.
 
-People open it on their phone like a website, and can also install it like an app. With it they can:
+<nav aria-label="On this page" markdown="1">
 
-- Register with the Authorization Number from their membership payment.
-- Check In when they arrive. The app checks that they are inside the gym.
-- Show a digital gym card (the Gym ID) at the front desk.
-- See about how full the gym is right now.
+**On this page**
 
-Front desk Staff check Gym IDs and see who is inside. Administrators manage the athlete roster, schedules and notices.
+[Overview](#overview) · [Progress](#objectives-and-status) · [Team](#team) · [Resources](#links)
 
-## The problem
+</nav>
 
-Today the gym registers people on paper and checks access by hand. A person can enter with a paid membership or as an athlete on the roster. Those two lists come from different places, so Staff check several records before letting someone in. Nothing counts how many people are inside, and there are no numbers on how the gym is used. The department estimates about 150 people use the gym each day.
+## Overview
 
-## How the app solves it
+<p id="the-problem">The gym uses paper records and checks paid memberships and the athlete roster by hand. The department estimates about 150 people use the gym each day. The app brings both access checks into one place and keeps payments in the gym's online store.</p>
 
-The app checks both kinds of access in one place. Paid memberships come from the gym's online store, which keeps handling payments as it does today. A Check In opens a visit that stays open until Staff check the person out, or closes on its own after 2 hours. The open visits give the occupancy everyone sees. Every visit is saved, so the gym can later see when it is busy and who uses it.
+<p id="how-the-app-solves-it">Members register with an Authorization Number from their payment, and eligible users check in from inside the gym. They can show a digital Gym ID and see current occupancy. Staff verify Gym IDs and check people out. Visits close after two hours if they are still open, and the app saves them for usage statistics. Administrators manage the athlete roster, schedules and notices.</p>
 
 ## Objectives and status
 
@@ -33,10 +30,7 @@ The app checks both kinds of access in one place. Paid memberships come from the
 
 ## How it is built
 
-- React, TypeScript and Vite, as an installable web app (PWA)
-- Laravel backend
-- PostgreSQL database
-- Everything runs with docker-compose, on a server from CTI (UPRM's technology office)
+The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL database. It runs with Docker Compose on a server from CTI, UPRM's technology office.
 
 ## Team
 
