@@ -408,7 +408,7 @@ test('TR-12 the lookup answers on the roster, not on the roster, claimed and wro
   await lookup(page, '900000000')
   await expectNotOnRoster(page)
 
-  await lookup(page, '802000002')
+  await lookup(page, '802000003')
   await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu registro' })).toBeVisible()
   await expect(page.getByLabel('Número de estudiante')).toHaveAccessibleDescription('Este registro no está disponible para crear otra cuenta.')
 

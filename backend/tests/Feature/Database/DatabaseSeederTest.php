@@ -89,6 +89,11 @@ class DatabaseSeederTest extends TestCase
             ->whereNull('removed_at')->whereNotIn('id', DB::table('authorizations')->whereNotNull('roster_record_id')->select('roster_record_id'))
             ->count();
         $this->assertSame(1, $free);
+
+        $claimed = DB::table('roster_records')->where('student_number', FakeDataSeeder::CLAIMED_WITHOUT_ACCOUNT_STUDENT_NUMBER)
+            ->whereNull('removed_at')->sole();
+        $this->assertDatabaseHas('authorizations', ['roster_record_id' => $claimed->id]);
+        $this->assertFalse(User::query()->whereRaw('lower(email) = lower(?)', [$claimed->institutional_email])->exists());
     }
 
     public function test_the_load_test_waivers_use_the_account_email(): void
