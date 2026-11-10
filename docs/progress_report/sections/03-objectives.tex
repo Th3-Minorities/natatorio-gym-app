@@ -1,18 +1,18 @@
 \section{Project Objectives}
 %=====================================================================
 
-The five objectives are unchanged. Design decisions changed the metrics of Objectives 2 and 3 and the acceptance criteria of Objectives 2 to 5. The target date column gives the proposal deadline and the end of the matching phase in the project plan (issue \#50); the Project Plan section says which one the team follows. The status column is traced to the issue tracker and the merged pull requests on November 8, 2026.
+\revised{The five objectives are unchanged. Design decisions changed the metrics of Objectives 2 and 3 and the acceptance criteria of Objectives 2 to 5. The target date column gives the proposal deadline and the end of the matching phase in the project plan (issue \#50); the Project Plan section says which one the team follows. The status column is traced to the issue tracker and the merged pull requests on November 8, 2026.}
 
 \begin{center}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{longtable}{L{2.6cm} L{3.3cm} L{4.6cm} L{2.0cm} L{2.2cm}}
 \toprule
-\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \revised{\textbf{Target date}} & \revised{\textbf{Status}} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \revised{\textbf{Target date}} & \revised{\textbf{Status}} \\
 \midrule
 \endhead
 \bottomrule
@@ -33,9 +33,9 @@ In progress. Database and its rules merged (\#13). Paid member registration: bac
 
 2. Implement a user-initiated check-in process that creates and manages a valid facility session from check-in through automatic expiration.
 &
-Percentage of defined check-in and session scenarios that reach the expected state, including location validation, successful and rejected check-ins, session creation, Gym ID generation, duplicate attempts, Staff check-out, and the automatic close 2 hours after Check In.
+Percentage of defined check-in and session scenarios that reach the expected state, including location validation, successful and rejected check-ins, session creation, Gym ID generation, duplicate attempts, \revised{Staff check-out, and the automatic close 2 hours after Check In}.
 &
-Every valid check-in must create exactly one active session and one current Gym ID. Invalid attempts must create no session, duplicate attempts must follow the defined session rule, and each session must stop counting as active after Staff check the person out or 2 hours after its Check In.
+Every valid check-in must create exactly one active session and one current Gym ID. Invalid attempts must create no session, duplicate attempts must follow the defined session rule, and \revised{each session must stop counting as active after Staff check the person out or 2 hours after its Check In}.
 &
 Proposal: Oct 30. Plan: Nov 8 (Phase 3)
 &
@@ -46,9 +46,9 @@ In progress. Built for the User: Check In with location (\#17), Gym ID (\#18), a
 
 3. Maintain a consistent active-session state and use it to provide estimated facility occupancy across the platform.
 &
-Difference between the estimated occupancy reported by the system and the expected number of active sessions after Check Ins, check-outs, automatic closes, Staff corrections, and concurrent session events.
+Difference between the estimated occupancy reported by the system and the expected number of active sessions after Check Ins, \revised{check-outs, automatic closes, Staff corrections, and concurrent session events}.
 &
-The reported estimated occupancy must match the number of active session records in every tested state. User, Staff, and Administrator screens must show the same value once each screen has refreshed; screens poll the server every 20 to 30 seconds, so the test compares values after each refresh.
+The reported estimated occupancy must match the number of active session records in every tested state. \revised{User, Staff, and Administrator screens must show the same value once each screen has refreshed; screens poll the server every 20 to 30 seconds, so the test compares values after each refresh.}
 &
 Proposal: Nov 6. Plan: Nov 8 (Phase 3)
 &
@@ -61,7 +61,7 @@ In progress. Built for the User on the Gimnasio tab (\#18). The Staff occupancy 
 &
 Percentage of role-permission checks and administrative tasks that produce the expected result according to the final User, Staff, and Administrator permission matrix.
 &
-Every tested action must be allowed or denied according to the assigned role. Staff and Administrators sign in with individual accounts, and an Administrator invites each person by email and assigns the role. Staff must be able to perform the defined monitoring and session-correction tasks, while Administrators must be able to manage athlete authorizations, schedules, closures, and Staff accounts.
+Every tested action must be allowed or denied according to the assigned role. \revised{Staff and Administrators sign in with individual accounts, and an Administrator invites each person by email and assigns the role.} Staff must be able to perform the defined monitoring and session-correction tasks, while Administrators must be able to manage athlete authorizations, schedules, closures, and Staff accounts.
 &
 Proposal: Nov 20. Plan: Nov 29 (Phase 5)
 &
@@ -74,7 +74,7 @@ In progress, ahead of plan. Staff and Administrator accounts with roles, email i
 &
 Percentage of finalized utilization metrics that match their known expected values when calculated from controlled historical check-in and session datasets.
 &
-Every finalized metric must match its expected value in the controlled datasets, including utilization by time period, periods of higher and lower use, estimated occupancy trends and approved summary values, and utilization by authorization type. Analytics are open to every signed-in role and show aggregated counts only, with no names.
+Every finalized metric must match its expected value in the controlled datasets, including utilization by time period, periods of higher and lower use, estimated occupancy trends and approved summary values, and utilization by authorization type. \revised{Analytics are open to every signed-in role and show aggregated counts only, with no names.}
 &
 Proposal: Dec 4. Plan: Nov 29 (Phase 5)
 &
@@ -82,6 +82,6 @@ Planned. Analytics wireframes (\#44) and build (\#29) move to the Final report. 
 \end{longtable}
 \end{center}
 
-No objective is complete yet. A User can sign in, do Check In inside the boundary, see the Gym ID, and see the estimated occupancy. The API already lets Staff check a person out; the Staff screen for it comes with the Staff panel (\#26). The team also built work planned for later phases: Staff and Administrator accounts with roles, email invitations, the audit log, the command that creates the first Administrator, the dashboard base, install and offline support for the PWA, the one-device sign-in, password reset, account deletion, and a public privacy notice. \emph{In progress} means some of the objective's code is merged; \emph{Planned} means none is. Academic terms and the athlete roster (\#21) are in progress. All objectives are verified together in the acceptance test with the gym (\#32) before the final report on December 11. The controlled datasets and test evidence for Objectives 1 to 3 are tracked in issue \#81.
+\revised{No objective is complete yet. A User can sign in, do Check In inside the boundary, see the Gym ID, and see the estimated occupancy. The API already lets Staff check a person out; the Staff screen for it comes with the Staff panel (\#26). The team also built work planned for later phases: Staff and Administrator accounts with roles, email invitations, the audit log, the command that creates the first Administrator, the dashboard base, install and offline support for the PWA, the one-device sign-in, password reset, account deletion, and a public privacy notice. \emph{In progress} means some of the objective's code is merged; \emph{Planned} means none is. Academic terms and the athlete roster (\#21) are in progress. All objectives are verified together in the acceptance test with the gym (\#32) before the final report on December 11. The controlled datasets and test evidence for Objectives 1 to 3 are tracked in issue \#81.}
 
 %=====================================================================

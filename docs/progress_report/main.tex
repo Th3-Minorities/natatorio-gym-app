@@ -33,12 +33,15 @@
 \usepackage{xcolor}
 % Open items that wait on a decision or on code. List them with: grep -rn "\\pending" sections
 \newcommand{\pending}[1]{\textcolor{red}{\textbf{[PENDING:} #1\textbf{]}}}
+% Text that changed after the proposal review or is new in this report. List it with: grep -rn "\\revised" sections
+\DeclareRobustCommand{\revised}[1]{{\color{blue!70!black}#1}}
 \usepackage{caption}
 
 %---------------------------- Links ---------------------------------
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
 \urlstyle{same}
+\pdfstringdefDisableCommands{\renewcommand{\revised}[1]{#1}} % keep bookmarks plain
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % break long URLs anywhere
 
 %------------------- Global formatting choices ----------------------
