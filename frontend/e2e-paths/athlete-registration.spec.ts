@@ -272,12 +272,11 @@ test.describe('athlete registration paths', () => {
     onlyOn(info, A, I)
     flushCache()
     await openIdentify(page)
-    await lookup(page, '802000003')
-    await expect(heading(page, 'Revisa tu registro')).toBeVisible()
-    await expect(page.getByLabel('Número de estudiante')).toHaveAccessibleDescription('Este registro no está disponible para crear otra cuenta.')
-    await expect(page.getByText('Si ya tienes cuenta, inicia sesión. Si necesitas revisar el vínculo, llama al 265-3866.')).toBeVisible()
+    await lookup(page, '802000002')
+    await expect(heading(page, 'Ya tienes una cuenta')).toBeVisible()
+    await expect(page.getByText(/^[^@\s]\*{3}[^@\s]?@[^@\s]+$/)).toBeVisible()
     await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
-    await expect(page.getByRole('button', { name: 'Cambiar número' })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Volver al registro' })).toBeVisible()
   })
 
   test('AR-07 8 and 10 digits are looked up as authorization numbers and 9 digits as a student number', async ({ page }, info) => {

@@ -29,8 +29,9 @@ A bug found by a path was fixed and the path rerun: the cell shows the result af
 | [6. End of a visit](#6-end-of-a-visit) | 47 | 47 | 0 | 0 | 0 | 0 |
 | [7. App base](#7-app-base) | 35 | 31 | 0 | 0 | 0 | 4 |
 | [8. Staff accounts](#8-staff-accounts) | 95 | 94 | 0 | 0 | 0 | 1 |
-| [9. Terms and athlete roster](#9-terms-and-athlete-roster) | 21 | 21 | 0 | 0 | 0 | 0 |
-| Total | 517 | 500 | 0 | 3 | 4 | 10 |
+| [9. Terms and athlete roster](#9-terms-and-athlete-roster) | 64 | 64 | 0 | 0 | 0 | 0 |
+| [10. Staff sessions and find person](flow-results.md#10-staff-sessions-and-find-person) | 102 | 102 | 0 | 0 | 0 | 0 |
+| Total | 662 | 645 | 0 | 3 | 4 | 10 |
 
 ## 1. Paid member registration
 
@@ -588,6 +589,8 @@ Devices that ran: Android, iPhone, Desktop (Chrome), Firefox, Safari. Run of 202
 
 Devices that ran: Android, iPhone, Desktop (Chrome), Firefox, Safari. Run of 2026-11-09, branch `152-flow-e2e-tests`.
 
+The table holds TR-01 to TR-21. The 32 TR-N paths (A-04, A-05, S-05 and the roster download, run on desktop Chrome) and the 11 TR-X paths (changes reaching the phone) ran on 2026-11-10 and all passed; they are in [flow-results.md](flow-results.md#9-terms-and-athlete-roster). Sections 10 (Staff sessions and find person, 89 SS and 13 SS-X paths, all passed on desktop Chrome) and 11 (regressions of 2026-11-10) are there too.
+
 | Path | Technique | Expected | Android | iPhone | Desktop (Chrome) | Firefox | Safari | Bug |
 |---|---|---|---|---|---|---|---|---|
 | TR-01 the term chip names the months and year of TÃ©rmino actual next to Acceso del equipo | Equivalence partition (term chip, one year) | Chip names the months and year of Término actual | n/a | n/a | pass | pass | pass |  |
@@ -600,7 +603,7 @@ Devices that ran: Android, iPhone, Desktop (Chrome), Firefox, Safari. Run of 202
 | TR-08 the database refuses overlapping terms and a start after the end, and accepts adjacent, gap and one-day terms | Boundary values (overlap rule in the database, no screen) | Overlap, inside, identical: exception from academic_terms_no_overlap (SQLSTATE 23P01) | pass | n/a | n/a | n/a | n/a |  |
 | TR-09 the database refuses a repeated student number, even a removed one, and a number over 20 characters | Boundary values (repeated student number in the database, no screen) | Duplicates fail with unique violation 23505 | pass | n/a | n/a | n/a | n/a |  |
 | TR-10 Staff see Roster de atletas only; an Administrator also sees TÃ©rminos and Gestionar atletas | Permissions (menu: Staff versus Administrator) | Staff: Roster de atletas in the Staff section, no Términos, no Gestionar atletas | n/a | n/a | pass | pass | pass |  |
-| TR-11 the TÃ©rminos, Gestionar atletas and Roster de atletas items go nowhere and their API routes answer 404 | Invalid input (menu items without a screen) | Items are plain text: no navigation, URL unchanged, no request | n/a | n/a | pass | pass | pass |  |
+| TR-11 the Términos, Gestionar atletas and Roster de atletas items are links to A-04, A-05 and S-05, and their API routes answer the Administrator | Equivalence partition (menu items and their screens) | Each menu item opens its screen (/staff/terminos, /staff/atletas, /staff/roster) with its heading and aria-current=page; GET /api/staff/terms and /api/staff/roster answer 200 | n/a | n/a | pass | pass | pass |  |
 | TR-12 the lookup answers on the roster, not on the roster, claimed and wrong length | Cross-device (athlete lookup, roster states) | On the roster: no error. Not on the roster: "Revisa tu número" | pass | pass | n/a | n/a | n/a |  |
 | TR-13 a removed roster record answers like a number that is not on the roster | Equivalence partition (removed roster record on the phone) | Answers like a number that is not on the roster | pass | pass | n/a | n/a | n/a |  |
 | TR-14 a withdrawn athlete sees no active access and the athlete refusal on Check In | State transition (athlete withdrawn, end state from the seed) | Mi cuenta: Sin autorización activa, badge Atleta | pass | pass | n/a | n/a | n/a |  |

@@ -86,7 +86,7 @@ test.describe('Check In Figma frames at 390x844', () => {
         await hold.hover()
         await page.mouse.down()
         await page.waitForTimeout(580)
-      } else if (!['ready', 'confirmed', 'upcoming', 'exclusive'].includes(state)) {
+      } else if (!['ready', 'confirmed', 'upcoming', 'exclusive', 'check_in_no_authorization'].includes(state)) {
         await hold.focus()
         await page.keyboard.down(' ')
         await page.waitForTimeout(1100)

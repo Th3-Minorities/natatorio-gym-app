@@ -152,7 +152,9 @@ function longEmail(total: number): string {
 
 test('SI-01 a User signs in with the right password and reaches Check In with one tap', async ({ page }) => {
   only('AI')
-  await signInUser(page, SEEDED_USER.email, SEEDED_USER.password)
+  // The seeded browser test User has no authorization and gets the no-access panel, so this row signs in a fresh member.
+  const member = createMember()
+  await signInUser(page, member.email, member.password)
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Check-in' }).click()
   await expect(page).toHaveURL(/\/check-in$/)
   await expect(heading(page, 'Check-in')).toBeVisible()
