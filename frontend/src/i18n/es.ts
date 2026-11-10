@@ -464,12 +464,15 @@ export const es = {
     description: 'Busca a la persona, compara su foto y confirma su entrada.',
     search: 'Nombre del socio o número de estudiante',
     submit: 'Buscar',
+    // The button next to Buscar and Volver a buscar that opens S-05 (Figma 4288:1573, 4288:1695, 4288:1920, 4288:1105).
+    viewRoster: 'Ver roster',
     startTitle: 'Busca a la persona',
     startText: 'Socios: busca por nombre. Atletas: usa el número de estudiante completo. Después de buscar podrás verificar su identidad.',
     searchingTitle: 'Buscando persona',
     searchingText: 'Estamos consultando la cuenta, la autorización y la foto. Espera un momento.',
     notFoundTitle: 'No encontramos coincidencias',
-    notFoundText: 'Revisa el nombre o el número de estudiante e intenta otra vez.',
+    // Figma 4288:1105 adds the way to S-05.
+    notFoundText: 'Revisa el nombre o el número de estudiante e intenta otra vez. También puedes consultar el roster.',
     failedTitle: 'No pudimos buscar a la persona',
     failedText: 'Ocurrió un error al consultar los datos. Inténtalo de nuevo.',
     offlineTitle: 'Sin conexión',
@@ -743,6 +746,30 @@ export const es = {
     preparing: 'Preparando archivo…',
     // Shown in the confirmation card above the list and announced (Figma 4745:2125).
     downloaded: 'Se descargó el roster.',
+  },
+
+  // S-05 "Roster de atletas" read only, for Staff and Administrators: Figma 121:3383 and the states 4265:2957, 122:3214,
+  // 122:3222, 122:3280 and 122:3253 (#26). A search with no match uses roster.noMatch, as A-05 does.
+  staffRoster: {
+    title: 'Roster de atletas',
+    description: 'Consulta el roster y compara la foto de la persona antes del Check In asistido.',
+    search: 'Buscar por nombre o número de estudiante',
+    searchHint: 'Ej. Camila Rivera Santiago o 802612345',
+    readOnly: 'Solo lectura',
+    count: (count: number) => `Un solo roster · ${count} ${count === 1 ? 'atleta' : 'atletas'}`,
+    columns: { name: 'Nombre', studentNumber: 'Núm. de estudiante', sport: 'Deporte', action: 'Acción' },
+    checkIn: 'Check in',
+    registered: 'Entrada registrada',
+    registeredAt: (time: string) => `Entrada: ${time}`,
+    footnote: 'Check in abre la verificación de foto, cuenta y autorización. La entrada se registra al confirmar.',
+    loadingTitle: 'Cargando roster',
+    loadingText: 'Cargando roster de atletas…',
+    emptyTitle: 'Sin registros',
+    emptyLead: 'No hay registros en el roster de atletas.',
+    emptyText: 'Cuando haya atletas registrados, aparecerán aquí.',
+    errorTitle: 'Error al cargar roster',
+    errorText: 'No pudimos cargar el roster. Inténtalo de nuevo.',
+    offlineText: (time: string) => `Sin conexión. Última actualización a las ${time}.`,
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

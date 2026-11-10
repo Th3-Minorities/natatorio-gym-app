@@ -39,6 +39,8 @@ export type DashboardNavigation = {
   activeSessions: string
   /** S-03, find a person and the assisted Check In (#26). */
   findPerson: string
+  /** S-05, the read-only athlete roster (#26). */
+  athleteRoster: string
   staffAccounts: string
   terms: string
   roster: string
@@ -148,7 +150,7 @@ export function DashboardShell({
             items={[
               { label: staff.activeSessions, icon: Activity, accent: true, href: navigation?.activeSessions },
               { label: staff.searchPerson, icon: Search, accent: true, href: navigation?.findPerson },
-              { label: staff.athleteRoster, icon: Users },
+              { label: staff.athleteRoster, icon: Users, href: navigation?.athleteRoster },
             ]}
           />
           <NavSection

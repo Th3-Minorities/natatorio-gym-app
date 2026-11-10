@@ -31,6 +31,14 @@ export const STAFF_TERMS_PATH = '/staff/terminos'
 /** A-05, the Administrator's athlete roster (#21). */
 export const STAFF_ROSTER_PATH = '/staff/atletas'
 
+/** S-05, the read-only athlete roster for Staff and Administrators (#26). */
+export const STAFF_ROSTER_VIEW_PATH = '/staff/roster'
+
+/** S-03 with a student number already typed in: "Check in" on S-05 opens it, and the search runs once. */
+export function findPersonPath(studentNumber: string): string {
+  return `${STAFF_FIND_PATH}?${new URLSearchParams({ numero: studentNumber })}`
+}
+
 /** The N-11 pages for a forgotten password and the email links (#84). The emails link to the last two. */
 export const STAFF_FORGOT_PATH = '/staff/recuperar'
 export const STAFF_INVITE_PATH = '/staff/invitacion'

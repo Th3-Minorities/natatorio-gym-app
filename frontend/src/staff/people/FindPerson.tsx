@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useEffectEvent, useId, useRef, useState, type FormEvent } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
 import { Button, LoadingState } from '../../components'
 import { DashboardShell } from '../../dashboard/DashboardShell'
@@ -6,7 +6,7 @@ import { useDateFormat } from '../../format/dateTime'
 import { useMessages } from '../../i18n'
 import { useConnection } from '../../user/useConnection'
 import { ProblemNotice } from '../ProblemNotice'
-import { STAFF_PATH, staffSessionPath } from '../staffPath'
+import { STAFF_PATH, STAFF_ROSTER_VIEW_PATH, staffSessionPath } from '../staffPath'
 import type { ShellProps } from '../team/StaffTeam'
 import { useDocumentTitle } from '../useDocumentTitle'
 import { useStaffSession } from '../useStaffSession'
@@ -54,7 +54,9 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
   useDocumentTitle(t.title)
   const online = useConnection()
   const session = useStaffSession()
-  const [text, setText] = useState('')
+  // "Check in" on S-05 arrives with the student number in the address: it fills the box and the search runs once.
+  const [fromAddress] = useState(() => new URLSearchParams(window.location.search).get('numero')?.trim().slice(0, 255) ?? '')
+  const [text, setText] = useState(fromAddress)
   const [view, setView] = useState<View>({ kind: 'start' })
   const [asking, setAsking] = useState<'confirm' | 'pending' | null>(null)
   const [busy, setBusy] = useState(false)
@@ -100,6 +102,15 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
       setView({ kind: error instanceof ApiError && error.code === 'offline' ? 'offline' : 'failed' })
     }
   }
+
+  const searchFromAddress = useEffectEvent(() => void run(fromAddress))
+  const prefilled = useRef(false)
+  useEffect(() => {
+    // Once, on the first render: the number came in the address, nobody typed it.
+    if (prefilled.current || !fromAddress) return
+    prefilled.current = true
+    searchFromAddress()
+  }, [fromAddress])
 
   function choose(person: Person) {
     setView({ kind: 'person', person, refusal: refusalOf(person) })
@@ -198,6 +209,9 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
         <Button type="submit" variant="secondary" aria-disabled={view.kind === 'searching' || undefined}>
           {t.submit}
         </Button>
+        <StaffLink href={STAFF_ROSTER_VIEW_PATH} navigate={navigate} className="button button--secondary">
+          {t.viewRoster}
+        </StaffLink>
       </form>
       {result()}
     </DashboardShell>
@@ -231,6 +245,9 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
               <Button variant="secondary" onClick={backToSearch}>
                 {t.backToSearch}
               </Button>
+              <StaffLink href={STAFF_ROSTER_VIEW_PATH} navigate={navigate} className="button button--secondary">
+                {t.viewRoster}
+              </StaffLink>
             </div>
           </section>
         )
