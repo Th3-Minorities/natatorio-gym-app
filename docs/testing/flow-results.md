@@ -17,7 +17,7 @@ Seeded data the tests and the manual check use (every password is `password` unl
 | Data | Value |
 |---|---|
 | Student number on the roster, unclaimed | `802000001` |
-| Student number of a claimed roster record | `802000002` |
+| Student number of a claimed roster record whose email has no account | `802000003` |
 | Unclaimed Authorization Numbers | `PRUEBA1` (Chromium), `PRUEBA2` (Edge) |
 | Claimed Authorization Number | `USADO01` |
 | Authorization Number of a term that ended | `VENCIDO` |
@@ -83,7 +83,7 @@ CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/action
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
 | 1 | Enter a student number that is not on the roster | `900000000` | "Revisa tu número", "No apareces en la lista de atletas. Consulta al Departamento de Actividades Atléticas: 265-3866.", Ver ejemplo del recibo and Corregir número | skipped: lookup limit, run by the path tests | pending |
-| 2 | Enter a student number already claimed | `802000002` | "Revisa tu registro", "Este registro no está disponible para crear otra cuenta.", Iniciar sesión and Cambiar número | skipped: lookup limit, run by the path tests | pending |
+| 2 | Enter a student number already claimed | `802000003` | "Revisa tu registro", "Este registro no está disponible para crear otra cuenta.", Iniciar sesión and Cambiar número | skipped: lookup limit, run by the path tests | pending |
 | 3 | Enter 8 digits | `80200000` | Looked up as an Authorization Number: "No pudimos validar este número. Revisa tu recibo o llama al 265-3866." | skipped: lookup limit, run by the path tests | pending |
 | 4 | Enter a student number on the roster, unclaimed | `802000001` | "Revisa tu correo", "Enviamos un enlace a tu correo institucional.", and the Reenviar en 04:xx button disabled | pass | pending |
 | 5 | Open the email link | the link in the email to the roster address | "Antes de comenzar", then "Crea una contraseña" with "¡Hola, [name]!" | pass | pending |

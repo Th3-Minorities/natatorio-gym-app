@@ -628,3 +628,14 @@ Measured in the browser (sizes and positions), never read from a screenshot. Tes
 | V-05 N-02 wrong credentials outline both fields with inline text, no boxed notice | #15 | pass | 105ff60 |
 
 Bug reports: [Discussion #158](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158).
+
+## Rerunning the path tests
+
+Before running the paths, rebuild and restart the proxy for the selected `KIM_PROJECT` from the repo root (add `-f` for the `KIM_TEST_NET` file when you use one); the proxy image tag is shared between stacks:
+
+```powershell
+docker compose -p <project> build proxy
+docker compose -p <project> up -d proxy
+```
+
+From `frontend/`, run `npm run test:e2e:paths` against an isolated seeded stack, with Docker on `PATH` and `CI` unset. Set `KIM_PROJECT` and `APP_PORT`; optionally set `KIM_WORKTREE` for another checkout, `KIM_TEST_NET` and `TEST_SUBNET` for a network override, and `E2E_BASE_URL` for a different proxy URL. Install Playwright Chromium, Firefox and WebKit plus Python with Pillow for registration fixtures. Add Playwright arguments after `--` to select a file or project.

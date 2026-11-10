@@ -327,7 +327,7 @@ it('marks the unchecked waiver box with the error that describes it and focuses 
   await waitFor(() => expect(box).toHaveFocus())
 })
 
-it('reloads the waiver on the contact page when the server rejects the waiver version', async () => {
+it('reloads a rejected waiver version and requires a new acceptance before creating the account', async () => {
   complete = () => json({ error: { code: 'validation_failed', details: { waiver_version: ['in'] } } }, 422)
   await reachContact()
   fillContact()
@@ -335,7 +335,20 @@ it('reloads the waiver on the contact page when the server rejects the waiver ve
   fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
   expect(await screen.findByText('BORRADOR · Versión borrador-2026-11-09')).toBeInTheDocument()
   expect(window.location.pathname).toBe('/register/contact')
+  expect(screen.getByRole('alert')).toHaveTextContent('El relevo cambió. Léelo y acéptalo de nuevo para crear tu cuenta.')
+  expect(screen.getByRole('alert')).toHaveClass('registration-field-error')
+  expect(screen.getByLabelText('He leído y acepto el relevo de responsabilidad.')).not.toBeChecked()
+  fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
   expect(sent).toHaveLength(1)
+  fireEvent.click(screen.getByRole('button', { name: 'Leer relevo completo' }))
+  expect(await screen.findByText('BORRADOR · Versión borrador-2026-11-09')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver al registro' }))
+  fireEvent.click(screen.getByLabelText('He leído y acepto el relevo de responsabilidad.'))
+  complete = () => json({ id: 1 }, 201)
+  fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }))
+  await waitFor(() => expect(window.location.pathname).toBe('/install'))
+  expect(sent).toHaveLength(2)
+  expect(sent[1].waiver_version).toBe('borrador-2026-11-09')
 })
 
 it('focuses the first contact field the server rejects', async () => {

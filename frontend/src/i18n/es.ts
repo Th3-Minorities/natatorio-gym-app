@@ -81,6 +81,7 @@ export const es = {
     waiver: 'Relevo de responsabilidad', waiverDraft: (version: string) => `BORRADOR · Versión ${version}`,
     waiverPending: 'Pendiente del texto oficial del Departamento.', readWaiver: 'Leer relevo completo',
     acceptWaiver: 'He leído y acepto el relevo de responsabilidad.', acceptRequired: 'Acepta el relevo para crear tu cuenta.',
+    waiverChanged: 'El relevo cambió. Léelo y acéptalo de nuevo para crear tu cuenta.',
     contactName: 'Nombre completo', contactNamePlaceholder: 'Nombre completo del contacto', contactNameError: 'Escribe el nombre de tu contacto.',
     phone: 'Teléfono', phonePlaceholder: 'Número de teléfono', phoneError: 'Escribe un número de teléfono válido.',
     contactLater: 'Podrás actualizar el contacto en Mi cuenta.', createAccount: 'Crear cuenta',
@@ -506,6 +507,8 @@ export const es = {
     photoLoadingTitle: 'Cargando foto de identificación',
     photoLoadingText:
       'Espera a que cargue la foto de la cuenta para compararla con la persona. No confirmes la entrada sin verificar su identidad.',
+    photoFailedTitle: 'No pudimos cargar la foto',
+    photoFailedText: 'Sin la foto de la cuenta no puedes verificar la identidad. Intenta cargarla de nuevo antes de confirmar la entrada.',
     // Why the entry cannot be made (4288:1183 to 4288:1280, 4288:1695).
     refusals: {
       noAuthorization: {

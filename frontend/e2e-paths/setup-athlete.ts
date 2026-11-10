@@ -2,6 +2,7 @@ import { execFileSync } from 'node:child_process'
 import { expect, type APIRequestContext } from '@playwright/test'
 import { linkIn } from '../e2e/mail.ts'
 import { tinker as run } from './setup-registration.ts'
+import { composeArgs, DOCKER, stackEnv } from './setup.ts'
 
 // Test data for the athlete registration path tests (athlete-registration.md, ids AR-xx): roster records, email links and
 // the Mailpit messages they produce. Everything is made with tinker on the test stack, never in the seeder.
@@ -139,14 +140,7 @@ export const tokenOf = (link: string) => new URL(link, 'http://x').searchParams.
 
 // ----------------------------------------------------------------------------------------------------- the stack
 
-const DOCKER = 'C:/Program Files/Docker/Docker/resources/bin/docker.exe'
-const WORKTREE = process.env.KIM_WORKTREE ?? 'C:/r/e152'
-const TEST_NET = process.env.KIM_TEST_NET ?? 'C:/Users/bamba/OneDrive/Desktop/natatorio-gym-app/docs/meetings/private/bug-listener/test-net.yml'
-
 /** Stops or starts one service of the test stack (the mail catcher, to make sending fail). Never touches the volumes. */
 export function service(action: 'stop' | 'start', name: string) {
-  if (!process.env.KIM_PROJECT) throw new Error('KIM_PROJECT is not set')
-  const env = { ...process.env, APP_PORT: process.env.APP_PORT ?? '8096', TEST_SUBNET: process.env.TEST_SUBNET ?? '10.77.116.0/24' }
-  execFileSync(DOCKER, ['compose', '-p', process.env.KIM_PROJECT, '-f', `${WORKTREE}/docker-compose.yml`, '-f', `${WORKTREE}/docker-compose.override.yml`,
-    '-f', TEST_NET, '--profile', 'development', action, name], { env, encoding: 'utf8', timeout: 120_000 })
+  execFileSync(DOCKER, composeArgs(action, name), { env: stackEnv, encoding: 'utf8', timeout: 120_000 })
 }

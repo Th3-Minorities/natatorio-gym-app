@@ -372,6 +372,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
         showContact()
       } else if (fields.waiver_version) {
         setWaiver(null)
+        setWaiverAccepted(false)
+        setLookupMessage(t.waiverChanged)
         showContact()
       } else if (failure.code === 'registration_number_unavailable') {
         const phone = failure.details?.contact_number?.[0]
