@@ -32,7 +32,7 @@ The seeder never runs in production. Every seeded password is `password`. The se
 
 ## Results
 
-Result words: pass, fail, not merged (the test is in an open pull request). The results come from the run in `evidence/summary.md`, which has the date, the commit and the saved reports. Run it again with `npm run evidence` from `frontend/` once the open pull requests merge.
+Result words: pass, fail. The results come from the run in `evidence/summary.md`, which has the date, the commit and the saved reports. Run it again with `npm run evidence` from `frontend/`.
 
 ### Objective 1: one correct access decision
 
@@ -66,20 +66,20 @@ The proposal names a 60-minute visit. The team replaced it with check-out at the
 | Check-out at the desk | the visit ends at that moment | REQ-NF-40 | `CheckOutTest::staff_and_administrators_check_out_without_an_audit_entry`, `CheckOutTest::only_active_sessions_can_be_checked_out` | pass |
 | Automatic close after 2 hours | the visit ends at 2 hours, also before the scheduled task runs | REQ-NF-40 | `SessionCloseTest::the_scheduled_task_closes_exactly_due_sessions_and_is_idempotent`, `CheckInTest::a_session_past_its_two_hours_is_not_active_even_before_the_cleanup_task`, `CheckOutTest::exactly_two_hours_is_already_ended` | pass |
 | Two Check Ins at the same moment | one visit only | REQ-NF-42 | `CheckInConcurrencyTest::a_simultaneous_check_in_returns_the_session_that_won`, `ConcurrentInsertsTest::two_check_ins_of_the_same_user_at_the_same_time` | pass |
-| Sign in to visit created | a User signs in and Checks In through the real API | REQ-NF-41 | `e2e/user-sign-in.spec.ts`, and the Check In flow in `e2e/flows/check-in.spec.ts` | pass, the flow not merged (#162) |
+| Sign in to visit created | a User signs in and Checks In through the real API | REQ-NF-41 | `e2e/user-sign-in.spec.ts`, and the Check In flow in `e2e/flows/check-in.spec.ts` | pass |
 
 ### Objective 3: occupancy
 
 | Case | Expected result | Requirement | Tests | Result |
 |---|---|---|---|---|
-| The count goes up after a Check In | the visit counts while it is open | REQ-NF-40 | `OccupancyTest::counts_only_non_void_ranges_containing_now_with_an_exclusive_end`, `StaffAssistedCheckInTest::staff_enter_a_person_without_a_phone_and_the_log_marks_it` | pass, the second one not merged (#144) |
+| The count goes up after a Check In | the visit counts while it is open | REQ-NF-40 | `OccupancyTest::counts_only_non_void_ranges_containing_now_with_an_exclusive_end`, `StaffAssistedCheckInTest::staff_enter_a_person_without_a_phone_and_the_log_marks_it` | pass |
 | The count goes down after check-out or the 2-hour close | ended visits do not count | REQ-NF-40 | `OccupancyTest::counts_only_non_void_ranges_containing_now_with_an_exclusive_end` | pass |
-| The count goes down after a Staff correction | ending early or voiding removes the visit from the count | REQ-NF-40 | `StaffSessionDetailTest::staff_correct_an_active_visit_and_the_log_names_them` | not merged (#144) |
+| The count goes down after a Staff correction | ending early or voiding removes the visit from the count | REQ-NF-40 | `StaffSessionDetailTest::staff_correct_an_active_visit_and_the_log_names_them` | pass |
 | Closures and the term end | the visit stops counting before the scheduled task runs | REQ-NF-40 | `OccupancyTest::a_closure_that_started_drops_out_before_the_scheduler_runs`, `OccupancyTest::a_term_that_ended_drops_out_before_the_scheduler_runs` | pass |
 | An empty gym | 0 is a real count | REQ-NF-40 | `OccupancyTest::empty_gym_has_zero_occupancy` | pass |
-| User, Staff and Administrator see the same number | the staff route answers exactly what the User route answers, and the S-01 list matches the count | REQ-F-42 | `StaffOccupancyTest::staff_and_administrators_see_the_same_answer_as_users`, `StaffSessionsListTest::the_list_and_occupancy_agree` | not merged (#144) |
+| User, Staff and Administrator see the same number | the staff route answers exactly what the User route answers, and the S-01 list matches the count | REQ-F-42 | `StaffOccupancyTest::staff_and_administrators_see_the_same_answer_as_users`, `StaffSessionsListTest::the_list_and_occupancy_agree` | pass |
 | Concurrent events | two Check Ins at the same moment count once | REQ-NF-42 | `CheckInConcurrencyTest::a_simultaneous_check_in_returns_the_session_that_won` | pass |
-| Every screen updates the number | Gimnasio and S-01 poll every 25 seconds while visible, and S-01 updates at once after a check-out | REQ-F-43 | `GymId.test.tsx`: "shows the count, polls after 25 seconds and links the selected tab"; `SessionsList.test.tsx`: "updates the occupancy card at once after a check-out, without waiting for the next poll" | pass, the second one not merged (#144) |
+| Every screen updates the number | Gimnasio and S-01 poll every 25 seconds while visible, and S-01 updates at once after a check-out | REQ-F-43 | `GymId.test.tsx`: "shows the count, polls after 25 seconds and links the selected tab"; `SessionsList.test.tsx`: "updates the occupancy card at once after a check-out, without waiting for the next poll" | pass |
 
 ## Not covered here
 

@@ -22,6 +22,8 @@ Run on 11/10/2026, 11:19 a. m. (Puerto Rico time), branch `81-test-plan-evidence
 
 ## Demo screenshots
 
+Taken again on 11/10/2026 around 11:40 a. m. on a fresh seed, after each screen loads (#183). The test results above are from the run of #171.
+
 - [01-welcome.png](screenshots/01-welcome.png)
 - [02-registro.png](screenshots/02-registro.png)
 - [03-iniciar-sesion.png](screenshots/03-iniciar-sesion.png)
@@ -29,6 +31,7 @@ Run on 11/10/2026, 11:19 a. m. (Puerto Rico time), branch `81-test-plan-evidence
 - [05-gym-id.png](screenshots/05-gym-id.png)
 - [06-gimnasio-ocupacion.png](screenshots/06-gimnasio-ocupacion.png)
 - [07-s01-sesiones-activas.png](screenshots/07-s01-sesiones-activas.png)
+- [08-s02-persona-y-sesion.png](screenshots/08-s02-persona-y-sesion.png)
 - [09-s03-buscar-persona.png](screenshots/09-s03-buscar-persona.png)
 - [10-a04-terminos.png](screenshots/10-a04-terminos.png)
 - [11-a05-roster.png](screenshots/11-a05-roster.png)

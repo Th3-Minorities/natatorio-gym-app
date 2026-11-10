@@ -1,5 +1,5 @@
 <testsuites id="" name="" tests="13" failures="0" skipped="1" errors="0" time="74.412957">
-<testsuite name="dashboard-shell.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="webkit" tests="3" failures="0" skipped="0" time="3.684" errors="0">
+<testsuite name="dashboard-shell.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="" tests="3" failures="0" skipped="0" time="3.684" errors="0">
 <testcase name="keyboard users can skip to the dashboard content" classname="dashboard-shell.spec.ts" time="1.084">
 </testcase>
 <testcase name="dashboard shell has no automated WCAG 2.2 AA violations" classname="dashboard-shell.spec.ts" time="1.634">
@@ -7,11 +7,11 @@
 <testcase name="dashboard shell reflows at 320 CSS pixels" classname="dashboard-shell.spec.ts" time="0.966">
 </testcase>
 </testsuite>
-<testsuite name="flows\staff-accounts.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="webkit" tests="1" failures="0" skipped="0" time="22.416" errors="0">
+<testsuite name="flows\staff-accounts.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="" tests="1" failures="0" skipped="0" time="22.416" errors="0">
 <testcase name="an Administrator invites a person who signs in, recovers the password, changes role and is deactivated" classname="flows\staff-accounts.spec.ts" time="22.416">
 </testcase>
 </testsuite>
-<testsuite name="flows\terms-roster.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="webkit" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testsuite name="flows\terms-roster.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="" tests="1" failures="0" skipped="1" time="0" errors="0">
 <testcase name="an Administrator adds a term and athletes, and downloads the roster" classname="flows\terms-roster.spec.ts">
 <properties>
 <property name="skip" value="">
@@ -21,7 +21,7 @@
 </skipped>
 </testcase>
 </testsuite>
-<testsuite name="staff-accounts.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="webkit" tests="4" failures="0" skipped="0" time="32.223" errors="0">
+<testsuite name="staff-accounts.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="" tests="4" failures="0" skipped="0" time="32.223" errors="0">
 <testcase name="an Administrator invites a person, who creates a password and signs in" classname="staff-accounts.spec.ts" time="15.275">
 </testcase>
 <testcase name="the invite dialog keeps focus inside, closes with Esc and gives focus back" classname="staff-accounts.spec.ts" time="2.618">
@@ -31,7 +31,7 @@
 <testcase name="the A-15 screen and the N-11 pages reflow at 320 CSS pixels" classname="staff-accounts.spec.ts" time="3.704">
 </testcase>
 </testsuite>
-<testsuite name="staff-sign-in.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="webkit" tests="4" failures="0" skipped="0" time="13.43" errors="0">
+<testsuite name="staff-sign-in.spec.ts" timestamp="2026-11-10T15:10:22.481Z" hostname="" tests="4" failures="0" skipped="0" time="13.43" errors="0">
 <testcase name="an Administrator signs in, stays signed in after a reload, and signs out" classname="staff-sign-in.spec.ts" time="3.863">
 </testcase>
 <testcase name="Staff do not see the Administration items" classname="staff-sign-in.spec.ts" time="3.29">
