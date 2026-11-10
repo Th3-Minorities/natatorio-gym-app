@@ -6,7 +6,10 @@ import { SignInLayout } from './SignInLayout'
 import { StaffSessionProvider } from './StaffSession'
 import { StaffSignIn } from './StaffSignIn'
 import { ForgotPasswordPage, SetPasswordPage } from './access/StaffAccessPages'
+import { FindPerson } from './people/FindPerson'
 import {
+  sessionIdIn,
+  STAFF_FIND_PATH,
   STAFF_FORGOT_PATH,
   STAFF_INVITE_PATH,
   STAFF_PATH,
@@ -18,6 +21,8 @@ import {
   type Navigate,
 } from './staffPath'
 import { AthleteRoster } from './roster/AthleteRoster'
+import { ActiveSessions } from './sessions/ActiveSessions'
+import { SessionDetail } from './sessions/SessionDetail'
 import { StaffTeam } from './team/StaffTeam'
 import { AcademicTerms } from './terms/AcademicTerms'
 import { useStaffSession, type StaffAccount } from './useStaffSession'
@@ -41,10 +46,13 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
   const navigation = {
     currentPath: path,
     onNavigate: navigate,
+    activeSessions: STAFF_PATH,
+    findPerson: STAFF_FIND_PATH,
     staffAccounts: STAFF_TEAM_PATH,
     terms: STAFF_TERMS_PATH,
     roster: STAFF_ROSTER_PATH,
   }
+  const visitId = sessionIdIn(path)
   // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
   const admin = account.role === 'admin'
 
@@ -68,10 +76,15 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
   if (admin && path === STAFF_TEAM_PATH) return <StaffTeam shell={shell} />
   if (admin && path === STAFF_TERMS_PATH) return <AcademicTerms shell={shell} />
   if (admin && path === STAFF_ROSTER_PATH) return <AthleteRoster shell={shell} />
+  // S-01, the first screen after sign-in for both roles (#26).
+  if (path === STAFF_PATH) return <ActiveSessions shell={shell} />
+  // S-03 and S-02, for both roles (#26).
+  if (path === STAFF_FIND_PATH) return <FindPerson shell={shell} />
+  if (visitId !== null) return <SessionDetail key={visitId} shell={shell} sessionId={visitId} />
 
   const { notice, ...shellProps } = shell
   return (
-    // Without a screen: no title and an empty main area. S-01, the first screen after sign-in, is #26.
+    // An address with no screen yet: no title and an empty main area.
     <DashboardShell {...shellProps}>{notice}</DashboardShell>
   )
 }

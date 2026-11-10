@@ -7,6 +7,7 @@ use App\Models\FacilitySession;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -44,10 +45,52 @@ class FacilitySessions
             ->orderByDesc('started_at')->orderByDesc('id')->first();
     }
 
+    /**
+     * The open visit of each of these people, from one query, keyed by user id. Same rule as activeFor().
+     *
+     * @param  \Illuminate\Support\Collection<int, int>  $userIds
+     * @return \Illuminate\Support\Collection<int, FacilitySession>
+     */
+    public function activeForMany(\Illuminate\Support\Collection $userIds): \Illuminate\Support\Collection
+    {
+        if ($userIds->isEmpty()) {
+            return collect();
+        }
+
+        return $this->whereActive($this->query()->whereIn('user_id', $userIds->all()), $this->databaseNow())
+            ->orderByDesc('started_at')->orderByDesc('id')->get()->unique('user_id')->keyBy('user_id');
+    }
+
     /** Visits inside the gym now. Same rule as activeFor(), for everyone, so a closure or term end counts before the scheduler runs. */
     public function occupancy(Carbon $now): int
     {
         return $this->whereActive(FacilitySession::query(), $now)->where('started_at', '<=', $now->format('Y-m-d H:i:s.uP'))->count();
+    }
+
+    /**
+     * Who is inside now, in Check In order, for S-01 (REQ-F-44): the same rule as occupancy(), so the list and the
+     * count always agree. Each row carries the name from the waiver and whether the authorization has a photo.
+     * search matches part of the name in any case; % and _ match only themselves.
+     *
+     * @return Collection<int, FacilitySession>
+     */
+    public function inside(Carbon $now, string $search = ''): Collection
+    {
+        return $this->whereActive(FacilitySession::query(), $now)
+            ->where('facility_sessions.started_at', '<=', $now->format('Y-m-d H:i:s.uP'))
+            ->leftJoin('waiver_acceptances', 'waiver_acceptances.user_id', '=', 'facility_sessions.user_id')
+            ->leftJoin('authorizations', 'authorizations.id', '=', 'facility_sessions.authorization_id')
+            ->when($search !== '', fn (Builder $query) => $query->where(
+                'waiver_acceptances.full_name', 'ilike', '%'.addcslashes($search, '%_\\').'%'
+            ))
+            ->orderBy('facility_sessions.started_at')->orderBy('facility_sessions.id')
+            ->get(['facility_sessions.*', 'waiver_acceptances.full_name', DB::raw('authorizations.photo_path IS NOT NULL AS has_photo')]);
+    }
+
+    /** One visit that is inside now, by the same rule, or null. */
+    public function insideById(int $id, Carbon $now): ?FacilitySession
+    {
+        return $this->whereActive(FacilitySession::query()->whereKey($id), $now)->first();
     }
 
     /**
@@ -58,8 +101,8 @@ class FacilitySessions
     {
         $at = $now->format('Y-m-d H:i:s.uP');
 
-        return $query->where('status', 'active')
-            ->where('ends_at', '>', $at)
+        return $query->where('facility_sessions.status', 'active')
+            ->where('facility_sessions.ends_at', '>', $at)
             ->whereRaw('('.self::TERM_END.' IS NULL OR '.self::TERM_END.' > ?)', [$at])
             ->whereRaw('('.self::CLOSURE_START.' IS NULL OR '.self::CLOSURE_START.' > ?)', [$at]);
     }
@@ -87,6 +130,42 @@ class FacilitySessions
             // The columns are timestamptz(0): answer with the stored value, not the sub-second clock reading.
             return $session->refresh();
         });
+    }
+
+    /**
+     * A Staff correction on an active visit (REQ-F-48): end it now (ended_early) or void it (void). The visit is kept
+     * either way, and a void one stops counting in occupancy and statistics. Logged with who did it (REQ-NF-39).
+     */
+    public function correct(string $id, string $status, StaffAccount $staff, AuditLog $log): FacilitySession
+    {
+        return DB::transaction(function () use ($id, $status, $staff, $log) {
+            $session = $this->query()->whereKey($id)->lockForUpdate()->firstOrFail();
+            // Resolve time after obtaining the lock, as for a check-out.
+            $now = $this->databaseNow();
+            $this->resolveEnd($session, $now);
+            if ($session->status !== 'active') {
+                throw new ApiException('check_out_session_not_active', 409);
+            }
+
+            // Never past the 2-hour mark: the table rejects an end after ends_at, and the person would get a 500, not a 409.
+            DB::table('facility_sessions')->where('id', $session->id)->update([
+                'status' => $status,
+                'ended_at' => DB::raw('LEAST(clock_timestamp(), ends_at)'),
+                'updated_at' => $now->format('Y-m-d H:i:s.uP'),
+            ]);
+            $log->record($status === 'void' ? 'session.void' : 'session.end_early', $session,
+                ['status' => 'active'], ['status' => $status], null, $staff);
+
+            return $session->refresh();
+        });
+    }
+
+    /** One visit, active or not, with how it ended even before the scheduler runs. */
+    public function find(int $id): ?FacilitySession
+    {
+        $session = $this->query()->whereKey($id)->first();
+
+        return $session ? $this->resolveEnd($session) : null;
     }
 
     /** Three conditional bulk updates; no session rows are loaded into memory. Safe to repeat. */

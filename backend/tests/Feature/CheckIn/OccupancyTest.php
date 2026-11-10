@@ -46,7 +46,7 @@ class OccupancyTest extends TestCase
         FacilitySession::factory()->startedMinutesAgo(10)->create(['status' => 'void', 'ended_at' => now()->addMinute()]);
 
         $this->getJson('/api/user/occupancy')->assertOk()
-            ->assertExactJson(['count' => 2, 'max' => 40, 'updated_at' => now()->toISOString()]);
+            ->assertExactJson(['count' => 2, 'max' => 40, 'updated_at' => now()->toISOString(), 'gym' => 'closed']);
     }
 
     public function test_a_closure_that_started_drops_out_before_the_scheduler_runs(): void
