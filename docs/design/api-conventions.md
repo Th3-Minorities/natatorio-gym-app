@@ -328,7 +328,7 @@ The four fields: `name` up to 255 characters, `sport` up to 50, `student_number`
 | 409 | `roster_status_changed` | Withdrawing an athlete already withdrawn, or reinstating one who is active: someone else changed it. The PWA reloads the list |
 | 409 | `roster_reinstate_active_authorization` | The person already has another active authorization in the same term. `details.term` is `{"name"}` |
 
-The audit log gets `roster.add`, `roster.update`, `roster.withdraw` and `roster.reinstate`. The reinstate entry keeps the reason.
+The audit log gets `roster.add`, `roster.update`, `roster.withdraw` and `roster.reinstate`. The reinstate entry keeps the reason. The withdraw and reinstate entries list the authorizations they revoke or restore as `{id: status}`, before and after.
 
 ### Roster download
 
