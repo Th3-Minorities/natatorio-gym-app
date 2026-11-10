@@ -40,11 +40,10 @@ test('the student number lookup answers not on the roster, claimed, wrong length
     // 2. Already claimed
     await page.getByLabel('Número de estudiante o autorización').fill('802000002')
     await Promise.all([lookup('802000002'), next.click()])
-    await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu registro' })).toBeVisible()
-    await expect(page.getByLabel('Número de estudiante')).toHaveAccessibleDescription('Este registro no está disponible para crear otra cuenta.')
-    await expect(page.getByText('Si ya tienes cuenta, inicia sesión. Si necesitas revisar el vínculo, llama al 265-3866.')).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Ya tienes una cuenta' })).toBeVisible()
+    await expect(page.getByText(/^[^@\s]\*{3}[^@\s]?@[^@\s]+$/)).toBeVisible()
     await expect(page.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
-    await page.getByRole('button', { name: 'Cambiar número' }).click()
+    await page.getByRole('button', { name: 'Volver al registro' }).click()
   }
 
   // 3. Wrong length: 8 digits is not a student number, so it is looked up as an Authorization Number
