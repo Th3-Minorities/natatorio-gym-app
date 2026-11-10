@@ -10,8 +10,8 @@ test('Check In refuses each problem and opens the Gym ID from inside the gym', a
   await fakeLocation(page, INSIDE)
   await signInUser(page, 'pago-vencido@example.com', 'password')
   await page.goto('/check-in')
-  await holdToCheckIn(page)
   await expect(page.getByRole('heading', { name: 'Tu acceso no está vigente' })).toBeVisible()
+  await expect(page.locator('.check-in-hold')).toHaveCount(0)
   await expect(page.getByRole('link', { name: 'Revisar mi acceso' })).toHaveAttribute('href', '/account')
 
   // 2. Location denied: the browser refuses before anything is sent

@@ -33,17 +33,17 @@ const HOLD = '.check-in-hold'
 const READY = '¿Listo para entrenar?'
 
 /** Creates the member, signs in through the API and opens Check In ready to hold, with the faked location. */
-async function begin(page: Page, baseURL: string | undefined, options: MemberOptions = {}, where: Parameters<typeof fakeLocation>[1] | null = INSIDE) {
+async function begin(page: Page, baseURL: string | undefined, options: MemberOptions = {}, where: Parameters<typeof fakeLocation>[1] | null = INSIDE, waitForHold = true) {
   const member = createMember(options)
-  await open(page, baseURL, member, where)
+  await open(page, baseURL, member, where, waitForHold)
   return member
 }
 
-async function open(page: Page, baseURL: string | undefined, member: Member, where: Parameters<typeof fakeLocation>[1] | null = INSIDE) {
+async function open(page: Page, baseURL: string | undefined, member: Member, where: Parameters<typeof fakeLocation>[1] | null = INSIDE, waitForHold = true) {
   if (where !== null) await fakeLocation(page, where)
   await signInApi(page.request, baseURL!, member)
   await page.goto('/check-in')
-  await expect(page.locator(HOLD)).toBeVisible()
+  if (waitForHold) await expect(page.locator(HOLD)).toBeVisible()
 }
 
 /** Presses the hold button with the pointer for `ms` milliseconds. */
@@ -429,12 +429,14 @@ test('CI-31 pressing again while registering sends exactly one request', async (
 
 // ----------------------------------------------------------------------------------------- authorization
 
-const authorizationRefusal = (page: Page) => expectRefusal(page, 'Tu acceso no está vigente', 'No encontramos una autorización vigente para registrar tu entrada.')
+const authorizationRefusal = async (page: Page) => {
+  await expectRefusal(page, 'Tu acceso no está vigente', 'No encontramos una autorización vigente para registrar tu entrada.')
+  await expect(page.locator(HOLD)).toHaveCount(0)
+}
 
 test('CI-32 a paid member whose term ended is refused', async ({ page, baseURL }) => {
   only('AI')
-  await begin(page, baseURL, { authorization: 'ended' })
-  await hold(page)
+  await begin(page, baseURL, { authorization: 'ended' }, INSIDE, false)
   await authorizationRefusal(page)
   await expect(page.getByRole('link', { name: 'Revisar mi acceso' })).toHaveAttribute('href', '/account')
   await expect(page.locator('.check-in-identity .check-in-badge')).toHaveCount(0)
@@ -442,23 +444,21 @@ test('CI-32 a paid member whose term ended is refused', async ({ page, baseURL }
 
 test('CI-33 an account with no authorization row is refused', async ({ page, baseURL }) => {
   only('AI')
-  await begin(page, baseURL, { authorization: 'none' })
-  await hold(page)
+  await begin(page, baseURL, { authorization: 'none' }, INSIDE, false)
   await authorizationRefusal(page)
 })
 
 test('CI-34 a revoked paid authorization is refused', async ({ page, baseURL }) => {
   only('AI')
-  await begin(page, baseURL, { authorization: 'revoked' })
-  await hold(page)
+  await begin(page, baseURL, { authorization: 'revoked' }, INSIDE, false)
   await authorizationRefusal(page)
 })
 
 test('CI-35 a removed athlete gets the athlete refusal with a text-only action', async ({ page, baseURL }) => {
   only('AI')
-  await begin(page, baseURL, { kind: 'athlete', authorization: 'revoked' })
-  await hold(page)
+  await begin(page, baseURL, { kind: 'athlete', authorization: 'revoked' }, INSIDE, false)
   await expect(heading(page, 'Tu acceso de atleta no está vigente')).toBeVisible()
+  await expect(page.locator(HOLD)).toHaveCount(0)
   await expect(page.getByText('No encontramos una autorización de atleta vigente. Consulta con el personal para revisar tu acceso.', { exact: true })).toBeVisible()
   await expect(page.getByText('Ver información de contacto', { exact: true })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Ver información de contacto' })).toHaveCount(0)
@@ -466,8 +466,8 @@ test('CI-35 a removed athlete gets the athlete refusal with a text-only action',
 
 test('CI-36 Revisar mi acceso opens Mi cuenta without an active authorization', async ({ page, baseURL }) => {
   only('AI')
-  await begin(page, baseURL, { authorization: 'ended' })
-  await hold(page)
+  await begin(page, baseURL, { authorization: 'ended' }, INSIDE, false)
+  await authorizationRefusal(page)
   await page.getByRole('link', { name: 'Revisar mi acceso' }).click()
   await expect(page).toHaveURL(/\/account$/)
   await expect(page.getByRole('heading', { level: 1, name: 'Mi cuenta' })).toBeVisible()
@@ -488,16 +488,14 @@ test('CI-38 the day after the term ended refuses Check In', async ({ page, baseU
   only('AI')
   const old = setCurrentTermEnd(-1)
   try {
-    await begin(page, baseURL)
-    await hold(page)
+    await begin(page, baseURL, {}, INSIDE, false)
     await authorizationRefusal(page)
   } finally { restoreCurrentTermEnd(old) }
 })
 
 test('CI-39 an authorization only in a future term is refused', async ({ page, baseURL }) => {
   only('AI')
-  await begin(page, baseURL, { authorization: 'future' })
-  await hold(page)
+  await begin(page, baseURL, { authorization: 'future' }, INSIDE, false)
   await authorizationRefusal(page)
 })
 
@@ -537,10 +535,29 @@ test('CI-42 after the pending photo is cleared, a reload and a new hold open the
 
 test('CI-43 the authorization is checked before the location', async ({ page, baseURL }) => {
   only('AI')
-  await begin(page, baseURL, { authorization: 'ended' }, OUTSIDE)
-  await hold(page)
+  const member = createMember({ authorization: 'ended' })
+  await fakeLocation(page, OUTSIDE)
+  await page.addInitScript(() => {
+    const state = globalThis as typeof globalThis & { e2eLocationCalls: number }
+    state.e2eLocationCalls = 0
+    const geolocation = navigator.geolocation
+    const current = geolocation.getCurrentPosition.bind(geolocation)
+    geolocation.getCurrentPosition = ((...args: Parameters<typeof geolocation.getCurrentPosition>) => {
+      state.e2eLocationCalls++
+      return current(...args)
+    }) as typeof geolocation.getCurrentPosition
+    if (typeof geolocation.watchPosition === 'function') {
+      const watch = geolocation.watchPosition.bind(geolocation)
+      geolocation.watchPosition = ((...args: Parameters<typeof geolocation.watchPosition>) => {
+        state.e2eLocationCalls++
+        return watch(...args)
+      }) as typeof geolocation.watchPosition
+    }
+  })
+  await signInApi(page.request, baseURL!, member)
+  await page.goto('/check-in')
   await authorizationRefusal(page)
-  await expect(heading(page, 'Acércate al gimnasio')).toHaveCount(0)
+  expect(await page.evaluate(() => (globalThis as typeof globalThis & { e2eLocationCalls: number }).e2eLocationCalls)).toBe(0)
 })
 
 test('CI-44 the photo is checked before the location', async ({ page, baseURL }) => {

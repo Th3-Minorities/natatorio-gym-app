@@ -11,6 +11,7 @@ let status: object
 let occupancy: object
 let failOccupancy: 'offline' | 'server' | null
 const ended = vi.fn(() => false)
+const reloadProfile = async () => {}
 const json = (body: unknown) => new Response(JSON.stringify(body), { headers: { Date: 'Sat, 07 Nov 2026 17:07:24 GMT' } })
 const flush = () => act(async () => { await vi.advanceTimersByTimeAsync(0) })
 function connection(online: boolean) {
@@ -49,7 +50,7 @@ describe('Gym ID and ended visits', () => {
     vi.stubGlobal('navigator', Object.create(navigator, { geolocation: { value: {
       getCurrentPosition: (success: PositionCallback) => success({ coords: { latitude: 18.21, longitude: -67.14, accuracy: 12 } } as GeolocationPosition),
     } } }))
-    const view = render(<CheckIn profile={profile} ended={ended} />)
+    const view = render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     status = { ...status, session }
     fireEvent.click(screen.getByRole('button', { name: 'Mantén presionado para entrar' }))
@@ -77,7 +78,7 @@ describe('Gym ID and ended visits', () => {
   it('shows the existing-entry text after a new mount', async () => {
     const { unmount } = await registerVisit()
     unmount()
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     expect(screen.getByText('Tu entrada está registrada')).toBeInTheDocument()
     expect(screen.getByRole('status')).toBeEmptyDOMElement()
@@ -94,7 +95,7 @@ describe('Gym ID and ended visits', () => {
   })
 
   it('uses the server clock despite a wrong device clock, ticks once a second and freezes offline', async () => {
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     expect(screen.getByText('Tu entrada está registrada')).toBeInTheDocument()
     expect(screen.getByText('00:25:24')).toBeInTheDocument()
@@ -114,7 +115,7 @@ describe('Gym ID and ended visits', () => {
 
   it.each(['checked_out', 'expired', 'closed'] as const)('shows a fixed summary for %s and Continue checks current access without posting', async (reason) => {
     status = { session: null, last_session: { id: 1, started_at: session.started_at, ended_at: '2026-11-07T18:10:00Z', end_reason: reason }, account_type: 'athlete', sport: 'Voleibol', athletes_period: null }
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     expect(screen.getByText('Tu visita ha terminado')).toBeInTheDocument()
     expect(screen.getByText('Sesión finalizada')).toBeInTheDocument()
@@ -130,7 +131,7 @@ describe('Gym ID and ended visits', () => {
   })
 
   it('refreshes an active visit and switches to the ended summary when the backend closes it', async () => {
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     status = { session: null, last_session: { id: 1, started_at: session.started_at, ended_at: '2026-11-07T17:10:00Z', end_reason: 'checked_out' }, account_type: 'member', athletes_period: null }
     await act(async () => { await vi.advanceTimersByTimeAsync(25000) })
@@ -139,7 +140,7 @@ describe('Gym ID and ended visits', () => {
   })
 
   it('does not repaint the duration more than once a second during clock resynchronization', async () => {
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     await act(async () => { await vi.advanceTimersByTimeAsync(500) })
     vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify(status), { headers: { Date: 'Sat, 07 Nov 2026 17:07:25 GMT' } }))
@@ -149,7 +150,7 @@ describe('Gym ID and ended visits', () => {
   })
 
   it('recovers from offline only after revalidating the session', async () => {
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     connection(false)
     status = { session: null, last_session: { id: 1, started_at: session.started_at, ended_at: '2026-11-07T18:42:00Z', end_reason: 'expired' }, account_type: 'member', athletes_period: null }
@@ -159,7 +160,7 @@ describe('Gym ID and ended visits', () => {
   })
 
   it('does not announce confirmation for an existing session or after reconnecting', async () => {
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     expect(screen.getByRole('status')).toBeEmptyDOMElement()
     connection(false)
@@ -169,7 +170,7 @@ describe('Gym ID and ended visits', () => {
   })
 
   it('skips hidden polls and focus, refreshes once when visible, and removes listeners on unmount', async () => {
-    const { unmount } = render(<CheckIn profile={profile} ended={ended} />)
+    const { unmount } = render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     expect(fetch).toHaveBeenCalledTimes(1)
     visibility(true)
@@ -188,7 +189,7 @@ describe('Gym ID and ended visits', () => {
 
   it('waits for visibility before requesting the initial session', async () => {
     visibility(true)
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     expect(fetch).not.toHaveBeenCalled()
     visibility(false)
@@ -198,7 +199,7 @@ describe('Gym ID and ended visits', () => {
 
   it.each([1000, 1500, -1000, -1500])('ignores clock offset jitter of %i ms', async (jitter) => {
     vi.setSystemTime(new Date('2026-11-07T17:07:24Z'))
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     await act(async () => { await vi.advanceTimersByTimeAsync(2030) })
     // Move the device clock independently, back on the second boundary; the HTTP Date remains a whole second.
@@ -213,7 +214,7 @@ describe('Gym ID and ended visits', () => {
 
   it('applies a large clock correction without moving the displayed duration backwards', async () => {
     vi.setSystemTime(new Date('2026-11-07T17:07:24Z'))
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     await act(async () => { await vi.advanceTimersByTimeAsync(2030) })
     vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify(status), { headers: { Date: 'Sat, 07 Nov 2026 17:07:20 GMT' } }))
@@ -227,7 +228,7 @@ describe('Gym ID and ended visits', () => {
 
   it('applies a forward clock correction larger than 1500 ms', async () => {
     vi.setSystemTime(new Date('2026-11-07T17:07:24Z'))
-    render(<CheckIn profile={profile} ended={ended} />)
+    render(<CheckIn profile={profile} reloadProfile={reloadProfile} ended={ended} />)
     await flush()
     await act(async () => { await vi.advanceTimersByTimeAsync(2000) })
     vi.mocked(fetch).mockResolvedValueOnce(new Response(JSON.stringify(status), { headers: { Date: 'Sat, 07 Nov 2026 17:07:30 GMT' } }))

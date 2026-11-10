@@ -65,7 +65,7 @@ function elapsed(since: string, now: number) {
   return [seconds / 3600, (seconds % 3600) / 60, seconds % 60].map((part) => String(Math.floor(part)).padStart(2, '0')).join(':')
 }
 
-export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended: (error: unknown) => boolean }) {
+export function CheckIn({ profile, reloadProfile, ended }: { profile: UserProfile | null; reloadProfile: () => Promise<void>; ended: (error: unknown) => boolean }) {
   const texts = useMessages()
   const t = texts.checkIn
   const user = texts.user
@@ -73,7 +73,10 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const [failure, setFailure] = useState<{ code: string; status: number; until?: Date }>({ code: 'server_error', status: 500 })
   const [status, setStatus] = useState<CheckInStatus | null>(null)
   const [loaded, setLoaded] = useState(false)
-  const [problem, setProblem] = useState<Problem | null>(null)
+  const [profileLoaded, setProfileLoaded] = useState(false)
+  const profileLoadedRef = useRef(false)
+  const [requestProblem, setProblem] = useState<Problem | null>(null)
+  const problem: Problem | null = loaded && profileLoaded && profile && !profile.authorization ? 'authorization' : requestProblem
   const [busy, setBusy] = useState(false)
   const [help, setHelp] = useState<HTMLButtonElement | null>(null)
   const [phase, setPhase] = useState<'locating' | 'registering' | null>(null)
@@ -111,7 +114,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
       setStatus(next)
       setRegistration((current) => current && current.id === next.session?.id ? { ...current, announce: false } : null)
       setNetworkFailed(false)
-      setProblem((current) => current === 'offline' ? null : current)
+      setProblem((current) => current === 'offline' && profileLoadedRef.current ? null : current)
       return next
     } catch (error) {
       if (id !== requestId.current) return null
@@ -122,6 +125,21 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
       return null
     } finally { if (id === requestId.current) { loadedRef.current = true; setLoaded(true) } }
   }, [ended, syncClock])
+
+  const profileFailed = useCallback((error: unknown) => {
+    if (ended(error)) return
+    if (error instanceof ApiError && error.code === 'offline') setProblem('offline')
+    else {
+      setFailure(error instanceof ApiError ? { code: error.code, status: error.status } : { code: 'server_error', status: 500 })
+      setProblem('failed')
+    }
+  }, [ended])
+
+  useEffect(() => {
+    let current = true
+    void reloadProfile().then(() => { if (current) { profileLoadedRef.current = true; setProfileLoaded(true) } }).catch((error: unknown) => { if (current) profileFailed(error) })
+    return () => { current = false }
+  }, [reloadProfile, profileFailed])
 
   useEffect(() => {
     if (!online) { if (!loadedRef.current) setProblem((current) => current ?? 'offline'); return }
@@ -196,13 +214,17 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   // Board 10 notes: a retry first asks whether the session was already created.
   const retry = () => run(async () => {
     const next = await refresh()
-    if (next && !next.session && problem !== 'offline') await register()
+    if (!profileLoaded) {
+      try { await reloadProfile(); profileLoadedRef.current = true; setProfileLoaded(true); setProblem(null) } catch (error) { profileFailed(error) }
+      return
+    }
+    if (next && !next.session && profile?.authorization && problem !== 'offline') await register()
   })
 
   const athlete = (status?.account_type ?? (profile?.authorization?.type === 'athlete' ? 'athlete' : 'member')) === 'athlete'
   const period = status?.athletes_period ?? null
   const lastSession = status?.last_session && String(status.last_session.id) !== dismissed ? status.last_session : null
-  const view = status?.session ? 'confirmed' : lastSession ? 'ended' : problem ?? (!loaded ? 'loading' : period?.state === 'active' && !athlete ? 'exclusive' : 'ready')
+  const view = status?.session ? 'confirmed' : lastSession ? 'ended' : problem ?? (!loaded || !profileLoaded || !profile ? 'loading' : period?.state === 'active' && !athlete ? 'exclusive' : 'ready')
 
   const first = useRef(true)
   useEffect(() => {

@@ -1,3 +1,9 @@
+import { execFileSync } from 'node:child_process'
+import { inflateRawSync } from 'node:zlib'
+import type { APIRequestContext, Browser, BrowserContext, Page, PlaywrightWorkerArgs } from '@playwright/test'
+
+type Playwright = PlaywrightWorkerArgs['playwright']
+import { fakeLocation, INSIDE } from '../e2e/flows/flow.ts'
 import { tinker, tinkerJson, type Member } from './setup.ts'
 
 // Helpers of the Terms and athlete roster path tests (terms-roster.spec.ts, ids TR-xx). The Administrator screens for terms and the
@@ -141,4 +147,178 @@ export function startVisitLastNight(member: Pick<Member, 'id'>) {
   tinker(`
 $x = today()->subDay()->setTime(23, 30);
 \\Illuminate\\Support\\Facades\\DB::table('facility_sessions')->where('user_id', ${member.id})->where('status', 'active')->update(['started_at' => $x, 'ends_at' => $x->copy()->addHours(2)]);`)
+}
+
+// ------------------------------------------------------------------------------------- A-04 and A-05 (built screens)
+
+export type AuditRow = { action: string; before: Record<string, unknown> | null; after: Record<string, unknown> | null; reason: string | null }
+
+/** Audit entries about one record (subject table and id), oldest first. */
+export function auditOf(table: 'academic_terms' | 'roster_records', id: number): AuditRow[] {
+  return tinkerJson<AuditRow[]>(`
+echo json_encode(\\App\\Models\\AuditLogEntry::where('subject_table', '${table}')->where('subject_id', ${id})->orderBy('id')->get()
+  ->map(fn ($e) => ['action' => $e->action, 'before' => $e->before_values, 'after' => $e->after_values, 'reason' => $e->reason])->all());`)
+}
+
+export function termIdOf(name: string): number | null {
+  return tinkerJson<number | null>(`echo json_encode(${Term}::where('name', '${name}')->value('id'));`)
+}
+
+export type RosterRow = { id: number; name: string; sport: string; student_number: string; institutional_email: string; removed: boolean }
+
+const rosterSelect = `fn ($r) => ['id' => $r->id, 'name' => $r->name, 'sport' => $r->sport, 'student_number' => $r->student_number, 'institutional_email' => $r->institutional_email, 'removed' => $r->removed_at !== null]`
+
+export function rosterByNumber(number: string): RosterRow | null {
+  return tinkerJson<RosterRow | null>(`$r = ${Roster}::where('student_number', '${number}')->first(); echo json_encode($r ? (${rosterSelect})($r) : null);`)
+}
+
+export function rosterById(id: number): RosterRow {
+  return tinkerJson<RosterRow>(`echo json_encode((${rosterSelect})(${Roster}::findOrFail(${id})));`)
+}
+
+/** The roster record behind a member made with kind: 'athlete'. */
+export function rosterOf(member: Pick<Member, 'id'>): RosterRow {
+  return tinkerJson<RosterRow>(`echo json_encode((${rosterSelect})(${Roster}::findOrFail(${Authorization}::where('user_id', ${member.id})->firstOrFail()->roster_record_id)));`)
+}
+
+export function authorizationStatus(member: Pick<Member, 'id'>): string {
+  return tinkerJson<string>(`echo json_encode(${Authorization}::where('user_id', ${member.id})->orderByDesc('id')->value('status'));`)
+}
+
+export function rosterCounts(): { total: number; active: number; withdrawn: number } {
+  return tinkerJson<{ total: number; active: number; withdrawn: number }>(
+    `echo json_encode(['total' => ${Roster}::count(), 'active' => ${Roster}::whereNull('removed_at')->count(), 'withdrawn' => ${Roster}::whereNotNull('removed_at')->count()]);`)
+}
+
+/** Every roster record, as the download must list them. */
+export function allRoster(): RosterRow[] {
+  return tinkerJson<RosterRow[]>(`echo json_encode(${Roster}::orderBy('name')->orderBy('id')->get()->map(${rosterSelect})->all());`)
+}
+
+/** A student number no roster record has. */
+export function freeNumber(): string {
+  for (;;) {
+    const number = `7${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}`
+    if (rosterByNumber(number) === null) return number
+  }
+}
+
+/** Throwaway roster records (no account), named with accents, tagged by the email prefix `p152-bulk-`. */
+export function addBulkRoster(count: number): number {
+  return tinkerJson<number>(`
+$names = ['Peña Núñez', "O'Brien & Hijos", 'Ñandú Rivera', 'Müller Saéz', 'García Ángel'];
+for ($i = 0; $i < ${count}; $i++) {
+  ${Roster}::factory()->create(['name' => $names[$i % 5].' '.$i, 'sport' => 'Natación p152', 'student_number' => '71'.str_pad((string) $i, 7, '0', STR_PAD_LEFT),
+    'institutional_email' => 'p152-bulk-'.$i.'@upr.example']);
+}
+echo json_encode(${Roster}::where('institutional_email', 'like', 'p152-bulk-%')->count());`)
+}
+
+export function dropBulkRoster() {
+  tinker(`${Roster}::where('institutional_email', 'like', 'p152-bulk-%')->delete();`)
+}
+
+/** Removes the throwaway records a test added by name prefix. */
+export function dropRosterNamed(prefix: string) {
+  tinker(`${Roster}::where('name', 'like', '${prefix}%')->delete();`)
+}
+
+/** Gives the member an active manual authorization in the named term (the member keeps any other authorization). */
+export function grantInTerm(member: Pick<Member, 'id'>, termName: string) {
+  tinker(`
+$term = ${Term}::where('name', '${termName}')->firstOrFail();
+${Authorization}::factory()->manual()->create(['user_id' => ${member.id}, 'academic_term_id' => $term->id, 'status' => 'active', 'photo_path' => 'photos/p152.jpg', 'member_group' => 'student']);`)
+}
+
+/** Removes the authorizations a member has in the named term, so the term can be dropped. */
+export function dropAuthorizationsIn(termName: string) {
+  tinker(`${Authorization}::whereIn('academic_term_id', ${Term}::where('name', '${termName}')->pluck('id'))->delete();`)
+}
+
+// -------------------------------------------------------------------------------------------------- a phone, for X rows
+
+
+export type PhoneKind = 'android' | 'iphone'
+export type Phone = { context: BrowserContext; page: Page; close: () => Promise<void> }
+
+/** A phone next to the dashboard: Pixel 7 in Chromium, or iPhone 13 in WebKit, with the location at the gym. */
+export async function openPhone(browser: Browser, playwright: Playwright, baseURL: string | undefined, kind: PhoneKind): Promise<Phone> {
+  const owner = kind === 'iphone' ? await playwright.webkit.launch() : browser
+  const context = await owner.newContext({ ...playwright.devices[kind === 'iphone' ? 'iPhone 13' : 'Pixel 7'], baseURL, serviceWorkers: 'block' })
+  const page = await context.newPage()
+  await fakeLocation(page, INSIDE)
+  return { context, page, close: async () => { await context.close(); if (kind === 'iphone') await owner.close() } }
+}
+
+// ------------------------------------------------------------------------------------------------ calls and files
+
+
+/** Any-method JSON call with the request's own cookies (XSRF header, Referer), answering status and body whatever they are. */
+export async function call(request: APIRequestContext, method: 'get' | 'post' | 'patch' | 'delete', path: string, baseURL: string, data?: object) {
+  if (method !== 'get' && !(await request.storageState()).cookies.some((cookie) => cookie.name === 'XSRF-TOKEN')) {
+    await request.get('/api/sanctum/csrf-cookie', { headers: { Referer: `${baseURL}/` } })
+  }
+  const token = (await request.storageState()).cookies.find((cookie) => cookie.name === 'XSRF-TOKEN')?.value ?? ''
+  const headers = { Accept: 'application/json', Referer: `${baseURL}/`, 'X-XSRF-TOKEN': decodeURIComponent(token) }
+  const response = await request[method](path, { headers, data })
+  const text = await response.text()
+  let body: any = null
+  try { body = text ? JSON.parse(text) : null } catch { body = text }
+  return { status: response.status(), body: body as any }
+}
+
+/** One file of a zip archive (a .docx is one), read from its central directory. */
+export function zipEntry(archive: Buffer, wanted: string): Buffer {
+  const end = archive.lastIndexOf(Buffer.from([0x50, 0x4b, 0x05, 0x06]))
+  let count = archive.readUInt16LE(end + 10)
+  let offset = archive.readUInt32LE(end + 16)
+  while (count-- > 0) {
+    const method = archive.readUInt16LE(offset + 10)
+    const size = archive.readUInt32LE(offset + 20)
+    const [name, extra, comment] = [archive.readUInt16LE(offset + 28), archive.readUInt16LE(offset + 30), archive.readUInt16LE(offset + 32)]
+    const local = archive.readUInt32LE(offset + 42)
+    if (archive.toString('utf8', offset + 46, offset + 46 + name) === wanted) {
+      const start = local + 30 + archive.readUInt16LE(local + 26) + archive.readUInt16LE(local + 28)
+      const data = archive.subarray(start, start + size)
+      return method === 0 ? data : inflateRawSync(data)
+    }
+    offset += 46 + name + extra + comment
+  }
+  throw new Error(`${wanted} is not in the archive`)
+}
+
+const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" }
+
+/** The text runs of a Word file, in order, with XML entities decoded. */
+export function docxTexts(file: Buffer): string[] {
+  const xml = zipEntry(file, 'word/document.xml').toString('utf8')
+  return [...xml.matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)].map((match) => match[1]
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&(amp|lt|gt|quot|apos);/g, (_, name) => ENTITIES[name]))
+}
+
+const PDFTOTEXT = 'C:/Program Files/Git/mingw64/bin/pdftotext.exe'
+
+/** The text of a PDF, one string per page. */
+export function pdfPages(path: string): string[] {
+  const text = execFileSync(PDFTOTEXT, ['-layout', '-enc', 'UTF-8', path, '-'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  const pages = text.split('\f')
+  if (pages.at(-1)?.trim() === '') pages.pop()
+  return pages
+}
+
+/** An athlete authorization of the member's roster record in the named term, so a withdrawal has two to revoke. */
+export function addAthleteAuthorization(member: Pick<Member, 'id'>, termName: string) {
+  tinker(`
+$first = ${Authorization}::where('user_id', ${member.id})->firstOrFail();
+$term = ${Term}::where('name', '${termName}')->firstOrFail();
+${Authorization}::factory()->athlete(${Roster}::findOrFail($first->roster_record_id))->create(['user_id' => ${member.id}, 'academic_term_id' => $term->id, 'status' => 'active', 'photo_path' => 'photos/p152.jpg']);`)
+}
+
+/** Status and reason of every authorization of the member, newest term first, as [term name, status, reason]. */
+export function authorizationsOf(member: Pick<Member, 'id'>): [string, string, string | null][] {
+  return tinkerJson<[string, string, string | null][]>(`
+echo json_encode(${Authorization}::where('user_id', ${member.id})->with('academicTerm')->get()->sortByDesc(fn ($a) => $a->academicTerm->starts_on)
+  ->map(fn ($a) => [$a->academicTerm->name, $a->status, $a->reason])->values()->all());`)
 }
