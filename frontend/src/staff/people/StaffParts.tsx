@@ -43,7 +43,7 @@ export function PersonPhoto({ src, name, size, onSettled, showLoadingCaption = t
   src: string | null
   name: string | null
   size: 'small' | 'large'
-  onSettled?: () => void
+  onSettled?: (loaded: boolean) => void
   showLoadingCaption?: boolean
 }) {
   const t = useMessages().sessionDetail
@@ -66,11 +66,11 @@ export function PersonPhoto({ src, name, size, onSettled, showLoadingCaption = t
           className={state === 'shown' ? 'person-photo__img' : 'person-photo__img person-photo__img--hidden'}
           onLoad={() => {
             setState('shown')
-            onSettled?.()
+            onSettled?.(true)
           }}
           onError={() => {
             setState('failed')
-            onSettled?.()
+            onSettled?.(false)
           }}
         />
       )}

@@ -1,25 +1,32 @@
 import { execFileSync } from 'node:child_process'
+import { resolve } from 'node:path'
 import { expect, type APIRequestContext, type Page } from '@playwright/test'
 import { api } from '../e2e/flows/flow.ts'
 
 // Shared setup for the #152 path tests (e2e-paths/*.spec.ts). Data is built straight in the database of the running
 // stack with `php artisan tinker`, so every test makes its own users and never depends on the seeded ones.
-// Stack: project KIM_PROJECT (default kim), proxy port APP_PORT (default 8096), subnet TEST_SUBNET.
+// Stack: explicit project KIM_PROJECT, proxy port APP_PORT (default 8096), optional subnet TEST_SUBNET.
 
-const DOCKER = 'C:/Program Files/Docker/Docker/resources/bin/docker.exe'
-const WORKTREE = process.env.KIM_WORKTREE ?? 'C:/r/e152'
-const TEST_NET = process.env.KIM_TEST_NET ?? 'C:/Users/bamba/OneDrive/Desktop/natatorio-gym-app/docs/meetings/private/bug-listener/test-net.yml'
+export const DOCKER = 'docker'
+const WORKTREE = process.env.KIM_WORKTREE ?? resolve(import.meta.dirname, '../..')
+export const stackEnv = {
+  ...process.env,
+  APP_PORT: process.env.APP_PORT ?? '8096',
+  TEST_SUBNET: process.env.TEST_SUBNET ?? '10.77.116.0/24',
+}
+
+/** Targets only the explicitly selected local stack, with an optional network override. */
+export function composeArgs(...command: string[]): string[] {
+  if (!process.env.KIM_PROJECT) throw new Error('KIM_PROJECT is not set: select a local test stack')
+  const files = ['-f', `${WORKTREE}/docker-compose.yml`, '-f', `${WORKTREE}/docker-compose.override.yml`]
+  if (process.env.KIM_TEST_NET) files.push('-f', process.env.KIM_TEST_NET)
+  return ['compose', '-p', process.env.KIM_PROJECT, ...files, '--profile', 'development', ...command]
+}
 
 /** Runs PHP in the app container of the stack and returns what it printed. */
 export function tinker(php: string): string {
-  const env = {
-    ...process.env,
-    APP_PORT: process.env.APP_PORT ?? '8096',
-    TEST_SUBNET: process.env.TEST_SUBNET ?? '10.77.116.0/24',
-  }
-  const args = ['compose', '-p', process.env.KIM_PROJECT ?? 'kim', '-f', `${WORKTREE}/docker-compose.yml`, '-f', `${WORKTREE}/docker-compose.override.yml`,
-    '-f', TEST_NET, '--profile', 'development', 'exec', '-T', 'app', 'php', 'artisan', 'tinker', `--execute=${php}`]
-  return execFileSync(DOCKER, args, { env, encoding: 'utf8', timeout: 90_000 }).trim()
+  const args = composeArgs('exec', '-T', 'app', 'php', 'artisan', 'tinker', `--execute=${php}`)
+  return execFileSync(DOCKER, args, { env: stackEnv, encoding: 'utf8', timeout: 90_000 }).trim()
 }
 
 /** Runs PHP that ends with `echo json_encode(...)` and parses the last printed line. */

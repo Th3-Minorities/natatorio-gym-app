@@ -82,6 +82,7 @@ export const en: Messages = {
     waiver: 'Release of liability', waiverDraft: (version: string) => `DRAFT · Version ${version}`,
     waiverPending: "Pending the Department's official text.", readWaiver: 'Read the full release',
     acceptWaiver: 'I have read and accept the release of liability.', acceptRequired: 'Accept the release to create your account.',
+    waiverChanged: 'The waiver changed. Read it and accept it again to create your account.',
     contactName: 'Full name', contactNamePlaceholder: "Contact's full name", contactNameError: "Enter your contact's name.",
     phone: 'Phone', phonePlaceholder: 'Phone number', phoneError: 'Enter a valid phone number.',
     contactLater: 'You can update the contact in My account.', createAccount: 'Create account',
@@ -473,6 +474,8 @@ export const en: Messages = {
     photoLoadingTitle: 'Loading the ID photo',
     photoLoadingText:
       'Wait for the account photo to compare it with the person. Do not confirm the entry without checking their identity.',
+    photoFailedTitle: 'We could not load the photo',
+    photoFailedText: "Without the account photo you cannot check the person's identity. Try loading it again before confirming the entry.",
     refusals: {
       noAuthorization: {
         title: 'No current authorization',

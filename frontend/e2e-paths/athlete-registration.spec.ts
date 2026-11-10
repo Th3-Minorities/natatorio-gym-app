@@ -272,7 +272,7 @@ test.describe('athlete registration paths', () => {
     onlyOn(info, A, I)
     flushCache()
     await openIdentify(page)
-    await lookup(page, '802000002')
+    await lookup(page, '802000003')
     await expect(heading(page, 'Revisa tu registro')).toBeVisible()
     await expect(page.getByLabel('Número de estudiante')).toHaveAccessibleDescription('Este registro no está disponible para crear otra cuenta.')
     await expect(page.getByText('Si ya tienes cuenta, inicia sesión. Si necesitas revisar el vínculo, llama al 265-3866.')).toBeVisible()

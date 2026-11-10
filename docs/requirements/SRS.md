@@ -164,7 +164,7 @@ User types and roles: see the Overview. Some paid members have no institutional 
 
 ### 2.3 Operating Environment
 
-- Client: the User app is a PWA in the browser, on iPhone with Safari and Android with Chrome (E-189). The Staff and Administrator dashboard runs on Windows with Chrome and Edge; macOS and Firefox as secondary (Proposal:464).
+- Client: the User app is a PWA in the browser, on iPhone with Safari and Android with Chrome (E-189). The Staff and Administrator dashboard runs on desktop Chrome, Edge, Firefox and Safari (REQ-NF-30, E-189).
 - Production: CTI VM, requested by the project owner with a ticket on the CTI request page. CTI clones a template, typically the same day to about a day, depending on urgency. CTI described no evaluation step (to confirm, M-04, M-05). Operating system: Rocky Linux 10, since CTI is moving its servers to it (E-123). The app gets its own UPRM subdomain and does not replace the department's site (E-124). The owner files a separate domain ticket with the name, and CTI assigns the IP. The name is still to pick.
 - Containers: allowed. CTI delivers a plain Linux machine. The install command installs Docker CE (REQ-F-88, E-123); the container engine is the team's choice (M-02, answered).
 - Development: `docker-compose` on each member's PC; phone tests through an HTTPS tunnel.

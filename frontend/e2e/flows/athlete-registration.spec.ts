@@ -4,9 +4,10 @@ import { tinkerAvailable } from '../../e2e-paths/setup-registration.ts'
 import { linkIn } from '../mail.ts'
 
 // #152 flow 2, athlete registration: the student number lookup, on the seeded roster (FakeDataSeeder::FREE_STUDENT_NUMBER,
-// CLAIMED_STUDENT_NUMBER). The failed lookups change nothing in the database.
-// The API allows 10 failed lookups per IP in 15 minutes (config/registration.php) and the paid registration test spends 4 of them
-// across the two browsers, so only Chromium looks up the three numbers that fail; Edge looks up the one on the roster.
+// CLAIMED_WITHOUT_ACCOUNT_STUDENT_NUMBER). The failed lookups change nothing in the database.
+// The API allows 10 failed lookups per IP in 15 minutes (config/registration.php). Each CI project runs in its own job and stack,
+// so the paid registration test spends two failed lookups per project; only Android looks up the three numbers that fail, and
+// iPhone looks up the one on the roster.
 // Since the athlete email link (#23) the lookup of a roster number sends an email, so a local stack makes a record per run.
 
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64')
@@ -14,7 +15,7 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR
 test.setTimeout(240_000)
 
 test('the student number lookup answers not on the roster, claimed, wrong length and on the roster with an emailed link', async ({ page }, testInfo) => {
-  const failures = testInfo.project.name === 'chromium' || testInfo.project.name === 'desktop'
+  const failures = testInfo.project.name === 'android'
 
   await page.goto('/welcome')
   await page.getByRole('button', { name: 'Toca o desliza para continuar' }).click()
@@ -37,9 +38,9 @@ test('the student number lookup answers not on the roster, claimed, wrong length
     await expect(page.getByRole('button', { name: 'Ver ejemplo del recibo' })).toBeVisible()
     await page.getByRole('button', { name: 'Corregir número' }).click()
 
-    // 2. Already claimed
-    await page.getByLabel('Número de estudiante o autorización').fill('802000002')
-    await Promise.all([lookup('802000002'), next.click()])
+    // 2. Already claimed, with no account for the roster email
+    await page.getByLabel('Número de estudiante o autorización').fill('802000003')
+    await Promise.all([lookup('802000003'), next.click()])
     await expect(page.getByRole('heading', { level: 1, name: 'Revisa tu registro' })).toBeVisible()
     await expect(page.getByLabel('Número de estudiante')).toHaveAccessibleDescription('Este registro no está disponible para crear otra cuenta.')
     await expect(page.getByText('Si ya tienes cuenta, inicia sesión. Si necesitas revisar el vínculo, llama al 265-3866.')).toBeVisible()

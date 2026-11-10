@@ -44,7 +44,9 @@ async function search(text: string, routes: Parameters<typeof fakeApi>[0] = {}, 
 
 describe('S-03 assisted Check In', () => {
   it.each(['load', 'error'] as const)('announces the photo loading state until the image fires %s (4288:1354)', async (event) => {
-    const fetchMock = await search('802612345', {}, false)
+    const fetchMock = await search('802612345', {
+      'POST /api/staff/check-in': () => json({ session: { id: 31, status: 'active' } }, 201),
+    }, false)
     const photo = await screen.findByAltText(es.sessionDetail.photo)
     const searchBox = screen.getByLabelText(t.search)
     searchBox.focus()
@@ -62,11 +64,37 @@ describe('S-03 assisted Check In', () => {
     fireEvent[event](photo)
 
     expect(screen.queryByText(t.photoLoadingTitle)).not.toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: t.verifyTitle })).toHaveFocus()
     if (event === 'load') expect(photo).not.toHaveClass('person-photo__img--hidden')
     else {
       expect(photo).not.toBeInTheDocument()
-      expect(screen.getByText(es.sessionDetail.photo)).toBeInTheDocument()
+      const failed = screen.getByRole('heading', { name: 'No pudimos cargar la foto' }).closest<HTMLElement>('[role="status"]')!
+      expect(failed).toHaveClass('state', 'find-photo-loading')
+      expect(within(failed).getByText('Sin la foto de la cuenta no puedes verificar la identidad. Intenta cargarla de nuevo antes de confirmar la entrada.')).toHaveClass('state__detail')
+      expect(within(failed).getByRole('button', { name: t.confirm })).toHaveAttribute('aria-disabled', 'true')
+      fireEvent.click(within(failed).getByRole('button', { name: t.confirm }))
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: t.photoMatches })).not.toBeInTheDocument()
+      expect(searchBox).toHaveFocus()
+      expect(callsTo(fetchMock, '/api/staff/check-in')).toEqual([])
+
+      const retryButton = within(failed).getByRole('button', { name: es.states.retry })
+      retryButton.focus()
+      fireEvent.click(retryButton)
+      expect(screen.getByRole('heading', { name: t.photoLoadingTitle })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: t.confirm })).toHaveAttribute('aria-disabled', 'true')
+      expect(screen.getByRole('button', { name: t.confirm })).toHaveFocus()
+      const retryPhoto = screen.getByAltText(es.sessionDetail.photo)
+      expect(retryPhoto).not.toBe(photo)
+      fireEvent.load(retryPhoto)
+    }
+    expect(screen.getByRole('heading', { name: t.verifyTitle })).toHaveFocus()
+    if (event === 'error') {
+      fireEvent.click(screen.getByRole('button', { name: t.photoMatches }))
+      const dialog = screen.getByRole('dialog', { name: t.confirmTitle })
+      fireEvent.click(within(dialog).getByRole('button', { name: t.confirm }))
+
+      await waitFor(() => expect(window.location.pathname).toBe(STAFF_PATH))
+      expect(callsTo(fetchMock, '/api/staff/check-in')).toEqual([['POST', { user_id: 7 }]])
     }
   })
 
@@ -275,6 +303,24 @@ describe('S-03 assisted Check In', () => {
 
     finish(json({ session: { id: 31, status: 'active' } }, 201))
     await waitFor(() => expect(window.location.pathname).toBe(STAFF_PATH))
+  })
+
+  it.each(['server_error', 'offline'] as const)('shows the existing request error when Actualizar datos fails with %s', async (code) => {
+    let requests = 0
+    const fetchMock = await search('802612345', {
+      [BY_NUMBER]: () => ++requests === 1 ? json({ people: [camila] }) : code === 'offline' ? offline() : apiError(code, 500),
+      'POST /api/staff/check-in': () => apiError('server_error', 500),
+    })
+    fireEvent.click(screen.getByRole('button', { name: t.photoMatches }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.confirm }))
+    await screen.findByRole('heading', { name: t.unconfirmedTitle })
+    fireEvent.click(screen.getByRole('button', { name: es.sessionDetail.refresh }))
+
+    const title = await screen.findByRole('heading', { name: code === 'offline' ? t.offlineTitle : t.failedTitle })
+    expect(title.closest('[role="alert"]')).toHaveTextContent(code === 'offline' ? t.offlineText : t.failedText)
+    expect(title).toHaveFocus()
+    expect(callsTo(fetchMock, BY_NUMBER)).toHaveLength(2)
+    expect(callsTo(fetchMock, '/api/staff/check-in')).toHaveLength(1)
   })
 
   it('checks again for the entry from Actualizar datos when it could not be confirmed (4288:1329)', async () => {

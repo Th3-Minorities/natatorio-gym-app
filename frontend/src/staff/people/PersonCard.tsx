@@ -24,7 +24,7 @@ export function PersonCard({ person, photo, extra, onPhotoSettled, showLoadingCa
   person: Person
   photo: string | null
   extra?: ReactNode
-  onPhotoSettled?: () => void
+  onPhotoSettled?: (loaded: boolean) => void
   showLoadingCaption?: boolean
 }) {
   const texts = useMessages()

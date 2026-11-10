@@ -47,6 +47,9 @@ class FakeDataSeeder extends Seeder
     /** The student number of a claimed roster record, for the athlete registration flow test (#152). */
     public const CLAIMED_STUDENT_NUMBER = '802000002';
 
+    /** Claimed under another account, with no account for the roster email: lookup refuses 802000003 (#152). */
+    public const CLAIMED_WITHOUT_ACCOUNT_STUDENT_NUMBER = '802000003';
+
     public function run(): void
     {
         if (app()->environment('production')) {
@@ -147,7 +150,7 @@ class FakeDataSeeder extends Seeder
         })->all();
     }
 
-    /** @return list<Authorization> four claimed roster records; one free, one removed */
+    /** @return list<Authorization> four claimed roster records with matching accounts; one other claimed, one free, one removed */
     private function athletes(AcademicTerm $term): array
     {
         $records = RosterRecord::factory()->count(4)->sequence(['student_number' => self::CLAIMED_STUDENT_NUMBER], [], [], [])->create();
@@ -155,11 +158,23 @@ class FakeDataSeeder extends Seeder
         RosterRecord::factory()->create(['student_number' => self::FREE_STUDENT_NUMBER]);
         RosterRecord::factory()->removed()->create();
 
-        return $records->map(function (RosterRecord $record) use ($term) {
+        $authorizations = $records->map(function (RosterRecord $record) use ($term) {
             $user = $this->userWithWaiver(['email' => $record->institutional_email], $record->name);
 
             return Authorization::factory()->athlete($record)->create(['user_id' => $user->id, 'academic_term_id' => $term->id]);
         })->all();
+
+        $claimed = RosterRecord::factory()->create([
+            'student_number' => self::CLAIMED_WITHOUT_ACCOUNT_STUDENT_NUMBER,
+            'name' => 'Claimed athlete without account',
+            'institutional_email' => 'claimed.athlete.without.account@upr.example',
+        ]);
+        Authorization::factory()->athlete($claimed)->create([
+            'user_id' => $this->userWithWaiver(['email' => 'claimed-athlete-owner@example.com'], 'Claimed athlete owner')->id,
+            'academic_term_id' => $term->id,
+        ]);
+
+        return $authorizations;
     }
 
     private function manualGrant(AcademicTerm $term): Authorization
