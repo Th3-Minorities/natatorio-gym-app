@@ -72,6 +72,11 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
     if (view.kind !== 'start') resultTitle.current?.focus()
   }, [view])
 
+  // The question closed and its button is gone: focus goes to the title of "Registrando entrada".
+  useEffect(() => {
+    if (registering) resultTitle.current?.focus()
+  }, [registering])
+
   function search(event: FormEvent) {
     event.preventDefault()
     void run(text.trim())
@@ -296,13 +301,24 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
             {heading(t.refusals[refusal].title)}
             <p className="state__detail">{t.refusals[refusal].text}</p>
             <div className="find-verify__actions">
-              <Button variant="secondary" onClick={backToSearch}>
-                {t.backToSearch}
-              </Button>
+              {refusal === 'photoRequired' || refusal === 'photoPending' ? (
+                // These two frames (4288:1207, 4288:1232) draw only the disabled button.
+                <Button aria-disabled="true">{t.confirm}</Button>
+              ) : (
+                <Button variant="secondary" onClick={backToSearch}>
+                  {t.backToSearch}
+                </Button>
+              )}
             </div>
           </section>
         ) : registering ? (
-          <LoadingState title={t.registeringTitle} detail={t.registeringText} />
+          <section className="state" role="status">
+            {heading(t.registeringTitle)}
+            <p className="state__detail">{t.registeringText}</p>
+            <div className="find-verify__actions">
+              <Button aria-disabled="true">{t.registeringButton}</Button>
+            </div>
+          </section>
         ) : (
           <section className="state find-verify">
             {unconfirmed ? (

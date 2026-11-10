@@ -192,13 +192,36 @@ describe('S-03 assisted Check In', () => {
     expect(screen.getByRole('button', { name: t.confirm })).toHaveAttribute('aria-disabled', 'true')
   })
 
-  it('offers Volver a buscar on a refusal (4288:1183 to 4288:1280)', async () => {
-    await search('802612345', { [BY_NUMBER]: () => json({ people: [{ ...camila, photo_pending: true }] }) })
-    await screen.findByRole('heading', { name: t.refusals.photoPending.title })
+  it('offers Volver a buscar when the account has no authorization (4288:1183)', async () => {
+    await search('802612345', { [BY_NUMBER]: () => json({ people: [{ ...camila, authorization: { current: false, term: null } }] }) })
+    await screen.findByRole('heading', { name: t.refusals.noAuthorization.title })
 
     fireEvent.click(screen.getByRole('button', { name: t.backToSearch }))
 
     expect(screen.getByRole('heading', { name: t.startTitle })).toBeInTheDocument()
+  })
+
+  it.each([
+    ['no photo (4288:1207)', { has_photo: false }, t.refusals.photoRequired.title],
+    ['a pending photo (4288:1232)', { photo_pending: true }, t.refusals.photoPending.title],
+  ])('draws only a disabled Confirmar Check in for %s', async (_, change, title) => {
+    await search('802612345', { [BY_NUMBER]: () => json({ people: [{ ...camila, ...change }] }) })
+    await screen.findByRole('heading', { name: title })
+
+    expect(screen.getByRole('button', { name: t.confirm })).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.queryByRole('button', { name: t.backToSearch })).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['the gym is closed', 'check_in_gym_closed', t.refusals.gymClosed.title],
+    ['it is athletes-only time', 'check_in_athletes_only', t.refusals.athletesOnly.title],
+  ])('offers Volver a buscar when %s', async (_, code, title) => {
+    await search('802612345', { 'POST /api/staff/check-in': () => apiError(code, 409) })
+    fireEvent.click(await screen.findByRole('button', { name: t.photoMatches }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.confirm }))
+    await screen.findByRole('heading', { name: title })
+
+    expect(screen.getByRole('button', { name: t.backToSearch })).toBeInTheDocument()
   })
 
   it('offers Volver a sesiones when the person is already inside (4288:1695)', async () => {
@@ -215,6 +238,8 @@ describe('S-03 assisted Check In', () => {
 
     expect(await screen.findByText(t.registeringTitle)).toBeInTheDocument()
     expect(screen.getByText(t.registeringText)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: t.registeringTitle })).toHaveFocus()
+    expect(screen.getByRole('button', { name: t.registeringButton })).toHaveAttribute('aria-disabled', 'true')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: t.photoMatches })).not.toBeInTheDocument()
 
