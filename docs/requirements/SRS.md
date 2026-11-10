@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.24 draft, not approved
+**Version:** 0.25 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -88,6 +88,7 @@
 | Team | 2026-11-08 | Team decisions E-183 and E-184 (`team.md`): schedules and notices require sign in and are no longer public (REQ-F-55); the membership purchase button, the registration prerequisite and the help number move to the number-entry step of N-03 (REQ-F-91) | 0.22 |
 | Team | 2026-11-08 | Team decisions E-185 and E-186 (`team.md`): the privacy notice has one public read-only source that Mi cuenta also opens (E-185); the Check In load test peak is 50 in 5 minutes and the stress level is 100, which closes the pending peak number of REQ-NF-50 (REQ-NF-15, REQ-NF-50); the E-153 row above now says the student number has 9 digits, as E-160 decided (REQ-F-15) | 0.23 |
 | Team | 2026-11-09 | REQ-NF-33 now follows E-174: the language is chosen on the welcome screen and saved at registration, with no language step; it no longer says the User chooses it when creating the account | 0.24 |
+| Team | 2026-11-09 | Team decisions E-187 to E-190 (`team.md`): visible confirmations on the Administrator screens (E-187); error notices use the pink banner and informational notices stay neutral (E-188); the User app is built and tested for phones and the dashboard for desktop (REQ-NF-30, E-189); continuous integration runs the whole suite on every push and main accepts a merge only when it passes (E-190); the athlete roster download has every athlete, active and withdrawn, an Estado column, a title, a "Generado el ..." line and a counter, which widens E-140 (REQ-F-100) | 0.25 |
 
 </details>
 
@@ -163,7 +164,7 @@ User types and roles: see the Overview. Some paid members have no institutional 
 
 ### 2.3 Operating Environment
 
-- Client: PWA in the browser. iPhone with Safari, Android with Chrome, Windows with Chrome and Edge; macOS and Firefox as secondary (Proposal:464).
+- Client: the User app is a PWA in the browser, on iPhone with Safari and Android with Chrome (E-189). The Staff and Administrator dashboard runs on Windows with Chrome and Edge; macOS and Firefox as secondary (Proposal:464).
 - Production: CTI VM, requested by the project owner with a ticket on the CTI request page. CTI clones a template, typically the same day to about a day, depending on urgency. CTI described no evaluation step (to confirm, M-04, M-05). Operating system: Rocky Linux 10, since CTI is moving its servers to it (E-123). The app gets its own UPRM subdomain and does not replace the department's site (E-124). The owner files a separate domain ticket with the name, and CTI assigns the IP. The name is still to pick.
 - Containers: allowed. CTI delivers a plain Linux machine. The install command installs Docker CE (REQ-F-88, E-123); the container engine is the team's choice (M-02, answered).
 - Development: `docker-compose` on each member's PC; phone tests through an HTTPS tunnel.
@@ -331,7 +332,7 @@ Change from the proposal: Administrators enter the department's athlete lists by
 |---|---|---|---|---|---|
 | REQ-F-49 | Only Administrators shall be able to add, edit and remove athletes in the roster, by hand. The roster is one list, not one per term, and there is no file import (E-116). An athlete stays on the roster until an Administrator removes them. Staff shall be able to see the roster, read only, and search it by name or student number. If an athlete is removed, the athlete's Gym ID stops being valid at once, the athlete keeps counting in occupancy until the current session ends, and the athlete cannot do another Check In. The removal revokes the athlete's authorization with the reason "removed from roster". If the removal was a mistake, the Administrator uses "Reinstate" on the athlete roster screen, and the revoked authorization becomes active again. Reinstate needs a reason, free text of at least 10 characters, as in REQ-F-87, and is logged (REQ-NF-39). Reinstate is refused with a message when the person already has an active authorization in that term. | Secondary | High | Clear | Proposal:206, 218; Team decision (E-59, E-93, E-95, E-116) |
 | REQ-F-51 | Each roster record shall have name, sport, student number and institutional email. A repeated student number is rejected. | Secondary | High | Clear | Proposal:206; Team decision (E-116) |
-| REQ-F-100 | The Administrator shall be able to download the whole athlete roster as a Word file or a PDF file, with name, sport, student number and institutional email. Staff cannot download it. | N/A | Medium | Clear | Team decision (E-140) |
+| REQ-F-100 | The Administrator shall be able to download the whole athlete roster as a Word file or a PDF file, with name, sport, student number, institutional email and status (Activo or Retirado). The file has every athlete, active and withdrawn, a title, a "Generado el ..." line with the date and a counter of athletes. Staff cannot download it. | N/A | Medium | Clear | Team decision (E-140) |
 
 ### 3.10 Staff Accounts and Permissions
 
@@ -483,7 +484,7 @@ Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (
 | REQ-NF-26 | Sign in, authorization, facility sessions, the one-device rule and Gym ID verification shall require a connection. Without one, no session is created, and the app does not show a stored Gym ID or occupancy as if it were current. The app shows a banner at the top that says the data is not current. Schedules, notices, facility information and analytics already loaded stay on screen, each with the time it was last updated. Occupancy shows no number. The Gym ID says it is not valid now, shows its last successful update time, and stops its elapsed-duration indicator. | N/A | High | Clear | Proposal:460; Review gap; Team decision (E-77, E-163) |
 | REQ-NF-28 | The location boundary, the accepted accuracy and the gym coordinates shall be set with tests inside and around the gym on iPhone and Android. | N/A | High | Pending: the team measures the values | Proposal:435, 458 |
 | REQ-NF-29 | The location boundary shall be configurable per environment. In production it shall never be more than 50 meters from the gym coordinates (REQ-NF-28). The December demo runs in a separate environment with the classroom boundary. | N/A | High | Clear. The 50 meters can change after the gym is measured; the classroom must be farther than 50 meters from the gym | Review gap; Team decision |
-| REQ-NF-30 | The main flows shall pass on iPhone with Safari, Android with Chrome, and Windows with Chrome and Edge; macOS and Firefox as a secondary check. | N/A | High | Clear | Proposal:464 |
+| REQ-NF-30 | The main flows of the User app shall pass on iPhone with Safari and Android with Chrome. The main flows of the dashboard shall pass on desktop Chrome, Edge, Firefox and Safari (one browser per engine: Chromium, Gecko, WebKit). Brave, Opera and Samsung Internet are covered by their engine and checked by hand before each delivery (E-189). Desktop browsers are not a target for the User app (E-189). | N/A | High | Clear | Proposal:464; Team decision (E-189) |
 | REQ-NF-31 | When the system is down, Staff shall use the paper log and check payment by hand. Up to one week down is acceptable. When the app is back, an Administrator enters the paper entries (REQ-F-95). | N/A | Medium | Clear | Review gap; Team decision (E-119) |
 
 ## 7. Internationalization and Localization Requirements
