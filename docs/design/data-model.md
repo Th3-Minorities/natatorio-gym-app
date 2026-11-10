@@ -2,6 +2,14 @@
 
 This document turns the logical data model in `design-notes.md` into PostgreSQL tables. It shows each table with its main fields, keys and links, the rules the database itself enforces, and what is deleted or kept when an account is deleted or an Authorization Number is released. It is the agreement the team builds the migrations from (GitHub issue #4). Field lists hold only what the requirements need, because REQ-NF-21 limits the personal data the system may store.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Tables and links](#1-overview-tables-and-links) · [Accounts and access](#2-accounts-and-access) · [Sessions and occupancy](#3-sessions-and-occupancy) · [Content and audit](#4-content-and-audit) · [Database rules](#5-database-rules) · [Deletion](#6-deletion-what-is-deleted-kept-or-anonymized) · [Personal data](#7-personal-data-check-req-nf-21) · [Decisions](#design-decisions) · [Open questions](#gaps-and-questions) · [Traceability](#traceability)
+
+</nav>
+
 ## Conventions
 
 - Table names are the snake_case plurals of the logical entities, plus `imports` for the WooCommerce store sync runs (D19).
@@ -551,6 +559,9 @@ Decided by the team on 2026-10-17 and 2026-10-19; D10 to D12 on 2026-10-20; D13 
 
 ## Traceability
 
+<details markdown="1">
+<summary>Show traceability tables</summary>
+
 Diagram titles: 1. All tables and links; 2. Accounts and access tables; 3. Sessions and schedule tables; 4. Content and audit tables.
 
 | Requirement or decision | Where it appears |
@@ -613,3 +624,5 @@ Diagram titles: 1. All tables and links; 2. Accounts and access tables; 3. Sessi
 | E-93 | Conventions (`cache`); Diagram 2 (`authorizations.reason`); section 2 notes (removing an athlete); section 4 notes; 6. Deletion, FK table; Gaps 13 |
 | E-95 | Section 2 notes (Reinstate); 6. Deletion, FK table; Gaps 13 |
 | #62 gym meeting (2026-11-04) | D13 (staff accounts); D14 (check-out, 2-hour close, closure); D15 (employees); D16 (one roster); D17 (photo pending); D18 (manual entries); Diagram 2 (`staff_accounts`, `roster_records.sport`, `imported_memberships.member_group`); Diagram 3 (`facility_sessions.member_group`); section 2 notes (staff accounts, roster sport); section 3 notes (check-out); section 4 notes; 5. Database rules; Gaps 16 to 19 |
+
+</details>

@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 use Tests\Concerns\CallsTheApiFromThePwa;
@@ -149,6 +150,66 @@ class AthleteRegistrationTest extends TestCase
         Notification::fake();
         $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
             ->assertOk()->assertExactJson(['state' => 'renewal', 'masked_email' => 'm***z@upr.edu']);
+        Notification::assertNothingSent();
+        $this->assertDatabaseCount('email_links', 0);
+    }
+
+    public function test_a_returning_athlete_with_a_claimed_record_gets_the_sign_in_prompt_without_a_new_link_or_claim(): void
+    {
+        config(['registration.ip_failures' => 2]);
+        $record = $this->record();
+        $user = User::factory()->create(['email' => 'MARTA.RUIZ@upr.edu']);
+        $authorization = Authorization::factory()->athlete($record)->create(['user_id' => $user->id]);
+        $this->acknowledge();
+        Notification::fake();
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802999999'])
+            ->assertUnprocessable()->assertJsonPath('error.code', 'student_not_on_roster');
+
+        for ($i = 0; $i < 3; $i++) {
+            $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
+                ->assertOk()->assertExactJson(['state' => 'renewal', 'masked_email' => 'm***z@upr.edu']);
+        }
+
+        Notification::assertNothingSent();
+        $this->assertGuest('web');
+        $this->assertDatabaseCount('users', 1);
+        $this->assertDatabaseCount('authorizations', 1);
+        $this->assertDatabaseHas('authorizations', ['id' => $authorization->id, 'user_id' => $user->id, 'roster_record_id' => $record->id]);
+        $this->assertDatabaseCount('email_links', 0);
+        $this->assertSame(1, RateLimiter::attempts('registration:ip:'.hash('sha256', '127.0.0.1')));
+        $this->assertSame(1, RateLimiter::attempts('registration:global'));
+    }
+
+    public function test_a_claimed_record_without_an_account_for_the_roster_email_is_still_refused(): void
+    {
+        $record = $this->record();
+        $user = User::factory()->create(['email' => 'other@upr.edu']);
+        Authorization::factory()->athlete($record)->create(['user_id' => $user->id, 'status' => 'revoked']);
+        $this->acknowledge();
+        Notification::fake();
+
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
+            ->assertUnprocessable()->assertExactJson(['error' => [
+                'code' => 'roster_record_claimed', 'details' => ['contact_number' => ['265-3866']],
+            ]]);
+
+        Notification::assertNothingSent();
+        $this->assertDatabaseCount('email_links', 0);
+        $this->assertDatabaseCount('authorizations', 1);
+        $this->assertSame(1, RateLimiter::attempts('registration:ip:'.hash('sha256', '127.0.0.1')));
+        $this->assertSame(1, RateLimiter::attempts('registration:global'));
+    }
+
+    public function test_a_removed_roster_record_is_refused_even_when_its_email_has_an_account(): void
+    {
+        $this->record(['removed_at' => now()]);
+        User::factory()->create(['email' => 'marta.ruiz@upr.edu']);
+        $this->acknowledge();
+        Notification::fake();
+
+        $this->postJson('/api/user/registration/lookup', ['authorization_number' => '802123456'])
+            ->assertUnprocessable()->assertJsonPath('error.code', 'student_not_on_roster');
+
         Notification::assertNothingSent();
         $this->assertDatabaseCount('email_links', 0);
     }

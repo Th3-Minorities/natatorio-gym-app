@@ -8,6 +8,14 @@ The proposal (`docs/capstone_proposal/main.tex`) is the current baseline until f
 
 Statuses: **Decided** (the team agreed on it), **Proposed** (needs confirmation), **Pending** (information is missing).
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Changes since the proposal](#1-what-changed-since-the-proposal) · [Technology choices](#2-stack-decisions-and-why) · [Team rules](#3-team-rules) · [CTI](#4-what-cti-said) · [Device testing](#5-tested-on-a-pc-with-windows-11-home-and-a-samsung) · [Diagram](#6-diagram) · [Privacy and storage](#7-privacy-and-where-data-is-stored) · [Open checks](#8-not-verified) · [Sources](#9-sources)
+
+</nav>
+
 ## 1. What changed since the proposal
 
 | Topic | Proposal | Now | Why |
