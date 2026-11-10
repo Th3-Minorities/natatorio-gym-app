@@ -769,7 +769,11 @@ export const es = {
     emptyText: 'Cuando haya atletas registrados, aparecerán aquí.',
     errorTitle: 'Error al cargar roster',
     errorText: 'No pudimos cargar el roster. Inténtalo de nuevo.',
-    offlineText: (time: string) => `Sin conexión. Última actualización a las ${time}.`,
+    // The time can end in a period already ("10:42 p. m."): no second one.
+    offlineText: (time: string) => `Sin conexión. Última actualización a las ${time}${time.endsWith('.') ? '' : '.'}`,
+    // The disabled search of the offline panel (Figma 122:3253).
+    offlineSearch: 'Nombre o número de estudiante',
+    offlineSearchHint: 'Buscar atleta',
   },
 
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).

@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useId, useRef, useState } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
-import { Button, EmptyState, LoadingState, OfflineState } from '../../components'
+import { Button, EmptyState, OfflineState } from '../../components'
 import { DashboardShell } from '../../dashboard/DashboardShell'
 import { useDateFormat } from '../../format/dateTime'
 import { useMessages } from '../../i18n'
@@ -53,6 +53,9 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
   const [search, setSearch] = useState('')
   const searchId = useId()
   const wasOffline = useRef(false)
+  const result = useRef<HTMLDivElement>(null)
+  // The first answer is not a change of result: only later ones (Reintentar, a search, coming back online) move focus.
+  const firstAnswer = useRef(true)
 
   const report = useEffectEvent((error: unknown) => session.reportError(error))
 
@@ -96,18 +99,43 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
     }
   }, [online])
 
+  /** The title or table of what is on screen, so a screen reader starts from the new result (WCAG 2.4.3). */
+  function focusResult() {
+    const target = result.current?.querySelector<HTMLElement>('.team-table, .state__title')
+    if (!target) return
+    if (!target.hasAttribute('tabindex')) target.tabIndex = -1
+    target.focus()
+  }
+
+  // The button or the input that had focus can be gone when the new result arrives; focus is then on the page
+  // itself. Someone still typing in the search box keeps the cursor there.
+  useEffect(() => {
+    if (load.status === 'loading') return
+    const first = firstAnswer.current
+    firstAnswer.current = false
+    if (!first && document.activeElement === document.body) focusResult()
+  }, [load])
+
+  const stale = load.status === 'ready' && (!online || load.stale)
+
+  // Without connection the search box is replaced by the disabled one in the offline panel.
+  useEffect(() => {
+    if (stale && document.activeElement === document.body) focusResult()
+  }, [stale])
+
   function retry() {
     setLoad({ status: 'loading' })
     setAttempt((n) => n + 1)
   }
 
   const readOnly = <span className="team-chip team-chip--invited-outline">{t.readOnly}</span>
-  const stale = load.status === 'ready' && (!online || load.stale)
 
   return (
     <DashboardShell {...shellProps} title={t.title} description={t.description}>
       {notice}
-      {content()}
+      <div className="staff-roster-result" ref={result}>
+        {content()}
+      </div>
     </DashboardShell>
   )
 
@@ -115,14 +143,15 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
     switch (load.status) {
       case 'loading':
         return (
-          <>
-            <LoadingState title={t.loadingTitle} detail={t.loadingText} />
-            <div className="sessions-skeleton" aria-hidden="true">
+          <section className="state" role="status">
+            <h2 className="state__title">{t.loadingTitle}</h2>
+            <p className="state__detail">{t.loadingText}</p>
+            <div className="sessions-skeleton staff-roster-skeleton" aria-hidden="true">
               <span />
               <span />
               <span />
             </div>
-          </>
+          </section>
         )
       case 'error':
         return (
@@ -143,6 +172,8 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
 
     const { athletes, active_count: activeCount } = load.roster
 
+    if (stale) return offlinePanel(athletes, load.loadedAt)
+
     if (athletes.length === 0 && !load.search) {
       return (
         <section className="state" role="status">
@@ -156,24 +187,8 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
 
     return (
       <>
-        {stale && (
-          <section className="state" role="status">
-            <h2 className="state__title">{texts.states.offlineTitle}</h2>
-            <span className="team-chip team-chip--deactivated">{texts.activeSessions.staleChip}</span>
-            <p className="state__detail">{t.offlineText(dates.time(new Date(load.loadedAt)))}</p>
-            {online && (
-              // The browser says it is online but the last request found no connection: the only way back.
-              <div className="state__action">
-                <Button className="state__button" onClick={retry}>
-                  {texts.states.retry}
-                </Button>
-              </div>
-            )}
-          </section>
-        )}
-
         <div className="roster-tools">
-          <div className="field roster-search">
+          <div className="field roster-search staff-roster-search">
             <label className="field__label" htmlFor={searchId}>
               {t.search}
             </label>
@@ -183,7 +198,6 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
               type="search"
               autoComplete="off"
               placeholder={t.searchHint}
-              disabled={stale}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
@@ -198,6 +212,41 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
 
         <p className="roster-footnote">{t.footnote}</p>
       </>
+    )
+  }
+
+  /** The one panel of Figma 122:3253: the title, "Datos no actuales", the sentence, the disabled search and the old rows as cards. */
+  function offlinePanel(athletes: StaffAthlete[], loadedAt: number) {
+    return (
+      <section className="state staff-roster-offline" role="status">
+        <h2 className="state__title">{texts.states.offlineTitle}</h2>
+        <span className="team-chip team-chip--invited-outline staff-roster-offline__chip">{texts.activeSessions.staleChip}</span>
+        <p className="state__detail staff-roster-offline__text">{t.offlineText(dates.time(new Date(loadedAt)))}</p>
+        <div className="field staff-roster-offline__search">
+          <label className="field__label" htmlFor={searchId}>
+            {t.offlineSearch}
+          </label>
+          <input
+            id={searchId}
+            className="field__input"
+            type="search"
+            autoComplete="off"
+            placeholder={t.offlineSearchHint}
+            disabled
+            value={query}
+            readOnly
+          />
+        </div>
+        <ul className="staff-roster-cards">
+          {athletes.map((athlete) => (
+            <li key={athlete.id} className="staff-roster-card">
+              <strong className="staff-roster-card__name">{athlete.name}</strong>
+              <span className="staff-roster-card__meta">{`${athlete.student_number} · ${athlete.sport}`}</span>
+              {action(athlete)}
+            </li>
+          ))}
+        </ul>
+      </section>
     )
   }
 

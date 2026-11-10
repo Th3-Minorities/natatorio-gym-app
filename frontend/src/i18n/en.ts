@@ -705,7 +705,9 @@ export const en: Messages = {
     emptyText: 'Athletes will appear here once they are registered.',
     errorTitle: 'Could not load roster',
     errorText: 'We could not load the roster. Try again.',
-    offlineText: (time: string) => `No connection. Last updated at ${time}.`,
+    offlineText: (time: string) => `No connection. Last updated at ${time}${time.endsWith('.') ? '' : '.'}`,
+    offlineSearch: 'Name or student number',
+    offlineSearchHint: 'Search athlete',
   },
 
   states: {

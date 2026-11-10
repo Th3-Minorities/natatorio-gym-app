@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { en } from '../../i18n/en'
 import { es } from '../../i18n/es'
 import { camila } from '../sessions/fakeSessions'
 import { StaffApp } from '../StaffApp'
@@ -111,6 +112,8 @@ describe('S-05 athlete roster, read only', () => {
     expect(await screen.findByRole('heading', { name: t.loadingTitle })).toBeInTheDocument()
     expect(screen.getByText(t.loadingText)).toBeInTheDocument()
     expect(container.querySelectorAll('.sessions-skeleton span')).toHaveLength(3)
+    // The bars are inside the loading card, not below it.
+    expect(screen.getByRole('status').querySelectorAll('.sessions-skeleton span')).toHaveLength(3)
   })
 
   it('says when the roster has no athletes', async () => {
@@ -143,26 +146,80 @@ describe('S-05 athlete roster, read only', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
   })
 
-  it('keeps the rows as stale without connection, with the search and every Check in disabled', async () => {
+  it('shows one offline panel with the old rows as cards, the search disabled and every Check in disabled', async () => {
     const fetchMock = await openScreen()
     await screen.findByText(camilaRow.name)
 
     act(() => goOffline())
 
-    expect(await screen.findByRole('heading', { name: es.states.offlineTitle })).toBeInTheDocument()
-    expect(screen.getByText(es.activeSessions.staleChip)).toBeInTheDocument()
-    expect(screen.getByText(/^Sin conexión\. Última actualización a las \d{1,2}:\d{2} [ap]\. m\.\.$/)).toBeInTheDocument()
-    expect(screen.getByLabelText(t.search)).toBeDisabled()
-    expect(screen.getByText(camilaRow.name)).toBeInTheDocument()
+    const panel = (await screen.findByRole('heading', { name: es.states.offlineTitle })).closest('section')!
+    expect(within(panel).getByText(es.activeSessions.staleChip)).toBeInTheDocument()
+    expect(within(panel).getByText(/^Sin conexión\. Última actualización a las \d{1,2}:\d{2} [ap]\. m\.$/)).toBeInTheDocument()
+    const search = within(panel).getByLabelText(t.offlineSearch)
+    expect(search).toBeDisabled()
+    expect(search).toHaveAttribute('placeholder', t.offlineSearchHint)
+    expect(screen.queryByLabelText(t.search)).not.toBeInTheDocument()
+    expect(screen.queryByRole('table')).not.toBeInTheDocument()
+    expect(within(panel).getByText(camilaRow.name)).toBeInTheDocument()
+    expect(within(panel).getByText('802612345 · Baloncesto femenino')).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: `${t.checkIn}, ${camilaRow.name}` })).not.toBeInTheDocument()
-    for (const button of screen.getAllByRole('button', { name: new RegExp(`^${t.checkIn},`) })) {
-      expect(button).toHaveAttribute('aria-disabled', 'true')
-    }
+    const buttons = within(panel).getAllByRole('button', { name: new RegExp(`^${t.checkIn},`) })
+    expect(buttons).toHaveLength(2)
+    for (const button of buttons) expect(button).toHaveAttribute('aria-disabled', 'true')
+    // No retry here: the rows are replaced only when the connection is back.
+    expect(within(panel).queryByRole('button', { name: es.states.retry })).not.toBeInTheDocument()
 
-    // Back online, the rows are asked for again.
     act(() => goOnline())
     await waitFor(() => expect(callsTo(fetchMock, ROSTER)).toHaveLength(2))
     expect(await screen.findByRole('link', { name: `${t.checkIn}, ${camilaRow.name}` })).toBeInTheDocument()
+  })
+
+  it('does not end the offline sentence with a second period when the time already ends in one', () => {
+    expect(t.offlineText('11:21 p. m.')).toBe('Sin conexión. Última actualización a las 11:21 p. m.')
+    expect(t.offlineText('10:42')).toBe('Sin conexión. Última actualización a las 10:42.')
+    expect(en.staffRoster.offlineText('11:21 p. m.')).toBe('No connection. Last updated at 11:21 p. m.')
+    expect(en.staffRoster.offlineText('11:21 PM')).toBe('No connection. Last updated at 11:21 PM.')
+  })
+
+  it('moves focus to the table after Reintentar, since the button is gone', async () => {
+    let answers = 0
+    await openScreen({
+      [ROSTER]: () => (answers++ === 0 ? apiError('server_error', 500) : json({ athletes: [camilaRow], active_count: 1, total_count: 1 })),
+    })
+    const retry = await screen.findByRole('button', { name: es.states.retry })
+    retry.focus()
+    fireEvent.click(retry)
+
+    const region = await screen.findByRole('region', { name: t.title })
+    await waitFor(() => expect(region).toHaveFocus())
+  })
+
+  it('moves focus to the offline panel title when going offline disables the search it was in', async () => {
+    await openScreen()
+    const search = await screen.findByLabelText(t.search)
+    search.focus()
+
+    act(() => goOffline())
+
+    const title = await screen.findByRole('heading', { name: es.states.offlineTitle })
+    await waitFor(() => expect(title).toHaveFocus())
+  })
+
+  it('moves focus to "Sin resultados" when a search ends there with focus lost, and keeps the cursor in the search box', async () => {
+    await openScreen({ [`${ROSTER}?search=Zoe`]: roster([], 2), [`${ROSTER}?search=Zo`]: roster([], 2) })
+    await screen.findByText(camilaRow.name)
+
+    // Typing: the cursor stays where it is.
+    const search = screen.getByLabelText(t.search)
+    search.focus()
+    fireEvent.change(search, { target: { value: 'Zo' } })
+    expect(await screen.findByRole('heading', { name: es.states.empty })).toBeInTheDocument()
+    expect(search).toHaveFocus()
+
+    // Focus was somewhere else (nowhere): the result takes it.
+    search.blur()
+    fireEvent.change(search, { target: { value: 'Zoe' } })
+    await waitFor(() => expect(screen.getByRole('heading', { name: es.states.empty })).toHaveFocus())
   })
 
   it('asks the server again for every search and drops the rows that do not match', async () => {
