@@ -27,11 +27,13 @@ class StaffPeopleController extends Controller
     {
         $input = $request->validate(['search' => ['required', 'string', 'max:255']]);
 
+        $users = $this->people->search(trim($input['search']))->values();
+
         return response()->json([
-            'people' => $this->people->search(trim($input['search']))
-                // Two people can share a name: the masked email tells them apart (E-72, Figma 4288:1573).
-                ->map(fn (User $user) => [...$this->people->person($user), 'masked_email' => StaffPeople::mask($user->email)])
-                ->values()->all(),
+            // Two people can share a name: the masked email tells them apart (E-72, Figma 4288:1573).
+            'people' => collect($this->people->people($users))
+                ->map(fn (array $person, int $index) => [...$person, 'masked_email' => StaffPeople::mask($users[$index]->email)])
+                ->all(),
         ]);
     }
 

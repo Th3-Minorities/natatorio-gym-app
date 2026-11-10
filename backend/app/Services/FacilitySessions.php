@@ -45,6 +45,22 @@ class FacilitySessions
             ->orderByDesc('started_at')->orderByDesc('id')->first();
     }
 
+    /**
+     * The open visit of each of these people, from one query, keyed by user id. Same rule as activeFor().
+     *
+     * @param  \Illuminate\Support\Collection<int, int>  $userIds
+     * @return \Illuminate\Support\Collection<int, FacilitySession>
+     */
+    public function activeForMany(\Illuminate\Support\Collection $userIds): \Illuminate\Support\Collection
+    {
+        if ($userIds->isEmpty()) {
+            return collect();
+        }
+
+        return $this->whereActive($this->query()->whereIn('user_id', $userIds->all()), $this->databaseNow())
+            ->orderByDesc('started_at')->orderByDesc('id')->get()->unique('user_id')->keyBy('user_id');
+    }
+
     /** Visits inside the gym now. Same rule as activeFor(), for everyone, so a closure or term end counts before the scheduler runs. */
     public function occupancy(Carbon $now): int
     {
@@ -131,9 +147,10 @@ class FacilitySessions
                 throw new ApiException('check_out_session_not_active', 409);
             }
 
+            // Never past the 2-hour mark: the table rejects an end after ends_at, and the person would get a 500, not a 409.
             DB::table('facility_sessions')->where('id', $session->id)->update([
                 'status' => $status,
-                'ended_at' => DB::raw('clock_timestamp()'),
+                'ended_at' => DB::raw('LEAST(clock_timestamp(), ends_at)'),
                 'updated_at' => $now->format('Y-m-d H:i:s.uP'),
             ]);
             $log->record($status === 'void' ? 'session.void' : 'session.end_early', $session,

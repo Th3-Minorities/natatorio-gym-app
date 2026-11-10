@@ -12,6 +12,7 @@ use App\Models\StaffAccount;
 use App\Models\User;
 use App\Models\WaiverAcceptance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\TestResponse;
 use Tests\Concerns\CallsTheApiFromThePwa;
@@ -86,6 +87,52 @@ class StaffAssistedCheckInTest extends TestCase
         // Two people can share a name, so each match carries the email, masked as on every Staff screen (E-72, 4288:1573).
         $this->send('GET', '/api/staff/people?search=m%C3%A9ndez')->assertOk()->assertJsonPath('people.*.user_id', [$luis->id])
             ->assertJsonPath('people.0.masked_email', 'p***n@example.com');
+    }
+
+    /** @return list<string> the SQL of every query $run sends */
+    private function queriesOf(callable $run): array
+    {
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $run();
+        DB::disableQueryLog();
+
+        return array_column(DB::getQueryLog(), 'query');
+    }
+
+    public function test_a_search_sends_the_same_number_of_queries_for_one_match_or_ten(): void
+    {
+        foreach (range(1, 10) as $number) {
+            $this->person("Socio Lote {$number}", Authorization::factory()->paid()->create(), "lote{$number}@example.com");
+        }
+        $one = $this->queriesOf(fn () => $this->send('GET', '/api/staff/people?search='.urlencode('Lote 1'))->assertOk()
+            ->assertJsonCount(2, 'people'));
+        $this->flushSession();
+        $ten = $this->queriesOf(fn () => $this->send('GET', '/api/staff/people?search='.urlencode('Socio Lote'))->assertOk()
+            ->assertJsonCount(10, 'people'));
+
+        $this->assertSame(count($one), count($ten));
+    }
+
+    public function test_a_student_number_answers_with_ten_people_at_most(): void
+    {
+        $record = RosterRecord::factory()->create(['student_number' => '802600001']);
+        foreach (range(1, 12) as $number) {
+            // One term per year, as the roster is imported each term, so the same number can belong to many accounts.
+            $term = AcademicTerm::factory()->create(['starts_on' => today()->subYears($number + 1), 'ends_on' => today()->subYears($number + 1)->addMonth()]);
+            $this->person("Cuenta {$number}", Authorization::factory()->athlete($record)->create(['academic_term_id' => $term->id]), "cuenta{$number}@example.com");
+        }
+
+        $this->send('GET', '/api/staff/people?search=802600001')->assertOk()->assertJsonCount(10, 'people');
+    }
+
+    public function test_the_schedule_is_read_once_for_an_assisted_check_in(): void
+    {
+        $member = $this->person('Socio Pagado', Authorization::factory()->paid()->create(['photo_path' => 'photos/socio.jpg']), 'socio@example.com');
+
+        $queries = $this->queriesOf(fn () => $this->send('POST', '/api/staff/check-in', ['user_id' => $member->id])->assertCreated());
+
+        $this->assertCount(1, array_filter($queries, fn (string $sql) => str_contains($sql, 'from "schedule_slots"')));
     }
 
     public function test_a_search_finds_nobody_for_an_unknown_number_or_wildcards(): void

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Authorization;
+use App\Models\FacilitySession;
 use App\Models\RosterRecord;
 use App\Models\User;
 use App\Models\WaiverAcceptance;
@@ -31,7 +32,7 @@ class StaffPeople
         if (preg_match('/^\d{9}$/D', $text)) {
             $userIds = Authorization::query()->whereIn('roster_record_id',
                 RosterRecord::query()->where('student_number', $text)->select('id')
-            )->distinct()->pluck('user_id');
+            )->distinct()->limit(self::MAX_MATCHES)->pluck('user_id');
 
             return User::query()->whereIn('id', $userIds)->get();
         }
@@ -52,9 +53,47 @@ class StaffPeople
     {
         $current = $user->currentAuthorization();
         $authorization ??= $current ?? $this->latest($user);
-        $waiver = WaiverAcceptance::query()->where('user_id', $user->id)->first();
-        $active = $this->sessions->activeFor($user);
 
+        return $this->describe(
+            $user, $current, $authorization,
+            WaiverAcceptance::query()->where('user_id', $user->id)->first(), $this->sessions->activeFor($user), $emergencyContact,
+        );
+    }
+
+    /**
+     * The person block for several people, from a fixed number of queries however many there are (S-03 search).
+     *
+     * @param  Collection<int, User>  $users
+     * @return list<array<string, mixed>>
+     */
+    public function people(Collection $users): array
+    {
+        $ids = $users->pluck('id');
+        $today = today()->toDateString();
+        $relations = ['academicTerm', 'rosterRecord', 'importedMembership'];
+
+        // Both lists are newest term first, so the first row of each person is the one person() would pick.
+        $current = Authorization::query()->select('authorizations.*')
+            ->join('academic_terms', 'academic_terms.id', '=', 'authorizations.academic_term_id')
+            ->whereIn('authorizations.user_id', $ids->all())->where('authorizations.status', 'active')
+            ->where('academic_terms.starts_on', '<=', $today)->where('academic_terms.ends_on', '>=', $today)
+            ->orderByDesc('academic_terms.starts_on')->with($relations)->get()->unique('user_id')->keyBy('user_id');
+        $latest = Authorization::query()->select('authorizations.*')
+            ->join('academic_terms', 'academic_terms.id', '=', 'authorizations.academic_term_id')
+            ->whereIn('authorizations.user_id', $ids->diff($current->keys())->all())
+            ->orderByDesc('academic_terms.starts_on')->orderByDesc('authorizations.id')->with($relations)->get()->unique('user_id')->keyBy('user_id');
+        $waivers = WaiverAcceptance::query()->whereIn('user_id', $ids->all())->get()->unique('user_id')->keyBy('user_id');
+        $active = $this->sessions->activeForMany($ids);
+
+        return $users->map(fn (User $user) => $this->describe(
+            $user, $current[$user->id] ?? null, $current[$user->id] ?? $latest[$user->id] ?? null,
+            $waivers[$user->id] ?? null, $active[$user->id] ?? null, false,
+        ))->values()->all();
+    }
+
+    /** @return array<string, mixed> */
+    private function describe(User $user, ?Authorization $current, ?Authorization $authorization, ?WaiverAcceptance $waiver, ?FacilitySession $active, bool $emergencyContact): array
+    {
         return [
             'user_id' => $user->id,
             'name' => $waiver?->full_name,

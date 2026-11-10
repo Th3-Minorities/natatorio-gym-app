@@ -11,6 +11,7 @@ use App\Models\StaffAccount;
 use App\Models\User;
 use App\Models\WaiverAcceptance;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\CallsTheApiFromThePwa;
@@ -118,6 +119,20 @@ class StaffSessionDetailTest extends TestCase
         $this->assertSame($this->staff->id, $entry->staff_account_id);
         $this->assertEquals(['status' => 'active'], $entry->before_values);
         $this->assertEquals(['status' => $status], $entry->after_values);
+    }
+
+    #[DataProvider('corrections')]
+    public function test_a_correction_never_ends_the_visit_after_its_two_hours(string $path, string $status, string $action): void
+    {
+        // The two-hour mark can pass between reading the clock and writing the end; the write caps it at ends_at.
+        DB::enableQueryLog();
+        $this->send('POST', "/api/staff/sessions/{$this->session->id}/{$path}")->assertOk();
+        $updates = array_filter(array_column(DB::getQueryLog(), 'query'), fn (string $sql) => str_starts_with($sql, 'update "facility_sessions"'));
+
+        $this->assertNotEmpty($updates);
+        foreach ($updates as $sql) {
+            $this->assertStringContainsString('LEAST(clock_timestamp(), ends_at)', $sql);
+        }
     }
 
     #[DataProvider('corrections')]
