@@ -293,6 +293,31 @@ describe('U-01 Check In', () => {
     expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
   })
 
+  it('shows the no-access panel, never the hold button, when it recovers offline with no authorization', async () => {
+    account = { ...member, authorization: null }
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    let connected = false
+    fetchMock.mockImplementation((path: string, init?: RequestInit) =>
+      !connected ? Promise.reject(new TypeError('network')) : original(path, init))
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    await open()
+    await screen.findByRole('heading', { name: 'Necesitas conexión' })
+    let holdShown = false
+    const watcher = new MutationObserver(() => { if (screen.queryByRole('button', { name: 'Mantén presionado para entrar' })) holdShown = true })
+    watcher.observe(document.body, { childList: true, subtree: true, attributes: true })
+
+    connected = true
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+
+    expect(await screen.findByRole('heading', { name: 'Tu acceso no está vigente' })).toBeInTheDocument()
+    watcher.disconnect()
+    expect(holdShown).toBe(false)
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+  })
+
   it('shows the offline problem when disconnected before the first status loads', async () => {
     const fetchMock = fetch as ReturnType<typeof vi.fn>
     const original = fetchMock.getMockImplementation() as Answer
