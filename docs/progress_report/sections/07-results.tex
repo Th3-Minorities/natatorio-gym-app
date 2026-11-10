@@ -1,13 +1,13 @@
 %=====================================================================
-\section{\revised{Preliminary Results (new)}}
+\section{Preliminary Results}
 %=====================================================================
 
-\subsection{\revised{Performance Results and Documentation}}
-On \texttt{main} at commit c6d596d (Nov 8), the backend workflow took 2 min 40 s and the frontend workflow 6 min 59 s, both passing. The load test ran k6 on Docker Desktop on a laptop with an Intel i7-1260P (12 cores), 15.7 GB of RAM, and Windows 11. Docker had 16 CPUs and 7.6 GB, and PHP-FPM ran with its default 5 workers. The database held 100 seeded members, and sign-in happened before the timed part. Each run reseeded the database. The team thresholds, which have no SRS number, are a Check In p95 under 3 seconds, errors under 1\%, and every check passing. The peak and stress sizes are a team decision: the peak is 50 Check Ins in 5 minutes (about a third of the 150 daily visits in the busiest hour, compressed), and the stress run doubles it. Table~\ref{tab:load} lists the results.
+\subsection{Performance Results and Documentation}
+On \texttt{main} at commit c6d596d (Nov 8), the backend workflow took 2 min 40 s and the frontend workflow 6 min 59 s, both passing. The local load test ran the three k6 profiles of the Testing Plan on Docker Desktop on a laptop with an Intel i7-1260P (12 cores), 15.7 GB of RAM, and Windows 11. Docker had 16 CPUs and 7.6 GB, and PHP-FPM ran with its default 5 workers. Each run started from a fresh seed with 100 members. Table~\ref{tab:load} lists the results.
 
 \begin{table}[h]
 \centering
-\caption{\revised{Load test results}}
+\caption{Load test results}
 \label{tab:load}
 \small
 \begin{tabularx}{\textwidth}{L{4.6cm} l l l l X}
@@ -23,22 +23,20 @@ Burst: 50 members at once, each sending two Check Ins in parallel & 8.61 s & 8.9
 \end{tabularx}
 \end{table}
 
-Occupancy starts at 3 because the seed already has 3 people inside. Peak and stress meet all thresholds. In the burst, every member ended with exactly one session (REQ-NF-42) and there were no errors, but the p95 is above the 3 second threshold. The likely cause is the PHP-FPM default of 5 workers on a laptop running Docker on Windows. \revised{The team will raise the worker count and repeat the test on the CTI server.} Repeating Check In for the same user returns the same session (idempotent). \revised{Location accuracy at the gym is measured for the Final report.}
+Occupancy starts at 3 because the seed already has 3 people inside. Peak and stress meet all thresholds. In the burst, every member ended with exactly one session (REQ-NF-42) and there were no errors, but the p95 is above the 3 second threshold. The likely cause is the PHP-FPM default of 5 workers on a laptop running Docker on Windows. The team will raise the worker count and repeat the test on the CTI server. Repeating Check In for the same user returns the same session (idempotent). Location accuracy at the gym is measured for the Final report.
 
 \subsection{Operational Demonstration}
 The seeded test data covers every authorization case of Objective 1: valid paid, expired paid, valid athlete, removed athlete, no authorization, unmatched record, and cancelled order. It also holds store orders outside the term and with a repeated number, which the sync skips.
 
-\revised{Figure~\ref{fig:flow} and the dashboard figure in User Interface Design show the slice running on the seeded data at commit fc03463, from registration to the visit ended by a Staff check-out.}
-
 \input{sections/07b-screenshots}
 
-\subsection{\revised{Testing Plan Execution}}
-\revised{Table~\ref{tab:test-exec} shows, for each test type in the Testing Plan, what ran and its result. O1 to O5 are the five objectives in Project Objectives. The automated numbers come from the CI run on \texttt{main} at commit fc03463 (Nov 10), where every workflow passed. CI runs all of these tests on every pull request, so each change also reruns the tests of earlier work (regression).}
+\subsection{Testing Plan Execution}
+Table~\ref{tab:test-exec} shows, for each test type in the Testing Plan, what ran and its result. O1 to O5 are the five objectives in Project Objectives. The automated numbers come from the CI run on \texttt{main} at commit fc03463 (Nov 10), where every workflow passed.
 
 {
 \small
 \begin{longtable}{L{2.4cm} L{5.8cm} L{4.4cm} L{2.0cm}}
-\caption{\revised{Testing plan execution by test type}}\label{tab:test-exec} \\
+\caption{Testing plan execution by test type}\label{tab:test-exec} \\
 \toprule
 \textbf{Test type} & \textbf{What ran} & \textbf{Result} & \textbf{Objectives} \\
 \midrule
@@ -49,66 +47,62 @@ The seeded test data covers every authorization case of Objective 1: valid paid,
 \endhead
 \bottomrule
 \endfoot
-\revised{Unit, frontend} & \revised{Vitest tests of every screen, its states, and the shared code} & \revised{641 passed in 37 files} & \revised{O1 to O4} \\
+Unit, frontend & Vitest, 37 files & 641 passed & O1 to O4 \\
 \addlinespace
-\revised{Backend and database} & \revised{PHPUnit tests of every API route, access decision case, session rule, role, and database rule, on PostgreSQL} & \revised{657 passed, 1 skipped, 3677 assertions} & \revised{O1 to O4} \\
+Backend and database & PHPUnit on PostgreSQL & 657 passed, 1 skipped, 3677 assertions & O1 to O4 \\
 \addlinespace
-\revised{Concurrency} & \revised{Simultaneous registrations, roster claims, withdrawals, and Check Ins against the real database, in the backend run} & \revised{Passed: one account, claim, or session each time} & \revised{O1, O2} \\
+Concurrency & Registrations, roster claims, withdrawals, and Check Ins, in the backend run & One account, claim, or session each time & O1, O2 \\
 \addlinespace
-\revised{Occupancy} & \revised{Count after Check Ins, check-outs, automatic closes, and Staff corrections; the Staff list and the occupancy agree; Users and Staff get the same answer} & \revised{Passed in the backend run} & \revised{O3} \\
+Occupancy & Counts after Check Ins, check-outs, automatic closes, and Staff corrections, in the backend run & Passed; Users and Staff get the same answer & O3 \\
 \addlinespace
-\revised{Roles} & \revised{Each staff route allowed or refused by role; a test fails if a route has no role check} & \revised{Passed in the backend run} & \revised{O4} \\
+Roles & Each staff route allowed or refused by role, in the backend run & Passed; a route with no role check fails the test & O4 \\
 \addlinespace
-\revised{Browser} & \revised{Playwright tests on the full stack in six browser projects: Chromium, Edge, Firefox, and WebKit for the dashboard; Android (Pixel 7) and iPhone (iPhone 13) emulation for the User app} & \revised{230 tests: 12 passed and 1 skipped on each desktop browser; 89 passed on Android and on iPhone} & \revised{O1 to O4} \\
+Browser & Playwright on the full stack: Chromium, Edge, Firefox, and WebKit for the dashboard; Pixel 7 and iPhone 13 emulation for the User app & 230 tests: 12 passed and 1 skipped on each desktop browser; 89 passed on Android and on iPhone & O1 to O4 \\
 \addlinespace
-\revised{Accessibility, automatic} & \revised{axe scan with the WCAG 2.0, 2.1, and 2.2 A and AA rules on each tested screen inside the browser tests; linter accessibility rules} & \revised{0 violations: a violation fails the test, and every browser test passed; lint passed} & \revised{O1 to O4} \\
+Accessibility, automatic & axe scan in the browser tests; linter rules & 0 violations; lint passed & O1 to O4 \\
 \addlinespace
-\revised{Accessibility, manual} & \revised{Keyboard, NVDA, VoiceOver, 200\% zoom, 320 pixel width} & \revised{\pending{manual checklist results}} & \revised{O1 to O4} \\
+Accessibility, manual & Manual checklist & \pending{manual checklist results} & O1 to O4 \\
 \addlinespace
-\revised{End-to-end flows} & \revised{One browser test per flow, from its first screen to its last, plus 517 path tests (Table~\ref{tab:flow-results})} & \revised{No step or path failed} & \revised{O1 to O4} \\
+End-to-end flows & 9 flow tests and 517 path tests (Table~\ref{tab:flow-results}) & No step or path failed & O1 to O4 \\
 \addlinespace
-\revised{Stress, local} & \revised{k6 peak, stress, and burst runs on a laptop (Table~\ref{tab:load})} & \revised{Peak and stress met every threshold; burst kept one session per user with no errors, but its p95 was 8.61 s} & \revised{O2, O3} \\
+Stress, local & k6 peak, stress, and burst (Table~\ref{tab:load}) & Peak and stress met every threshold; burst kept one session per user with no errors, but its p95 was 8.61 s & O2, O3 \\
 \addlinespace
-\revised{Stress, full} & \revised{Same runs on the CTI VM, plus the 3 second Check In on a real phone} & \revised{Planned for Phase 6} & \revised{O2, O3} \\
+Stress, full, and real phones & Same runs on the CTI VM; Check In time, location, and PWA install on an iPhone and an Android phone & Planned for Phase 6 & O2, O3 \\
 \addlinespace
-\revised{Real phones} & \revised{Location and PWA install on an iPhone with Safari and an Android phone with Chrome} & \revised{Planned for Phase 6} & \revised{O2} \\
+Analytics & Metrics against known results & Planned for Phase 5 & O5 \\
 \addlinespace
-\revised{Analytics} & \revised{Metrics compared with known results from controlled data} & \revised{Planned for Phase 5} & \revised{O5} \\
-\addlinespace
-\revised{Integration} & \revised{One dataset from sign in to session to analytics} & \revised{Planned for Phase 6} & \revised{O1 to O5} \\
-\addlinespace
-\revised{Acceptance} & \revised{Main flows run by gym staff and real users} & \revised{Planned for Phase 6: \pending{participants and dates, waiting on the gym}} & \revised{O1 to O5} \\
+Integration and acceptance & One dataset from sign in to analytics; main flows run by gym staff and real users & Planned for Phase 6: \pending{participants and dates, waiting on the gym} & O1 to O5 \\
 \end{longtable}
 }
 
-\revised{The flow tests cover the nine flows in the midterm scope. Each flow test follows the steps a person takes, on the seeded test data. Each flow also has a table of paths, and each path has its own browser test, written with a test technique: equivalence partitions, boundary values, state transitions, error guessing, or permissions. The path tests ran on November 9 on a test branch, on the same six browser projects. A path passes when it passes on every device it runs on. The path tests found bugs; the team reported each one in the flow-tests Discussion, fixed it, and ran the path again. Table~\ref{tab:flow-results} lists the results per flow.}
+The flow tests cover the nine flows in the midterm scope. Each flow test follows the steps a person takes, on the seeded data. Each path of a flow has its own browser test, written with one technique: equivalence partitions, boundary values, state transitions, error guessing, or permissions. The path tests ran on November 9 on a test branch, on the same six browser projects; a path passes when it passes on every device it runs on. Each bug they found was reported, fixed, and its path run again. Table~\ref{tab:flow-results} lists the results per flow.
 
 \begin{table}[h]
 \centering
-\caption{\revised{End-to-end flow results}}
+\caption{End-to-end flow results}
 \label{tab:flow-results}
 \small
 \begin{tabularx}{\textwidth}{X l r r r r}
 \toprule
 \textbf{Flow} & \textbf{Devices} & \textbf{Steps passed} & \textbf{Paths} & \textbf{Paths passed} & \textbf{Not passed} \\
 \midrule
-\revised{Paid member registration} & \revised{phones} & \revised{14 of 14} & \revised{70} & \revised{67} & \revised{3} \\
-\revised{Athlete registration} & \revised{phones} & \revised{2 of 7} & \revised{53} & \revised{50} & \revised{3} \\
-\revised{User sign in} & \revised{phones} & \revised{7 of 7} & \revised{55} & \revised{52} & \revised{3} \\
-\revised{Check In} & \revised{phones} & \revised{6 of 7} & \revised{83} & \revised{81} & \revised{2} \\
-\revised{Gym ID and occupancy} & \revised{phones} & \revised{6 of 6} & \revised{58} & \revised{57} & \revised{1} \\
-\revised{End of a visit} & \revised{phones} & \revised{4 of 6} & \revised{47} & \revised{47} & \revised{0} \\
-\revised{App base} & \revised{phones} & \revised{5 of 6} & \revised{35} & \revised{31} & \revised{4} \\
-\revised{Staff accounts} & \revised{desktop} & \revised{7 of 7} & \revised{95} & \revised{94} & \revised{1} \\
-\revised{Terms and athlete roster} & \revised{all} & \revised{0 of 1} & \revised{21} & \revised{21} & \revised{0} \\
+Paid member registration & phones & 14 of 14 & 70 & 67 & 3 \\
+Athlete registration & phones & 2 of 7 & 53 & 50 & 3 \\
+User sign in & phones & 7 of 7 & 55 & 52 & 3 \\
+Check In & phones & 6 of 7 & 83 & 81 & 2 \\
+Gym ID and occupancy & phones & 6 of 6 & 58 & 57 & 1 \\
+End of a visit & phones & 4 of 6 & 47 & 47 & 0 \\
+App base & phones & 5 of 6 & 35 & 31 & 4 \\
+Staff accounts & desktop & 7 of 7 & 95 & 94 & 1 \\
+Terms and athlete roster & all & 0 of 1 & 21 & 21 & 0 \\
 \midrule
-\revised{Total} & & \revised{51 of 61} & \revised{517} & \revised{500} & \revised{17} \\
+Total & & 51 of 61 & 517 & 500 & 17 \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-\revised{No step and no path failed. A step that did not pass was skipped or is not built: four athlete registration steps hit the lookup limit or need a new roster record per run, three need the server clock at a set time, one install step needs a real phone, and two steps need screens that were not on \texttt{main} when the flow tests were written. Of the 17 paths that did not pass, 3 passed only on the automatic retry, 4 need a screen not on \texttt{main} at the time, and 10 were not run, 4 of them because they need a real phone, such as taking a photo with the camera. Nobody has run the flows on real phones yet: every manual result in the flow tables is still pending.}
+No step and no path failed. A step that did not pass was skipped or is not built: four athlete registration steps hit the lookup limit or need a new roster record per run, three need the server clock at a set time, one install step needs a real phone, and two steps need screens that were not on \texttt{main} when the flow tests were written. Of the 17 paths that did not pass, 3 passed only on the automatic retry, 4 need a screen not on \texttt{main} at the time, and 10 were not run, 4 of them because they need a real phone, such as taking a photo with the camera. Nobody has run the flows on real phones yet.
 
-Table~\ref{tab:test-trace} links each test file to its objective.
+Table~\ref{tab:test-trace} groups the test files on \texttt{main} by area and objective.
 
 \input{sections/07c-test-traceability}

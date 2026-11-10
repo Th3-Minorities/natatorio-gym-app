@@ -1,18 +1,18 @@
 \section{Project Objectives}
 %=====================================================================
 
-\revised{Each objective has a target date and a status. The target date column gives the proposal deadline and the end of the matching phase in the Project Plan. \emph{In progress} means some of the objective's code is merged; \emph{Planned} means none is.}
+The target date gives the proposal deadline and the end of the matching phase in the Project Plan. \emph{In progress} means some of the objective's code is merged; \emph{Planned} means none is.
 
 \begin{center}
 \footnotesize
 \setlength{\tabcolsep}{4pt}
 \begin{longtable}{L{2.6cm} L{3.3cm} L{4.6cm} L{2.0cm} L{2.2cm}}
 \toprule
-\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \revised{\textbf{Target date}} & \revised{\textbf{Status}} \\
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \revised{\textbf{Target date}} & \revised{\textbf{Status}} \\
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
 \midrule
 \endhead
 \bottomrule
@@ -24,9 +24,9 @@ Percentage of authorization cases correctly approved or denied using a controlle
 &
 Every defined authorization case must return the expected decision. Users with valid authorization must be approved, while users without valid authorization must be denied.
 &
-Proposal: Oct 16. Plan: Nov 22 for paid members (Phase 4); Dec 11 for athletes and the store sync (Final report)
+Proposal: Oct 16. Plan: Nov 22 paid members (Phase 4); Dec 11 athletes and store sync
 &
-In progress. Database and its rules merged. Paid member registration: backend merged, screens being finished. Athlete registration and the store sync are planned for the Final report; the store sync waits on CTI for outgoing HTTPS. \\
+In progress. Database rules and paid registration backend merged; screens being finished. Athletes and store sync: Final report (store sync waits on CTI). \\
 \addlinespace
 \midrule
 \addlinespace
@@ -39,7 +39,7 @@ Every valid check-in must create exactly one active session and one current Gym 
 &
 Proposal: Oct 30. Plan: Nov 8 (Phase 3)
 &
-In progress. Built for the User: Check In with location, Gym ID, and the automatic closes. Staff check-out works in the API; its screen is part of the Staff panel. Measuring the boundary at the gym moves to the Final report. \\
+In progress. User Check In, Gym ID, and automatic closes built; Staff check-out in the API. On-site boundary test: Final report. \\
 \addlinespace
 \midrule
 \addlinespace
@@ -52,7 +52,7 @@ The reported estimated occupancy must match the number of active session records
 &
 Proposal: Nov 6. Plan: Nov 8 (Phase 3)
 &
-In progress. Built for the User on the Gimnasio tab. The Staff occupancy view is part of the Staff panel, assigned and not started. \\
+In progress. User view built; Staff view not started. \\
 \addlinespace
 \midrule
 \addlinespace
@@ -65,7 +65,7 @@ Every tested action must be allowed or denied according to the assigned role. \r
 &
 Proposal: Nov 20. Plan: Nov 29 (Phase 5)
 &
-In progress, ahead of plan. Staff and Administrator accounts with roles, email invitations, and the audit log merged; the Staff panel is assigned and not started. \\
+In progress, ahead of plan. Roles, invitations, and audit log merged; Staff panel not started. \\
 \addlinespace
 \midrule
 \addlinespace
@@ -78,7 +78,7 @@ Every finalized metric must match its expected value in the controlled datasets,
 &
 Proposal: Dec 4. Plan: Nov 29 (Phase 5)
 &
-Planned. Analytics wireframes and build move to the Final report. \\
+Planned for the Final report. \\
 \end{longtable}
 \end{center}
 
