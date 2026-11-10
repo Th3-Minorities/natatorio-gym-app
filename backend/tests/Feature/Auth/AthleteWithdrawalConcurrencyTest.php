@@ -77,7 +77,7 @@ class AthleteWithdrawalConcurrencyTest extends TestCase
         $this->assertSame(0, $exit, $errors);
         $this->assertSame(0, Authorization::query()->where('roster_record_id', $record->id)->where('status', 'active')->count(),
             'The removed athlete must not end with an active authorization.');
-        $this->assertTrue($result['blocked'], 'The registration never waited for the withdrawal lock.');
+        $this->assertTrue($result['blocked'], 'The registration did not wait for the withdrawal to commit.');
         $response->assertUnprocessable()->assertExactJson(['error' => ['code' => 'athlete_link_invalid']]);
         $this->assertDatabaseCount('users', 0);
         $this->assertDatabaseCount('authorizations', 0);

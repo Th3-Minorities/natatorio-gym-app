@@ -69,11 +69,16 @@ class AthleteLinks
     public function usable(string $token, bool $lock = false): EmailLink
     {
         $query = EmailLink::query()->where('purpose', 'athlete_registration')->where('token_hash', hash('sha256', $token));
-        $link = ($lock ? $query->lockForUpdate() : $query)->first();
-        // The final step also locks the roster record, which a withdrawal locks too: the registration either waits
-        // for the withdrawal and is refused here, or finishes first and the withdrawal then revokes it (#163).
-        $record = $link === null ? null
-            : ($lock ? RosterRecord::query()->lockForUpdate()->find($link->roster_record_id) : $link->rosterRecord);
+        $link = $query->first();
+        $record = $lock ? null : $link?->rosterRecord;
+        if ($lock && $link !== null) {
+            // The final step locks the roster record, which a withdrawal locks too: the registration either waits
+            // for the withdrawal and is refused here, or finishes first and the withdrawal then revokes it (#163).
+            // The record is locked before the link, the order send() and a roster edit use (they save the record,
+            // then delete its unused links). The opposite order can deadlock PostgreSQL and fail one request.
+            $record = RosterRecord::query()->lockForUpdate()->find($link->roster_record_id);
+            $link = $record === null ? null : (clone $query)->lockForUpdate()->first();
+        }
         if ($link === null || $record === null || $record->removed_at !== null) {
             throw new ApiException('athlete_link_invalid', 422);
         }
