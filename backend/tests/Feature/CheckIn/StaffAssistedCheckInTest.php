@@ -117,13 +117,21 @@ class StaffAssistedCheckInTest extends TestCase
     public function test_a_student_number_answers_with_ten_people_at_most(): void
     {
         $record = RosterRecord::factory()->create(['student_number' => '802600001']);
+        $ids = [];
         foreach (range(1, 12) as $number) {
             // One term per year, as the roster is imported each term, so the same number can belong to many accounts.
             $term = AcademicTerm::factory()->create(['starts_on' => today()->subYears($number + 1), 'ends_on' => today()->subYears($number + 1)->addMonth()]);
-            $this->person("Cuenta {$number}", Authorization::factory()->athlete($record)->create(['academic_term_id' => $term->id]), "cuenta{$number}@example.com");
+            $ids[] = $this->person("Cuenta {$number}", Authorization::factory()->athlete($record)->create(['academic_term_id' => $term->id]), "cuenta{$number}@example.com")->id;
         }
 
-        $this->send('GET', '/api/staff/people?search=802600001')->assertOk()->assertJsonCount(10, 'people');
+        // The cut is stable: always the ten newest accounts.
+        $response = $this->send('GET', '/api/staff/people?search=802600001')->assertOk()->assertJsonCount(10, 'people');
+        $found = $response->json('people.*.user_id');
+        sort($found);
+        rsort($ids);
+        $expected = array_slice($ids, 0, 10);
+        sort($expected);
+        $this->assertSame($expected, $found);
     }
 
     public function test_the_schedule_is_read_once_for_an_assisted_check_in(): void

@@ -32,7 +32,7 @@ class StaffPeople
         if (preg_match('/^\d{9}$/D', $text)) {
             $userIds = Authorization::query()->whereIn('roster_record_id',
                 RosterRecord::query()->where('student_number', $text)->select('id')
-            )->distinct()->limit(self::MAX_MATCHES)->pluck('user_id');
+            )->distinct()->orderByDesc('user_id')->limit(self::MAX_MATCHES)->pluck('user_id');
 
             return User::query()->whereIn('id', $userIds)->get();
         }
