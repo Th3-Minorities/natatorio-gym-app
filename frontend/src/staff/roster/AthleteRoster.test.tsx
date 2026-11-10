@@ -35,8 +35,8 @@ const darel = {
 
 const ACTIVE = '/api/staff/roster?status=active'
 
-function roster(athletes: object[], activeCount = 2) {
-  return () => json({ athletes, active_count: activeCount })
+function roster(athletes: object[], activeCount = 2, totalCount = Math.max(athletes.length, activeCount)) {
+  return () => json({ athletes, active_count: activeCount, total_count: totalCount })
 }
 
 beforeEach(() => {
@@ -137,6 +137,24 @@ describe('the roster screen', () => {
     expect(await screen.findByText(t.noMatch('Zoe'))).toBeInTheDocument()
   })
 
+  it('says "no results", not "no athletes yet", when only the filter hides the athletes', async () => {
+    await openScreen({ '/api/staff/roster?status=withdrawn': roster([], 2, 2) })
+    await screen.findByRole('table', { name: t.tableTitle })
+
+    fireEvent.click(screen.getByRole('button', { name: t.filterWithdrawn }))
+    fireEvent.click(screen.getByRole('button', { name: t.filterActive }))
+
+    expect(await screen.findByText(es.states.empty)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: t.emptyTitle })).not.toBeInTheDocument()
+  })
+
+  it('says "no results" when every athlete is withdrawn and only Activo is on', async () => {
+    await openScreen({ [ACTIVE]: roster([], 0, 3) })
+
+    expect(await screen.findByText(es.states.empty)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: t.emptyTitle })).not.toBeInTheDocument()
+  })
+
   it('invites the first athlete when the roster is empty', async () => {
     await openScreen({ [ACTIVE]: roster([], 0) })
 
@@ -217,6 +235,19 @@ describe('adding and editing athletes', () => {
 
     await waitFor(() => expect(within(dialog).getByLabelText(t.studentNumber)).toHaveFocus())
     expect(within(dialog).getByLabelText(t.fullName)).toHaveValue('Otra Persona')
+  })
+
+  it('shows the plain error in the pink banner when the number race sends no athlete', async () => {
+    await openScreen({ 'POST /api/staff/roster': () => apiError('roster_student_number_taken', 422) })
+
+    fireEvent.click(await screen.findByRole('button', { name: t.add }))
+    const dialog = screen.getByRole('dialog', { name: t.addTitle })
+    fill(dialog, { sport: 'Voleibol', name: 'Otra Persona', number: '802612346', email: 'otra@upr.edu' })
+    fireEvent.click(within(dialog).getByRole('button', { name: t.saveAndNext }))
+
+    const notice = await within(dialog).findByText(es.errors.roster_student_number_taken)
+    expect(notice.closest('.notice')).toHaveClass('notice--error')
+    expect(within(dialog).queryByRole('heading', { name: t.takenTitle })).not.toBeInTheDocument()
   })
 
   it('shows a refused field under the field', async () => {

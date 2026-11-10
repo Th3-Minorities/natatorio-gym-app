@@ -18,9 +18,12 @@ type StatusDialogProps = {
   onError: (error: unknown) => void
 }
 
-/** Someone else changed the athlete: the pink error banner (Figma 4745:2133). Other refusals keep the neutral notice. */
+/**
+ * Someone else changed the athlete, or a race left the athlete with an active authorization already: the pink error
+ * banner (Figma 4745:2133, E-188). Other refusals keep the neutral notice.
+ */
 function changedTone(problem: ApiError | null) {
-  return problem?.code === 'roster_status_changed' ? 'error' : undefined
+  return problem?.code === 'roster_status_changed' || problem?.code === 'roster_reinstate_active_authorization' ? 'error' : undefined
 }
 
 /** Sends one POST at a time and keeps the refusal to show it. */
@@ -113,10 +116,11 @@ export function ReinstateDialog({ athlete, onClose, onDone, onError }: StatusDia
       onDone(result.athlete)
       return
     }
-    if (result.code === 'roster_reinstate_active_authorization') {
-      // Its details name the term of the other authorization, not field rules (api-conventions).
-      const term = result.details?.term as unknown as { name?: string } | undefined
-      setRefusedTerm(term?.name ?? '')
+    // Its details name the term of the other authorization, not field rules (api-conventions). A race refusal
+    // sends none, and the view would read "activa en .", so the plain error shows instead.
+    const term = result.details?.term as unknown as { name?: string } | undefined
+    if (result.code === 'roster_reinstate_active_authorization' && term?.name) {
+      setRefusedTerm(term.name)
       requestAnimationFrame(() => refusedRef.current?.focus())
       return
     }
@@ -153,10 +157,13 @@ export function ReinstateDialog({ athlete, onClose, onDone, onError }: StatusDia
     <Modal labelledBy={titleId} onClose={() => !busy.current && onClose()}>
       <form className="modal__body" noValidate onSubmit={reinstate}>
         <TermChip className="roster-modal-chip" />
-        <h2 className="modal__title" id={titleId}>
+        {/* Live, because after a short reason sent with Enter focus stays in the field and nothing else announces the change. */}
+        <h2 className="modal__title" id={titleId} aria-live="polite">
           {short ? t.shortTitle : t.reinstateTitle(athlete.name)}
         </h2>
-        <p className="modal__text">{short ? t.shortText : t.reinstateText}</p>
+        <p className="modal__text" aria-live="polite">
+          {short ? t.shortText : t.reinstateText}
+        </p>
         <ProblemNotice problem={problem} tone={changedTone(problem)} />
         <div className="field">
           <label className="field__label" htmlFor={reasonId}>

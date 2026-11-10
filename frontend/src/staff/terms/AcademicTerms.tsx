@@ -109,12 +109,6 @@ export function AcademicTerms({ shell }: { shell: ShellProps }) {
       {/* One live region that is always on the page: a region added together with its text is often not read (WCAG 4.1.3). */}
       <div className="team-live" role="status">
         {saved && <SavedCard text={saved} />}
-        {load.status === 'ready' && !online && (
-          <section className="state">
-            <h2 className="state__title">{texts.states.offlineTitle}</h2>
-            <p className="state__detail">{texts.staffTeam.offlineText}</p>
-          </section>
-        )}
       </div>
       {content()}
     </DashboardShell>

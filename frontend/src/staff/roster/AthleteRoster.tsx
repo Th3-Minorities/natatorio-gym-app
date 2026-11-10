@@ -27,7 +27,7 @@ export type Athlete = {
   status: 'active' | 'withdrawn'
 }
 
-type Roster = { athletes: Athlete[]; active_count: number }
+type Roster = { athletes: Athlete[]; active_count: number; total_count: number }
 
 type Load = { status: 'loading' } | { status: 'error' } | { status: 'offline' } | { status: 'ready'; roster: Roster; search: string }
 
@@ -267,6 +267,8 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
     if (load.status === 'ready' && load.search) {
       return <EmptyState lead={t.noMatch(load.search)} detail={t.noMatchText} />
     }
+    // The roster has athletes and only the filters hide them: the shared "Sin resultados", with nothing to add.
+    if (load.status === 'ready' && load.roster.total_count > 0) return <EmptyState />
     return (
       <section className="state" aria-labelledby={emptyId}>
         <h2 className="state__title" id={emptyId}>

@@ -115,11 +115,12 @@ export function AthleteDialog({ athlete, onClose, onAdded, onEdited, onError }: 
   function refused(error: unknown) {
     const apiError = error instanceof ApiError ? error : new ApiError('server_error', 500)
     setLastSaved('')
-    if (apiError.code === 'roster_student_number_taken') {
-      // Its details name the athlete who has the number, not field rules (api-conventions).
-      const other = apiError.details?.athlete as unknown as { name?: string } | undefined
+    // Its details name the athlete who has the number, not field rules (api-conventions). Without them the
+    // taken view would read "pertenece a ." so the plain error shows instead, as TermDialog does for term_overlap.
+    const other = apiError.details?.athlete as unknown as { name?: string } | undefined
+    if (apiError.code === 'roster_student_number_taken' && other?.name) {
       setErrors({})
-      setView({ kind: 'taken', number: values.student_number, name: other?.name ?? '' })
+      setView({ kind: 'taken', number: values.student_number, name: other.name })
       moveFocus('title')
       return
     }
@@ -211,7 +212,7 @@ export function AthleteDialog({ athlete, onClose, onAdded, onEdited, onError }: 
             <p className="state__detail">{t.offlineText}</p>
           </section>
         )}
-        <ProblemNotice problem={problem} />
+        <ProblemNotice problem={problem} tone="error" />
         {/* Adding starts with the sport, which stays for the next athlete (101:1084); editing starts with the name. */}
         {athlete ? nameField : sportField}
         {athlete ? sportField : nameField}

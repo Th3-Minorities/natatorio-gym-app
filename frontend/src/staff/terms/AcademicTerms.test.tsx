@@ -1,9 +1,9 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { es } from '../../i18n/es'
 import { StaffApp } from '../StaffApp'
 import { STAFF_PATH, STAFF_TERMS_PATH } from '../staffPath'
-import { apiError, callsTo, fakeApi, json, lorena, offline } from '../team/fakeTeamApi'
+import { apiError, callsTo, fakeApi, goOffline, goOnline, json, lorena, offline } from '../team/fakeTeamApi'
 
 // A-04 "Términos" (Figma 101:1525, 4007:1310 and the states in section 170:1373, #21).
 
@@ -118,6 +118,21 @@ describe('the terms screen', () => {
     expect(await screen.findByRole('heading', { name: es.states.offlineTitle })).toBeInTheDocument()
   })
 
+  it('shows no page banner when the connection drops: the buttons are disabled and the form keeps its notice', async () => {
+    await openScreen()
+    await screen.findByRole('table', { name: t.currentTitle })
+
+    try {
+      act(() => goOffline())
+
+      expect(screen.getByRole('button', { name: t.create })).toHaveAttribute('aria-disabled', 'true')
+      expect(screen.queryByText(es.staffTeam.offlineText)).not.toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name: es.states.offlineTitle })).not.toBeInTheDocument()
+    } finally {
+      act(() => goOnline())
+    }
+  })
+
   it('stays an empty dashboard for a Staff account', async () => {
     const fetchMock = fakeApi({ '/api/staff/me': () => json({ ...lorena, role: 'staff' }) })
     render(<StaffApp />)
@@ -208,6 +223,18 @@ describe('creating and editing a term', () => {
 
     expect(await within(dialog).findByRole('heading', { name: t.overlapTitle })).toBeInTheDocument()
     expect(within(dialog).getByText(t.overlapText('Agosto - diciembre 2026', '10 ago 2026', '18 dic 2026'))).toBeInTheDocument()
+  })
+
+  it('shows a server error in the pink banner', async () => {
+    await openScreen(undefined, { 'POST /api/staff/terms': () => apiError('server_error', 500) })
+
+    fireEvent.click(screen.getByRole('button', { name: t.create }))
+    const dialog = screen.getByRole('dialog', { name: t.createTitle })
+    fill(dialog, { name: 'Verano', starts_on: '2026-12-01', ends_on: '2027-05-21' })
+    fireEvent.click(within(dialog).getByRole('button', { name: t.saveNew }))
+
+    const notice = await within(dialog).findByText(es.errors.server_error)
+    expect(notice.closest('.notice')).toHaveClass('notice--error')
   })
 
   it('shows a missing field under the field', async () => {

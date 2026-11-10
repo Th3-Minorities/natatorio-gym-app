@@ -152,4 +152,36 @@ describe('reinstating an athlete', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: t.close }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
+
+  it('shows the plain error in the pink banner when the race refusal names no term', async () => {
+    await openScreen({ 'POST /api/staff/roster/3/reinstate': () => apiError('roster_reinstate_active_authorization', 409) })
+
+    fireEvent.click(screen.getByRole('button', { name: `${t.reinstate}, ${darel.name}` }))
+    const dialog = screen.getByRole('dialog')
+    fireEvent.change(within(dialog).getByLabelText(t.reason), { target: { value: 'Retiro por error del administrador' } })
+    fireEvent.click(within(dialog).getByRole('button', { name: t.reinstateConfirm }))
+
+    const notice = await within(dialog).findByText(es.errors.roster_reinstate_active_authorization)
+    expect(notice.closest('.notice')).toHaveClass('notice--error')
+    expect(within(dialog).queryByRole('heading', { name: t.refusedTitle })).not.toBeInTheDocument()
+    expect(within(dialog).queryByText(/activa en \./)).not.toBeInTheDocument()
+  })
+
+  it('puts the short-reason title and text in live regions, since focus stays in the field', async () => {
+    await openScreen()
+
+    fireEvent.click(screen.getByRole('button', { name: `${t.reinstate}, ${darel.name}` }))
+    const dialog = screen.getByRole('dialog')
+    const title = within(dialog).getByRole('heading', { name: t.reinstateTitle(darel.name) })
+    const text = within(dialog).getByText(t.reinstateText)
+    expect(title).toHaveAttribute('aria-live', 'polite')
+    expect(text).toHaveAttribute('aria-live', 'polite')
+
+    fireEvent.change(within(dialog).getByLabelText(t.reason), { target: { value: 'Error' } })
+    fireEvent.submit(within(dialog).getByLabelText(t.reason).closest('form')!)
+
+    // The same elements change their text, which is what a live region announces.
+    expect(title).toHaveTextContent(t.shortTitle)
+    expect(text).toHaveTextContent(t.shortText)
+  })
 })
