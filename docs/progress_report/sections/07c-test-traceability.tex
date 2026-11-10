@@ -2,84 +2,98 @@
 {
 \footnotesize
 \setlength{\tabcolsep}{3pt}
-\begin{longtable}{L{4.7cm} L{1.2cm} L{0.9cm} L{3.0cm} L{4.6cm}}
-\caption{\revised{Tests linked to objectives and requirements}}\label{tab:test-trace} \\
+\urlstyle{same}
+\def\UrlBreaks{\do\/\do\.\do A\do B\do C\do D\do E\do F\do G\do H\do I\do J\do K\do L\do M\do N\do O\do P\do Q\do R\do S\do T\do U\do V\do W\do X\do Y\do Z}
+\begin{longtable}{L{5.2cm} L{1.2cm} L{1.8cm} L{7.4cm}}
+\caption{\revised{Tests linked to objectives}}\label{tab:test-trace} \\
 \toprule
-\textbf{Test file} & \textbf{Kind} & \textbf{Obj.} & \textbf{Requirements (REQ-)} & \textbf{What it checks} \\
+\textbf{Test file} & \textbf{Kind} & \textbf{Objectives} & \textbf{What it checks} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Test file} & \textbf{Kind} & \textbf{Obj.} & \textbf{Requirements (REQ-)} & \textbf{What it checks} \\
+\textbf{Test file} & \textbf{Kind} & \textbf{Objectives} & \textbf{What it checks} \\
 \midrule
 \endhead
 \bottomrule
 \endfoot
-\path{Auth/PaidRegistrationTest}, \path{Auth/PrivacyNoticeTest} & backend & 1 & F-10, F-11, F-13, F-18, F-60, F-70, F-71, F-72, F-73, NF-24, NF-25, NF-51 & Number lookup, masked email, same answer for bad numbers, IP limit, photo saved before the claim, waiver, password and 10 MB rules, privacy notice \\
+\path{Auth/PaidRegistrationTest}, \path{Auth/PrivacyNoticeTest} & backend & O1 & Number lookup, masked email, same answer for bad numbers, IP limit, photo saved before the claim, waiver, password and 10 MB rules, privacy notice \\
 \addlinespace
-\path{Auth/UserSignInTest}, \path{UserSessionStorageTest}, \path{UserSignInThrottleTest}, \path{UserPasswordResetTest}, \path{UserAccountTest} & backend & 1 & F-02, F-03, F-06, F-07, F-09, NF-21, NF-33, NF-35, NF-51 & Sign in, one device at a time, lockout after 10 failures, password reset, account deletion, own language \\
+\revised{\path{Auth/AthleteRegistrationTest}, \path{Auth/AthleteWithdrawalConcurrencyTest}} & \revised{backend} & \revised{O1} & \revised{Student number lookup, single-use email link, one link every 5 minutes and 5 a day, claimed or removed records refused, a withdrawal during registration wins} \\
 \addlinespace
-\path{Auth/PaidRegistrationConcurrencyTest}, \path{Database/ConcurrentInsertsTest}, \path{CheckIn/CheckInConcurrencyTest} & backend & 1, 2 & F-17, F-21\textsuperscript{db}, F-36, F-71, NF-42 & Simultaneous claims, terms, lookups and Check Ins leave one account, claim or session \\
+\path{Auth/UserSignInTest}, \path{UserSessionStorageTest}, \path{UserSignInThrottleTest}, \path{UserPasswordResetTest}, \path{UserAccountTest} & backend & O1 & Sign in, one device at a time, lockout after 10 failures, password reset, account deletion, own language \\
 \addlinespace
-\path{Auth/RegistrationPhotoTest}, \path{CheckIn/GymPhotoTest} & backend & 1, 2 & NF-20, NF-24 & Photo becomes a private JPEG without metadata; only its owner reads it \\
+\path{Auth/PaidRegistrationConcurrencyTest}, \path{Database/ConcurrentInsertsTest}, \path{CheckIn/CheckInConcurrencyTest} & backend & O1, O2 & Simultaneous claims, terms, lookups and Check Ins leave one account, claim or session \\
 \addlinespace
-\path{Auth/StaffSignInTest}, \path{StaffGuardTest}, \path{StaffRolesTest}, \path{StaffSessionTimeoutTest}, \path{StaffSignInAddressTest}, \path{StaffSignInThrottleTest}, \path{RouteProtectionTest} & backend & 4 & F-07, F-52, F-88, NF-10, NF-39 & Own staff account, action allowed or denied by role, every route checked, 2 h and 20 min timeouts, lockout \\
+\path{Auth/RegistrationPhotoTest}, \path{CheckIn/GymPhotoTest} & backend & O1, O2 & Photo becomes a private JPEG without metadata; only its owner reads it \\
 \addlinespace
-\path{StaffAccounts/StaffInviteTest}, \path{StaffInviteAcceptTest}, \path{StaffAccountChangesTest}, \path{StaffPasswordResetTest} & backend & 4 & F-06, F-88, NF-35, NF-39, NF-51 & Invite by email, set password, change role, deactivate and reactivate, last Administrator kept, reset \\
+\path{Auth/StaffSignInTest}, \path{StaffGuardTest}, \path{StaffRolesTest}, \path{StaffSessionTimeoutTest}, \path{StaffSignInAddressTest}, \path{StaffSignInThrottleTest}, \path{RouteProtectionTest} & backend & O4 & Own staff account, action allowed or denied by role, every route checked, 2 h and 20 min timeouts, lockout \\
 \addlinespace
-\path{StaffAccounts/StaffAccountInjectionTest}, \path{Security/StaffAccountInputsTest}, \path{Security/UserInputsTest} & backend & 1, 4 & n/a & SQL and script text kept as plain data; arrays and oversized inputs refused \\
+\path{StaffAccounts/StaffInviteTest}, \path{StaffInviteAcceptTest}, \path{StaffAccountChangesTest}, \path{StaffPasswordResetTest} & backend & O4 & Invite by email, set password, change role, deactivate and reactivate, last Administrator kept, reset \\
 \addlinespace
-\path{Console/CreateAdministratorCommandTest} & backend & 4 & F-88, NF-52 & Install command creates the first Administrator and refuses a second one \\
+\path{StaffAccounts/StaffAccountInjectionTest}, \path{Security/StaffAccountInputsTest}, \path{Security/UserInputsTest} & backend & O1, O4 & SQL and script text kept as plain data; arrays and oversized inputs refused \\
 \addlinespace
-\path{Audit/AuditLogTest} & backend & 4 & NF-39 & Entry names the staff account and IP; entries cannot be edited or deleted \\
+\path{Console/CreateAdministratorCommandTest} & backend & O4 & Install command creates the first Administrator and refuses a second one \\
 \addlinespace
-\path{CheckIn/CheckInTest}, \path{BoundaryStartupTest} & backend & 2 & F-22, F-33, F-36, F-37, F-38, F-82, F-83, F-94, NF-01, NF-03, NF-29 & Each refusal cause, one session per valid Check In, active session returned, athletes-only periods, location not stored, 50 m limit \\
+\path{Audit/AuditLogTest} & backend & O4 & Entry names the staff account and IP; entries cannot be edited or deleted \\
 \addlinespace
-\path{CheckIn/CheckOutTest}, \path{CheckOutConcurrencyTest}, \path{SessionCloseTest} & backend & 2 & F-38, F-48, F-52, NF-01 & Staff check-out of active sessions only, automatic close after 2 h, close by closure or term end \\
+\path{CheckIn/CheckInTest}, \path{BoundaryStartupTest} & backend & O2 & Each refusal cause, one session per valid Check In, active session returned, athletes-only periods, location not stored, 50 m limit \\
 \addlinespace
-\path{CheckIn/OccupancyTest} & backend & 3 & F-41 & Occupancy counts only open sessions; closed, expired and void ones drop out \\
+\path{CheckIn/CheckOutTest}, \path{CheckOutConcurrencyTest}, \path{SessionCloseTest} & backend & O2 & Staff check-out of active sessions only, automatic close after 2 h, close by closure or term end \\
 \addlinespace
-\path{Database/SessionsAndStatisticsTablesTest} & backend & 2, 3 & F-36, F-38, NF-01 & One active session per user in the database; a session ends exactly 2 h after it starts \\
+\revised{\path{CheckIn/StaffSessionsListTest}, \path{StaffSessionDetailTest}, \path{StaffAssistedCheckInTest}} & \revised{backend} & \revised{O2, O4} & \revised{Who is inside and their photo, search by name, visit corrections that never pass the 2 hours, assisted Check In by name or student number} \\
 \addlinespace
-\path{Database/RosterLinksAndAuthorizationsTablesTest}, \path{TermsAndImportsTablesTest} & backend & 1 & F-17, F-19, F-21\textsuperscript{db}, F-29\textsuperscript{db}, F-30\textsuperscript{db}, F-51, F-60 & One claim per number and roster record, one active authorization per term, no overlapping terms, order stored once \\
+\path{CheckIn/OccupancyTest}\revised{, \path{StaffOccupancyTest}} & backend & O3 & Occupancy counts only open sessions; closed, expired and void ones drop out\revised{; Staff and Users get the same answer} \\
 \addlinespace
-\path{Database/AccountsAndAuditTablesTest}, \path{ContentAndScheduleTablesTest} & backend & 1, 4 & F-52, F-55\textsuperscript{db}, F-58\textsuperscript{db}, NF-21, NF-39 & Unique emails, only listed columns, audit entry fields, schedule and notice tables with Spanish text \\
+\revised{\path{Terms/AcademicTermsTest}, \path{Roster/RosterRecordsTest}, \path{RosterWithdrawTest}, \path{RosterDownloadTest}} & \revised{backend} & \revised{O1, O4} & \revised{Terms without overlaps, add and edit athletes, 9-digit student numbers, withdraw and reinstate with a reason, Word and PDF download for Administrators only} \\
 \addlinespace
-\path{Database/DatabaseSeederTest} & backend & 1 & NF-44 & Controlled fake dataset with valid and denied access cases; none in production \\
+\path{Database/SessionsAndStatisticsTablesTest} & backend & O2, O3 & One active session per user in the database; a session ends exactly 2 h after it starts \\
 \addlinespace
-\path{ApiErrorFormatTest}, \path{Unit/ErrorCodesTest}, \path{TimezoneTest}, \path{ModelDatesTest}, \path{HealthCheckTest}, \path{MailInTestsTest} & backend & All & NF-34, NF-37 & Error codes instead of texts, Puerto Rico time, health route, mail kept in memory \\
+\path{Database/RosterLinksAndAuthorizationsTablesTest}, \path{TermsAndImportsTablesTest} & backend & O1 & One claim per number and roster record, one active authorization per term, no overlapping terms, order stored once \\
 \addlinespace
-\path{user/UserApp.test} & unit & 1 & F-02, F-03, F-06, F-07, F-09, NF-25, NF-33 & Sign in, recovery, account, deletion and privacy screens with their states \\
+\path{Database/AccountsAndAuditTablesTest}, \path{ContentAndScheduleTablesTest} & backend & O1, O4 & Unique emails, only listed columns, audit entry fields, schedule and notice tables with Spanish text \\
 \addlinespace
-\path{user/Registration.test}, \path{RegistrationSteps.test} & unit & 1 & F-13, F-60, F-70, F-72, F-73, F-91, NF-24, NF-25, NF-51 & Registration steps: privacy, number, masked email, password, photo, waiver and contact, errors \\
+\path{Database/DatabaseSeederTest} & backend & O1 & Controlled fake dataset with valid and denied access cases; none in production \\
 \addlinespace
-\path{user/CheckIn.test} & unit & 2 & F-23, F-33, F-37, F-82, F-83, NF-11 & Press-and-hold Check In, location permission and accuracy errors, athletes-only notice \\
+\path{ApiErrorFormatTest}, \path{Unit/ErrorCodesTest}, \path{TimezoneTest}, \path{ModelDatesTest}, \path{HealthCheckTest}, \path{MailInTestsTest} & backend & All & Error codes instead of texts, Puerto Rico time, health route, mail kept in memory \\
 \addlinespace
-\path{user/GymId.test} & unit & 2, 3 & F-38, F-40, F-43, NF-26 & Gym ID timer, ended-visit summary, occupancy polled every 25 s, offline hides numbers \\
+\path{user/UserApp.test} & unit & O1 & Sign in, recovery, account, deletion and privacy screens with their states \\
 \addlinespace
-\path{user/InstallHelp.test} & unit & All & F-66 & Install button only when the browser offers it; iPhone steps \\
+\path{user/Registration.test}, \path{RegistrationSteps.test}\revised{, \path{AthleteRegistration.test}} & unit & O1 & Registration steps: privacy, number, masked email, password, photo, waiver and contact, errors\revised{; athlete email link} \\
 \addlinespace
-\path{staff/StaffSignIn.test}, \path{StaffApp.test}, \path{StaffSession.test}, \path{useStaffSession.test}, \path{dashboard/DashboardShell.test} & unit & 4 & F-07, F-52, F-88, NF-10 & Staff sign-in states, lockout wait, timeout and deactivated notices, Administration items only for Administrators \\
+\path{user/CheckIn.test} & unit & O2 & Press-and-hold Check In, location permission and accuracy errors, athletes-only notice \\
 \addlinespace
-\path{staff/access/StaffAccessPages.test}, \path{staff/team/}\texttt{ (4 files)} & unit & 4 & F-06, F-52, F-88, NF-51 & Recovery, invitation and reset pages; staff list, invite, role change, deactivate and reactivate, term chip \\
+\path{user/GymId.test} & unit & O2, O3 & Gym ID timer, ended-visit summary, occupancy polled every 25 s, offline hides numbers \\
 \addlinespace
-\path{api/client.test}, \path{service-worker.test} & unit & All & F-07, NF-26 & Wait time from the server, offline detection, worker never serves cached API data \\
+\path{user/InstallHelp.test} & unit & All & Install button only when the browser offers it; iPhone steps \\
 \addlinespace
-\path{i18n/}\texttt{ (2 files)}, \path{format/dateTime.test} & unit & All & NF-33, NF-34, NF-36, NF-37, NF-38 & Spanish and English texts match, every error code translated, page language, Puerto Rico date form \\
+\path{staff/StaffSignIn.test}, \path{StaffApp.test}, \path{StaffSession.test}, \path{useStaffSession.test}, \revised{\path{ProblemNotice.test}}, \path{dashboard/DashboardShell.test} & unit & O4 & Staff sign-in states, lockout wait, timeout and deactivated notices, Administration items only for Administrators \\
 \addlinespace
-\path{App.test}, \path{components/}\texttt{ (2 files)}, \path{security.test}, \path{styles/tokens.test} & unit & All & n/a & Health banner, shared components, no raw HTML, Figma tokens \\
+\path{staff/access/StaffAccessPages.test}, \path{staff/team/}\texttt{ (4 files)} & unit & O4 & Recovery, invitation and reset pages; staff list, invite, role change, deactivate and reactivate, term chip \\
 \addlinespace
-\path{user-sign-in.spec} & browser & 1 & F-02, F-03 & Sign in, sign out, a second browser replaces the first \\
+\revised{\path{staff/sessions/}\texttt{ (3 files)}, \path{staff/people/FindPerson.test}} & \revised{unit} & \revised{O2, O3, O4} & \revised{Active visits list, visit detail and corrections, occupancy card, find a person and record an assisted Check In} \\
 \addlinespace
-\path{registration-frames.spec}, \path{user-frames.spec}, \path{user-other-screens.spec} & browser & 1, 3 & F-66, NF-13, NF-25 & User screens match their Figma frames, privacy and install help, no accessibility violations \\
+\revised{\path{staff/terms/AcademicTerms.test}, \path{staff/roster/}\texttt{ (4 files)}} & \revised{unit} & \revised{O1, O4} & \revised{Terms screen, roster list, athlete status, add and edit, withdraw and reinstate, roster download} \\
 \addlinespace
-\path{check-in-frames.spec} & browser & 2 & F-33, NF-13 & Every Check In state matches its Figma frame, no accessibility violations \\
+\path{api/client.test}, \path{service-worker.test} & unit & All & Wait time from the server, offline detection, worker never serves cached API data \\
 \addlinespace
-\path{staff-sign-in.spec}, \path{staff-accounts.spec}, \path{dashboard-shell.spec} & browser & 4 & F-06, F-52, F-88, NF-10, NF-13 & Staff sign in and out, invite to first sign-in, password reset, skip link, 320 px reflow \\
+\path{i18n/}\texttt{ (2 files)}, \path{format/dateTime.test} & unit & All & Spanish and English texts match, every error code translated, page language, Puerto Rico date form \\
 \addlinespace
-\path{pwa.spec}, \path{health.spec} & browser & All & F-66, NF-26 & Manifest and icons, worker never caches the API, install help opens offline \\
+\path{App.test}, \path{components/}\texttt{ (2 files)}, \path{security.test}, \path{styles/tokens.test} & unit & All & Health banner, shared components, no raw HTML, Figma tokens \\
 \addlinespace
-\texttt{tests/load/check-in.js (k6)} & load & 2, 3 & F-36, F-37, F-41, NF-15, NF-42, NF-50 & 50 and 100 Check Ins in 5 min, 50 simultaneous pairs; one session per user, occupancy matches \\
+\path{user-sign-in.spec} & browser & O1 & Sign in, sign out, a second browser replaces the first \\
 \addlinespace
+\path{registration-frames.spec}, \path{user-frames.spec}, \path{user-other-screens.spec} & browser & O1, O3 & User screens match their Figma frames, privacy and install help, no accessibility violations \\
+\addlinespace
+\path{check-in-frames.spec} & browser & O2 & Every Check In state matches its Figma frame, no accessibility violations \\
+\addlinespace
+\path{staff-sign-in.spec}, \path{staff-accounts.spec}, \path{dashboard-shell.spec} & browser & O4 & Staff sign in and out, invite to first sign-in, password reset, skip link, 320 px reflow \\
+\addlinespace
+\revised{\path{staff-roster.spec}} & \revised{browser} & \revised{O1, O4} & \revised{Create and edit a term; add, edit, withdraw and reinstate an athlete; Word and PDF download; 320 px reflow; no accessibility violations} \\
+\addlinespace
+\revised{\path{flows/}\texttt{ (9 files)}} & \revised{browser} & \revised{O1 to O4} & \revised{Each midterm flow from its first screen to its last (Table~\ref{tab:flow-results})} \\
+\addlinespace
+\path{pwa.spec}, \path{health.spec} & browser & All & Manifest and icons, worker never caches the API, install help opens offline \\
+\addlinespace
+\texttt{tests/load/check-in.js (k6)} & load & O2, O3 & 50 and 100 Check Ins in 5 min, 50 simultaneous pairs; one session per user, occupancy matches \\
 \end{longtable}
-\noindent\textsuperscript{db} Only the database rule is tested; the feature is not built yet.
 }

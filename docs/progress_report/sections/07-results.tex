@@ -3,7 +3,7 @@
 %=====================================================================
 
 \subsection{\revised{Performance Results and Documentation}}
-On \texttt{main} at commit c6d596d (Nov 8), the backend workflow took 2 min 40 s and the frontend workflow 6 min 59 s, both passing. The load test (issue \#83) ran k6 on Docker Desktop on a laptop with an Intel i7-1260P (12 cores), 15.7 GB of RAM, and Windows 11. Docker had 16 CPUs and 7.6 GB, and PHP-FPM ran with its default 5 workers. The database held 100 seeded members, and sign-in happened before the timed part. Each run reseeded the database. The team thresholds, which have no SRS number, are a Check In p95 under 3 seconds, errors under 1\%, and every check passing. The peak and stress sizes are a team decision: the peak is 50 Check Ins in 5 minutes (about a third of the 150 daily visits in the busiest hour, compressed), and the stress run doubles it. Table~\ref{tab:load} lists the results.
+On \texttt{main} at commit c6d596d (Nov 8), the backend workflow took 2 min 40 s and the frontend workflow 6 min 59 s, both passing. The load test ran k6 on Docker Desktop on a laptop with an Intel i7-1260P (12 cores), 15.7 GB of RAM, and Windows 11. Docker had 16 CPUs and 7.6 GB, and PHP-FPM ran with its default 5 workers. The database held 100 seeded members, and sign-in happened before the timed part. Each run reseeded the database. The team thresholds, which have no SRS number, are a Check In p95 under 3 seconds, errors under 1\%, and every check passing. The peak and stress sizes are a team decision: the peak is 50 Check Ins in 5 minutes (about a third of the 150 daily visits in the busiest hour, compressed), and the stress run doubles it. Table~\ref{tab:load} lists the results.
 
 \begin{table}[h]
 \centering
@@ -23,44 +23,92 @@ Burst: 50 members at once, each sending two Check Ins in parallel & 8.61 s & 8.9
 \end{tabularx}
 \end{table}
 
-Occupancy starts at 3 because the seed already has 3 people inside. Peak and stress meet all thresholds. In the burst, every member ended with exactly one session (REQ-NF-42) and there were no errors, but the p95 is above the 3 second threshold. The likely cause is the PHP-FPM default of 5 workers on a laptop running Docker on Windows. The team will raise the worker count and repeat the test on the CTI server (\#30). Repeating Check In for the same user returns the same session (idempotent). Measuring location accuracy at the gym moves to the Final report (\#12).
+Occupancy starts at 3 because the seed already has 3 people inside. Peak and stress meet all thresholds. In the burst, every member ended with exactly one session (REQ-NF-42) and there were no errors, but the p95 is above the 3 second threshold. The likely cause is the PHP-FPM default of 5 workers on a laptop running Docker on Windows. \revised{The team will raise the worker count and repeat the test on the CTI server.} Repeating Check In for the same user returns the same session (idempotent). \revised{Location accuracy at the gym is measured for the Final report.}
 
 \subsection{Operational Demonstration}
-The seeded test data covers every authorization case of Objective 1: valid paid, expired paid, valid athlete, removed athlete, no authorization, unmatched record, and cancelled order. It also holds store orders outside the term and with a repeated number, which the sync skips (\#81).
+The seeded test data covers every authorization case of Objective 1: valid paid, expired paid, valid athlete, removed athlete, no authorization, unmatched record, and cancelled order. It also holds store orders outside the term and with a repeated number, which the sync skips.
 
-Figure~\ref{fig:flow} shows the slice running on the seeded data at commit c6d596d, with a seeder fix that gives each seeded person an email that matches their name (\#81). The Staff screen for check-out is not built yet (\#26), so the check-out in (f) was sent to the same backend endpoint that screen will call.
+\revised{Figure~\ref{fig:flow} and the dashboard figure in User Interface Design show the slice running on the seeded data at commit fc03463, from registration to the visit ended by a Staff check-out.}
 
 \input{sections/07b-screenshots}
 
 \subsection{\revised{Testing Plan Execution}}
-At commit c6d596d, the tests on \texttt{main} total 450 unit tests, 505 backend tests passing and 1 skipped, and 174 browser tests, all passing. Occupancy now drops at once when a closure starts or a term ends, the same rule as the session close, and backend tests cover it.
+\revised{Table~\ref{tab:test-exec} shows, for each test type in the Testing Plan, what ran and its result. O1 to O5 are the five objectives in Project Objectives. The automated numbers come from the CI run on \texttt{main} at commit fc03463 (Nov 10), where every workflow passed. CI runs all of these tests on every pull request, so each change also reruns the tests of earlier work (regression).}
 
-Accessibility (\#82): the browser tests scan each Figma-frame screen and the staff screens with axe (WCAG 2.0 and 2.1 levels A and AA, 2.2 AA) on Chromium and Edge in CI, with 0 violations. The linter's accessibility rules are on and pass. The manual checklist (keyboard, NVDA, VoiceOver, 200\% zoom, 320 pixel width) is in progress.
+{
+\small
+\begin{longtable}{L{2.4cm} L{5.8cm} L{4.4cm} L{2.0cm}}
+\caption{\revised{Testing plan execution by test type}}\label{tab:test-exec} \\
+\toprule
+\textbf{Test type} & \textbf{What ran} & \textbf{Result} & \textbf{Objectives} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Test type} & \textbf{What ran} & \textbf{Result} & \textbf{Objectives} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\revised{Unit, frontend} & \revised{Vitest tests of every screen, its states, and the shared code} & \revised{641 passed in 37 files} & \revised{O1 to O4} \\
+\addlinespace
+\revised{Backend and database} & \revised{PHPUnit tests of every API route, access decision case, session rule, role, and database rule, on PostgreSQL} & \revised{657 passed, 1 skipped, 3677 assertions} & \revised{O1 to O4} \\
+\addlinespace
+\revised{Concurrency} & \revised{Simultaneous registrations, roster claims, withdrawals, and Check Ins against the real database, in the backend run} & \revised{Passed: one account, claim, or session each time} & \revised{O1, O2} \\
+\addlinespace
+\revised{Occupancy} & \revised{Count after Check Ins, check-outs, automatic closes, and Staff corrections; the Staff list and the occupancy agree; Users and Staff get the same answer} & \revised{Passed in the backend run} & \revised{O3} \\
+\addlinespace
+\revised{Roles} & \revised{Each staff route allowed or refused by role; a test fails if a route has no role check} & \revised{Passed in the backend run} & \revised{O4} \\
+\addlinespace
+\revised{Browser} & \revised{Playwright tests on the full stack in six browser projects: Chromium, Edge, Firefox, and WebKit for the dashboard; Android (Pixel 7) and iPhone (iPhone 13) emulation for the User app} & \revised{230 tests: 12 passed and 1 skipped on each desktop browser; 89 passed on Android and on iPhone} & \revised{O1 to O4} \\
+\addlinespace
+\revised{Accessibility, automatic} & \revised{axe scan with the WCAG 2.0, 2.1, and 2.2 A and AA rules on each tested screen inside the browser tests; linter accessibility rules} & \revised{0 violations: a violation fails the test, and every browser test passed; lint passed} & \revised{O1 to O4} \\
+\addlinespace
+\revised{Accessibility, manual} & \revised{Keyboard, NVDA, VoiceOver, 200\% zoom, 320 pixel width} & \revised{\pending{manual checklist results}} & \revised{O1 to O4} \\
+\addlinespace
+\revised{End-to-end flows} & \revised{One browser test per flow, from its first screen to its last, plus 517 path tests (Table~\ref{tab:flow-results})} & \revised{No step or path failed} & \revised{O1 to O4} \\
+\addlinespace
+\revised{Stress, local} & \revised{k6 peak, stress, and burst runs on a laptop (Table~\ref{tab:load})} & \revised{Peak and stress met every threshold; burst kept one session per user with no errors, but its p95 was 8.61 s} & \revised{O2, O3} \\
+\addlinespace
+\revised{Stress, full} & \revised{Same runs on the CTI VM, plus the 3 second Check In on a real phone} & \revised{Planned for Phase 6} & \revised{O2, O3} \\
+\addlinespace
+\revised{Real phones} & \revised{Location and PWA install on an iPhone with Safari and an Android phone with Chrome} & \revised{Planned for Phase 6} & \revised{O2} \\
+\addlinespace
+\revised{Analytics} & \revised{Metrics compared with known results from controlled data} & \revised{Planned for Phase 5} & \revised{O5} \\
+\addlinespace
+\revised{Integration} & \revised{One dataset from sign in to session to analytics} & \revised{Planned for Phase 6} & \revised{O1 to O5} \\
+\addlinespace
+\revised{Acceptance} & \revised{Main flows run by gym staff and real users} & \revised{Planned for Phase 6: \pending{participants and dates, waiting on the gym}} & \revised{O1 to O5} \\
+\end{longtable}
+}
 
-Table~\ref{tab:test-trace} links each test file to its objective and requirements.
-
-Issue \#152 adds one browser test for each of the nine flows in the midterm scope: paid member registration, athlete registration, sign in, Check In, Gym ID and occupancy, end of a visit, app base, Staff accounts, and terms with the athlete roster. Each flow has a table of paths, and each path has its own test, written with a test technique (equivalence partitions, boundary values, state transitions, error guessing, or permissions). CI runs them on six browser projects: Chromium, Edge, Firefox, and WebKit for the dashboard, and Android (Pixel 7) and iPhone (iPhone 13) emulation for the User app. The run of November 9 on the \#152 branch covered 517 paths: 500 passed, 3 passed only on the automatic retry, 4 are not built because \texttt{main} has no Terms or roster screen, and 10 were not run. Four of the 10 need a real phone, such as taking a photo with the camera. No path failed in the final run. The path tests also found bugs. The team reported each one in the flow-tests Discussion, fixed it, and retested. Table~\ref{tab:flow-devices} lists the results by device. The \#152 branch is not merged into \texttt{main} yet.
+\revised{The flow tests cover the nine flows in the midterm scope. Each flow test follows the steps a person takes, on the seeded test data. Each flow also has a table of paths, and each path has its own browser test, written with a test technique: equivalence partitions, boundary values, state transitions, error guessing, or permissions. The path tests ran on November 9 on a test branch, on the same six browser projects. A path passes when it passes on every device it runs on. The path tests found bugs; the team reported each one in the flow-tests Discussion, fixed it, and ran the path again. Table~\ref{tab:flow-results} lists the results per flow.}
 
 \begin{table}[h]
 \centering
-\caption{\revised{Flow path results by device, November 9 run}}
-\label{tab:flow-devices}
+\caption{\revised{End-to-end flow results}}
+\label{tab:flow-results}
 \small
-\begin{tabularx}{\textwidth}{l r r X}
+\begin{tabularx}{\textwidth}{X l r r r r}
 \toprule
-\textbf{Device} & \textbf{Paths run} & \textbf{Passed} & \textbf{Not passed} \\
+\textbf{Flow} & \textbf{Devices} & \textbf{Steps passed} & \textbf{Paths} & \textbf{Paths passed} & \textbf{Not passed} \\
 \midrule
-Android (Pixel 7, emulated) & 414 & 404 & 4 manual, 4 not built, 2 not run \\
-iPhone (iPhone 13, emulated) & 381 & 368 & 3 passed on retry, 4 manual, 4 not built, 2 not run \\
-Desktop Chrome & 101 & 96 & 4 not built, 1 not run \\
-Firefox & 101 & 95 & 1 checked by hand, 4 not built, 1 not run \\
-Safari (WebKit) & 101 & 96 & 4 not built, 1 not run \\
+\revised{Paid member registration} & \revised{phones} & \revised{14 of 14} & \revised{70} & \revised{67} & \revised{3} \\
+\revised{Athlete registration} & \revised{phones} & \revised{2 of 7} & \revised{53} & \revised{50} & \revised{3} \\
+\revised{User sign in} & \revised{phones} & \revised{7 of 7} & \revised{55} & \revised{52} & \revised{3} \\
+\revised{Check In} & \revised{phones} & \revised{6 of 7} & \revised{83} & \revised{81} & \revised{2} \\
+\revised{Gym ID and occupancy} & \revised{phones} & \revised{6 of 6} & \revised{58} & \revised{57} & \revised{1} \\
+\revised{End of a visit} & \revised{phones} & \revised{4 of 6} & \revised{47} & \revised{47} & \revised{0} \\
+\revised{App base} & \revised{phones} & \revised{5 of 6} & \revised{35} & \revised{31} & \revised{4} \\
+\revised{Staff accounts} & \revised{desktop} & \revised{7 of 7} & \revised{95} & \revised{94} & \revised{1} \\
+\revised{Terms and athlete roster} & \revised{all} & \revised{0 of 1} & \revised{21} & \revised{21} & \revised{0} \\
+\midrule
+\revised{Total} & & \revised{51 of 61} & \revised{517} & \revised{500} & \revised{17} \\
 \bottomrule
 \end{tabularx}
 \end{table}
 
-Nobody has run the flows on real phones yet (an iPhone with Safari and an Android phone with Chrome): every Manual cell in the flow tables still says pending.
+\revised{No step and no path failed. A step that did not pass was skipped or is not built: four athlete registration steps hit the lookup limit or need a new roster record per run, three need the server clock at a set time, one install step needs a real phone, and two steps need screens that were not on \texttt{main} when the flow tests were written. Of the 17 paths that did not pass, 3 passed only on the automatic retry, 4 need a screen not on \texttt{main} at the time, and 10 were not run, 4 of them because they need a real phone, such as taking a photo with the camera. Nobody has run the flows on real phones yet: every manual result in the flow tables is still pending.}
+
+Table~\ref{tab:test-trace} links each test file to its objective.
 
 \input{sections/07c-test-traceability}
-
-\pending{8(c): manual accessibility checklist results when finished (Viviana, \#82).}

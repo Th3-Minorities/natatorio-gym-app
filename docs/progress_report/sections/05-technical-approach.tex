@@ -5,7 +5,6 @@
 
 The platform is a layered client-server system. A mobile-first, component-based PWA built with React, TypeScript, and Vite serves Users, Staff, and Administrators from one codebase on phones and desktops, so no separate iOS and Android apps are needed. A Laravel API [10] (PHP 8.3 or higher) holds the business rules: authorization, Check In, sessions, the store sync, and role checks. PostgreSQL is the source of truth for users, academic terms, authorizations, athlete rosters, sign-in sessions, facility sessions, roles, waiver acceptances, and the audit log. Photographs sit on a private volume that only the API can read. Backend time decides when a session closes by itself. WooCommerce remains the paid-membership source, read through its REST API with a read-only key.
 
-\revised{The proposal named Supabase and Vercel. The team replaced them with a stack that CTI can host in December: the same PWA, Laravel, PostgreSQL, and nginx, all started by one \texttt{docker-compose} file that runs on each member's computer and on a CTI virtual machine (VM). No student data sits in an outside service, and what the team tests is what runs in production. Laravel replaces Row Level Security and Edge Functions with policies, middleware, and database constraints. Occupancy screens poll the API every 20 to 30 seconds instead of using real-time channels, because occupancy changes only at a Check In, a check-out, or an automatic close. Live updates may be added later if CTI allows them and time remains. \pending{professor: approval of the stack change (question P-03), not answered yet}}
 
 \subsection{\revised{System Architecture (new)}}
 
@@ -17,20 +16,11 @@ The platform is a layered client-server system. A mobile-first, component-based 
   \item \textbf{Scheduler:} the same image as the app, running scheduled tasks every minute: closing sessions 2 hours after Check In or when a closure starts, and deleting replaced photographs.
   \item \textbf{Database (PostgreSQL) and photo volume:} the database enforces one active session per User and one claim per Authorization Number or roster record.
 \end{itemize}
-Outside the host, the browser Geolocation API supplies position and accuracy at Check In only. Outgoing mail carries invitations, athlete links, and password resets: a fake mail server in development and the CTI mail gateway in production. The app reads paid orders from the WooCommerce REST API over outgoing HTTPS. A compromised-password check sends only the first five characters of a password hash and no student data.
+Outside the host, \revised{the phone's location comes from the browser's W3C Geolocation API [7]. At Check In only, the PWA calls \texttt{navigator.geolocation.getCurrentPosition} with high accuracy on and no cached position, and sends the latitude, longitude, and reported accuracy to the API. The server accepts the reading only when the accuracy is 50 meters or better and the point lies within 50 meters of the gym's center. Both limits are settings, and the gym's coordinates are placeholders until the team measures them on site.} Outgoing mail carries invitations, athlete links, and password resets: a fake mail server in development and the CTI mail gateway in production. The app reads paid orders from the WooCommerce REST API over outgoing HTTPS. A compromised-password check sends only the first five characters of a password hash and no student data.
 
-\textbf{Check In request path.} Figure~\ref{fig:architecture} shows the components; the Check In path through them has seven steps.
-\begin{enumerate}
-  \item The User taps Check In. The PWA sends an eligibility query over HTTPS with the session cookie, and the proxy forwards it to Laravel.
-  \item Middleware confirms the cookie is the User's current sign-in session. The API then reads authorizations, the academic term, the schedule, and any active facility session.
-  \item If a session is active, the API returns it with the Gym ID and asks for no location. If a check fails, it returns a fixed cause code, and the app writes the message in the account's language.
-  \item If the User is eligible, the API asks for location. The PWA reads it from the browser and sends the position and accuracy to \texttt{POST /api/check-in}.
-  \item The API repeats every check, then tests accuracy and the gym boundary.
-  \item The API inserts the facility session in one transaction. A PostgreSQL exclusion constraint on the time range rejects an overlapping session from a simultaneous request, and the API returns the existing session instead.
-  \item The PWA shows the Gym ID. Coordinates are never stored, only the result of the check.
-\end{enumerate}
+\revised{\textbf{Modules and Check In.} The containers above run the functional modules shown in Figure~\ref{fig:architecture} (page~\pageref{fig:architecture}). Figure~\ref{fig:checkin} shows Check In across them: the PWA first asks the API whether the User may enter, reads the location only when a new visit is needed, and sends it to \texttt{POST /api/user/check-in}. The API repeats every check, and a PostgreSQL exclusion constraint rejects a second overlapping visit. Coordinates are never stored, only the result of the check.}
 
-\textbf{Deployment.} In development, each member runs the full stack with Docker Desktop. Phones reach it through an HTTPS tunnel because the Geolocation API requires HTTPS. Production is a CTI VM with a UPRM subdomain and HTTPS, filed by the project owner. The December demo runs in a separate environment with its own database and the classroom boundary. The production app refuses to start if the configured boundary is more than 50 meters from the gym, so the classroom boundary cannot reach production by a missing setting. Images use pinned versions, and server credentials, including the store key, stay in the server's environment file outside the repository. The team plans Rocky Linux 10 on the VM and backups on a second disk of the same VM. \pending{CTI answers asked in \#63 (Carlos): who provides the HTTPS certificate, mail gateway authorization, and confirmation of the operating system and the backup disk}
+\textbf{Deployment.} In development, each member runs the full stack with Docker Desktop. Phones reach it through an HTTPS tunnel because the Geolocation API requires HTTPS. Production is a CTI VM with a UPRM subdomain and HTTPS, filed by the project owner. The December demo runs in a separate environment with its own database and the classroom boundary. The production app refuses to start if the configured boundary is more than 50 meters from the gym, so the classroom boundary cannot reach production by a missing setting. Images use pinned versions, and server credentials, including the store key, stay in the server's environment file outside the repository. The team plans Rocky Linux 10 on the VM and backups on a second disk of the same VM. \pending{CTI answers asked by Carlos: who provides the HTTPS certificate, mail gateway authorization, and confirmation of the operating system and the backup disk}
 
 \subsection{Identity, Authorization, and Session Model}
 
@@ -41,9 +31,9 @@ Outside the host, the browser Geolocation API supplies position and accuracy at 
   \item \textbf{Facility session:} the visit created by a successful Check In, open until Staff check the person out or 2 hours pass.
 \end{itemize}
 
-\revised{\textbf{Roles and invitations.} Staff and Administrator accounts are individual. An Administrator invites each person by email, and the invited person sets a password. The shared gym account, the Administrator PIN, and the paper recovery code from the earlier design are removed. An install command creates the first Administrator. Staff verify Gym IDs, check people out, make Staff-assisted Check Ins and session corrections, and read the current roster. Administrators also manage terms, the roster, the store sync, schedules, notices, facility information, accounts, and the audit log. Laravel policies check each action by role. The audit log names the person who acted, with time, IP address, device, and the values before and after. The accounts, invitations, roles, audit log, and install command are built (\#16, \#84).}
+\revised{\textbf{Roles and invitations.} Staff and Administrator accounts are individual. An Administrator invites each person by email, and the invited person sets a password. An install command creates the first Administrator. Staff verify Gym IDs, check people out, make Staff-assisted Check Ins and session corrections, and read the current roster. Administrators also manage terms, the roster, the store sync, schedules, notices, facility information, accounts, and the audit log. Laravel policies check each action by role. The audit log names the person who acted, with time, IP address, device, and the values before and after. The accounts, invitations, roles, audit log, and install command are built.}
 
-\revised{\textbf{Sessions.} Sign-in uses Laravel cookie sessions on the same origin, with Laravel Sanctum. The team wrote sign-in, the attempt limits, and password reset in the app, so Fortify, named in the design documents, is not used. After 10 failed attempts, counted per account and per IP address, that account or address waits, and the wait grows with each lockout. Only one device may stay signed in to a User account: a successful sign-in on another device ends the previous session, which can no longer perform protected actions. Users have no inactivity timeout, because a timeout could sign a User out between Check In and the front desk. The one-device rule applies to Users only. A Staff sign-in ends after 2 hours without activity and an Administrator sign-in after 20 minutes, because the front desk computer is shared.}
+\revised{\textbf{Sessions.} Sign-in uses Laravel cookie sessions on the same origin, with Laravel Sanctum. The team wrote sign-in, the attempt limits, and password reset in the app. After 10 failed attempts, counted per account and per IP address, that account or address waits, and the wait grows with each lockout. Only one device may stay signed in to a User account: a successful sign-in on another device ends the previous session, which can no longer perform protected actions. Users have no inactivity timeout, because a timeout could sign a User out between Check In and the front desk. The one-device rule applies to Users only. A Staff sign-in ends after 2 hours without activity and an Administrator sign-in after 20 minutes, because the front desk computer is shared.}
 
 \revised{\textbf{Passwords.} A password needs at least 10 characters, and the system accepts at least 64. There are no composition rules. When a password is set or changed, Laravel's \texttt{uncompromised} rule checks it against known breached passwords using only a five-character hash prefix. NIST SP 800-63B-4 asks for at least 15 characters when a password is the only factor [8]. The team chose 10 because people type passwords on a phone, and it records this as a deviation. A reset request gets the same answer whether or not the email has an account.}
 
@@ -51,21 +41,68 @@ Outside the host, the browser Geolocation API supplies position and accuracy at 
 
 \subsection{WooCommerce Membership Integration}
 
-\revised{WooCommerce remains the authoritative source for paid-membership purchases. The app reads the orders from the WooCommerce REST API with a read-only key kept in the server's environment file, instead of an uploaded export file. A test read of all 84 orders on November 4 worked with such a key. When a person types an Authorization Number the app does not have, the app asks the store right then, so a person who just paid can register at once. A full sync runs at least 3 times a day and picks up changes to known orders, and the Administrator sees the last sync and has a ``Sync now'' button. The sync is planned for the Final report (\#25) and needs outgoing HTTPS from the VM to the store.}
+\revised{WooCommerce remains the authoritative source for paid-membership purchases. The app reads the orders from the WooCommerce REST API with a read-only key kept in the server's environment file. A test read of all 84 orders on November 4 worked with such a key. When a person types an Authorization Number the app does not have, the app asks the store right then, so a person who just paid can register at once. A full sync runs at least 3 times a day and picks up changes to known orders, and the Administrator sees the last sync and has a ``Sync now'' button. The sync is planned for the Final report and needs outgoing HTTPS from the VM to the store.}
 
 Only the fields needed for authorization are copied into PostgreSQL: name, email, whether the buyer is a student or an employee, membership details, Authorization Number, order reference, status, payment date, and term. The order's student number, address, phone, IP address, and marketing fields are not copied. The Authorization Number is a code from the UPR Payment Gateway. It can include letters, its length can change, the lookup ignores letter case, and it is unique across all orders, so one membership cannot be claimed by two accounts. The record of each sync keeps its counts and, for each skipped order, only the order reference and the reason.
 
 Only completed orders give access, and an order that later becomes cancelled or refunded loses it. Refunds are made in the UPR Payment Gateway, outside the store, so the store never shows them; when the department refunds a membership, an Administrator revokes the authorization by hand with a reason. Reading the same order twice updates the same record instead of creating a duplicate. If the store data misses an order, an Administrator can add the Authorization Number by hand for the current term, and the sync recognizes it later.
 
 \subsection{\revised{User Interface Design (new)}}
+\label{sec:ui}
 
-The screen map lists every screen of the PWA, with its roles, purpose, key states (loading, empty, error, no connection), and the requirements it serves. It has 40 screens: 9 for people who are not signed in, 9 for Users, 6 shared by all roles (occupancy card, schedules, notices, facility information, analytics, language), 4 for Staff, and 12 for Administrators. Eight screens were removed (the PIN and recovery code screens, the in-person code, the second registration screen and the file upload) and three were added for staff accounts, backups and manual entries. Seven navigation maps show how a person moves between screens: public, User with an active authorization, User without one, Staff, Administrator, the shared app frame, and the standard data states. Users get a phone-first layout, because about 150 people a day use it, with three tabs: Gimnasio (occupancy and facility information), Check-in, and Mi cuenta. Check In must be usable in under 3 seconds. Staff and Administrator screens are desktop only, for the front desk desktop computer the gym confirmed, and they share the PWA codebase at the \texttt{/staff} path. Without a connection, no session is created and the app shows a banner that the data is not current. Accessibility notes in the screen map cover dialogs, the moving Gym ID clock, status messages, and tap-target sizes. The screen map now shows individual staff accounts with invitations and their own sign-in.
+\revised{The interface has two parts that share one React codebase. The User app is a PWA built for phones: a member checks in at the gym with the phone in hand, the phone supplies the location that Check In needs, and the Gym ID is a card shown to Staff on that same screen. It has three tabs: Gimnasio, Check-in, and Mi cuenta. The Staff and Administrator dashboard, under \texttt{/staff}, is built for a desktop browser, because the front desk works on a desktop computer and the session and roster tables need a wide screen. Every screen has loading, empty, error, and no-connection states. The wireframes are in Figma; the figures below show the built app on seeded test data, with the default Spanish texts.}
 
-The wireframes live in a Figma file, split into six issues: registration (\#40), Check In and Gym ID (\#41), sign-in and account (\#42), Staff (\#43), content and analytics (\#44), and administration (\#45). The Check In, sign-in, and Staff wireframes are approved; registration and administration are in review, and content and analytics move to the Final report. \pending{wireframe figures exported from Figma for the approved screens, Viviana}
+\newcommand{\uishot}[3]{%
+  \begin{minipage}[t]{#1\textwidth}
+    \centering
+    \fbox{\includegraphics[width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax]{figures/#2}}\\[1pt]
+    {\scriptsize #3}
+  \end{minipage}}
+
+\subsubsection{\revised{User App (Phone)}}
+
+\revised{Figure~\ref{fig:ui-pwa} follows a new member from registration to the end of a visit.}
+
+\begin{figure}[!htbp]
+  \centering
+  \uishot{0.155}{ui-pwa-01-welcome.png}{(a) Welcome}\hfill
+  \uishot{0.155}{ui-pwa-02-identify.png}{(b) Registration number}\hfill
+  \uishot{0.155}{ui-pwa-03-password.png}{(c) Password}\hfill
+  \uishot{0.155}{ui-pwa-04-photo.png}{(d) ID photo}\hfill
+  \uishot{0.155}{ui-pwa-05-waiver.png}{(e) Waiver and contact}\hfill
+  \uishot{0.155}{ui-pwa-06-install.png}{(f) Install help}\\[6pt]
+  \uishot{0.155}{ui-pwa-07-sign-in.png}{(g) Sign in}\hfill
+  \uishot{0.155}{ui-pwa-08-check-in.png}{(h) Check In}\hfill
+  \uishot{0.155}{ui-pwa-09-location-help.png}{(i) Location help}\hfill
+  \uishot{0.155}{ui-pwa-10-gym-id.png}{(j) Gym ID}\hfill
+  \uishot{0.155}{ui-pwa-11-occupancy.png}{(k) Occupancy}\hfill
+  \uishot{0.155}{ui-pwa-12-visit-ended.png}{(l) Visit ended}
+  \caption{\revised{User app on a phone: registration (a--f), then sign-in, Check In, the Gym ID, occupancy, and the end of the visit (g--l).}}
+  \label{fig:ui-pwa}
+  \label{fig:flow}
+\end{figure}
+
+\subsubsection{\revised{Dashboard (Desktop)}}
+
+\revised{Figure~\ref{fig:ui-desk} shows the dashboard. Staff start on the active sessions (S-01), open a person and their visit (S-02), find a person for an assisted Check In (S-03), and read the athlete roster (S-05). Administrators also manage academic terms (A-04), the athlete roster (A-05), and staff accounts (A-15).}
+
+\begin{figure}[!htbp]
+  \centering
+  \uishot{0.325}{ui-desk-01-sign-in.png}{(a) Sign in}\hfill
+  \uishot{0.325}{ui-desk-02-active-sessions.png}{(b) S-01 Active sessions and occupancy}\hfill
+  \uishot{0.325}{ui-desk-03-session.png}{(c) S-02 Person and session}\\[4pt]
+  \uishot{0.325}{ui-desk-04-find-person.png}{(d) S-03 Find person, assisted Check In}\hfill
+  \uishot{0.325}{ui-desk-05-staff-roster.png}{(e) S-05 Athlete roster, read only}\hfill
+  \uishot{0.325}{ui-desk-06-terms.png}{(f) A-04 Academic terms}\\[4pt]
+  \uishot{0.325}{ui-desk-07-roster.png}{(g) A-05 Athlete roster management}\hspace{0.0125\textwidth}
+  \uishot{0.325}{ui-desk-08-staff-accounts.png}{(h) A-15 Staff accounts}
+  \caption{\revised{Staff and Administrator dashboard on a desktop browser, 1440 by 900 pixels.}}
+  \label{fig:ui-desk}
+\end{figure}
 
 \subsection{System Diagrams}
 
-The following five diagrams show the platform architecture, account creation, authorization lifecycle, Check In sequence, and conceptual data model, as drawn for the proposal. The team will redraw them from the current design documents (\#93).
+The following five diagrams show the platform architecture, account creation, authorization lifecycle, Check In sequence, and conceptual data model, as drawn for the proposal. The team will redraw them from the current design.
 
 % --------------------------- FIGURE 1 ------------------------------
 \begin{figure}[!htbp]
@@ -74,7 +111,7 @@ The following five diagrams show the platform architecture, account creation, au
 \caption{High-Level System Architecture}
 \label{fig:architecture}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-Figure 1 shows how the User PWA and Staff/Administrator interface connect to the backend, its services, and the application database. WooCommerce, institutional email verification, and device location supply information to the relevant workflows. The figure still shows the proposal's stack. \pending{replace Figure 1 with the container diagram from the architecture document; team, \#93}
+This figure shows how the User PWA and Staff/Administrator interface connect to the backend, its services, and the application database. WooCommerce, institutional email verification, and device location supply information to the relevant workflows. \pending{add the proxy, scheduler, photo volume, and mail of the container list to this figure; team}
 \end{figure}
 
 % --------------------------- FIGURE 2 ------------------------------
@@ -84,7 +121,7 @@ Figure 1 shows how the User PWA and Staff/Administrator interface connect to the
 \caption{Paid-Member and Athlete Account Creation}
 \label{fig:accountcreation}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-Figure 2 separates paid-member validation by Authorization Number from athlete validation against the current roster. Both paths then create one persistent account with a password and current photo. \pending{redraw Figure 2: the one number field, the Authorization Number lookup limits, the emailed link that creates an athlete account, the photo and waiver saved together with the account; team, \#93}
+This figure separates paid-member validation by Authorization Number from athlete validation against the current roster. Both paths then create one persistent account with a password and current photo. \pending{redraw this figure: the one number field, the Authorization Number lookup limits, the emailed link that creates an athlete account, the photo and waiver saved together with the account; team}
 \end{figure}
 
 % --------------------------- FIGURE 3 ------------------------------
@@ -94,7 +131,7 @@ Figure 2 separates paid-member validation by Authorization Number from athlete v
 \caption{Post-Registration Account and Authorization Lifecycle}
 \label{fig:lifecycle}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-Figure 3 begins after a persistent account has been established. Authorization may expire, be renewed, or change between paid-member and athlete access while the same User account remains intact. \pending{redraw Figure 3: renewal inside the same account with a new Authorization Number, the ``I am an athlete'' link, the new-term photo, manual grant and revoke, release of a mistaken claim, and revocation after a refund; team, \#93}
+This figure begins after a persistent account has been established. Authorization may expire, be renewed, or change between paid-member and athlete access while the same User account remains intact. \pending{redraw this figure: renewal inside the same account with a new Authorization Number, the ``I am an athlete'' link, the new-term photo, manual grant and revoke, release of a mistaken claim, and revocation after a refund; team}
 \end{figure}
 
 % --------------------------- FIGURE 4 ------------------------------
@@ -104,7 +141,7 @@ Figure 3 begins after a persistent account has been established. Authorization m
 \caption{Check-In and Facility Session Sequence}
 \label{fig:checkin}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-Figure 4 shows how authorization, location, active-session control, Gym ID, and Staff verification interact during Check In. The active-session check and session creation are one protected backend operation, so simultaneous requests cannot create overlapping sessions. Location is requested only when a new session is needed. \pending{redraw Figure 4: remove the separate Authorization Service (checks run inside the Laravel app), show the two-step flow with an eligibility query before the Check In request, the cause codes, the database exclusion constraint, and the check-out and 2-hour close; team, \#93}
+This figure shows how authorization, location, active-session control, Gym ID, and Staff verification interact during Check In. The active-session check and session creation are one protected backend operation, so simultaneous requests cannot create overlapping sessions. Location is requested only when a new session is needed. \pending{redraw this figure: remove the separate Authorization Service (checks run inside the Laravel app), show the two-step flow with an eligibility query before the Check In request, the cause codes, the database exclusion constraint, and the check-out and 2-hour close; team}
 \end{figure}
 
 % --------------------------- FIGURE 5 ------------------------------
@@ -114,7 +151,7 @@ Figure 4 shows how authorization, location, active-session control, Gym ID, and 
 \caption{Conceptual Data Model}
 \label{fig:datamodel}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-Figure 5 separates identity, authorization, sign-in state, facility sessions, roles, and protected membership information. The model keeps semester-specific photographs with Authorization rather than treating the photograph as a permanent User attribute. \pending{redraw Figure 5: add academic terms, store orders and sync records, roster records, email links, staff accounts, and audit log entries; rename login session to sign-in session; reduce safety records to the waiver acceptance with an emergency contact; team, \#93}
+This figure separates identity, authorization, sign-in state, facility sessions, roles, and protected membership information. The model keeps semester-specific photographs with Authorization rather than treating the photograph as a permanent User attribute. \pending{redraw this figure: add academic terms, store orders and sync records, roster records, email links, staff accounts, and audit log entries; rename login session to sign-in session; reduce safety records to the waiver acceptance with an emergency contact; team}
 \end{figure}
 
 \subsection{Related Works}
@@ -142,23 +179,23 @@ These works shape three engineering decisions: PWA performance, the treatment of
 \endhead
 \bottomrule
 \endlastfoot
-\textbf{WooCommerce source.} Membership data remains in an external system. & Keep WooCommerce authoritative, copy only needed fields, and read it through the REST API with a read-only key so upstream changes do not redesign accounts. & Reading the same order twice produces no duplicate, and a cancelled or refunded order loses access (Final report, \#25). \\
+\textbf{WooCommerce source.} Membership data remains in an external system. & Keep WooCommerce authoritative and copy only needed fields. \revised{The built registration looks numbers up in a local copy of the orders; the REST client with a read-only key comes with the sync.} & \revised{Against the live store: reading the same order twice creates no duplicate, and a cancelled order loses access. Measured when the sync is built, for the Final report.} \\
 \addlinespace
-\textbf{Indoor location [4].} Phone accuracy varies by device and indoors. & Require a reading; compare gym boundary and reported accuracy; set the threshold through on-site tests. & Inside, outside, denied-permission, and low-accuracy cases pass in automated tests (Phase 3) and on real phones at the gym (Final report, \#12). \\
+\textbf{Indoor location [4].} Phone accuracy varies by device and indoors. & \revised{Ask the browser for a fresh high-accuracy reading. The server accepts it only with an accuracy of 50 meters or better and inside 50 meters of the gym's center; both limits are settings.} & \revised{On real iPhone and Android phones at the gym: Check In works anywhere in the weight room and is refused outside the building. Not measured yet; the team takes readings on site, sets the boundary and accuracy from them, and repeats the check before the Final report.} \\
 \addlinespace
-\revised{\textbf{Connectivity and polling.} Sign-in, authorization, sessions, one-device enforcement, and Gym ID verification need the backend, and occupancy refreshes by polling every 20 to 30 seconds.} & Require connectivity; disable offline Check In to avoid inconsistent access and occupancy; never cache API responses in the service worker. & Offline Sign In and Check In create no session; every screen shows the same occupancy value after its next poll (Phases 3 to 4). \\
+\revised{\textbf{Connectivity and polling.} Sign-in, authorization, sessions, one-device enforcement, and Gym ID verification need the backend, and occupancy refreshes by polling every 20 to 30 seconds.} & Require connectivity; disable offline Check In to avoid inconsistent access and occupancy; never cache API responses in the service worker. \revised{The occupancy screens poll every 25 seconds.} & \revised{On the gym's Wi-Fi and on mobile data, with real phones: no session is created offline, and every screen shows the same occupancy within 25 seconds of a change. Not measured on the gym's network yet; checked on site with the location tests.} \\
 \addlinespace
-\textbf{Concurrency.} Simultaneous requests can duplicate sessions or claims. & Enforce database uniqueness and exclusion constraints and atomic Check In, not frontend-only checks. & Concurrent requests and repeated Authorization Number or athlete-record claims yield one session or claim; a load test above the expected use of about 150 people a day keeps occupancy correct (Phases 3 to 6). \\
+\textbf{Concurrency.} Simultaneous requests can duplicate sessions or claims. & \revised{Check In runs in one database transaction. A PostgreSQL exclusion constraint allows one open visit per User, and the API answers a losing request with the visit that won. Unique indexes allow one claim per Authorization Number, one per roster record and term, and one active authorization per User and term.} & \revised{At the real peak on the CTI VM, with the expected arrivals of about 150 people a day: each User has at most one open visit, each number one claim, and Check In answers within 3 seconds for 95\% of requests. Local load tests only estimate this; the test runs again on the VM before the release.} \\
 \addlinespace
-\textbf{Browser/device variation.} PWA and geolocation behavior vary. & Test real phones on iPhone/Safari and Android/Chrome; test Windows/Chrome and Edge, with secondary macOS/Firefox checks. & Core flows pass the defined device/browser matrix (Phases 3 to 6). \\
+\textbf{Browser/device variation.} PWA and geolocation behavior vary. & \revised{Automated tests run the User app on an Android phone profile (Chromium) and an iPhone profile (WebKit), and the dashboard on desktop Chrome, Edge, Firefox, and Safari's engine. Before each delivery a person checks Safari on a real iPhone, including the installed app, and the other common browsers by hand.} & \revised{The core flows work on the members' real phones (iPhone with Safari, Android with Chrome) and on the front desk computer's browser.} \\
 \addlinespace
-\revised{\textbf{Accessibility.} Users, Staff, and Administrators may use a keyboard, a screen reader, zoom, or a small screen. WCAG 2.2 level AA is required (REQ-NF-13, REQ-NF-14, REQ-NF-36) [6].} & Show states with text or an icon, not color alone; change the page language with the texts; keep tap targets at least 24 by 24 pixels. Verify with axe-core run through Playwright in CI, oxlint jsx-a11y rules, and a manual checklist: keyboard only, NVDA, VoiceOver, 200\% zoom, and a 320 pixel width. & No axe violations on any screen in CI, and the manual checklist passes on the main flows (issue \#82). \\
+\revised{\textbf{Accessibility.} Users, Staff, and Administrators may use a keyboard, a screen reader, zoom, or a small screen. WCAG 2.2 level AA is required (REQ-NF-13, REQ-NF-14, REQ-NF-36) [6].} & Show states with text or an icon, not color alone; change the page language with the texts; keep tap targets at least 24 by 24 pixels. Verify with axe-core run through Playwright in CI, oxlint jsx-a11y rules, and a manual checklist: keyboard only, NVDA, VoiceOver, 200\% zoom, and a 320 pixel width. & \revised{The manual checklist passes on the main flows with a real screen reader on each device type: VoiceOver on an iPhone and NVDA on a desktop computer. axe in CI catches regressions but does not count as the pass.} \\
 \addlinespace
-\textbf{Sensitive data.} Photos, waivers, emergency contacts, and the audit log need protection. & Restrict by role with Laravel policies, use a private photo volume and minimal collection, and delete data after 5 years; Staff see only Check In essentials. & Role-permission tests confirm least-needed record access (Phase 5). \\
+\textbf{Sensitive data.} Photos, waivers, emergency contacts, and the audit log need protection. & \revised{Laravel policies check every role-restricted action. Photos sit on a private volume that only the API reads, and a scheduled task deletes a replaced photo. Staff see only Check In essentials. Deleting data after 5 years is designed and not built yet.} & \revised{In production, each Staff and Administrator account opens only the records its role allows, checked with real accounts before the release.} \\
 \addlinespace
-\revised{\textbf{Mail dependency.} Invitations, athlete links, and password resets need outgoing mail.} & Send mail during the request. Use a fake mail server in development and the CTI mail gateway in production, with an external provider only if CTI declines and approves it. & Each link flow works end to end against the fake mail server in tests. \pending{CTI: authorize the VM on its mail gateway; Carlos asks in \#63} \\
+\revised{\textbf{Mail dependency.} Invitations, athlete links, and password resets need outgoing mail.} & Send mail during the request. Use a fake mail server in development and the CTI mail gateway in production, with an external provider only if CTI declines and approves it. & \revised{Each link email reaches a real UPRM inbox through the CTI mail gateway. Only the fake mail server is tested so far.} \pending{CTI: authorize the VM on its mail gateway; Carlos asks} \\
 \addlinespace
-\revised{\textbf{CTI VM.} CTI creates the VM and the domain, but does not manage or maintain the server or the application.} & Run the same \texttt{docker-compose} file as in development, with pinned images, and agree a backup and restore procedure with the project owner. & The full stack starts from \texttt{docker-compose} on the VM, and a restore from backup works before the release (Phase 6). \pending{CTI: confirm Rocky Linux 10 and the second disk for backups in the VM request, \#64} \\
+\revised{\textbf{CTI VM.} CTI creates the VM and the domain, but does not manage or maintain the server or the application.} & Run the same \texttt{docker-compose} file as in development, with pinned images, and agree a backup and restore procedure with the project owner. & The full stack starts from \texttt{docker-compose} on the VM, and a restore from backup works before the release (Phase 6). \pending{CTI: confirm Rocky Linux 10 and the second disk for backups in the VM request} \\
 \end{longtable}
 \end{center}
 
@@ -211,7 +248,7 @@ Accepts at least 64 characters, sets no composition rules, rejects known breache
 &
 Authentication, session, and access-control design
 &
-Consulted for the controls above: hashed passwords, cookie sessions on one origin, per-account and per-IP attempt limits, one device per User, role checks on the server, and an audit log that names the person. \pending{control-by-control mapping and target ASVS level; team, \#93} \\
+Consulted for the controls above: hashed passwords, cookie sessions on one origin, per-account and per-IP attempt limits, one device per User, role checks on the server, and an audit log that names the person. \pending{control-by-control mapping and target ASVS level; team} \\
 \addlinespace
 \midrule
 \addlinespace

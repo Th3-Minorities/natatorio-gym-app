@@ -1,20 +1,2 @@
-% Demonstration screenshots (rubric 8b). Uses only graphicx and caption, both loaded in main.tex.
-% Images are in figures/ next to main.tex. Include with \input{sections/07b-screenshots}.
-\newcommand{\flowshot}[2]{%
-  \begin{minipage}[t]{0.22\textwidth}
-    \centering
-    \fbox{\includegraphics[width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax]{figures/#1}}\\[2pt]
-    {\small #2}
-  \end{minipage}}
-
-\begin{figure}[!htbp]
-  \centering
-  \flowshot{flow-01-registration.png}{(a) Registration: password step after the Authorization Number is found}\hfill
-  \flowshot{flow-02-sign-in.png}{(b) Sign in}\hfill
-  \flowshot{flow-03-check-in.png}{(c) Check In, ready to register}\\[8pt]
-  \flowshot{flow-04-gym-id.png}{(d) Gym ID after a successful Check In}\hfill
-  \flowshot{flow-05-occupancy.png}{(e) Gym occupancy}\hfill
-  \flowshot{flow-06-visit-ended.png}{(f) Visit ended by the front desk}
-  \caption{\revised{Working app flow on a phone-sized screen, running on the Docker stack with the seeded fake data.}}
-  \label{fig:flow}
-\end{figure}
+% Demonstration screenshots (rubric 8b). The screens are in the User Interface Design subsection of the Technical Approach.
+\revised{Figures~\ref{fig:ui-pwa} and~\ref{fig:ui-desk} in Section~\ref{sec:ui} show these flows on the same seeded data: registration, sign-in, Check In, the Gym ID, occupancy, the end of a visit, and the Staff and Administrator screens.}
