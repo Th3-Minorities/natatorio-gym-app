@@ -8,7 +8,7 @@ An installable web app for the Weight Gym at the UPRM Natatorio Complex, built a
 
 **On this page**
 
-[Overview](#overview) · [Progress](#objectives-and-status) · [Team](#team) · [Resources](#links)
+[Overview](#overview) · [Progress](#objectives-and-status) · [Demo](#demo) · [Coming soon](#coming-soon) · [Team](#team) · [Resources](#links)
 
 </nav>
 
@@ -28,6 +28,46 @@ An installable web app for the Weight Gym at the UPRM Natatorio Complex, built a
 | 4. Tools for Staff and Administrators | Partly built ahead, the rest planned |
 | 5. Gym use statistics | Planned |
 
+## Demo
+
+Two short videos will show the app working. They are not recorded yet.
+
+| Dashboard (desktop) | User app (phone) |
+|---|---|
+| Video coming soon. The dashboard that Staff and Administrators use on a computer. | Video coming soon. A User registering, checking in and opening the Gym ID on a phone. |
+
+<!-- When a video exists, put the file in a media folder and replace its cell with:
+<video controls preload="none" width="100%" src="media/FILE.mp4"></video> -->
+
+## Coming soon
+
+These parts are not built yet.
+
+For Staff and Administrators:
+
+- A front desk screen to see who is inside and check people out
+- Screens to add terms and manage the athlete roster
+- Tools to grant or release access by hand, and to delete an account
+- Screens to edit the hours, closures and notices
+- A screen to read the log of what Staff and Administrators did
+
+For Users:
+
+- Athletes: add athlete access to an existing account, and renew each term
+- Paid memberships synced from the gym's online store
+- My visits, a list of your past Check Ins
+- Edit your emergency contact in My account
+- Draw your signature on the waiver
+
+For the gym:
+
+- Statistics on when the gym is busy, and a way for other services to read them
+- Backups, restore, and removal of old data
+- A way to enter the paper log after an outage
+- Mail through the CTI mail gateway, and the app running on a CTI server
+- Manuals for Users, Staff, Administrators and developers, in Spanish and English
+- A security scan and an acceptance test with the gym
+
 ## How it is built
 
 The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL database. It runs with Docker Compose on a server from CTI, UPRM's technology office.
@@ -42,5 +82,6 @@ The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL
 
 - [Source code](https://github.com/Th3-Minorities/natatorio-gym-app)
 - [Documentation](docs/README.md)
+- Progress report: coming soon
 
-The progress report, the elevator pitch video and the final slides will be linked here when they are ready.
+The elevator pitch video and the final slides will be linked here when they are ready.
