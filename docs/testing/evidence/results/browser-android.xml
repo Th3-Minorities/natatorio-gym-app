@@ -1,0 +1,210 @@
+<testsuites id="" name="" tests="89" failures="0" skipped="0" errors="0" time="173.338681">
+<testsuite name="check-in-frames.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="27" failures="0" skipped="0" time="57.293" errors="0">
+<testcase name="Check In Figma frames at 390x844 › 4104-95 member ready" classname="check-in-frames.spec.ts" time="1.415">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4104-173 athlete ready" classname="check-in-frames.spec.ts" time="1.475">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4104-251 member pressing" classname="check-in-frames.spec.ts" time="2.218">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-3308 athlete pressing" classname="check-in-frames.spec.ts" time="1.944">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4104-719 member confirmed" classname="check-in-frames.spec.ts" time="1.326">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-3403 athlete confirmed" classname="check-in-frames.spec.ts" time="1.339">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4105-554 member upcoming" classname="check-in-frames.spec.ts" time="1.349">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-3509 athlete upcoming" classname="check-in-frames.spec.ts" time="1.548">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4105-639 member exclusive" classname="check-in-frames.spec.ts" time="1.256">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4105-704 athlete exclusive" classname="check-in-frames.spec.ts" time="1.426">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1284 member check_in_no_authorization" classname="check-in-frames.spec.ts" time="2.507">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4067 athlete check_in_no_authorization" classname="check-in-frames.spec.ts" time="2.324">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1344 member check_in_gym_closed" classname="check-in-frames.spec.ts" time="2.524">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4140 athlete check_in_gym_closed" classname="check-in-frames.spec.ts" time="2.393">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1404 athlete check_in_photo_required" classname="check-in-frames.spec.ts" time="2.54">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1476 member check_in_photo_pending" classname="check-in-frames.spec.ts" time="2.392">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4217 athlete check_in_photo_pending" classname="check-in-frames.spec.ts" time="2.582">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1536 member denied" classname="check-in-frames.spec.ts" time="2.561">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4358 athlete denied" classname="check-in-frames.spec.ts" time="2.501">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1597 member unavailable" classname="check-in-frames.spec.ts" time="2.416">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4436 athlete unavailable" classname="check-in-frames.spec.ts" time="2.519">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1669 member check_in_low_accuracy" classname="check-in-frames.spec.ts" time="2.376">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4513 athlete check_in_low_accuracy" classname="check-in-frames.spec.ts" time="2.38">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1729 member check_in_outside_boundary" classname="check-in-frames.spec.ts" time="2.403">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4657 athlete check_in_outside_boundary" classname="check-in-frames.spec.ts" time="2.621">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4106-1789 member offline" classname="check-in-frames.spec.ts" time="2.476">
+</testcase>
+<testcase name="Check In Figma frames at 390x844 › 4199-4734 athlete offline" classname="check-in-frames.spec.ts" time="2.482">
+</testcase>
+</testsuite>
+<testsuite name="flows\app-base.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="0.741" errors="0">
+<testcase name="the install help shows both phones, the installed app says so, and the app opens offline" classname="flows\app-base.spec.ts" time="0.741">
+</testcase>
+</testsuite>
+<testsuite name="flows\athlete-registration.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="1.746" errors="0">
+<testcase name="the student number lookup answers not on the roster, claimed, wrong length and on the roster with an emailed link" classname="flows\athlete-registration.spec.ts" time="1.746">
+</testcase>
+</testsuite>
+<testsuite name="flows\check-in.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="9.278" errors="0">
+<testcase name="Check In refuses each problem and opens the Gym ID from inside the gym" classname="flows\check-in.spec.ts" time="9.278">
+</testcase>
+</testsuite>
+<testsuite name="flows\end-of-visit.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="5.365" errors="0">
+<testcase name="a front desk check-out ends the visit on the member phone" classname="flows\end-of-visit.spec.ts" time="5.365">
+</testcase>
+</testsuite>
+<testsuite name="flows\gym-id-occupancy.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="5.453" errors="0">
+<testcase name="the Gym ID stays on screen offline and Gimnasio counts the visit" classname="flows\gym-id-occupancy.spec.ts" time="5.453">
+</testcase>
+</testsuite>
+<testsuite name="flows\paid-registration.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="4.355" errors="0">
+<testcase name="a paid member registers from Welcome and reaches Check In" classname="flows\paid-registration.spec.ts" time="4.355">
+</testcase>
+</testsuite>
+<testsuite name="flows\user-sign-in.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="7.403" errors="0">
+<testcase name="a User signs in, reaches Check In, is replaced by a second phone and recovers a forgotten password" classname="flows\user-sign-in.spec.ts" time="7.403">
+</testcase>
+</testsuite>
+<testsuite name="health.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="1" failures="0" skipped="0" time="0.298" errors="0">
+<testcase name="page shows the API is connected through the proxy" classname="health.spec.ts" time="0.298">
+</testcase>
+</testsuite>
+<testsuite name="pwa.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="2" failures="0" skipped="0" time="0.915" errors="0">
+<testcase name="manifest and launcher icons are linked and served (REQ-F-66)" classname="pwa.spec.ts" time="0.334">
+</testcase>
+<testcase name="the service worker precaches the app, never the API, and N-09 opens without connection" classname="pwa.spec.ts" time="0.581">
+</testcase>
+</testsuite>
+<testsuite name="registration-frames.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="8" failures="0" skipped="0" time="6.105" errors="0">
+<testcase name="paid registration screen states › 179-6122" classname="registration-frames.spec.ts" time="0.75">
+</testcase>
+<testcase name="paid registration screen states › 179-6139" classname="registration-frames.spec.ts" time="0.84">
+</testcase>
+<testcase name="paid registration screen states › 179-6216" classname="registration-frames.spec.ts" time="0.966">
+</testcase>
+<testcase name="paid registration screen states › privacy-english" classname="registration-frames.spec.ts" time="0.854">
+</testcase>
+<testcase name="paid registration screen states › privacy-loading" classname="registration-frames.spec.ts" time="0.738">
+</testcase>
+<testcase name="paid registration screen states › privacy-error" classname="registration-frames.spec.ts" time="0.707">
+</testcase>
+<testcase name="paid registration screen states › privacy-offline" classname="registration-frames.spec.ts" time="0.802">
+</testcase>
+<testcase name="paid registration reaches the photo step without claiming the number" classname="registration-frames.spec.ts" time="0.448">
+</testcase>
+</testsuite>
+<testsuite name="staff-roster.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="4" failures="0" skipped="0" time="14.897" errors="0">
+<testcase name="an Administrator creates and edits a term" classname="staff-roster.spec.ts" time="4.401">
+</testcase>
+<testcase name="an Administrator adds, edits, withdraws and reinstates an athlete" classname="staff-roster.spec.ts" time="6.36">
+</testcase>
+<testcase name="an Administrator downloads the whole roster as Word and as PDF" classname="staff-roster.spec.ts" time="2.817">
+</testcase>
+<testcase name="the terms and roster screens reflow at 320 CSS pixels" classname="staff-roster.spec.ts" time="1.319">
+</testcase>
+</testsuite>
+<testsuite name="user-frames.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="33" failures="0" skipped="0" time="44.076" errors="0">
+<testcase name="User screen states at 390x844 › 4078-11 welcome collapsed" classname="user-frames.spec.ts" time="0.948">
+</testcase>
+<testcase name="User screen states at 390x844 › 179-6068 welcome normal" classname="user-frames.spec.ts" time="1.024">
+</testcase>
+<testcase name="User screen states at 390x844 › 179-6164 sign-in normal" classname="user-frames.spec.ts" time="1.021">
+</testcase>
+<testcase name="User screen states at 390x844 › sign-in-busy sign-in busy" classname="user-frames.spec.ts" time="1.082">
+</testcase>
+<testcase name="User screen states at 390x844 › sign-in-wrong sign-in wrong" classname="user-frames.spec.ts" time="1.177">
+</testcase>
+<testcase name="User screen states at 390x844 › 4256-1822 sign-in invalid" classname="user-frames.spec.ts" time="1.103">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2091 sign-in wait" classname="user-frames.spec.ts" time="1.49">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2136 sign-in offline" classname="user-frames.spec.ts" time="1.199">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2180 account replaced" classname="user-frames.spec.ts" time="1.346">
+</testcase>
+<testcase name="User screen states at 390x844 › 179-6186 recover-password normal" classname="user-frames.spec.ts" time="1.846">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2231 recover-password busy" classname="user-frames.spec.ts" time="0.988">
+</testcase>
+<testcase name="User screen states at 390x844 › 4256-1846 recover-password invalid" classname="user-frames.spec.ts" time="1.145">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2260 recover-password server" classname="user-frames.spec.ts" time="1.25">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2295 recover-password offline" classname="user-frames.spec.ts" time="1.352">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2335 recover-password received" classname="user-frames.spec.ts" time="1.55">
+</testcase>
+<testcase name="User screen states at 390x844 › 179-6199 reset-password normal" classname="user-frames.spec.ts" time="1.983">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2359 reset-password validating" classname="user-frames.spec.ts" time="1.078">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-2377 reset-password expired" classname="user-frames.spec.ts" time="1.088">
+</testcase>
+<testcase name="User screen states at 390x844 › 4256-1861 reset-password invalid" classname="user-frames.spec.ts" time="1.169">
+</testcase>
+<testcase name="User screen states at 390x844 › reset-offline reset-password offline" classname="user-frames.spec.ts" time="1.159">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-1533 account/delete normal" classname="user-frames.spec.ts" time="1.12">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-1587 account/delete confirm" classname="user-frames.spec.ts" time="1.972">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-1634 account/delete active" classname="user-frames.spec.ts" time="1.47">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-1680 account/delete offline" classname="user-frames.spec.ts" time="1.875">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-626 account active" classname="user-frames.spec.ts" time="1.038">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-683 account normal" classname="user-frames.spec.ts" time="1.063">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-800 account loading" classname="user-frames.spec.ts" time="1.565">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-835 account server" classname="user-frames.spec.ts" time="2.105">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-875 account offline" classname="user-frames.spec.ts" time="1.306">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-740 account/settings normal" classname="user-frames.spec.ts" time="1.24">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-1153 account/settings english" classname="user-frames.spec.ts" time="1.064">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-1774 account/settings saved" classname="user-frames.spec.ts" time="2.004">
+</testcase>
+<testcase name="User screen states at 390x844 › 4099-1207 account/settings offline" classname="user-frames.spec.ts" time="1.256">
+</testcase>
+</testsuite>
+<testsuite name="user-other-screens.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="5" failures="0" skipped="0" time="7.154" errors="0">
+<testcase name="install help, iPhone tab" classname="user-other-screens.spec.ts" time="1.169">
+</testcase>
+<testcase name="install help, Android tab" classname="user-other-screens.spec.ts" time="1.094">
+</testcase>
+<testcase name="install help after registration" classname="user-other-screens.spec.ts" time="1.749">
+</testcase>
+<testcase name="gym occupancy" classname="user-other-screens.spec.ts" time="1.615">
+</testcase>
+<testcase name="privacy notice from Mi cuenta" classname="user-other-screens.spec.ts" time="1.527">
+</testcase>
+</testsuite>
+<testsuite name="user-sign-in.spec.ts" timestamp="2026-11-10T15:11:43.317Z" hostname="android" tests="2" failures="0" skipped="0" time="4.08" errors="0">
+<testcase name="User signs in, opens settings, signs out and cannot reopen the account" classname="user-sign-in.spec.ts" time="1.631">
+</testcase>
+<testcase name="a second browser replaces the first User session" classname="user-sign-in.spec.ts" time="2.449">
+</testcase>
+</testsuite>
+</testsuites>

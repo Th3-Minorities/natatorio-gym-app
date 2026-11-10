@@ -1,0 +1,44 @@
+<testsuites id="" name="" tests="13" failures="0" skipped="1" errors="0" time="76.20464100000001">
+<testsuite name="dashboard-shell.spec.ts" timestamp="2026-11-10T15:09:00.219Z" hostname="firefox" tests="3" failures="0" skipped="0" time="6.409" errors="0">
+<testcase name="keyboard users can skip to the dashboard content" classname="dashboard-shell.spec.ts" time="2.477">
+</testcase>
+<testcase name="dashboard shell has no automated WCAG 2.2 AA violations" classname="dashboard-shell.spec.ts" time="2.758">
+</testcase>
+<testcase name="dashboard shell reflows at 320 CSS pixels" classname="dashboard-shell.spec.ts" time="1.174">
+</testcase>
+</testsuite>
+<testsuite name="flows\staff-accounts.spec.ts" timestamp="2026-11-10T15:09:00.219Z" hostname="firefox" tests="1" failures="0" skipped="0" time="17.582" errors="0">
+<testcase name="an Administrator invites a person who signs in, recovers the password, changes role and is deactivated" classname="flows\staff-accounts.spec.ts" time="17.582">
+</testcase>
+</testsuite>
+<testsuite name="flows\terms-roster.spec.ts" timestamp="2026-11-10T15:09:00.219Z" hostname="firefox" tests="1" failures="0" skipped="1" time="0" errors="0">
+<testcase name="an Administrator adds a term and athletes, and downloads the roster" classname="flows\terms-roster.spec.ts">
+<properties>
+<property name="skip" value="">
+</property>
+</properties>
+<skipped>
+</skipped>
+</testcase>
+</testsuite>
+<testsuite name="staff-accounts.spec.ts" timestamp="2026-11-10T15:09:00.219Z" hostname="firefox" tests="4" failures="0" skipped="0" time="32.292" errors="0">
+<testcase name="an Administrator invites a person, who creates a password and signs in" classname="staff-accounts.spec.ts" time="15.267">
+</testcase>
+<testcase name="the invite dialog keeps focus inside, closes with Esc and gives focus back" classname="staff-accounts.spec.ts" time="3.027">
+</testcase>
+<testcase name="a forgotten password: the reset email link sets a new password" classname="staff-accounts.spec.ts" time="10.605">
+</testcase>
+<testcase name="the A-15 screen and the N-11 pages reflow at 320 CSS pixels" classname="staff-accounts.spec.ts" time="3.393">
+</testcase>
+</testsuite>
+<testsuite name="staff-sign-in.spec.ts" timestamp="2026-11-10T15:09:00.219Z" hostname="firefox" tests="4" failures="0" skipped="0" time="15.117" errors="0">
+<testcase name="an Administrator signs in, stays signed in after a reload, and signs out" classname="staff-sign-in.spec.ts" time="3.201">
+</testcase>
+<testcase name="Staff do not see the Administration items" classname="staff-sign-in.spec.ts" time="4.726">
+</testcase>
+<testcase name="the sign-in works with the keyboard alone" classname="staff-sign-in.spec.ts" time="2.063">
+</testcase>
+<testcase name="N-11 and the signed-in dashboard have no automated WCAG 2.2 AA violations" classname="staff-sign-in.spec.ts" time="5.127">
+</testcase>
+</testsuite>
+</testsuites>

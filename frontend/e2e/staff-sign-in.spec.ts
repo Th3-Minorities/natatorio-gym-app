@@ -54,7 +54,7 @@ test('Staff do not see the Administration items', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: 'Iniciar sesión' })).toBeVisible()
 })
 
-test('the sign-in works with the keyboard alone', async ({ page }) => {
+test('the sign-in works with the keyboard alone', async ({ page, browserName }) => {
   await openSignIn(page)
 
   // An empty submit sends focus to the first field with an error, so a screen reader reads it.
@@ -72,10 +72,12 @@ test('the sign-in works with the keyboard alone', async ({ page }) => {
   await page.keyboard.type('password')
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Iniciar sesión' })).toBeFocused()
-  await page.keyboard.press('Tab')
-  await expect(page.getByRole('link', { name: '¿Olvidaste tu contraseña?' })).toBeFocused()
-
-  await page.keyboard.press('Shift+Tab')
+  // WebKit skips links on Tab unless tabsToLinks is on, off by default on Windows and macOS (bugs.webkit.org/show_bug.cgi?id=66949).
+  if (browserName !== 'webkit') {
+    await page.keyboard.press('Tab')
+    await expect(page.getByRole('link', { name: '¿Olvidaste tu contraseña?' })).toBeFocused()
+    await page.keyboard.press('Shift+Tab')
+  }
   await page.keyboard.press('Enter')
   // While it signs in, the busy button keeps focus instead of dropping it to the page.
   await expect(page.getByRole('button', { name: 'Iniciando sesión…' })).toBeFocused()
