@@ -1,0 +1,1359 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="641" failures="0" errors="0" time="185.1195558">
+    <testsuite name="src/App.test.tsx" timestamp="2026-11-10T15:06:46.080Z" hostname="tal-vez" tests="7" failures="0" errors="0" skipped="0" time="0.3941336">
+        <testcase classname="src/App.test.tsx" name="shows the waiting text while the API has not answered" time="0.1374221">
+        </testcase>
+        <testcase classname="src/App.test.tsx" name="calls the health check with JSON accept header" time="0.0217994">
+        </testcase>
+        <testcase classname="src/App.test.tsx" name="shows connected when the API answers ok" time="0.0796198">
+        </testcase>
+        <testcase classname="src/App.test.tsx" name="shows the error code and never the message" time="0.0412154">
+        </testcase>
+        <testcase classname="src/App.test.tsx" name="shows no connection when the request fails" time="0.0286526">
+        </testcase>
+        <testcase classname="src/App.test.tsx" name="shows no connection when the proxy answers with an HTML page" time="0.0463637">
+        </testcase>
+        <testcase classname="src/App.test.tsx" name="shows no connection when ok status has an unexpected body" time="0.0327202">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/api/client.test.ts" timestamp="2026-11-10T15:06:46.088Z" hostname="tal-vez" tests="13" failures="0" errors="0" skipped="0" time="0.0993763">
+        <testcase classname="src/api/client.test.ts" name="apiRequest &gt; reads JSON from /api with the JSON accept header" time="0.0379773">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="apiRequest &gt; answers nothing for a 204" time="0.0116178">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="apiRequest &gt; gets the CSRF cookie before the first POST and sends it back decoded" time="0.0057809">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="apiRequest &gt; does not ask for the CSRF cookie again when it already has one" time="0.0026242">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="apiRequest &gt; gets a new CSRF cookie and tries once more when the token expired (419)" time="0.0062468">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="apiRequest &gt; marks a request the screen makes by itself, so it does not count as activity (E-130)" time="0.0043537">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="apiRequest &gt; does not mark requests a person started" time="0.0031433">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="errors &gt; become an ApiError with the code and status, never the server text" time="0.0055229">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="errors &gt; keep the field details of a validation error" time="0.0045976">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="errors &gt; carry the seconds to wait after too many tries (REQ-F-07)" time="0.0034218">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="errors &gt; are &quot;offline&quot; when the request does not reach the server" time="0.0026139">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="errors &gt; are &quot;offline&quot; when a 200 answer is not JSON, like the app page from a misrouted proxy" time="0.0030276">
+        </testcase>
+        <testcase classname="src/api/client.test.ts" name="errors &gt; are &quot;offline&quot; when the proxy answers its own HTML error page" time="0.0028091">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/components/ErrorBoundary.test.tsx" timestamp="2026-11-10T15:06:46.094Z" hostname="tal-vez" tests="3" failures="0" errors="0" skipped="0" time="1.0267013">
+        <testcase classname="src/components/ErrorBoundary.test.tsx" name="renders children when they do not throw" time="0.1512971">
+        </testcase>
+        <testcase classname="src/components/ErrorBoundary.test.tsx" name="shows a translated error for a bad date in es" time="0.8042998">
+        </testcase>
+        <testcase classname="src/components/ErrorBoundary.test.tsx" name="shows a translated error for a bad date in en" time="0.0676776">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/components/components.test.tsx" timestamp="2026-11-10T15:06:46.096Z" hostname="tal-vez" tests="17" failures="0" errors="0" skipped="0" time="1.204067">
+        <testcase classname="src/components/components.test.tsx" name="Button &gt; is a real button that does not submit forms by accident" time="0.6049533">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="Button &gt; can submit a form when asked" time="0.0252713">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="Button &gt; has the primary, secondary and link looks from Figma" time="0.1118839">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="Button &gt; does nothing when disabled" time="0.0463057">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="TextField &gt; ties its label to the field, for screen readers and clicks" time="0.0368033">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="TextField &gt; marks the field invalid and reads the error with it" time="0.0283048">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="TextField &gt; is not marked invalid without an error" time="0.0170276">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="TextField &gt; keeps the caller description and the error link, even with caller aria props" time="0.028756">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="TextField &gt; passes typing through" time="0.0255191">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="Notice &gt; is announced to screen readers when it appears" time="0.0320422">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="Notice &gt; is neutral by default and pink with tone=&quot;error&quot; (E-188)" time="0.037531">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="states &gt; loading is a status with the Figma title, in the account language" time="0.0635626">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="states &gt; empty shows its title and what the screen says" time="0.0397536">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="states &gt; error offers to try again" time="0.03026">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="states &gt; no connection keeps the retry button but disabled, as in Figma" time="0.0290152">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="states &gt; enables retry only with a connection and a retry action" time="0.0221469">
+        </testcase>
+        <testcase classname="src/components/components.test.tsx" name="user text &gt; is always shown as text, never as HTML" time="0.0171552">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/dashboard/DashboardShell.test.tsx" timestamp="2026-11-10T15:06:46.102Z" hostname="tal-vez" tests="10" failures="0" errors="0" skipped="0" time="1.9985291">
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; shows the Staff and General menu items to everyone" time="0.9248611">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; hides the Administration items from Staff (REQ-NF-10)" time="0.136343">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; shows the Administration items to Administrators" time="0.1887891">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; shows who is signed in and their role" time="0.0892589">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; signs out from the sidebar" time="0.1557392">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; puts the page title, description, action and content in the main area" time="0.1023574">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; lets keyboard users skip the menu (WCAG 2.4.1)" time="0.0794866">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; menu items that no screen has connected yet are plain text, not dead links" time="0.139709">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; follows the account language" time="0.1250567">
+        </testcase>
+        <testcase classname="src/dashboard/DashboardShell.test.tsx" name="DashboardShell &gt; shows the account name as text, never as HTML" time="0.0522619">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/format/dateTime.test.tsx" timestamp="2026-11-10T15:06:46.109Z" hostname="tal-vez" tests="13" failures="0" errors="0" skipped="0" time="0.2650895">
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDateTime &gt; writes a past day as in Figma, in Spanish and in English" time="0.091464">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDateTime &gt; writes a time from today as &quot;Hoy&quot; or &quot;Today&quot;" time="0.0038486">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDateTime &gt; decides &quot;today&quot; in Puerto Rico, not in UTC, between 8 PM and midnight" time="0.0053265">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDateTime &gt; reads Laravel&apos;s dates with six decimals" time="0.0023619">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDateTime &gt; accepts a Date" time="0.0024191">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDateTime &gt; refuses a value that is not a date, instead of showing &quot;Invalid Date&quot;" time="0.0018364">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDate and formatTime &gt; includes seconds for live status update times in both languages" time="0.0018752">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDate and formatTime &gt; keeps a date-only value on its calendar day in Puerto Rico" time="0.0017699">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDate and formatTime &gt; give the date or the time alone, as in Figma" time="0.0029011">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDate and formatTime &gt; writes midnight and noon as 12" time="0.0019695">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="formatDate and formatTime &gt; uses plain spaces, so every browser shows the same text" time="0.0031083">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="useDateFormat &gt; formats in the account language" time="0.1309228">
+        </testcase>
+        <testcase classname="src/format/dateTime.test.tsx" name="useDateFormat &gt; is Spanish by default" time="0.0104531">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/i18n/apiError.test.ts" timestamp="2026-11-10T15:06:46.115Z" hostname="tal-vez" tests="6" failures="0" errors="0" skipped="0" time="0.0077704">
+        <testcase classname="src/i18n/apiError.test.ts" name="API error texts &gt; uses the account language for known codes" time="0.0030506">
+        </testcase>
+        <testcase classname="src/i18n/apiError.test.ts" name="API error texts &gt; falls back by HTTP status for unknown codes" time="0.0006771">
+        </testcase>
+        <testcase classname="src/i18n/apiError.test.ts" name="API error texts &gt; uses the general field text for unknown validation rules" time="0.0003554">
+        </testcase>
+        <testcase classname="src/i18n/apiError.test.ts" name="API error texts &gt; uses the account language for known codes" time="0.0004163">
+        </testcase>
+        <testcase classname="src/i18n/apiError.test.ts" name="API error texts &gt; falls back by HTTP status for unknown codes" time="0.0004887">
+        </testcase>
+        <testcase classname="src/i18n/apiError.test.ts" name="API error texts &gt; uses the general field text for unknown validation rules" time="0.0002714">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/i18n/i18n.test.tsx" timestamp="2026-11-10T15:06:46.119Z" hostname="tal-vez" tests="10" failures="0" errors="0" skipped="0" time="0.4250552">
+        <testcase classname="src/i18n/i18n.test.tsx" name="translation files &gt; have the same texts in Spanish and English" time="0.0288682">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="translation files &gt; have no empty text" time="0.0143243">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="translation files &gt; translate every error code the backend sends" time="0.067733">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="translation files &gt; translates the supported validation rules and the general fallback" time="0.0034805">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="errorMessage &gt; shows the text for a known code" time="0.0025891">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="errorMessage &gt; never shows a raw code: unknown codes get the general text" time="0.0040511">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="I18nProvider &gt; is Spanish by default and sets the page language" time="0.2286205">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="I18nProvider &gt; follows the account language and the page language follows it (REQ-NF-33)" time="0.020409">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="I18nProvider &gt; falls back to Spanish for a language the app does not have" time="0.0202342">
+        </testcase>
+        <testcase classname="src/i18n/i18n.test.tsx" name="I18nProvider &gt; updates the page title when the account language changes" time="0.0287378">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/security.test.ts" timestamp="2026-11-10T15:06:46.123Z" hostname="tal-vez" tests="1" failures="0" errors="0" skipped="0" time="0.1802583">
+        <testcase classname="src/security.test.ts" name="no source file can show text as raw HTML" time="0.1770632">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/service-worker.test.tsx" timestamp="2026-11-10T15:06:46.124Z" hostname="tal-vez" tests="7" failures="0" errors="0" skipped="0" time="0.0678331">
+        <testcase classname="src/service-worker.test.tsx" name="worker never reads cached API responses for /api" time="0.0242942">
+        </testcase>
+        <testcase classname="src/service-worker.test.tsx" name="worker never reads cached API responses for /api/health" time="0.0067934">
+        </testcase>
+        <testcase classname="src/service-worker.test.tsx" name="worker never reads cached API responses for /api/accounts?locale=en" time="0.005096">
+        </testcase>
+        <testcase classname="src/service-worker.test.tsx" name="API failure rejects instead of returning an offline HTML shell" time="0.0106904">
+        </testcase>
+        <testcase classname="src/service-worker.test.tsx" name="POST to the API is left to the browser so multipart bodies are not re-sent" time="0.004626">
+        </testcase>
+        <testcase classname="src/service-worker.test.tsx" name="offline app navigation uses the precached shell" time="0.0051317">
+        </testcase>
+        <testcase classname="src/service-worker.test.tsx" name="install precaches only build files and activation removes only older app caches" time="0.0052393">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/ProblemNotice.test.tsx" timestamp="2026-11-10T15:06:46.128Z" hostname="tal-vez" tests="2" failures="0" errors="0" skipped="0" time="0.6799644">
+        <testcase classname="src/staff/ProblemNotice.test.tsx" name="ProblemNotice &gt; is the pink error notice when the caller says so (E-188)" time="0.5810306">
+        </testcase>
+        <testcase classname="src/staff/ProblemNotice.test.tsx" name="ProblemNotice &gt; keeps no connection neutral, even for a caller that asks for error" time="0.094054">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/StaffApp.test.tsx" timestamp="2026-11-10T15:06:46.129Z" hostname="tal-vez" tests="16" failures="0" errors="0" skipped="0" time="3.4470333">
+        <testcase classname="src/staff/StaffApp.test.tsx" name="the /staff address &gt; /staff belongs to the staff part: true" time="0.0229462">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="the /staff address &gt; /staff/ belongs to the staff part: true" time="0.0037858">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="the /staff address &gt; /staff/recuperar belongs to the staff part: true" time="0.0009105">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="the /staff address &gt; /staffing belongs to the staff part: false" time="0.0006412">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="the /staff address &gt; / belongs to the staff part: false" time="0.0007398">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="the /staff address &gt; /api/staff/me belongs to the staff part: false" time="0.0078392">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="before anyone signs in &gt; shows &quot;Cargando&quot; while it asks who is signed in" time="0.5236026">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="before anyone signs in &gt; shows N-11 when nobody is signed in" time="0.2843186">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="before anyone signs in &gt; shows N-11 with &quot;Sin conexión&quot; when the API cannot be reached" time="0.111247">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="signing in and out &gt; opens the dashboard after signing in, in the account language" time="0.4888615">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="signing in and out &gt; shows the shell with an empty main area when already signed in" time="0.2531806">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="signing in and out &gt; goes back to N-11 after signing out" time="0.3183045">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="signing in and out &gt; says so and stays signed in when the sign-out cannot reach the server" time="0.40813">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="when the sign-in ends by itself &gt; goes to N-11 with &quot;Sesión vencida&quot; when the minute check finds it expired" time="0.2556372">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="when the sign-in ends by itself &gt; goes to N-11 with &quot;Cuenta desactivada&quot; when the account was deactivated" time="0.3234206">
+        </testcase>
+        <testcase classname="src/staff/StaffApp.test.tsx" name="N-11 after a timeout &gt; does not keep the old notice once the person signs in again and out again" time="0.4374895">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/StaffSession.test.tsx" timestamp="2026-11-10T15:06:46.138Z" hostname="tal-vez" tests="20" failures="0" errors="0" skipped="0" time="1.3913943">
+        <testcase classname="src/staff/StaffSession.test.tsx" name="on load &gt; asks who is signed in, and is checking until the answer comes" time="0.3878674">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="on load &gt; is signed out when nobody is signed in" time="0.0582858">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="on load &gt; is offline when the API cannot be reached, and can try again" time="0.0561515">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="signing in and out &gt; signs in and keeps the account" time="0.0779735">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="signing in and out &gt; passes a failed sign-in back to the screen and stays signed out" time="0.0307521">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="signing in and out &gt; signs out" time="0.0637312">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; a request answered staff_session_expired signs the person out, with the reason" time="0.0411466">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; a request answered staff_account_deactivated signs the person out, with the reason" time="0.047622">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; a request answered unauthenticated signs the person out, with the reason" time="0.05314">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; other errors leave the sign-in alone" time="0.0523797">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; checks every minute while signed in, as an automatic refresh, and notices the timeout (E-130)" time="0.0823569">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; checks after exactly a minute, and the first check on load is not an automatic refresh" time="0.0385134">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; a background check without connection keeps the person signed in" time="0.0525436">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; stops checking after sign-out" time="0.1119526">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; a check answered after a sign-out does not sign the person back in" time="0.05324">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="the sign-in ending by itself &gt; a check that finds nothing new does not redraw the dashboard" time="0.0412522">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="sign-in and sign-out edge cases &gt; a sign-out the server already ended still signs out" time="0.0408007">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="sign-in and sign-out edge cases &gt; a sign-out without connection fails and stays signed in, so nobody thinks the desk is signed out" time="0.057018">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="sign-in and sign-out edge cases &gt; a deactivated account is refused at sign-in with its own code" time="0.0099585">
+        </testcase>
+        <testcase classname="src/staff/StaffSession.test.tsx" name="language &gt; follows the account once signed in, and is Spanish before" time="0.0243737">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/StaffSignIn.test.tsx" timestamp="2026-11-10T15:06:46.147Z" hostname="tal-vez" tests="20" failures="0" errors="0" skipped="0" time="2.3403369">
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="N-11 &gt; has the texts, fields and link of the Figma frame" time="0.4286855">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="N-11 &gt; helps the browser fill and save the staff password" time="0.0267896">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="N-11 &gt; signs in with the email and password typed" time="0.1524441">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="N-11 &gt; submits with Enter, like any form" time="0.0625888">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="N-11 &gt; asks for both fields before sending anything" time="0.1261231">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="keyboard and screen reader users &gt; moves focus to the first empty field, so its error is read out" time="0.1024311">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="keyboard and screen reader users &gt; moves focus to the field the server rejected" time="0.0842895">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="keyboard and screen reader users &gt; keeps focus on the button while it signs in" time="0.0790024">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="signing in (4039:3798) &gt; shows the busy button, keeps both fields and does not send twice" time="0.0840494">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="wrong email or password (4039:3871) &gt; shows one notice for both cases and lets the person try again" time="0.1335997">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="too many tries (4039:3942) &gt; says when to try again, in Puerto Rico time, and blocks the button until then" time="0.2919865">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="no connection (4039:4018) &gt; keeps what was typed and waits for the connection to come back" time="0.162823">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="no connection (4039:4018) &gt; lets the person try again when the browser is online but the server did not answer" time="0.1588726">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="deactivated account (4039:4094) &gt; says so and blocks the button until the email or password changes" time="0.1390307">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="after a sign-in ended by itself &gt; says the session ended for inactivity, with empty fields and the button ready (4039:4365)" time="0.0485684">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="after a sign-in ended by itself &gt; says the account was deactivated when it was cut off while signed in" time="0.0297561">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="after a sign-in ended by itself &gt; shows no notice after a normal sign-out" time="0.0198737">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="other answers &gt; shows the field rules the server sends" time="0.0895524">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="other answers &gt; shows any other error with its text, never the raw code" time="0.08295">
+        </testcase>
+        <testcase classname="src/staff/StaffSignIn.test.tsx" name="language &gt; is in English for an English device session" time="0.031764">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/access/StaffAccessPages.test.tsx" timestamp="2026-11-10T15:06:46.158Z" hostname="tal-vez" tests="17" failures="0" errors="0" skipped="0" time="3.888809">
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="N-11 sign-in &gt; opens Recuperar contraseña from &quot;¿Olvidaste tu contraseña?&quot;" time="1.021669">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Recuperar contraseña &gt; sends the email and shows &quot;Revisa tu correo&quot; whatever the answer means" time="0.2933637">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Recuperar contraseña &gt; shows a wrong email under the field" time="0.1630424">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Recuperar contraseña &gt; says when there are too many requests" time="0.1252861">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Recuperar contraseña &gt; says there is no connection, not that the request failed" time="0.1240775">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Recuperar contraseña &gt; goes back to sign-in" time="0.1563301">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Crear tu contraseña, from the invitation &gt; shows who was invited, saves the password and goes back to sign-in" time="0.3768701">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Crear tu contraseña, from the invitation &gt; shows &quot;Enlace vencido o usado&quot; for a link that no longer works" time="0.1324071">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Crear tu contraseña, from the invitation &gt; shows &quot;Enlace vencido o usado&quot; without asking when the link has no token" time="0.0539443">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Crear tu contraseña, from the invitation &gt; shows the password rules the server refused" time="0.260517">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Crear tu contraseña, from the invitation &gt; shows a confirmation that does not match under the second field" time="0.4061526">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Crear tu contraseña, from the invitation &gt; shows &quot;Enlace vencido o usado&quot; when the link stops working while the form is open" time="0.2176835">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Restablecer contraseña, from the reset email &gt; saves the new password and goes back to sign-in" time="0.1982688">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Restablecer contraseña, from the reset email &gt; shows &quot;Enlace vencido o usado&quot; and where to ask for a new link" time="0.1348886">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Restablecer contraseña, from the reset email &gt; shows the page title and &quot;Revisando el enlace…&quot; while the link is checked (4424:1753)" time="0.0795969">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Restablecer contraseña, from the reset email &gt; shows &quot;Error al cargar&quot; when the link cannot be checked, and checks again with Reintentar (4424:1792)" time="0.1129282">
+        </testcase>
+        <testcase classname="src/staff/access/StaffAccessPages.test.tsx" name="Restablecer contraseña, from the reset email &gt; keeps the invitation help on an expired invitation link" time="0.0240772">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/people/FindPerson.test.tsx" timestamp="2026-11-10T15:06:46.169Z" hostname="tal-vez" tests="30" failures="0" errors="0" skipped="0" time="13.7554651">
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; opens from &quot;Buscar persona&quot; in the menu" time="1.4103068">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; finds an athlete, checks the photo and records the entry after asking" time="1.4301416">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; lets Staff pick the right account when names repeat, by the masked email" time="0.7995091">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; says when nobody matches" time="0.3202767">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; says when the search fails or there is no connection" time="0.2528062">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; says when there is no connection" time="0.2504653">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; explains no current authorization before any entry, with no way to confirm" time="0.2695558">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; explains no photo before any entry, with no way to confirm" time="0.498267">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; explains a pending photo before any entry, with no way to confirm" time="0.4820724">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; shows the open visit instead of a second one (4288:1695)" time="0.5080235">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; explains a refusal from the server (check_in_gym_closed)" time="0.6426992">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; explains a refusal from the server (check_in_athletes_only)" time="0.6576699">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; marks the photo pending when it does not match, and records no entry" time="0.4619139">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; closes the confirmation with Cancelar and records nothing" time="0.2956258">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; moves focus to the verify title after the search (WCAG 2.4.3)" time="0.1627168">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; goes back to an empty search from &quot;No encontramos coincidencias&quot; (4288:1105)" time="0.2147758">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; asks the same search again from Reintentar (4288:1135)" time="0.2803292">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; shows a disabled Confirmar Check in when there is no connection (4288:1160)" time="0.2375462">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; offers Volver a buscar when the account has no authorization (4288:1183)" time="0.2436413">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; draws only a disabled Confirmar Check in for no photo (4288:1207)" time="0.2038218">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; draws only a disabled Confirmar Check in for a pending photo (4288:1232)" time="0.4167252">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; offers Volver a buscar when the gym is closed" time="0.6213161">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; offers Volver a buscar when it is athletes-only time" time="0.3854404">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; offers Volver a sesiones when the person is already inside (4288:1695)" time="0.2333565">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; says it is recording the entry while it waits (4288:1305)" time="0.3078998">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 assisted Check In &gt; checks again for the entry from Actualizar datos when it could not be confirmed (4288:1329)" time="0.742901">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 and the athlete roster (S-05) &gt; has &quot;Ver roster&quot; next to Buscar and next to Volver a buscar" time="0.5147086">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 and the athlete roster (S-05) &gt; opens the roster from &quot;Ver roster&quot;" time="0.5421691">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 and the athlete roster (S-05) &gt; fills the box from the student number in the address and searches once" time="0.244785">
+        </testcase>
+        <testcase classname="src/staff/people/FindPerson.test.tsx" name="S-03 and the athlete roster (S-05) &gt; does not search on its own when the address has no number" time="0.1159069">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/roster/AthleteRoster.test.tsx" timestamp="2026-11-10T15:06:46.180Z" hostname="tal-vez" tests="17" failures="0" errors="0" skipped="0" time="9.3422188">
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; opens from &quot;Gestionar atletas&quot; in the menu" time="1.5278607">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; lists the active athletes with their data, the count and the term" time="0.7838045">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; filters by Activo and Retirado, together or alone" time="1.1462652">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; searches by name or student number" time="0.9129484">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; says when a search finds nobody" time="0.9677712">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; says &quot;no results&quot;, not &quot;no athletes yet&quot;, when only the filter hides the athletes" time="0.6455817">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; says &quot;no results&quot; when every athlete is withdrawn and only Activo is on" time="0.317534">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; says in its own words that no term is active (101:1417)" time="0.1293741">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; invites the first athlete when the roster is empty" time="0.3819635">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; offers a retry when the list cannot load" time="0.4397046">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; says when there is no connection" time="0.209509">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="the roster screen &gt; stays an empty dashboard for a Staff account" time="0.0977626">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="adding and editing athletes &gt; adds athletes one after another, keeping the sport" time="0.5018689">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="adding and editing athletes &gt; names the athlete who already has the student number" time="0.3035443">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="adding and editing athletes &gt; shows the plain error in the pink banner when the number race sends no athlete" time="0.2443472">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="adding and editing athletes &gt; shows a refused field under the field" time="0.3264586">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteRoster.test.tsx" name="adding and editing athletes &gt; edits an athlete with the data filled in" time="0.3990343">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/roster/AthleteStatus.test.tsx" timestamp="2026-11-10T15:06:46.186Z" hostname="tal-vez" tests="8" failures="0" errors="0" skipped="0" time="7.8999386">
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="withdrawing an athlete &gt; asks first, then withdraws and says so" time="2.3366443">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="withdrawing an athlete &gt; shows a server error in the pink banner" time="1.1579773">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="withdrawing an athlete &gt; closes with Cancelar and sends nothing" time="0.626611">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="withdrawing an athlete &gt; says when someone else changed the athlete, and reloads the list" time="0.5406898">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="reinstating an athlete &gt; needs a reason of at least 10 characters, then reinstates with it" time="0.9841437">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="reinstating an athlete &gt; explains when the athlete already has an active authorization" time="1.0179858">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="reinstating an athlete &gt; shows the plain error in the pink banner when the race refusal names no term" time="0.6713291">
+        </testcase>
+        <testcase classname="src/staff/roster/AthleteStatus.test.tsx" name="reinstating an athlete &gt; puts the short-reason title and text in live regions, since focus stays in the field" time="0.5599366">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/roster/RosterDownload.test.tsx" timestamp="2026-11-10T15:06:46.193Z" hostname="tal-vez" tests="4" failures="0" errors="0" skipped="0" time="3.3310773">
+        <testcase classname="src/staff/roster/RosterDownload.test.tsx" name="downloading the roster &gt; downloads the whole roster as Word by default" time="1.5389356">
+        </testcase>
+        <testcase classname="src/staff/roster/RosterDownload.test.tsx" name="downloading the roster &gt; downloads it as PDF when chosen" time="0.6720648">
+        </testcase>
+        <testcase classname="src/staff/roster/RosterDownload.test.tsx" name="downloading the roster &gt; stays open and says why when the file cannot be made" time="0.6202906">
+        </testcase>
+        <testcase classname="src/staff/roster/RosterDownload.test.tsx" name="downloading the roster &gt; closes with Cancelar and asks for nothing" time="0.4951953">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/roster/StaffRoster.test.tsx" timestamp="2026-11-10T15:06:46.196Z" hostname="tal-vez" tests="14" failures="0" errors="0" skipped="0" time="7.5751725">
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; lists each athlete for Staff with the number in full, the chip and the count, and no email" time="1.2739881">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; opens for an Administrator too, and the menu item points to it" time="0.8405028">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; shows &quot;Entrada registrada&quot; and the start time instead of the button for an athlete who is inside" time="0.3963946">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; opens S-03 with the student number and runs that search once" time="0.7357888">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; says it is loading, with three skeleton lines" time="0.1709766">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; says when the roster has no athletes" time="0.2878276">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; says when the roster cannot load, and Reintentar asks again" time="0.3080693">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; has no rows to keep when the first load finds no connection" time="0.1034699">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; shows one offline panel with the old rows as cards, the search disabled and every Check in disabled" time="0.2438501">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; does not end the offline sentence with a second period when the time already ends in one" time="0.0046557">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; moves focus to the table after Reintentar, since the button is gone" time="0.2071824">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; moves focus to the offline panel title when going offline disables the search it was in" time="0.1292704">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; moves focus to &quot;Sin resultados&quot; when a search ends there with focus lost, and keeps the cursor in the search box" time="1.2901482">
+        </testcase>
+        <testcase classname="src/staff/roster/StaffRoster.test.tsx" name="S-05 athlete roster, read only &gt; asks the server again for every search and drops the rows that do not match" time="1.5775105">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/sessions/ActiveSessions.test.tsx" timestamp="2026-11-10T15:06:46.203Z" hostname="tal-vez" tests="16" failures="0" errors="0" skipped="0" time="6.7931489">
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; is the dashboard home, with the count, the level, the bar and the update time" time="0.91284">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; says whether the gym is open, by the same schedule Check In uses" time="0.3812479">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; names the closed state in the same place" time="0.3987913">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; names the athletes_only state in the same place" time="0.3924344">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; hides the gym state with the number when the count cannot load" time="0.4435323">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; shows the same card to Staff accounts" time="0.1507604">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; makes &quot;Sesiones activas&quot; in the menu a link to this page" time="0.510316">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; hides the number and says it is not current when the count cannot load" time="0.4238083">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; says when there is no connection" time="0.3298645">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; draws the offline state of 122:2983 once: title, chip, why and the last update" time="0.449636">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; announces a problem with the count through one status region" time="0.3628878">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; sends the first request as activity and every later one as a background refresh (E-130)" time="0.3203353">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; asks again as a background refresh when the connection comes back" time="0.5858664">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; asks again as soon as the tab is visible again, as a background refresh" time="0.4865388">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; asks again every 25 seconds, only while the page is visible" time="0.4622168">
+        </testcase>
+        <testcase classname="src/staff/sessions/ActiveSessions.test.tsx" name="S-01 occupancy &gt; does not announce a new count, only a count that is not current" time="0.1697028">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/sessions/SessionDetail.test.tsx" timestamp="2026-11-10T15:06:46.209Z" hostname="tal-vez" tests="14" failures="0" errors="0" skipped="0" time="8.6521968">
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; shows the person, what Staff may see, and the active session" time="1.5479658">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; can end early an active session after asking" time="1.2207395">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; can void an active session after asking" time="1.0807499">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; can check out an active session after asking" time="0.429174">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; says the session changed elsewhere and reloads it" time="0.4188203">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; marks the photo pending after asking, and keeps the session" time="0.9001201">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; shows a finished session with how it ended and no actions" time="0.3115645">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; offers a retry when the data cannot load" time="0.4441755">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; is also open to Staff accounts" time="0.2122543">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; moves focus to the session title after an action, since the pressed button is gone" time="0.7570034">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; moves focus to the pending panel after marking the photo pending" time="0.7274526">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; offers Actualizar datos when the session changed (122:3141) and loads it again" time="0.3181557">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; goes back to the sessions from the error state, with the hint line (4228:1671)" time="0.1975573">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionDetail.test.tsx" name="S-02 detail &gt; shows the skeleton bars and the hint line while it loads (4228:1557)" time="0.0800059">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/sessions/SessionsList.test.tsx" timestamp="2026-11-10T15:06:46.214Z" hostname="tal-vez" tests="12" failures="0" errors="0" skipped="0" time="8.0120903">
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; lists who is inside with the time, the time inside, the type and Marcar salida" time="1.598694">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; searches by name and says when nobody matches" time="1.5787338">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; says when nobody is inside" time="0.4285938">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; offers a retry when the list cannot load" time="0.4207359">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; checks a person out after asking, and reloads the list" time="0.389372">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; updates the occupancy card at once after a check-out, without waiting for the next poll" time="0.3312253">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; says when the visit had already ended, and reloads" time="0.6443208">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; opens S-02 from the name" time="0.6116823">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; welcomes an assisted Check In and marks its row (4319:1662)" time="0.4296131">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; moves focus to the list title after a check-out, since the pressed button is gone" time="0.5682171">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; clears the search from the empty result, and puts the cursor back in the box (122:3020)" time="0.9486651">
+        </testcase>
+        <testcase classname="src/staff/sessions/SessionsList.test.tsx" name="S-01 list &gt; shows the skeleton bars while it loads (122:2957)" time="0.0580133">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/team/StaffChanges.test.tsx" timestamp="2026-11-10T15:06:46.218Z" hostname="tal-vez" tests="20" failures="0" errors="0" skipped="0" time="10.51313">
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="the actions on each row &gt; match Figma for each kind of row" time="1.5986788">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="the actions on each row &gt; sit in one Acciones column as plain links, all in the same style" time="0.8400883">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="the actions on each row &gt; name the person for screen readers" time="0.660162">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="changing a role &gt; starts on the other role, saves it and says so" time="1.0122694">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="changing a role &gt; tells you that you cannot change your own role, without asking the server" time="0.3090242">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="changing a role &gt; closes without sending when the role is the one it has now" time="0.460798">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="changing a role &gt; stays open on Esc and Cancelar while the change is being sent" time="0.7671264">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="changing a role &gt; says there is no connection, not that the request failed" time="0.5744187">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="changing a role &gt; shows a refusal inside the form" time="0.5195381">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; asks first, then deactivates and says so to screen readers" time="0.6904111">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; puts focus on the new first action of the row after deactivating, not back on the removed opener" time="0.708935">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; puts focus on Cancelar first, since the other button is destructive" time="0.1899803">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; stays open on Esc and Cancelar while the account is being deactivated" time="0.2802408">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; does nothing when cancelled" time="0.2433061">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; gives focus back to Desactivar on Cancelar and on Esc, even when the click did not focus it (Safari)" time="0.3318858">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; explains why the last Administrator stays" time="0.2386206">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="deactivating an account &gt; cannot deactivate without a connection" time="0.1527704">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="reactivating an account &gt; reactivates at once and says so to screen readers" time="0.3859067">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="reactivating an account &gt; explains a refusal" time="0.4436441">
+        </testcase>
+        <testcase classname="src/staff/team/StaffChanges.test.tsx" name="an Administrator who lost the role &gt; leaves the list when the API answers forbidden, instead of offering a retry that fails" time="0.0920155">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/team/StaffInvite.test.tsx" timestamp="2026-11-10T15:06:46.223Z" hostname="tal-vez" tests="15" failures="0" errors="0" skipped="0" time="6.5747603">
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; opens the form with the name field ready to type" time="1.0639842">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; sends the invitation, closes the form and says it was sent" time="0.633397">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; closes without sending when cancelled" time="0.2329462">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; gives focus back to Invitar on Esc, even when the click did not focus it (Safari)" time="0.2230538">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; shows &quot;Este correo ya está en uso&quot;, then goes back to the form to fix the email" time="0.2131871">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; shows each field the server refused and moves to the first one" time="0.1995235">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; sends only once while the request runs" time="0.415809">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; stays open on Esc and Cancelar while the invitation is being sent" time="0.406391">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; says there is no connection, not that the request failed" time="0.3765829">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; shows a refused invitation in the pink error notice" time="0.3928897">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; goes back to sign-in when the session ended" time="0.4298789">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="inviting a person &gt; cannot invite without a connection" time="0.4241822">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="resending an invitation &gt; sends a new link and says so" time="0.6592752">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="resending an invitation &gt; only invited rows offer it" time="0.2866693">
+        </testcase>
+        <testcase classname="src/staff/team/StaffInvite.test.tsx" name="resending an invitation &gt; explains a refusal and loads the list again" time="0.6107194">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/team/StaffTeam.test.tsx" timestamp="2026-11-10T15:06:46.227Z" hostname="tal-vez" tests="19" failures="0" errors="0" skipped="0" time="6.3018874">
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; lists each account with its role and status" time="0.8381287">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; shows the active term and &quot;Acceso del equipo&quot; above the summary (100:841)" time="0.5139054">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; shows the term in English for an English account" time="0.1610356">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; shows the &quot;Sin término activo&quot; banner when no term includes today (100:1297)" time="0.3121883">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; has no hint line under &quot;Equipo del gimnasio&quot;" time="0.1866103">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; sets the tab title to the page and the brand" time="0.2059635">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; leaves the Spanish title on N-11 when an English account signs out" time="0.2243622">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; counts active and invited accounts in the summary" time="0.1793561">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; says accounts are kept" time="0.1780629">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; shows names as plain text, never as HTML" time="0.3814755">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; lets the keyboard reach the table when it scrolls on a phone" time="0.2991542">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; shows &quot;Cargando cuentas…&quot; while the list loads" time="0.1094144">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; shows &quot;Error al cargar&quot; and tries again" time="0.8741183">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; shows &quot;Sin conexión&quot; when the list cannot be reached" time="0.2679458">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; goes back to sign-in when the session ended" time="0.1473435">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="the staff accounts screen &gt; speaks English for an English account" time="0.2390641">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="getting to the staff accounts screen &gt; opens from the menu and marks the item as the current page" time="0.5490948">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="getting to the staff accounts screen &gt; follows the browser back button" time="0.5543917">
+        </testcase>
+        <testcase classname="src/staff/team/StaffTeam.test.tsx" name="getting to the staff accounts screen &gt; never asks for the list for a Staff account, even at its address" time="0.0758563">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/team/TermStatus.test.tsx" timestamp="2026-11-10T15:06:46.232Z" hostname="tal-vez" tests="4" failures="0" errors="0" skipped="0" time="0.2808556">
+        <testcase classname="src/staff/team/TermStatus.test.tsx" name="the term chip &gt; names the year once when the term ends in the year it starts" time="0.2349888">
+        </testcase>
+        <testcase classname="src/staff/team/TermStatus.test.tsx" name="the term chip &gt; names both years when the term crosses into the next one" time="0.0133267">
+        </testcase>
+        <testcase classname="src/staff/team/TermStatus.test.tsx" name="the term chip &gt; does the same in English" time="0.0162742">
+        </testcase>
+        <testcase classname="src/staff/team/TermStatus.test.tsx" name="the term chip &gt; names both years in English when the term crosses into the next one" time="0.0115997">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/terms/AcademicTerms.test.tsx" timestamp="2026-11-10T15:06:46.233Z" hostname="tal-vez" tests="16" failures="0" errors="0" skipped="0" time="6.4927874">
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; opens from &quot;Términos&quot; in the menu" time="1.2039001">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; lists the current and coming terms with their dates and state, and the active one above" time="0.4191473">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; shows and hides the past terms behind a button" time="0.3502077">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; says when no term covers today" time="0.1770388">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; invites the first term when there is none" time="0.2166051">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; offers a retry when the list cannot load" time="0.3070496">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; says when there is no connection" time="0.2687614">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; shows no page banner when the connection drops: the buttons are disabled and the form keeps its notice" time="0.4285471">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="the terms screen &gt; stays an empty dashboard for a Staff account" time="0.0869419">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="creating and editing a term &gt; creates a term and lists it" time="0.5983488">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="creating and editing a term &gt; edits a term with its values filled in and says when its authorizations end" time="0.4954706">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="creating and editing a term &gt; explains dates in the wrong order and goes back to the start date" time="0.3934602">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="creating and editing a term &gt; names the term the dates overlap" time="0.3935782">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="creating and editing a term &gt; shows a server error in the pink banner" time="0.3844847">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="creating and editing a term &gt; shows a missing field under the field" time="0.4110068">
+        </testcase>
+        <testcase classname="src/staff/terms/AcademicTerms.test.tsx" name="creating and editing a term &gt; closes with Cancelar and sends nothing" time="0.3537498">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/staff/useStaffSession.test.ts" timestamp="2026-11-10T15:06:46.240Z" hostname="tal-vez" tests="3" failures="0" errors="0" skipped="0" time="0.021524">
+        <testcase classname="src/staff/useStaffSession.test.ts" name="endedSignIn &gt; gives the reason for the codes that end a staff sign-in" time="0.0101962">
+        </testcase>
+        <testcase classname="src/staff/useStaffSession.test.ts" name="endedSignIn &gt; ignores every other code, including names every object has" time="0.0017567">
+        </testcase>
+        <testcase classname="src/staff/useStaffSession.test.ts" name="endedSignIn &gt; ignores errors that are not from the API" time="0.0009705">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/styles/tokens.test.ts" timestamp="2026-11-10T15:06:46.241Z" hostname="tal-vez" tests="37" failures="0" errors="0" skipped="0" time="0.049519">
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; match the Figma colors" time="0.0139028">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; uses the User palette for fields without changing shared input borders" time="0.0028472">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; match the Figma spacing and font" time="0.0034496">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; User offline banner text meet WCAG AA contrast" time="0.0026345">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; User placeholder and loading icons meet WCAG AA contrast" time="0.0009286">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; User destructive button text meet WCAG AA contrast" time="0.0007216">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; User password field errors meet WCAG AA contrast" time="0.0005394">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; User filled input text meet WCAG AA contrast" time="0.0004824">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; User reset field errors meet WCAG AA contrast" time="0.000514">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; User reset error borders meet WCAG AA contrast" time="0.001178">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In member buttons meet WCAG AA contrast" time="0.0012273">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In athlete buttons meet WCAG AA contrast" time="0.0009903">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In notices and the exclusive panel meet WCAG AA contrast" time="0.0008159">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In refusal panels meet WCAG AA contrast" time="0.0004829">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In refusal icons and offline banner meet WCAG AA contrast" time="0.0002565">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In closed panel meet WCAG AA contrast" time="0.0002023">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In member ID text meet WCAG AA contrast" time="0.0001628">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In athlete ID text meet WCAG AA contrast" time="0.0002745">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In member page text meet WCAG AA contrast" time="0.000732">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In athlete page text meet WCAG AA contrast" time="0.0008951">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Check In member category pill meet WCAG AA contrast" time="0.0002657">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; text on the page meet WCAG AA contrast" time="0.0004513">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; text on a card meet WCAG AA contrast" time="0.0002615">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; muted text on the page meet WCAG AA contrast" time="0.0001896">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; muted text on a card meet WCAG AA contrast" time="0.0001976">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; button text on the primary green meet WCAG AA contrast" time="0.00018">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; sidebar text on the dark green meet WCAG AA contrast" time="0.0001513">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; sidebar section labels meet WCAG AA contrast" time="0.0001312">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; Administration items on their own background meet WCAG AA contrast" time="0.0006051">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; the Administration label on its own background meet WCAG AA contrast" time="0.0010168">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; links on a card meet WCAG AA contrast" time="0.0007361">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; orange icons and marks in the sidebar meet WCAG AA contrast" time="0.0002287">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; the open menu item meet WCAG AA contrast" time="0.0001813">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; the &quot;Invitado&quot; chip meet WCAG AA contrast" time="0.0003599">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; the &quot;Desactivado&quot; chip meet WCAG AA contrast" time="0.0001993">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; text field borders against the field meet WCAG AA contrast" time="0.0004494">
+        </testcase>
+        <testcase classname="src/styles/tokens.test.ts" name="design tokens &gt; text field borders against the page meet WCAG AA contrast" time="0.0006229">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/user/AthleteRegistration.test.tsx" timestamp="2026-11-10T15:06:46.248Z" hostname="tal-vez" tests="15" failures="0" errors="0" skipped="0" time="6.8581993">
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows N03-09 with the masked email and a 5 minute resend countdown, and Corregir número goes back to the field" time="2.0861938">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="enables the resend after the countdown and sends the same number again" time="1.3898921">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows N03-10 with the time from Retry-After when the link limit is hit" time="0.4522833">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="checks the link (N05-01), then shows privacy and the password step with the roster name as text" time="0.3630837">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="AR-20 accepts privacy in the same session when the emailed link opens without cookies" time="0.2462644">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="AR-34 keeps the link page out of history, so browser Back from the password step leaves it" time="0.3832616">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="AR-22 shows N05-02b when a 256-character token fails API validation" time="0.1814432">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="sends the link token, not a number, when the athlete creates the account" time="0.9834745">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows the N05 screen for athlete_link_expired" time="0.1318836">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows the N05 screen for athlete_link_invalid" time="0.0741063">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows the N05 screen for athlete_link_used" time="0.0916881">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows the N05 screen for athlete_link_replaced" time="0.0919801">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows N05-02b with no notice for an invalid link and for a link with no token" time="0.110894">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows N05-05 with the contact number from the server when the record was claimed" time="0.1317528">
+        </testcase>
+        <testcase classname="src/user/AthleteRegistration.test.tsx" name="shows N05-07 on a server error and N05-06 offline, and Reintentar checks the link again" time="0.1354669">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/user/CheckIn.test.tsx" timestamp="2026-11-10T15:06:46.252Z" hostname="tal-vez" tests="53" failures="0" errors="0" skipped="0" time="10.9839479">
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; advances the duration one second at a time with 999 ms timer jitter (999 reproduces GI-07, 1001 is a regression guard)" time="0.8756578">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; advances the duration one second at a time with 1001 ms timer jitter (999 reproduces GI-07, 1001 is a regression guard)" time="0.3958728">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows every second from 00:00:01 to 00:00:06 when the clock sits 10 ms before a boundary and ticks alternate 1005 and 995 ms" time="0.4145695">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; keeps the duration monotonic when a server sync is 1000 ms behind" time="0.2906461">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; keeps the duration monotonic when a server sync is 2000 ms behind" time="0.1954926">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; only reloads the status when retrying an offline load (active visit: false)" time="0.7641591">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; only reloads the status when retrying an offline load (active visit: true)" time="0.2720338">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; mounts offline, shows Necesitas conexión and loads when reconnected" time="0.4166432">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the offline problem when disconnected before the first status loads" time="0.1657789">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; keeps the loaded ready screen when the connection drops" time="0.0959806">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; keeps an existing refusal when the connection drops and returns" time="0.1991479">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the member initial state (4104:95)" time="0.2108322">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; keeps the visit-ended screen dismissed after the app is reopened" time="0.1794918">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the athlete initial state (4104:173)" time="0.1131955">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; cancels when the press ends before one second (4104:251)" time="0.1795595">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; asks for a precise location after one second and shows the drawn confirmation (4104:719)" time="0.4752439">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows and announces the locating and registering states (4363:4027, 4363:4121)" time="0.3950988">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; registers on a click from assistive technology but not on a quick tap" time="0.16586">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the athletes-only notice on the confirmation (REQ-F-83)" time="0.1095612">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the athletes-only notice that comes with a new Check In (REQ-F-83)" time="0.2326472">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; opens the confirmation without asking for location when a session is active (4199:3403)" time="0.0987894">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the drawn refusal for check_in_no_authorization" time="0.2161003">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the drawn refusal for check_in_gym_closed" time="0.1995511">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the drawn refusal for check_in_photo_required" time="0.2365957">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the drawn refusal for check_in_photo_pending" time="0.2260963">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the drawn refusal for location_required" time="0.2556013">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the drawn refusal for check_in_low_accuracy" time="0.2171124">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the drawn refusal for check_in_outside_boundary" time="0.1217789">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; hides the authorization mark and links to the account when access is not current (4106:1284)" time="0.1032518">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the athlete authorization text (4199:4067)" time="0.1355427">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows a denied location permission with retry and help (4433:4364)" time="0.0847092">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; asks for location again and continues the Check In from the denied screen" time="0.1399799">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; opens the location help as a modal dialog, traps Tab, closes with Escape and returns focus (4459:4335)" time="0.2414896">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; returns focus to the unfocused location help opener after closing with button" time="0.1551432">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; returns focus to the unfocused location help opener after closing with Escape" time="0.1262538">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows an unavailable location for geolocation error 2 (4106:1597)" time="0.1227763">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows an unavailable location for geolocation error 3 (4106:1597)" time="0.1356124">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows no connection when registering and checks the session before retrying (4106:1789)" time="0.1757337">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; retries the location causes with a new location" time="0.1430631">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the athletes notice an hour before the exclusive period (4105:554)" time="0.0503621">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows members when they can enter during the exclusive period (4105:639)" time="0.0547837">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; keeps the entry action for athletes during the exclusive period (4105:704)" time="0.0782885">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the exclusive period when the server refuses a member with athletes_only" time="0.2485049">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the exclusive period from the refusal when the first status request failed" time="0.2604939">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; reuses the existing failure texts for a server error" time="0.2716317">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; reuses the existing failure texts for a validation error" time="0.1722744">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; reuses the existing failure texts for an unknown 5xx code" time="0.1925596">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; reuses the sign-in wait texts after too many tries" time="0.1076924">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the group or sport under the category on the confirmation" time="0.0342578">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows the group or sport under the category on the confirmation" time="0.0395976">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; shows no group line for employees, which no frame draws" time="0.0466124">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In &gt; returns to sign-in when the session is rejected" time="0.1359317">
+        </testcase>
+        <testcase classname="src/user/CheckIn.test.tsx" name="U-01 Check In motion &gt; drifts the card waves with transform only and stops every animation under reduced motion" time="0.0016647">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/user/GymId.test.tsx" timestamp="2026-11-10T15:06:46.264Z" hostname="tal-vez" tests="38" failures="0" errors="0" skipped="0" time="6.5543947">
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; keeps the new-entry text through polls, visibility changes and reconnecting without repeating the announcement" time="1.1991093">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; shows the existing-entry text after a new mount" time="0.413114">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; clears the new-entry text when the session id changes" time="0.316388">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; uses the server clock despite a wrong device clock, ticks once a second and freezes offline" time="0.3428347">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; shows a fixed summary for checked_out and Continue checks current access without posting" time="0.4247286">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; shows a fixed summary for expired and Continue checks current access without posting" time="0.3321316">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; shows a fixed summary for closed and Continue checks current access without posting" time="0.2836785">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; refreshes an active visit and switches to the ended summary when the backend closes it" time="0.1347417">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; does not repaint the duration more than once a second during clock resynchronization" time="0.0532231">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; recovers from offline only after revalidating the session" time="0.0757529">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; does not announce confirmation for an existing session or after reconnecting" time="0.0823981">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; skips hidden polls and focus, refreshes once when visible, and removes listeners on unmount" time="0.0537367">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; waits for visibility before requesting the initial session" time="0.0257154">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; ignores clock offset jitter of 1000 ms" time="0.0577481">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; ignores clock offset jitter of 1500 ms" time="0.0584672">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; ignores clock offset jitter of -1000 ms" time="0.0942108">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; ignores clock offset jitter of -1500 ms" time="0.0959182">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; applies a large clock correction without moving the displayed duration backwards" time="0.0916554">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gym ID and ended visits &gt; applies a forward clock correction larger than 1500 ms" time="0.0669369">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; uses 12-hour update times with seconds only for fresh data in es" time="0.0795541">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; uses 12-hour update times with seconds only for fresh data in en" time="0.07425">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows only the stale label when the first load fails in es" time="0.1274166">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows only the stale label when the first load fails in en" time="0.086889">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; keeps future destinations visible without interactive or focusable elements" time="0.216838">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the count, polls after 25 seconds and links the selected tab" time="0.2481979">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the level and capped bar for 0 of 60" time="0.1465908">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the level and capped bar for 19 of 60" time="0.0951757">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the level and capped bar for 20 of 60" time="0.1167587">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the level and capped bar for 40 of 60" time="0.1532287">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the level and capped bar for 41 of 60" time="0.1052268">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the level and capped bar for 80 of 60" time="0.119059">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; skips hidden polls, refreshes once when visible and removes listeners on unmount" time="0.0738098">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; waits for visibility before requesting initial occupancy" time="0.0734285">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; hides stale numbers offline, stops requests, and refreshes on reconnect" time="0.1999204">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; hides the previous number after an unsuccessful refresh" time="0.1364822">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the drawn error state and hides the count after a server error" time="0.1081086">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; shows the loading frame until the first answer arrives" time="0.1397602">
+        </testcase>
+        <testcase classname="src/user/GymId.test.tsx" name="Gimnasio occupancy &gt; does not show a number or request occupancy when opened offline" time="0.0452581">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/user/InstallHelp.test.tsx" timestamp="2026-11-10T15:06:46.273Z" hostname="tal-vez" tests="11" failures="0" errors="0" skipped="0" time="2.4227675">
+        <testcase classname="src/user/InstallHelp.test.tsx" name="from Mi cuenta the iPhone steps have the top bar, the navigation and no link at the bottom (4453:2499)" time="0.9347088">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="right after registration the green header and the Continuar link stay (4078:792)" time="0.2045211">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="Android has no install button until the browser offers the prompt (REQ-F-66)" time="0.2047024">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="a prompt fired before N-09 opens still shows the install button" time="0.0700349">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="an accepted prompt or appinstalled shows the installed state (4078:919)" time="0.2662396">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="opened as the installed app from Mi cuenta it shows only the top bar, no green header (4453:2666)" time="0.1216464">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="opened as the installed app after registration it keeps the green header (4078:919)" time="0.0325173">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="tabs switch by click and by arrow keys" time="0.316437">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="the back arrow returns to Mi cuenta in both the steps and the installed state" time="0.1405029">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="English texts come from the account language" time="0.059633">
+        </testcase>
+        <testcase classname="src/user/InstallHelp.test.tsx" name="the installed state from Mi cuenta reads Back to My account in English" time="0.0622908">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/user/Registration.test.tsx" timestamp="2026-11-10T15:06:46.275Z" hostname="tal-vez" tests="35" failures="0" errors="0" skipped="0" time="12.726068">
+        <testcase classname="src/user/Registration.test.tsx" name="shows privacy before the unified identification field" time="1.0649071">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="allows letters and any length and uses the imported name without rendering HTML" time="0.4314627">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="returns to the number step with one browser Back from the password step" time="0.6705102">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the short offline banner on the number step and keeps the entered number" time="0.5895785">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the two English offline intro lines on the number step" time="0.3362475">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the offline banner and intro without a field error when the number lookup loses the network" time="0.484178">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="does not show an offline banner on the password step" time="0.21497">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="does not save an account when the password step continues to the photo" time="0.2549546">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the short password sentence once, as the error with no grey hint above it" time="0.2922447">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="protects direct registration URLs with the privacy step" time="0.0849704">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="offers the exact English privacy frame before collecting data" time="0.214464">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="retains the entered number and uses existing help copy on an unavailable number" time="0.3518091">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the N03-02 state with the server contact number and retries the edited value with Continuar" time="0.7221448">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="clears the N03-02 error and aria-invalid while the number is corrected" time="0.4487429">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="leaves N03-02 for the right step and moves focus to the title after a 429 with Retry-After" time="0.8088665">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="leaves N03-02 for the right step and moves focus to the title after an offline failure" time="0.5754182">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="leaves N03-02 for the right step and moves focus to the title after a student not on the roster" time="0.5225812">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the N03-02 state in English with the phone from the server" time="0.1841921">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="announces the lookup error and Retry-After wait in the mounted status region" time="0.1330269">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="renders an imported script as text and never claims it" time="0.1340541">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="restores the signed-out page language when leaving English privacy" time="0.1621278">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="sends student number 123456789 to the lookup and shows N03-09 for an athlete on the roster" time="0.2074308">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="sends student number  987654321  to the lookup and shows N03-09 for an athlete on the roster" time="0.2303307">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the N03-03 state with the server contact number when the student is not on the roster" time="0.4249188">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the N03-11 state with sign in and change number when the athlete record is claimed" time="0.4354309">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="drops the student state when the user leaves identification" time="0.4603688">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="empties the status region when a timed wait ends" time="0.2216024">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows the receipt example, payment help and both store controls when the server sends a URL" time="0.1434557">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="hides both store controls without a URL" time="0.0856922">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="looks up ten digits as an authorization number" time="0.1510073">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="shows N03-04 with the masked account email, and both ways back reach an empty identification step" time="0.4911808">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="announces server_error (500) through the mounted status region" time="0.2157052">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="announces unknown_code (503) through the mounted status region" time="0.3073452">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="announces unknown_code (422) through the mounted status region" time="0.2473837">
+        </testcase>
+        <testcase classname="src/user/Registration.test.tsx" name="announces registration_number_unavailable (500) through the mounted status region" time="0.417128">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/user/RegistrationSteps.test.tsx" timestamp="2026-11-10T15:06:46.284Z" hostname="tal-vez" tests="29" failures="0" errors="0" skipped="0" time="18.4731233">
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="collects photo, waiver and contact, creates the account once, then opens install help that leads to Check In" time="2.4978313">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="offers only Subir foto with the drawn line when there is no camera" time="0.7784937">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="offers only Subir foto with the drawn line when the camera permission is denied" time="0.506601">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="returns to the photo step with the drawn alert for { photo: [ &apos;mimetypes&apos; ] } and retries with the kept data" time="0.4991918">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="returns to the photo step with the drawn alert for { photo: [ &apos;max&apos; ] } and retries with the kept data" time="0.7538135">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="returns to the photo step with the drawn alert for undefined and retries with the kept data" time="0.8472381">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="marks the contact fields the server rejects and keeps the acceptance" time="0.7260657">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="sends a compromised password back to the password step" time="0.7105151">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="shows the saving state, then the final save error that returns to the photo" time="0.6163599">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="treats a retry refused because the account already exists as success" time="0.3022192">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="blocks account creation when the waiver cannot load and retries it" time="0.3534198">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="shows the waiver-failed screen for a 502 HTML response and loads the waiver on Reintentar" time="0.3749694">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="sends nothing on Reintentar when the waiver box is no longer checked" time="0.4853522">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="shows the 10 MB photo error for a 413 whose body is the proxy HTML page" time="0.6249514">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="rejects a photo over 10 MB before sending anything" time="0.3971874">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="clears a 12 MB pick with a valid one after the waiver loaded, without Reintentar" time="0.4624618">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="shows the save-failed screen when the connection drops during /complete" time="0.3016997">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="returns to the privacy step when the server says the privacy notice was not accepted" time="0.278167">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="returns to the privacy step when the waiver load says the privacy notice was not accepted" time="0.5298879">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="moves focus to the heading in the saving, save-failed and waiver-failed screens" time="0.5665165">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="moves focus to the heading when the waiver cannot load" time="0.6855455">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="sends the account request as multipart, without a JSON Content-Type" time="0.6119191">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="marks the unchecked waiver box with the error that describes it and focuses the rejected contact field" time="0.6673493">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="reloads the waiver on the contact page when the server rejects the waiver version" time="0.6559093">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="focuses the first contact field the server rejects" time="0.6544399">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="keeps the contact page and shows the wait time after a 429 on /complete" time="1.185297">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="keeps the language chosen on Welcome: English privacy can continue and the waiver loads in English" time="0.6522905">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="shows the three Figma errors and focuses the checkbox when Crear cuenta is pressed with nothing filled" time="0.3352186">
+        </testcase>
+        <testcase classname="src/user/RegistrationSteps.test.tsx" name="focuses the first missing field when only the contact is empty" time="0.4075134">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/user/UserApp.test.tsx" timestamp="2026-11-10T15:06:46.290Z" hostname="tal-vez" tests="69" failures="0" errors="0" skipped="0" time="14.0889314">
+        <testcase classname="src/user/UserApp.test.tsx" name="replaces the validated athlete link so browser Back leaves its page" time="0.8916344">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; shows the main Figma copy and accessible fields" time="0.2431777">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; shows and hides passwords with a labeled button" time="0.1839086">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; announces the submitting state and prevents duplicate submits" time="0.3607228">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; marks both wrong-credentials fields and shows one inline password error" time="0.4724183">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; clears the credentials error when editing Correo electrónico" time="0.2966098">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; clears the credentials error when editing Contraseña" time="0.2922111">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; shows a server notice and keeps sign-in ready to retry after a 500 (server_error)" time="0.3091253">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; shows a server notice and keeps sign-in ready to retry after a 500 (unexpected_error)" time="0.2713873">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; shows the Puerto Rico retry time and enables the button when the wait ends" time="1.1765532">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; keeps fields offline and resumes when the browser reconnects" time="0.2946098">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; shows server validation errors under both sign-in fields and focuses the email" time="0.329314">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-02 &gt; opens the account in the server language after sign-in" time="0.3221889">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; keeps the large form on /sign-in after server_error" time="0.2582623">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; keeps the large form on /recover-password after offline" time="0.1487579">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; keeps the large form on /recover-password after too_many_requests" time="0.1624234">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; keeps the large form on /reset-password?token=token&amp;email=user%40example.com after offline" time="0.2623345">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; keeps the large form on /reset-password?token=token&amp;email=user%40example.com after too_many_requests" time="0.2107087">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; keeps the large form on /reset-password?token=token&amp;email=user%40example.com after server_error" time="0.1433939">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; shows the server validation error under the recovery email and focuses it" time="0.1782121">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; shows sending and the same received state for a reset request" time="0.1644375">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; shows the drawn server failure and keeps the email for retry" time="0.1210524">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; shows only the new password heading and loading skeleton until the link is valid" time="0.2092218">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; revalidates an offline reset link on reconnect (expired: false)" time="0.2144291">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; revalidates an offline reset link on reconnect (expired: true)" time="0.1816911">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; keeps the expired screen when the connection returns" time="0.0831742">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; shows expired or used links with the drawn recovery actions" time="0.0490153">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; shows the password and confirmation errors from the server" time="0.1527636">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-06 and N-07 &gt; returns to sign-in after saving a password" time="0.1773682">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; announces a server error from sign-out and keeps the current screen for retry" time="0.098929">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; announces a server error from locale and keeps the current screen for retry" time="0.1036494">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; announces a server error from account and keeps the current screen for retry" time="0.1239139">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; uses status for static information boxes" time="0.0985596">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows account data safely and reaches deletion through settings" time="0.3030806">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; lists the rows in the Figma order, also offline, and links Instalar app, Privacidad and Ajustes" time="0.3219942">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; hides the account rows while the account is loading or failed" time="0.0830001">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows own email in full, as the server sends it (E-179)" time="0.0427346">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows &quot;Desliza para ver más&quot; only while rows are hidden below the list" time="0.0891273">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; has no scroll hint when every row fits" time="0.1233736">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows the account type even without an active authorization" time="0.1492243">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; omits the account type when the account never had an authorization" time="0.2102151">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows the confirmed paid account type and cached access offline" time="0.1867908">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows the confirmed athlete account type and cached access offline" time="0.1591495">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows the confirmed manual account type and cached access offline" time="0.1675011">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; omits the badge for an unrecognized account type" time="0.1510986">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows the staff help online and the backup notice offline on account deletion" time="0.1228121">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; returns from account deletion to settings and then to the account" time="0.2478314">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; identifies each settings language to assistive technology" time="0.0673095">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows loading and account load failures with retry" time="0.112997">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows U-03 offline without saved data as Figma draws it and loads once the connection returns" time="0.1391689">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; lets the person retry by hand when the server cannot be reached while the browser is online" time="0.1273558">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows the other-device state when a protected request rejects the session" time="0.068779">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; requires confirmation before deleting and returns to the welcome screen" time="0.1208699">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; shows active-authorization refusal and does not offer a destructive button" time="0.0971277">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="U-03 and U-05 &gt; signs out only after the server accepts and returns to sign-in" time="0.1940204">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; opens the welcome screen collapsed, then expands it with the Figma copy and its links" time="0.1259726">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; disables Comenzar and Iniciar sesión under a connection banner while offline and enables them when it returns (4546:2929)" time="0.1342129">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; expands the welcome sheet with a tap or an upward swipe, not with a short drag" time="0.0825536">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; expands the welcome sheet with a tap on it" time="0.0643762">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; keeps the language chosen on the welcome screen for every screen before sign in" time="0.1472805">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; returns from sign-in to welcome" time="0.1750692">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; keeps account destinations without screens as non-links" time="0.2672042">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; ties the password hint to the new-password field" time="0.0771145">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="User destinations &gt; keeps the password hint associated with the field while offline" time="0.0493385">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-08 from My account &gt; opens from the Privacidad row and shows the Figma frame with the BORRADOR badge" time="0.3854439">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-08 from My account &gt; hides the badge when the notice is not a draft and keeps the answer on the device" time="0.1195006">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-08 from My account &gt; goes back to My account with the arrow" time="0.3185506">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-08 from My account &gt; shows the last saved notice when offline, even without the account" time="0.1346664">
+        </testcase>
+        <testcase classname="src/user/UserApp.test.tsx" name="N-08 from My account &gt; shows the draft frame when offline with nothing saved or with a damaged copy" time="0.128792">
+        </testcase>
+    </testsuite>
+</testsuites>

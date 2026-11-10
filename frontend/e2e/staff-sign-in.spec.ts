@@ -72,7 +72,7 @@ test('the sign-in works with the keyboard alone', async ({ page, browserName }) 
   await page.keyboard.type('password')
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Iniciar sesión' })).toBeFocused()
-  // WebKit skips links on Tab unless tabsToLinks is enabled (WebKit bug 66949).
+  // WebKit skips links on Tab unless tabsToLinks is on, off by default on Windows and macOS (bugs.webkit.org/show_bug.cgi?id=66949).
   if (browserName !== 'webkit') {
     await page.keyboard.press('Tab')
     await expect(page.getByRole('link', { name: '¿Olvidaste tu contraseña?' })).toBeFocused()
