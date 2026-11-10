@@ -51,7 +51,7 @@ Manual test evidence for [issue #82](https://github.com/Th3-Minorities/natatorio
 
 1. **Check-in shows an enabled action for accounts without active authorization.** Still happens in part on `main`. Sign in as the expired-payment account and open Check-in: "Mantén presionado para entrar" is enabled. Holding it now ends with "Tu acceso no está vigente" and a "Revisar mi acceso" link to My account, read from the status region, so the server refusal is verified. The button itself stays enabled.
 2. **Unclaimed athlete lookup gives no visible confirmation.** Fixed on `main`. Submitting an unclaimed roster number now shows "Revisa tu correo", the masked institutional address in an alert region and a disabled resend countdown, and the email link arrives.
-3. **On S-03 the identity check was possible before the photo loaded.** Fixed by holding the check until the photo loads (frame 4288:1354), commit 7b3dff1 on the flow test branch.
+3. **On S-03 the identity check was possible before the photo loaded.** Fixed by holding the check until the photo loads (frame 4288:1354), in main through #177.
 
 ## Screen reader preparation
 
