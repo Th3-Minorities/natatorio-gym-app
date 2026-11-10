@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process'
 import { expect, type APIRequestContext, type Page } from '@playwright/test'
-import { tinker, tinkerJson } from './setup.ts'
+import { composeArgs, DOCKER, stackEnv, tinker, tinkerJson } from './setup.ts'
 import { unique } from './setup-sign-in.ts'
 
 // Test data and helpers for the Staff accounts path tests (staff-accounts.spec.ts), made through tinker on the test stack
@@ -124,12 +124,7 @@ catch (\\Throwable $e) { echo json_encode(false); }`)
 
 /** Runs an artisan command in the app container. */
 export function artisan(...args: string[]): { status: number | null; output: string } {
-  const worktree = process.env.KIM_WORKTREE ?? 'C:/r/e152'
-  const testNet = process.env.KIM_TEST_NET ?? 'C:/Users/bamba/OneDrive/Desktop/natatorio-gym-app/docs/meetings/private/bug-listener/test-net.yml'
-  const env = { ...process.env, APP_PORT: process.env.APP_PORT ?? '8096', TEST_SUBNET: process.env.TEST_SUBNET ?? '10.77.116.0/24' }
-  const compose = ['compose', '-p', process.env.KIM_PROJECT ?? 'kim', '-f', `${worktree}/docker-compose.yml`, '-f', `${worktree}/docker-compose.override.yml`,
-    '-f', testNet, '--profile', 'development', 'exec', '-T', 'app', 'php', 'artisan', ...args]
-  const done = spawnSync('C:/Program Files/Docker/Docker/resources/bin/docker.exe', compose, { env, encoding: 'utf8', timeout: 90_000 })
+  const done = spawnSync(DOCKER, composeArgs('exec', '-T', 'app', 'php', 'artisan', ...args), { env: stackEnv, encoding: 'utf8', timeout: 90_000 })
   return { status: done.status, output: `${done.stdout}${done.stderr}` }
 }
 

@@ -12,6 +12,7 @@
     "lint": "oxlint --deny-warnings",
     "test": "vitest run",
     "test:e2e": "npm run build && playwright test",
+    "test:e2e:paths": "playwright test --config=playwright.paths.config.ts --workers=1",
     "preview": "vite preview"
   },
   "dependencies": {
