@@ -113,7 +113,7 @@ export function ForgotPasswordPage({ navigate }: PageProps) {
       <form className="sign-in__card" aria-labelledby={titleId} noValidate onSubmit={send}>
         <Title id={titleId}>{a.forgotTitle}</Title>
         <p className="sign-in__description">{a.forgotText}</p>
-        <ProblemNotice problem={problem} />
+        <ProblemNotice problem={problem} tone="error" />
         <TextField
           ref={emailRef}
           label={a.email}
@@ -342,7 +342,7 @@ export function SetPasswordPage({ kind, navigate, onSaved }: SetPasswordProps) {
             </p>
           </div>
         )}
-        <ProblemNotice problem={problem} />
+        <ProblemNotice problem={problem} tone="error" />
         {/* A hidden username, so password managers save the new password with the right account. */}
         {(invitee?.email ?? link.email) && (
           <input type="email" autoComplete="username" value={invitee?.email ?? link.email} readOnly hidden />

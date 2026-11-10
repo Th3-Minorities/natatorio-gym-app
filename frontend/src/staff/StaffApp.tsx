@@ -64,7 +64,7 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     account: { name: account.name, role: account.role },
     onSignOut: signOut,
     navigation,
-    notice: signOutFailed ? <Notice title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice> : null,
+    notice: signOutFailed ? <Notice tone="error" title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice> : null,
   }
 
   if (onTeam) return <StaffTeam shell={shell} />
