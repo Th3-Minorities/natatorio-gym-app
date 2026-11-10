@@ -1,0 +1,67 @@
+/* A-04 "Términos", Figma 101:1526 and 4007:1310. The table, chips and note come from staffTeam.css. */
+
+.terms-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.terms-context__name {
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 22px;
+}
+
+.terms-hint,
+.terms-edit-note {
+  margin: 0;
+}
+
+.terms-hint {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+/* Figma's columns: 370, 200, 200, 170 and 148 pixels. */
+.terms-table {
+  min-width: 860px;
+}
+
+.terms-table th:nth-child(1) {
+  width: 33%;
+}
+
+/* "Activo" is filled green; "Finalizado" is a grey chip (4007:1310). "Próximo" is not drawn: outlined, like the term chip. */
+.terms-chip--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.terms-chip--past {
+  background: var(--chip-off);
+  color: var(--muted-foreground);
+}
+
+.terms-chip--upcoming {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--primary);
+}
+
+.terms-toggle {
+  align-self: flex-start;
+}
+
+
+.terms-modal-chip {
+  align-self: flex-start;
+}
+
+.terms-edit-note {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}

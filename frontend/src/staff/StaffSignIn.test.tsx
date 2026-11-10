@@ -168,6 +168,7 @@ describe('wrong email or password (4039:3871)', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.wrongTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(t.wrongText)
+    expect(screen.getByRole('alert')).toHaveClass('notice--error')
     expectReady(screen.getByRole('button', { name: t.submit }))
     expect(screen.getByLabelText(t.email)).toHaveValue('mariel.velez@uprm.example.edu')
   })
@@ -183,6 +184,7 @@ describe('too many tries (4039:3942)', () => {
     await act(async () => submit())
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.waitTitle)
+    expect(screen.getByRole('alert')).not.toHaveClass('notice--error')
     // Exactly as in Figma: one period, even though the time already ends in "m.".
     expect(screen.getByRole('alert')).toHaveTextContent(/Intenta de nuevo a las 10:45 a\. m\.$/)
     expectBlocked(screen.getByRole('button', { name: t.submit }))
@@ -230,6 +232,7 @@ describe('deactivated account (4039:4094)', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(t.deactivatedTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(t.deactivatedText)
+    expect(screen.getByRole('alert')).toHaveClass('notice--error')
     expectBlocked(screen.getByRole('button', { name: t.submit }))
 
     fireEvent.change(screen.getByLabelText(t.email), { target: { value: 'otra@uprm.example.edu' } })
@@ -278,6 +281,7 @@ describe('other answers', () => {
 
     expect(screen.getByRole('alert')).toHaveTextContent(es.errors.server_error)
     expect(screen.getByRole('alert')).not.toHaveTextContent('server_error')
+    expect(screen.getByRole('alert')).toHaveClass('notice--error')
   })
 })
 

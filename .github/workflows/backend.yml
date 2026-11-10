@@ -6,14 +6,10 @@ name: Backend
 on:
   pull_request:
   push:
-    branches: [main]
+    branches: ['**']
 
 permissions:
   contents: read
-
-concurrency:
-  group: backend-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   test:

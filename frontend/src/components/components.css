@@ -75,6 +75,12 @@
 /* 12px under the field in Figma (A-08 107:1814): the field's 8px gap plus 4px. */
 .field__error {
   margin-top: var(--spacing-4);
+  color: var(--danger-text);
+}
+
+/* A refused field has the danger outline. :where keeps this weaker than the user app's own field rules. */
+:where(.field__input)[aria-invalid='true'] {
+  border-color: var(--danger-text);
 }
 
 .field__input {
@@ -170,11 +176,18 @@
 /* "Error al cargar" is drawn a little differently (A-08 132:3759): semi-bold title, taller line, 16px gaps. */
 .state--error {
   gap: var(--spacing-16);
+  border-color: var(--danger-border);
+  background: var(--danger-soft);
 }
 
 .state--error .state__title {
   font-weight: 600;
   line-height: 29px;
+  color: var(--danger-text);
+}
+
+.state--error .state__detail {
+  color: var(--danger-text);
 }
 
 @media (max-width: 40rem) {

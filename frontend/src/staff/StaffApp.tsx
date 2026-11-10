@@ -14,13 +14,17 @@ import {
   STAFF_INVITE_PATH,
   STAFF_PATH,
   STAFF_RESET_PATH,
+  STAFF_ROSTER_PATH,
   STAFF_TEAM_PATH,
+  STAFF_TERMS_PATH,
   useStaffPath,
   type Navigate,
 } from './staffPath'
+import { AthleteRoster } from './roster/AthleteRoster'
 import { ActiveSessions } from './sessions/ActiveSessions'
 import { SessionDetail } from './sessions/SessionDetail'
 import { StaffTeam } from './team/StaffTeam'
+import { AcademicTerms } from './terms/AcademicTerms'
 import { useStaffSession, type StaffAccount } from './useStaffSession'
 
 // The staff part of the PWA, at /staff (#16): N-11 until someone signs in, then the dashboard shell.
@@ -45,10 +49,12 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     activeSessions: STAFF_PATH,
     findPerson: STAFF_FIND_PATH,
     staffAccounts: STAFF_TEAM_PATH,
+    terms: STAFF_TERMS_PATH,
+    roster: STAFF_ROSTER_PATH,
   }
   const visitId = sessionIdIn(path)
   // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
-  const onTeam = account.role === 'admin' && path === STAFF_TEAM_PATH
+  const admin = account.role === 'admin'
 
   async function signOut() {
     setSignOutFailed(false)
@@ -67,7 +73,9 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     notice: signOutFailed ? <Notice tone="error" title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice> : null,
   }
 
-  if (onTeam) return <StaffTeam shell={shell} />
+  if (admin && path === STAFF_TEAM_PATH) return <StaffTeam shell={shell} />
+  if (admin && path === STAFF_TERMS_PATH) return <AcademicTerms shell={shell} />
+  if (admin && path === STAFF_ROSTER_PATH) return <AthleteRoster shell={shell} />
   // S-01, the first screen after sign-in for both roles (#26).
   if (path === STAFF_PATH) return <ActiveSessions shell={shell} />
   // S-03 and S-02, for both roles (#26).

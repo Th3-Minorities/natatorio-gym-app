@@ -13,7 +13,21 @@ Mail is assumed available (E-61). CTI described a path: the server runs a mail s
 
 Before an account exists, the welcome screen (N-01) has a Spanish / English switch, Spanish by default (E-159). The choice stays on the device, applies before sign in and is saved to the new account without another language step (E-174). After sign in, the account language applies.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Diagrams](#diagrams) · [Design decisions](#design-decisions-to-confirm) · [Open questions](#gaps-and-questions) · [Traceability](#traceability)
+
+</nav>
+
 ## Diagrams
+
+<nav aria-label="Diagram topics" markdown="1">
+
+[Paid membership](#1-paid-member-registration) · [Number lookup](#2-authorization-number-lookup-with-limits) · [Athlete email link](#4-athlete-registration-by-email-link) · [Renewal](#6-renewal-and-type-change-with-a-new-authorization-number) · [New term](#8-athlete-in-a-new-term) · [Authorization states](#9-authorization-states)
+
+</nav>
 
 ### 1. Paid member registration
 
@@ -162,7 +176,7 @@ flowchart TD
 
 **About this diagram:** This link is the only way for an athlete to register: there is no in-person code, and if the link fails the athlete calls the office at 265-3866 (E-117). The student number is typed in the one registration field of diagram 1 (REG-14, E-153). Drawn with the decided option of REG-5 (E-69): only the student number is asked before the link; password, photo and waiver come after the link is opened and are saved together, so there is never an authorization without a photo (E-69; REQ-F-15, NF-25, NF-24, F-26, F-60). The language is inherited from Welcome without another step (E-174); Welcome has a language switch, Spanish by default (E-159). The request limit is REG-7 (E-73) and the link rules are REG-6 (pending); messages follow REQ-F-76, F-73, F-18, SRS 3.3 errors and REG-4 (E-70). The first line is E-92. The link needs mail (assumed available, E-61).
 
-Notes: the account exists only after the final step that follows opening the link (REQ-F-15). The final step checks the link again, so a link that expires while the form is open creates no account. Athletes do not buy a membership (REQ-F-25), but the registration screen is the same for both kinds of person, so the store button of diagram 1 stays on it (E-153). A paid member who types a student number gets the message of X1.
+Notes: the account exists only after the final step that follows opening the link (REQ-F-15). The final step checks the link again, so a link that expires while the form is open creates no account. Athletes do not buy a membership (REQ-F-25), but the registration screen is the same for both kinds of person, so the store button of diagram 1 stays on it (E-153). A paid member who types a student number gets the message of X1. The account check comes before the claimed check: when the roster email already has an account, the athlete gets X3 even if the record is claimed (E-70).
 
 Note on message X1: an athlete whom no Administrator has entered yet gets this message. Administrators add athletes to the roster by hand (E-116).
 
@@ -449,6 +463,9 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 
 ## Traceability
 
+<details markdown="1">
+<summary>Show traceability tables</summary>
+
 | Requirement or decision | Where it appears |
 |---|---|
 | REQ-F-10 | 2. Authorization Number lookup with limits |
@@ -518,3 +535,5 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-159 (Spanish / English switch on Welcome, refined by E-174) | intro; 1, 4; REG-13 |
 | E-160 (a student number has exactly 9 digits) | 1, 2, 4; REG-14 |
 | E-184 (purchase, prerequisite and help on number entry; original Welcome layout) | 1; intro |
+
+</details>

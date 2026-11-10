@@ -17,6 +17,8 @@ class StaffSignInThrottleTest extends TestCase
     {
         parent::setUp();
 
+        $this->freezeTime();
+
         StaffAccount::factory()->create(['email' => 'luis@example.com']);
         StaffAccount::factory()->create(['email' => 'ana@example.com']);
     }

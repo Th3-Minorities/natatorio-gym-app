@@ -4,7 +4,21 @@ This document draws what staff accounts do: signing in as Staff or Administrator
 
 Legend: nodes in red with the word **AUDIT** write one audit log entry (REQ-NF-39). "Proposed" marks a rule this design suggests and the team must confirm (see "Design decisions to confirm"). "Decided" marks a rule the team already chose. "To confirm" or "pending" marks an open item that nobody has decided yet.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Diagrams](#diagrams) · [Design decisions](#design-decisions-to-confirm) · [Open questions](#gaps-and-questions) · [Traceability](#traceability)
+
+</nav>
+
 ## Diagrams
+
+<nav aria-label="Diagram topics" markdown="1">
+
+[Staff accounts](#1-staff-account-states) · [Store sync](#6-woocommerce-store-sync) · [Academic terms](#8-academic-terms) · [Athlete roster](#10-athlete-roster-add-edit-remove) · [Authorizations](#12-manual-grant-and-revoke-of-an-authorization) · [Schedules and notices](#16-schedules-closures-notices-and-facility-information) · [Audit log](#17-audit-log-entry-and-supporting-data) · [Backups](#19-backups)
+
+</nav>
 
 ### 1. Staff account states
 
@@ -611,6 +625,9 @@ Marked Decided when the team chose in the design review (October 2026) or earlie
 
 ## Traceability
 
+<details markdown="1">
+<summary>Show traceability tables</summary>
+
 | Requirement or decision | Where it appears |
 |---|---|
 | REQ-F-09 | 14. Account deletion when a User asks |
@@ -679,3 +696,5 @@ Marked Decided when the team chose in the design review (October 2026) or earlie
 | E-127 | 6. WooCommerce store sync; 7. Undo of an import (removed); 17. Audit log entry and supporting data; D5, D6, D7, D8; gap 21 |
 | E-128 | 6. WooCommerce store sync (unique number); gaps 10, 22 |
 | Also used: REQ-F-03, F-07, F-22, F-51, F-55, F-58, F-71, F-76 | Sections 1, 6, 9, 10, 15, 16 |
+
+</details>

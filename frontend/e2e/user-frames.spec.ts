@@ -120,7 +120,7 @@ test.describe('User screen states at 390x844', () => {
         await page.evaluate("window.dispatchEvent(new Event('offline'))")
       }
       const ready = state === 'busy' ? path === 'sign-in' ? 'Iniciando sesión…' : 'Enviando enlace…'
-        : state === 'wrong' ? 'No pudimos iniciar sesión' : state === 'wait' ? 'Espera antes de intentar de nuevo'
+        : state === 'wrong' ? 'Correo o contraseña incorrectos.' : state === 'wait' ? 'Espera antes de intentar de nuevo'
         : state === 'replaced' ? 'Iniciaste sesión en otro dispositivo' : state === 'received' ? 'Solicitud recibida'
         : state === 'expired' ? 'El enlace ya no es válido' : state === 'validating' ? 'Estamos verificando el enlace…'
         : state === 'invalid' ? path === 'reset-password' ? 'Las contraseñas deben coincidir.' : 'Escribe un correo electrónico válido.'
@@ -159,29 +159,41 @@ test.describe('User screen states at 390x844', () => {
           await expect(page.getByText('Comenzar', { exact: true })).toBeVisible()
         }
         const inputs = page.locator('.field__input')
-        for (const input of await inputs.all()) {
-          await expect(input).toHaveCSS('height', '52px')
-          await expect(input).toHaveCSS('background-color', 'rgb(255, 253, 248)')
-          if (state !== 'invalid') await expect(input).toHaveCSS('border-color', 'rgb(217, 220, 203)')
-        }
         const toggles = page.getByRole('button', { name: 'Mostrar contraseña', exact: true })
-        await expect(toggles).toHaveCount(path === 'recover-password' ? 0 : path === 'reset-password' ? 2 : 1)
-        for (const toggle of await toggles.all()) await expect(toggle).toBeVisible()
+        if (state === 'validating') {
+          // Figma 4099:2359 draws only the loading state while the link is checked: the form is not rendered.
+          await expect(inputs).toHaveCount(0)
+          await expect(toggles).toHaveCount(0)
+        } else {
+          for (const input of await inputs.all()) {
+            await expect(input).toHaveCSS('height', '52px')
+            await expect(input).toHaveCSS('background-color', 'rgb(255, 253, 248)')
+            if (state === 'wrong') {
+              // Figma 4490:3099: a wrong password marks both inputs.
+              await expect(input).toHaveCSS('border-color', 'rgb(141, 33, 42)')
+              await expect(input).toHaveAttribute('aria-invalid', 'true')
+            } else if (state !== 'invalid') await expect(input).toHaveCSS('border-color', 'rgb(217, 220, 203)')
+          }
+          await expect(toggles).toHaveCount(path === 'recover-password' ? 0 : path === 'reset-password' ? 2 : 1)
+          for (const toggle of await toggles.all()) await expect(toggle).toBeVisible()
+        }
       }
+      // E-188: error notices (server failure, expired link, deletion refused) use the pink banner of #143; informational ones stay neutral.
+      const errorNotice = state === 'server' || state === 'expired' || (path === 'account/delete' && state === 'active')
       for (const notice of await page.locator('.user-notice .notice').all()) {
-        await expect(notice).toHaveCSS('background-color', 'rgb(255, 253, 248)')
+        await expect(notice).toHaveCSS('background-color', errorNotice ? 'rgb(249, 228, 229)' : 'rgb(255, 253, 248)')
       }
       if (state === 'invalid' && path !== 'reset-password') {
         const email = page.getByLabel('Correo electrónico')
         await expect(email).toBeFocused()
         await expect(email).toHaveAccessibleDescription('Escribe un correo electrónico válido.')
-        await expect(email).toHaveCSS('border-color', 'rgb(142, 52, 44)')
+        await expect(email).toHaveCSS('border-color', 'rgb(141, 33, 42)')
         await expect(page.getByRole('alert')).toHaveCount(0)
         if (path === 'sign-in') {
           await expect(page.getByText('Este campo es obligatorio.', { exact: true })).toBeVisible()
           const password = page.getByLabel('Contraseña', { exact: true })
           await expect(password).toHaveAccessibleDescription('Este campo es obligatorio.')
-          await expect(password).toHaveCSS('border-color', 'rgb(142, 52, 44)')
+          await expect(password).toHaveCSS('border-color', 'rgb(141, 33, 42)')
         }
       }
       if (state === 'replaced') await fillAccess(page, 'sign-in')

@@ -60,10 +60,21 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
   const [announcement, setAnnouncement] = useState('')
   // The row whose first action gets focus once the list reloads, since the button pressed is gone.
   const focusRow = useRef<number | null>(null)
+  // The button that opened a dialog, taken from the click: Safari does not focus a clicked button, so the
+  // native <dialog> cannot give focus back to it on close (WebKit bug 22261).
+  const opener = useRef<HTMLElement | null>(null)
   const table = useRef<HTMLDivElement>(null)
   const tableTitleId = useId()
   const bannerTitleId = useId()
   const myEmail = session.state.status === 'signedIn' ? session.state.account.email : null
+
+  const dialogOpen = inviting || dialog !== null
+  useEffect(() => {
+    if (!dialogOpen) return
+    const button = opener.current
+    const list = table.current
+    return () => (button?.isConnected ? button : list)?.focus()
+  }, [dialogOpen])
 
   useEffect(() => {
     if (load.status !== 'ready' || focusRow.current === null) return
@@ -161,7 +172,14 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
 
   const blocked = !online
   const action = (
-    <Button aria-disabled={blocked || undefined} onClick={() => !blocked && setInviting(true)}>
+    <Button
+      aria-disabled={blocked || undefined}
+      onClick={(event) => {
+        if (blocked) return
+        opener.current = event.currentTarget
+        setInviting(true)
+      }}
+    >
       {t.invite}
     </Button>
   )
@@ -240,7 +258,7 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
             </section>
           )}
         </div>
-        {banner?.kind === 'failed' && <ProblemNotice problem={banner.error} />}
+        {banner?.kind === 'failed' && <ProblemNotice problem={banner.error} tone="error" />}
       </>
     )
   }
@@ -319,7 +337,10 @@ export function StaffTeam({ shell }: { shell: ShellProps }) {
         // The name tells the rows apart for screen readers; the visible text comes first (WCAG 2.5.3).
         aria-label={`${label}, ${account.name}`}
         aria-disabled={disabled || undefined}
-        onClick={onClick}
+        onClick={(event) => {
+          opener.current = event.currentTarget
+          onClick()
+        }}
       >
         {label}
       </Button>

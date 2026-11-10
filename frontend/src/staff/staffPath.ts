@@ -25,6 +25,12 @@ export function sessionIdIn(pathname: string): number | null {
   return match ? Number(match[1]) : null
 }
 
+/** A-04, the Administrator's academic terms screen (#21). */
+export const STAFF_TERMS_PATH = '/staff/terminos'
+
+/** A-05, the Administrator's athlete roster (#21). */
+export const STAFF_ROSTER_PATH = '/staff/atletas'
+
 /** The N-11 pages for a forgotten password and the email links (#84). The emails link to the last two. */
 export const STAFF_FORGOT_PATH = '/staff/recuperar'
 export const STAFF_INVITE_PATH = '/staff/invitacion'

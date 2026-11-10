@@ -28,14 +28,17 @@ test.describe('paid registration screen states', () => {
       })
       await page.goto('/register')
       if (scenario === 'privacy-loading') await expect(page.getByText('Cargando el aviso…')).toBeVisible()
-      else if (scenario === 'privacy-error') await expect(page.getByText('No pudimos mostrar el aviso')).toBeVisible()
+      else if (scenario === 'privacy-error') {
+        await expect(page.getByText('No pudimos mostrar el aviso')).toBeVisible()
+        await expect(page.locator('.user-notice .notice')).toHaveCSS('background-color', 'rgb(249, 228, 229)')
+      }
       else {
         await expect(page.getByRole('heading', { name: 'Antes de comenzar' })).toBeVisible()
         if (scenario === '179-6139' || scenario === '179-6216') {
           await acknowledge(page)
-          await expect(page.getByLabel('Número de estudiante o transacción')).toBeVisible()
+          await expect(page.getByLabel('Número de estudiante o autorización')).toBeVisible()
           if (scenario === '179-6216') {
-            await page.getByLabel('Número de estudiante o transacción').fill('12345A')
+            await page.getByLabel('Número de estudiante o autorización').fill('12345A')
             await page.getByRole('button', { name: 'Continuar', exact: true }).click()
             await expect(page.getByRole('heading', { name: 'Crea una contraseña' })).toBeVisible()
           }
@@ -75,7 +78,7 @@ test('paid registration reaches the photo step without claiming the number', asy
   await page.goto('/sign-in')
   await page.getByRole('link', { name: 'Comenzar' }).click()
   await acknowledge(page)
-  await page.getByLabel('Número de estudiante o transacción').fill('A')
+  await page.getByLabel('Número de estudiante o autorización').fill('A')
   await page.getByRole('button', { name: 'Continuar', exact: true }).click()
   await expect(page.getByText('¡Hola, María!')).toBeVisible()
   await page.getByLabel('Contraseña', { exact: true }).fill('a long password')

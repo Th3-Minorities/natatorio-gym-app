@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AcademicTermController;
 use App\Http\Controllers\ActiveSessionsController;
 use App\Http\Controllers\AthleteRegistrationController;
 use App\Http\Controllers\CheckInController;
@@ -8,6 +9,8 @@ use App\Http\Controllers\HealthController;
 use App\Http\Controllers\OccupancyController;
 use App\Http\Controllers\PaidRegistrationController;
 use App\Http\Controllers\PrivacyNoticeController;
+use App\Http\Controllers\RosterController;
+use App\Http\Controllers\RosterDownloadController;
 use App\Http\Controllers\StaffAccountController;
 use App\Http\Controllers\StaffInvitationController;
 use App\Http\Controllers\StaffPasswordController;
@@ -84,6 +87,26 @@ Route::prefix('staff')->group(function () {
         Route::patch('/accounts/{account}/role', [StaffAccountController::class, 'changeRole'])->whereNumber('account');
         Route::post('/accounts/{account}/deactivate', [StaffAccountController::class, 'deactivate'])->whereNumber('account');
         Route::post('/accounts/{account}/reactivate', [StaffAccountController::class, 'reactivate'])->whereNumber('account');
+    });
+
+    // Academic terms screen (A-04, REQ-F-21). No delete route: terms are never deleted (E-107).
+    Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        Route::get('/terms', [AcademicTermController::class, 'index']);
+        Route::post('/terms', [AcademicTermController::class, 'store']);
+        Route::patch('/terms/{term}', [AcademicTermController::class, 'update'])->whereNumber('term');
+    });
+
+    // Athlete roster: Staff read the active athletes (E-59); Administrators add and edit them on A-05 (REQ-F-49).
+    Route::middleware(['auth:staff', 'staff.active', 'role:staff,admin'])->group(function () {
+        Route::get('/roster', [RosterController::class, 'index']);
+    });
+    Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        // The whole roster as Word or PDF (REQ-F-100); Staff cannot download it (E-140).
+        Route::get('/roster/download', RosterDownloadController::class);
+        Route::post('/roster', [RosterController::class, 'store']);
+        Route::patch('/roster/{athlete}', [RosterController::class, 'update'])->whereNumber('athlete');
+        Route::post('/roster/{athlete}/withdraw', [RosterController::class, 'withdraw'])->whereNumber('athlete');
+        Route::post('/roster/{athlete}/reinstate', [RosterController::class, 'reinstate'])->whereNumber('athlete');
     });
 });
 

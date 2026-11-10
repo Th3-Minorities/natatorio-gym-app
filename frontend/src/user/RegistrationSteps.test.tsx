@@ -37,7 +37,7 @@ afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); localStorage.clea
 async function reachPhoto() {
   render(<UserApp />)
   fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
-  fireEvent.change(await screen.findByLabelText('Número de estudiante o transacción'), { target: { value: '4K7Q2B' } })
+  fireEvent.change(await screen.findByLabelText('Número de estudiante o autorización'), { target: { value: '4K7Q2B' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
   await screen.findByRole('heading', { name: 'Crea una contraseña' })
   fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'a long password' } })
@@ -361,7 +361,7 @@ it('keeps the language chosen on Welcome: English privacy can continue and the w
   render(<UserApp />)
   expect(await screen.findByRole('heading', { name: 'Before you begin' })).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Continue registration' }))
-  fireEvent.change(await screen.findByLabelText('Student or transaction number'), { target: { value: '4K7Q2B' } })
+  fireEvent.change(await screen.findByLabelText('Student or authorization number'), { target: { value: '4K7Q2B' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   await screen.findByRole('heading', { name: 'Create a password' })
   fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'a long password' } })

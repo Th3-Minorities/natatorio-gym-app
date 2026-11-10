@@ -17,6 +17,7 @@ class RosterRecordFactory extends Factory
         $person = FakePerson::make('upr.example');
 
         return [
+            // E-160: exactly 9 digits.
             'student_number' => fake()->unique()->numerify('802######'),
             'name' => $person['name'],
             'institutional_email' => $person['email'],

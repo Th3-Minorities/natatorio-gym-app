@@ -40,6 +40,8 @@ export type DashboardNavigation = {
   /** S-03, find a person and the assisted Check In (#26). */
   findPerson: string
   staffAccounts: string
+  terms: string
+  roster: string
 }
 
 /** Icons as drawn: 18px, line 1.5 (2 for Información and Cuentas del staff), orange only for the first two. */
@@ -165,8 +167,8 @@ export function DashboardShell({
               navigation={navigation}
               label={texts.adminSection}
               items={[
-                { label: admin.terms, icon: Calendar },
-                { label: admin.manageAthletes, icon: ClipboardList },
+                { label: admin.terms, icon: Calendar, href: navigation?.terms },
+                { label: admin.manageAthletes, icon: ClipboardList, href: navigation?.roster },
                 { label: admin.storeSync, icon: RefreshCw },
                 { label: admin.accounts, icon: UserCog },
                 { label: admin.staffAccounts, icon: ShieldCheck, strokeWidth: 2, href: navigation?.staffAccounts },
