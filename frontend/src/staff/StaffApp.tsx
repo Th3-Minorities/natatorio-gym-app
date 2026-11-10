@@ -15,12 +15,14 @@ import {
   STAFF_PATH,
   STAFF_RESET_PATH,
   STAFF_ROSTER_PATH,
+  STAFF_ROSTER_VIEW_PATH,
   STAFF_TEAM_PATH,
   STAFF_TERMS_PATH,
   useStaffPath,
   type Navigate,
 } from './staffPath'
 import { AthleteRoster } from './roster/AthleteRoster'
+import { StaffRoster } from './roster/StaffRoster'
 import { ActiveSessions } from './sessions/ActiveSessions'
 import { SessionDetail } from './sessions/SessionDetail'
 import { StaffTeam } from './team/StaffTeam'
@@ -48,6 +50,7 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     onNavigate: navigate,
     activeSessions: STAFF_PATH,
     findPerson: STAFF_FIND_PATH,
+    athleteRoster: STAFF_ROSTER_VIEW_PATH,
     staffAccounts: STAFF_TEAM_PATH,
     terms: STAFF_TERMS_PATH,
     roster: STAFF_ROSTER_PATH,
@@ -80,6 +83,8 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
   if (path === STAFF_PATH) return <ActiveSessions shell={shell} />
   // S-03 and S-02, for both roles (#26).
   if (path === STAFF_FIND_PATH) return <FindPerson shell={shell} />
+  // S-05, the read-only roster, for both roles (#26).
+  if (path === STAFF_ROSTER_VIEW_PATH) return <StaffRoster shell={shell} />
   if (visitId !== null) return <SessionDetail key={visitId} shell={shell} sessionId={visitId} />
 
   const { notice, ...shellProps } = shell

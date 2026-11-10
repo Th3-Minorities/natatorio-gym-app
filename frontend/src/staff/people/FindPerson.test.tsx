@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { es } from '../../i18n/es'
 import { StaffApp } from '../StaffApp'
-import { STAFF_FIND_PATH, STAFF_PATH } from '../staffPath'
+import { STAFF_FIND_PATH, STAFF_PATH, STAFF_ROSTER_VIEW_PATH } from '../staffPath'
 import { apiError, callsTo, fakeApi, json, lorena, offline } from '../team/fakeTeamApi'
 import { camila } from '../sessions/fakeSessions'
 
@@ -265,5 +265,52 @@ describe('S-03 assisted Check In', () => {
 
     expect(await screen.findByRole('heading', { name: t.activeTitle })).toBeInTheDocument()
     expect(callsTo(fetchMock, BY_NUMBER)).toHaveLength(2)
+  })
+})
+
+describe('S-03 and the athlete roster (S-05)', () => {
+  it('has "Ver roster" next to Buscar and next to Volver a buscar', async () => {
+    await search('Zoe', { '/api/staff/people?search=Zoe': () => json({ people: [] }) })
+
+    await screen.findByRole('heading', { name: t.notFoundTitle })
+    expect(screen.getByText(t.notFoundText)).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: t.viewRoster })).toHaveLength(2)
+    for (const link of screen.getAllByRole('link', { name: t.viewRoster })) {
+      expect(link).toHaveAttribute('href', STAFF_ROSTER_VIEW_PATH)
+    }
+    expect(screen.getByRole('button', { name: t.backToSearch })).toBeInTheDocument()
+  })
+
+  it('opens the roster from "Ver roster"', async () => {
+    await search('Zoe', {
+      '/api/staff/people?search=Zoe': () => json({ people: [] }),
+      '/api/staff/roster': () => json({ athletes: [], active_count: 0, total_count: 0 }),
+    })
+
+    fireEvent.click(screen.getAllByRole('link', { name: t.viewRoster })[0])
+
+    expect(window.location.pathname).toBe(STAFF_ROSTER_VIEW_PATH)
+    expect(await screen.findByRole('heading', { level: 1, name: es.staffRoster.title })).toBeInTheDocument()
+  })
+
+  it('fills the box from the student number in the address and searches once', async () => {
+    window.history.pushState(null, '', `${STAFF_FIND_PATH}?numero=802612345`)
+    const fetchMock = fakeApi({
+      '/api/staff/me': () => json(lorena),
+      [BY_NUMBER]: () => json({ people: [camila] }),
+    })
+    render(<StaffApp />)
+
+    expect(await screen.findByRole('heading', { name })).toBeInTheDocument()
+    expect(screen.getByLabelText(t.search)).toHaveValue('802612345')
+    expect(callsTo(fetchMock, BY_NUMBER)).toHaveLength(1)
+  })
+
+  it('does not search on its own when the address has no number', async () => {
+    const fetchMock = fakeApi({ '/api/staff/me': () => json(lorena) })
+    render(<StaffApp />)
+
+    expect(await screen.findByRole('heading', { name: t.startTitle })).toBeInTheDocument()
+    expect(fetchMock.mock.calls.filter(([path]) => String(path).startsWith('/api/staff/people'))).toHaveLength(0)
   })
 })
