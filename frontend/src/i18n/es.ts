@@ -452,6 +452,8 @@ export const es = {
     title: 'Roster de atletas',
     description: 'Gestiona atletas, sus datos y su acceso al gimnasio.',
     continuous: 'Lista continua entre términos',
+    // Figma 101:1417: A-05 says this when no term is active. A-15 keeps staffTeam.noTermText.
+    noTermText: 'No se puede crear una autorización nueva. Revisa las fechas en Términos.',
     add: 'Añadir atleta',
     activeCount: (count: number) => `${count} ${count === 1 ? 'atleta activo' : 'atletas activos'}`,
     search: 'Buscar atleta',

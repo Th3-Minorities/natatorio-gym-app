@@ -18,8 +18,11 @@ function termLabel(term: ActiveTerm, locale: string): string {
     : `${start} ${startYear} - ${month(term.ends_on)} ${endYear}`
 }
 
-/** text: the words after the chip; A-15 says "Acceso del equipo", A-05 "Lista continua entre términos". */
-export function TermStatus({ text }: { text?: string } = {}) {
+/**
+ * text: the words after the chip; A-15 says "Acceso del equipo", A-05 "Lista continua entre términos".
+ * noTermText: the banner's text when no term is active; A-05 has its own (Figma 101:1417).
+ */
+export function TermStatus({ text, noTermText }: { text?: string; noTermText?: string } = {}) {
   const texts = useMessages().staffTeam
   const locale = useLocale()
   const titleId = useId()
@@ -34,7 +37,7 @@ export function TermStatus({ text }: { text?: string } = {}) {
         <h2 className="state__title" id={titleId}>
           {texts.noTermTitle}
         </h2>
-        <p className="state__detail">{texts.noTermText}</p>
+        <p className="state__detail">{noTermText ?? texts.noTermText}</p>
       </section>
     )
   }

@@ -419,6 +419,7 @@ export const en: Messages = {
     title: 'Athlete roster',
     description: 'Manage athletes, their details and their access to the gym.',
     continuous: 'One list across terms',
+    noTermText: 'A new authorization cannot be created. Check the dates in Terms.',
     add: 'Add athlete',
     activeCount: (count: number) => `${count} active ${count === 1 ? 'athlete' : 'athletes'}`,
     search: 'Search athlete',

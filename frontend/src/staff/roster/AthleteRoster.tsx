@@ -179,7 +179,7 @@ export function AthleteRoster({ shell }: { shell: ShellProps }) {
         />
       )}
       <div className="roster-context">
-        <TermStatus text={t.continuous} />
+        <TermStatus text={t.continuous} noTermText={t.noTermText} />
         <div className="roster-context__actions">
           <Button
             variant="secondary"

@@ -155,6 +155,18 @@ describe('the roster screen', () => {
     expect(screen.queryByRole('heading', { name: t.emptyTitle })).not.toBeInTheDocument()
   })
 
+  it('says in its own words that no term is active (101:1417)', async () => {
+    fakeApi({
+      '/api/staff/me': () => json({ ...lorena, active_term: null }),
+      [ACTIVE]: roster([alina, jairo]),
+    })
+    render(<StaffApp />)
+
+    const banner = await screen.findByRole('region', { name: es.staffTeam.noTermTitle })
+    expect(within(banner).getByText(t.noTermText)).toBeInTheDocument()
+    expect(within(banner).queryByText(es.staffTeam.noTermText)).not.toBeInTheDocument()
+  })
+
   it('invites the first athlete when the roster is empty', async () => {
     await openScreen({ [ACTIVE]: roster([], 0) })
 
