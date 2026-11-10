@@ -18,14 +18,6 @@ type StatusDialogProps = {
   onError: (error: unknown) => void
 }
 
-/**
- * Someone else changed the athlete, or a race left the athlete with an active authorization already: the pink error
- * banner (Figma 4745:2133, E-188). Other refusals keep the neutral notice.
- */
-function changedTone(problem: ApiError | null) {
-  return problem?.code === 'roster_status_changed' || problem?.code === 'roster_reinstate_active_authorization' ? 'error' : undefined
-}
-
 /** Sends one POST at a time and keeps the refusal to show it. */
 function useSend(onError: (error: unknown) => void) {
   const busy = useRef(false)
@@ -72,7 +64,7 @@ export function WithdrawDialog({ athlete, onClose, onDone, onError }: StatusDial
         </h2>
         <p className="modal__text">{t.withdrawText}</p>
         <p className="roster-meta">{t.withdrawMeta(athlete.student_number, athlete.sport)}</p>
-        <ProblemNotice problem={problem} tone={changedTone(problem)} />
+        <ProblemNotice problem={problem} tone="error" />
         <div className="modal__actions">
           <Button aria-disabled={sending || !online || undefined} onClick={() => void withdraw()}>
             {t.withdrawConfirm}
@@ -164,7 +156,7 @@ export function ReinstateDialog({ athlete, onClose, onDone, onError }: StatusDia
         <p className="modal__text" aria-live="polite">
           {short ? t.shortText : t.reinstateText}
         </p>
-        <ProblemNotice problem={problem} tone={changedTone(problem)} />
+        <ProblemNotice problem={problem} tone="error" />
         <div className="field">
           <label className="field__label" htmlFor={reasonId}>
             {t.reason}

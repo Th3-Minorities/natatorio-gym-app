@@ -76,6 +76,16 @@ describe('withdrawing an athlete', () => {
     expect(callsTo(opened.fetchMock, '/api/staff/roster/1/withdraw')).toEqual([['POST', undefined]])
   })
 
+  it('shows a server error in the pink banner', async () => {
+    await openScreen({ 'POST /api/staff/roster/1/withdraw': () => apiError('server_error', 500) })
+
+    fireEvent.click(screen.getByRole('button', { name: `${t.withdraw}, ${alina.name}` }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.withdrawConfirm }))
+
+    const notice = await within(screen.getByRole('dialog')).findByText(es.errors.server_error)
+    expect(notice.closest('.notice')).toHaveClass('notice--error')
+  })
+
   it('closes with Cancelar and sends nothing', async () => {
     const { fetchMock } = await openScreen()
 
