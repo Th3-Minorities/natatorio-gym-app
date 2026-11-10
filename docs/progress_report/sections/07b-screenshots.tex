@@ -3,7 +3,7 @@
 \newcommand{\flowshot}[2]{%
   \begin{minipage}[t]{0.22\textwidth}
     \centering
-    \fbox{\includegraphics[width=\linewidth]{figures/#1}}\\[2pt]
+    \fbox{\includegraphics[width=\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax]{figures/#1}}\\[2pt]
     {\small #2}
   \end{minipage}}
 

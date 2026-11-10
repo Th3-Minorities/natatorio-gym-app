@@ -14,69 +14,69 @@
 \endhead
 \bottomrule
 \endfoot
-\texttt{Auth/PaidRegistrationTest}, \texttt{Auth/PrivacyNoticeTest} & backend & 1 & F-10, F-11, F-13, F-18, F-60, F-70, F-71, F-72, F-73, NF-24, NF-25, NF-51 & Number lookup, masked email, same answer for bad numbers, IP limit, photo saved before the claim, waiver, password and 10 MB rules, privacy notice \\
+\path{Auth/PaidRegistrationTest}, \path{Auth/PrivacyNoticeTest} & backend & 1 & F-10, F-11, F-13, F-18, F-60, F-70, F-71, F-72, F-73, NF-24, NF-25, NF-51 & Number lookup, masked email, same answer for bad numbers, IP limit, photo saved before the claim, waiver, password and 10 MB rules, privacy notice \\
 \addlinespace
-\texttt{Auth/UserSignInTest}, \texttt{UserSessionStorageTest}, \texttt{UserSignInThrottleTest}, \texttt{UserPasswordResetTest}, \texttt{UserAccountTest} & backend & 1 & F-02, F-03, F-06, F-07, F-09, NF-21, NF-33, NF-35, NF-51 & Sign in, one device at a time, lockout after 10 failures, password reset, account deletion, own language \\
+\path{Auth/UserSignInTest}, \path{UserSessionStorageTest}, \path{UserSignInThrottleTest}, \path{UserPasswordResetTest}, \path{UserAccountTest} & backend & 1 & F-02, F-03, F-06, F-07, F-09, NF-21, NF-33, NF-35, NF-51 & Sign in, one device at a time, lockout after 10 failures, password reset, account deletion, own language \\
 \addlinespace
-\texttt{Auth/PaidRegistrationConcurrencyTest}, \texttt{Database/ConcurrentInsertsTest}, \texttt{CheckIn/CheckInConcurrencyTest} & backend & 1, 2 & F-17, F-21\textsuperscript{db}, F-36, F-71, NF-42 & Simultaneous claims, terms, lookups and Check Ins leave one account, claim or session \\
+\path{Auth/PaidRegistrationConcurrencyTest}, \path{Database/ConcurrentInsertsTest}, \path{CheckIn/CheckInConcurrencyTest} & backend & 1, 2 & F-17, F-21\textsuperscript{db}, F-36, F-71, NF-42 & Simultaneous claims, terms, lookups and Check Ins leave one account, claim or session \\
 \addlinespace
-\texttt{Auth/RegistrationPhotoTest}, \texttt{CheckIn/GymPhotoTest} & backend & 1, 2 & NF-20, NF-24 & Photo becomes a private JPEG without metadata; only its owner reads it \\
+\path{Auth/RegistrationPhotoTest}, \path{CheckIn/GymPhotoTest} & backend & 1, 2 & NF-20, NF-24 & Photo becomes a private JPEG without metadata; only its owner reads it \\
 \addlinespace
-\texttt{Auth/StaffSignInTest}, \texttt{StaffGuardTest}, \texttt{StaffRolesTest}, \texttt{StaffSessionTimeoutTest}, \texttt{StaffSignInAddressTest}, \texttt{StaffSignInThrottleTest}, \texttt{RouteProtectionTest} & backend & 4 & F-07, F-52, F-88, NF-10, NF-39 & Own staff account, action allowed or denied by role, every route checked, 2 h and 20 min timeouts, lockout \\
+\path{Auth/StaffSignInTest}, \path{StaffGuardTest}, \path{StaffRolesTest}, \path{StaffSessionTimeoutTest}, \path{StaffSignInAddressTest}, \path{StaffSignInThrottleTest}, \path{RouteProtectionTest} & backend & 4 & F-07, F-52, F-88, NF-10, NF-39 & Own staff account, action allowed or denied by role, every route checked, 2 h and 20 min timeouts, lockout \\
 \addlinespace
-\texttt{StaffAccounts/StaffInviteTest}, \texttt{StaffInviteAcceptTest}, \texttt{StaffAccountChangesTest}, \texttt{StaffPasswordResetTest} & backend & 4 & F-06, F-88, NF-35, NF-39, NF-51 & Invite by email, set password, change role, deactivate and reactivate, last Administrator kept, reset \\
+\path{StaffAccounts/StaffInviteTest}, \path{StaffInviteAcceptTest}, \path{StaffAccountChangesTest}, \path{StaffPasswordResetTest} & backend & 4 & F-06, F-88, NF-35, NF-39, NF-51 & Invite by email, set password, change role, deactivate and reactivate, last Administrator kept, reset \\
 \addlinespace
-\texttt{StaffAccounts/StaffAccountInjectionTest}, \texttt{Security/StaffAccountInputsTest}, \texttt{Security/UserInputsTest} & backend & 1, 4 & n/a & SQL and script text kept as plain data; arrays and oversized inputs refused \\
+\path{StaffAccounts/StaffAccountInjectionTest}, \path{Security/StaffAccountInputsTest}, \path{Security/UserInputsTest} & backend & 1, 4 & n/a & SQL and script text kept as plain data; arrays and oversized inputs refused \\
 \addlinespace
-\texttt{Console/CreateAdministratorCommandTest} & backend & 4 & F-88, NF-52 & Install command creates the first Administrator and refuses a second one \\
+\path{Console/CreateAdministratorCommandTest} & backend & 4 & F-88, NF-52 & Install command creates the first Administrator and refuses a second one \\
 \addlinespace
-\texttt{Audit/AuditLogTest} & backend & 4 & NF-39 & Entry names the staff account and IP; entries cannot be edited or deleted \\
+\path{Audit/AuditLogTest} & backend & 4 & NF-39 & Entry names the staff account and IP; entries cannot be edited or deleted \\
 \addlinespace
-\texttt{CheckIn/CheckInTest}, \texttt{BoundaryStartupTest} & backend & 2 & F-22, F-33, F-36, F-37, F-38, F-82, F-83, F-94, NF-01, NF-03, NF-29 & Each refusal cause, one session per valid Check In, active session returned, athletes-only periods, location not stored, 50 m limit \\
+\path{CheckIn/CheckInTest}, \path{BoundaryStartupTest} & backend & 2 & F-22, F-33, F-36, F-37, F-38, F-82, F-83, F-94, NF-01, NF-03, NF-29 & Each refusal cause, one session per valid Check In, active session returned, athletes-only periods, location not stored, 50 m limit \\
 \addlinespace
-\texttt{CheckIn/CheckOutTest}, \texttt{CheckOutConcurrencyTest}, \texttt{SessionCloseTest} & backend & 2 & F-38, F-48, F-52, NF-01 & Staff check-out of active sessions only, automatic close after 2 h, close by closure or term end \\
+\path{CheckIn/CheckOutTest}, \path{CheckOutConcurrencyTest}, \path{SessionCloseTest} & backend & 2 & F-38, F-48, F-52, NF-01 & Staff check-out of active sessions only, automatic close after 2 h, close by closure or term end \\
 \addlinespace
-\texttt{CheckIn/OccupancyTest} & backend & 3 & F-41 & Occupancy counts only open sessions; closed, expired and void ones drop out \\
+\path{CheckIn/OccupancyTest} & backend & 3 & F-41 & Occupancy counts only open sessions; closed, expired and void ones drop out \\
 \addlinespace
-\texttt{Database/SessionsAndStatisticsTablesTest} & backend & 2, 3 & F-36, F-38, NF-01 & One active session per user in the database; a session ends exactly 2 h after it starts \\
+\path{Database/SessionsAndStatisticsTablesTest} & backend & 2, 3 & F-36, F-38, NF-01 & One active session per user in the database; a session ends exactly 2 h after it starts \\
 \addlinespace
-\texttt{Database/RosterLinksAndAuthorizationsTablesTest}, \texttt{TermsAndImportsTablesTest} & backend & 1 & F-17, F-19, F-21\textsuperscript{db}, F-29\textsuperscript{db}, F-30\textsuperscript{db}, F-51, F-60 & One claim per number and roster record, one active authorization per term, no overlapping terms, order stored once \\
+\path{Database/RosterLinksAndAuthorizationsTablesTest}, \path{TermsAndImportsTablesTest} & backend & 1 & F-17, F-19, F-21\textsuperscript{db}, F-29\textsuperscript{db}, F-30\textsuperscript{db}, F-51, F-60 & One claim per number and roster record, one active authorization per term, no overlapping terms, order stored once \\
 \addlinespace
-\texttt{Database/AccountsAndAuditTablesTest}, \texttt{ContentAndScheduleTablesTest} & backend & 1, 4 & F-52, F-55\textsuperscript{db}, F-58\textsuperscript{db}, NF-21, NF-39 & Unique emails, only listed columns, audit entry fields, schedule and notice tables with Spanish text \\
+\path{Database/AccountsAndAuditTablesTest}, \path{ContentAndScheduleTablesTest} & backend & 1, 4 & F-52, F-55\textsuperscript{db}, F-58\textsuperscript{db}, NF-21, NF-39 & Unique emails, only listed columns, audit entry fields, schedule and notice tables with Spanish text \\
 \addlinespace
-\texttt{Database/DatabaseSeederTest} & backend & 1 & NF-44 & Controlled fake dataset with valid and denied access cases; none in production \\
+\path{Database/DatabaseSeederTest} & backend & 1 & NF-44 & Controlled fake dataset with valid and denied access cases; none in production \\
 \addlinespace
-\texttt{ApiErrorFormatTest}, \texttt{Unit/ErrorCodesTest}, \texttt{TimezoneTest}, \texttt{ModelDatesTest}, \texttt{HealthCheckTest}, \texttt{MailInTestsTest} & backend & All & NF-34, NF-37 & Error codes instead of texts, Puerto Rico time, health route, mail kept in memory \\
+\path{ApiErrorFormatTest}, \path{Unit/ErrorCodesTest}, \path{TimezoneTest}, \path{ModelDatesTest}, \path{HealthCheckTest}, \path{MailInTestsTest} & backend & All & NF-34, NF-37 & Error codes instead of texts, Puerto Rico time, health route, mail kept in memory \\
 \addlinespace
-\texttt{user/UserApp.test} & unit & 1 & F-02, F-03, F-06, F-07, F-09, NF-25, NF-33 & Sign in, recovery, account, deletion and privacy screens with their states \\
+\path{user/UserApp.test} & unit & 1 & F-02, F-03, F-06, F-07, F-09, NF-25, NF-33 & Sign in, recovery, account, deletion and privacy screens with their states \\
 \addlinespace
-\texttt{user/Registration.test}, \texttt{RegistrationSteps.test} & unit & 1 & F-13, F-60, F-70, F-72, F-73, F-91, NF-24, NF-25, NF-51 & Registration steps: privacy, number, masked email, password, photo, waiver and contact, errors \\
+\path{user/Registration.test}, \path{RegistrationSteps.test} & unit & 1 & F-13, F-60, F-70, F-72, F-73, F-91, NF-24, NF-25, NF-51 & Registration steps: privacy, number, masked email, password, photo, waiver and contact, errors \\
 \addlinespace
-\texttt{user/CheckIn.test} & unit & 2 & F-23, F-33, F-37, F-82, F-83, NF-11 & Press-and-hold Check In, location permission and accuracy errors, athletes-only notice \\
+\path{user/CheckIn.test} & unit & 2 & F-23, F-33, F-37, F-82, F-83, NF-11 & Press-and-hold Check In, location permission and accuracy errors, athletes-only notice \\
 \addlinespace
-\texttt{user/GymId.test} & unit & 2, 3 & F-38, F-40, F-43, NF-26 & Gym ID timer, ended-visit summary, occupancy polled every 25 s, offline hides numbers \\
+\path{user/GymId.test} & unit & 2, 3 & F-38, F-40, F-43, NF-26 & Gym ID timer, ended-visit summary, occupancy polled every 25 s, offline hides numbers \\
 \addlinespace
-\texttt{user/InstallHelp.test} & unit & All & F-66 & Install button only when the browser offers it; iPhone steps \\
+\path{user/InstallHelp.test} & unit & All & F-66 & Install button only when the browser offers it; iPhone steps \\
 \addlinespace
-\texttt{staff/StaffSignIn.test}, \texttt{StaffApp.test}, \texttt{StaffSession.test}, \texttt{useStaffSession.test}, \texttt{dashboard/DashboardShell.test} & unit & 4 & F-07, F-52, F-88, NF-10 & Staff sign-in states, lockout wait, timeout and deactivated notices, Administration items only for Administrators \\
+\path{staff/StaffSignIn.test}, \path{StaffApp.test}, \path{StaffSession.test}, \path{useStaffSession.test}, \path{dashboard/DashboardShell.test} & unit & 4 & F-07, F-52, F-88, NF-10 & Staff sign-in states, lockout wait, timeout and deactivated notices, Administration items only for Administrators \\
 \addlinespace
-\texttt{staff/access/StaffAccessPages.test}, \texttt{staff/team/ (4 files)} & unit & 4 & F-06, F-52, F-88, NF-51 & Recovery, invitation and reset pages; staff list, invite, role change, deactivate and reactivate, term chip \\
+\path{staff/access/StaffAccessPages.test}, \path{staff/team/}\texttt{ (4 files)} & unit & 4 & F-06, F-52, F-88, NF-51 & Recovery, invitation and reset pages; staff list, invite, role change, deactivate and reactivate, term chip \\
 \addlinespace
-\texttt{api/client.test}, \texttt{service-worker.test} & unit & All & F-07, NF-26 & Wait time from the server, offline detection, worker never serves cached API data \\
+\path{api/client.test}, \path{service-worker.test} & unit & All & F-07, NF-26 & Wait time from the server, offline detection, worker never serves cached API data \\
 \addlinespace
-\texttt{i18n/ (2 files)}, \texttt{format/dateTime.test} & unit & All & NF-33, NF-34, NF-36, NF-37, NF-38 & Spanish and English texts match, every error code translated, page language, Puerto Rico date form \\
+\path{i18n/}\texttt{ (2 files)}, \path{format/dateTime.test} & unit & All & NF-33, NF-34, NF-36, NF-37, NF-38 & Spanish and English texts match, every error code translated, page language, Puerto Rico date form \\
 \addlinespace
-\texttt{App.test}, \texttt{components/ (2 files)}, \texttt{security.test}, \texttt{styles/tokens.test} & unit & All & n/a & Health banner, shared components, no raw HTML, Figma tokens \\
+\path{App.test}, \path{components/}\texttt{ (2 files)}, \path{security.test}, \path{styles/tokens.test} & unit & All & n/a & Health banner, shared components, no raw HTML, Figma tokens \\
 \addlinespace
-\texttt{user-sign-in.spec} & browser & 1 & F-02, F-03 & Sign in, sign out, a second browser replaces the first \\
+\path{user-sign-in.spec} & browser & 1 & F-02, F-03 & Sign in, sign out, a second browser replaces the first \\
 \addlinespace
-\texttt{registration-frames.spec}, \texttt{user-frames.spec}, \texttt{user-other-screens.spec} & browser & 1, 3 & F-66, NF-13, NF-25 & User screens match their Figma frames, privacy and install help, no accessibility violations \\
+\path{registration-frames.spec}, \path{user-frames.spec}, \path{user-other-screens.spec} & browser & 1, 3 & F-66, NF-13, NF-25 & User screens match their Figma frames, privacy and install help, no accessibility violations \\
 \addlinespace
-\texttt{check-in-frames.spec} & browser & 2 & F-33, NF-13 & Every Check In state matches its Figma frame, no accessibility violations \\
+\path{check-in-frames.spec} & browser & 2 & F-33, NF-13 & Every Check In state matches its Figma frame, no accessibility violations \\
 \addlinespace
-\texttt{staff-sign-in.spec}, \texttt{staff-accounts.spec}, \texttt{dashboard-shell.spec} & browser & 4 & F-06, F-52, F-88, NF-10, NF-13 & Staff sign in and out, invite to first sign-in, password reset, skip link, 320 px reflow \\
+\path{staff-sign-in.spec}, \path{staff-accounts.spec}, \path{dashboard-shell.spec} & browser & 4 & F-06, F-52, F-88, NF-10, NF-13 & Staff sign in and out, invite to first sign-in, password reset, skip link, 320 px reflow \\
 \addlinespace
-\texttt{pwa.spec}, \texttt{health.spec} & browser & All & F-66, NF-26 & Manifest and icons, worker never caches the API, install help opens offline \\
+\path{pwa.spec}, \path{health.spec} & browser & All & F-66, NF-26 & Manifest and icons, worker never caches the API, install help opens offline \\
 \addlinespace
 \texttt{tests/load/check-in.js (k6)} & load & 2, 3 & F-36, F-37, F-41, NF-15, NF-42, NF-50 & 50 and 100 Check Ins in 5 min, 50 simultaneous pairs; one session per user, occupancy matches \\
 \addlinespace
