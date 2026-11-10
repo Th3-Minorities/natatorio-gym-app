@@ -88,7 +88,11 @@ function OccupancyCard({ occupancy }: { occupancy: OccupancyState }) {
               <span className="team-chip team-chip--deactivated">{t.staleChip}</span>
             </p>
             <p className="staff-occupancy__caption">{t.offlineText}</p>
-            {data && <p className="staff-occupancy__caption">{texts.checkIn.lastUpdate(dates.time(data.updated_at))}</p>}
+            {data && (
+              <p className="staff-occupancy__caption">
+                {texts.checkIn.lastUpdate(dates.time(data.updated_at))} {t.offlineEnded}
+              </p>
+            )}
           </>
         ) : problem ? (
           <>

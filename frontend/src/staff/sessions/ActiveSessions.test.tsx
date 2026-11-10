@@ -126,7 +126,7 @@ describe('S-01 occupancy', () => {
     const status = within(card).getByRole('status')
     expect(status).toHaveTextContent(gym.offline)
     expect(within(status).getByText(t.staleChip)).toHaveClass('team-chip')
-    expect(within(card).getByText(es.checkIn.lastUpdate('1:07 p. m.'))).toBeInTheDocument()
+    expect(within(card).getByText(`${es.checkIn.lastUpdate('1:07 p. m.')} ${t.offlineEnded}`)).toBeInTheDocument()
     expect(card).not.toHaveTextContent('18')
     // The sessions list does not say it again next to the card.
     expect(screen.getAllByText(t.offlineText)).toHaveLength(1)

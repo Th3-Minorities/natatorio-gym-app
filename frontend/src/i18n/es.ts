@@ -368,6 +368,7 @@ export const es = {
     offlineText: 'Sin internet no podemos actualizar la ocupación.',
     // The chip of the offline card (Figma 122:2983).
     staleChip: 'Datos no actuales',
+    offlineEnded: 'Las sesiones pueden haber terminado desde entonces.',
     // The confirmation (Figma 122:3002): the title, then the question, then the button.
     confirmTitle: 'Confirmar salida',
     confirmCheckOut: 'Sí, marcar salida',
@@ -473,6 +474,8 @@ export const es = {
     offlineText: 'Conéctate a internet para buscar personas o registrar entradas. No podemos confirmar si los datos están actualizados.',
     // Buttons of the not found, refusal and offline states (Figma 4288:1105, 4288:1160, 4288:1183 to 4288:1280).
     backToSearch: 'Volver a buscar',
+    // The disabled button under "Registrando entrada" (Figma 4288:1305).
+    registeringButton: 'Registrando…',
     selectTitle: 'Selecciona a la persona',
     selectText: 'Hay varias cuentas con ese nombre. Comprueba cuál corresponde a la persona presente.',
     select: 'Seleccionar',
