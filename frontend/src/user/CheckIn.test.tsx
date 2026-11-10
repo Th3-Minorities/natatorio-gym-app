@@ -16,6 +16,7 @@ const idle = { session: null, athletes_period: null, account_type: 'member' }
 
 type Answer = (path: string, init?: RequestInit) => Promise<Response>
 let status: object
+let account: object | undefined
 let post: Answer
 let position: (success: PositionCallback, failure: PositionErrorCallback, options?: PositionOptions) => void
 const json = (body: unknown, code = 200) => new Response(JSON.stringify(body), { status: code })
@@ -23,10 +24,11 @@ const refuse = (code: string, details?: object, httpStatus = 422) => json({ erro
 
 beforeEach(() => {
   status = idle
+  account = undefined
   post = async () => json({ ...idle, session }, 201)
   position = (success) => success({ coords: { latitude: 18.2101, longitude: -67.1408, accuracy: 12 } } as GeolocationPosition)
   vi.stubGlobal('fetch', vi.fn((path: string, init?: RequestInit) => {
-    if (path.endsWith('/me')) return Promise.resolve(json((status as { account_type: string }).account_type === 'athlete' ? athlete : member))
+    if (path.endsWith('/me')) return Promise.resolve(json(account ?? ((status as { account_type: string }).account_type === 'athlete' ? athlete : member)))
     if (path.endsWith('/check-in') && init?.method === 'POST') return post(path, init)
     if (path.endsWith('/check-in')) return Promise.resolve(json(status))
     return Promise.resolve(new Response(null, { status: 204 }))
@@ -58,6 +60,126 @@ function hold(milliseconds = 1000) {
 const geolocation = () => navigator.geolocation.getCurrentPosition as ReturnType<typeof vi.fn>
 
 describe('U-01 Check In', () => {
+  it('keeps the offline retry when the mount profile fails and the status succeeds', async () => {
+    const fetchMock = vi.mocked(fetch)
+    const original = fetchMock.getMockImplementation() as Answer
+    let resolveStatus!: (response: Response) => void
+    const pendingStatus = new Promise<Response>((resolve) => { resolveStatus = resolve })
+    let offline = true
+    fetchMock.mockImplementation((path, init) => {
+      if (String(path).endsWith('/me') && offline) return Promise.reject(new TypeError('network'))
+      if (String(path).endsWith('/check-in')) return pendingStatus
+      return original(String(path), init)
+    })
+    await open()
+    await screen.findByRole('heading', { name: 'Necesitas conexión' })
+
+    await act(async () => { resolveStatus(json(idle)) })
+
+    expect(screen.getByRole('heading', { name: 'Necesitas conexión' })).toBeInTheDocument()
+    expect(screen.getAllByRole('status').some((region) => region.textContent?.includes('Necesitas conexión'))).toBe(true)
+    expect(screen.getByRole('button', { name: 'Reintentar conexión' })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+
+    offline = false
+    fireEvent.click(screen.getByRole('button', { name: 'Reintentar conexión' }))
+    expect(await screen.findByRole('button', { name: 'Mantén presionado para entrar' })).toBeInTheDocument()
+  })
+
+  it('shows the existing error and retries the profile and status after a mount profile failure', async () => {
+    const fetchMock = vi.mocked(fetch)
+    const original = fetchMock.getMockImplementation() as Answer
+    let failing = true
+    let resolveProfile!: (response: Response) => void
+    const pendingProfile = new Promise<Response>((resolve) => { resolveProfile = resolve })
+    fetchMock.mockImplementation((path, init) => {
+      if (String(path).endsWith('/me')) return failing ? Promise.resolve(refuse('server_error', undefined, 500)) : pendingProfile
+      return original(String(path), init)
+    })
+    await open()
+
+    expect(await screen.findByRole('heading', { name: 'No pudimos enviar la solicitud' })).toBeInTheDocument()
+    expect(screen.getByText('Algo salió mal de nuestro lado. Intenta más tarde.')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('No pudimos enviar la solicitud')
+    expect(screen.getByRole('button', { name: 'Intentar de nuevo' })).toBeEnabled()
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+    const profileRequests = fetchMock.mock.calls.filter(([path]) => String(path).endsWith('/me')).length
+    const statusRequests = fetchMock.mock.calls.filter(([path]) => String(path).endsWith('/check-in')).length
+    failing = false
+    fireEvent.click(screen.getByRole('button', { name: 'Intentar de nuevo' }))
+
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([path]) => String(path).endsWith('/me'))).toHaveLength(profileRequests + 1))
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+    resolveProfile(json(member))
+    expect(await screen.findByRole('button', { name: 'Mantén presionado para entrar' })).toBeInTheDocument()
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([path]) => String(path).endsWith('/check-in'))).toHaveLength(statusRequests + 1))
+    expect(screen.queryByRole('heading', { name: 'No pudimos enviar la solicitud' })).not.toBeInTheDocument()
+    expect(geolocation()).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }))
+  })
+
+  it('reloads the profile on opening Check In before offering the hold button', async () => {
+    const fetchMock = vi.mocked(fetch)
+    const original = fetchMock.getMockImplementation() as Answer
+    let resolveProfile!: (response: Response) => void
+    const pendingProfile = new Promise<Response>((resolve) => { resolveProfile = resolve })
+    let profileRequests = 0
+    fetchMock.mockImplementation((path, init) => {
+      if (String(path).endsWith('/me')) {
+        profileRequests += 1
+        return profileRequests === 1 ? Promise.resolve(json({ ...athlete, authorization: null })) : pendingProfile
+      }
+      return original(String(path), init)
+    })
+    status = { ...idle, account_type: 'athlete' }
+    window.history.replaceState({}, '', '/account')
+    render(<UserApp />)
+    await screen.findByText(athlete.name)
+
+    fireEvent.click(screen.getByRole('link', { name: 'Check-in' }))
+    await screen.findByRole('heading', { name: 'Check-in', level: 1 })
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+    resolveProfile(json(athlete))
+    expect(await screen.findByRole('button', { name: 'Mantén presionado para entrar' })).toBeInTheDocument()
+  })
+
+  it.each(['paid', 'manual', 'athlete', null])('shows no access before a press when the %s account has no current authorization', async (type) => {
+    account = { ...(type === 'athlete' ? athlete : member), account_type: type, authorization: null }
+    status = { ...idle, account_type: type === 'athlete' ? 'athlete' : 'member', athletes_period: { ...period, state: 'active' } }
+    await open()
+
+    expect(await screen.findByRole('heading', { name: type === 'athlete' ? 'Tu acceso de atleta no está vigente' : 'Tu acceso no está vigente' })).toBeInTheDocument()
+    expect(screen.getByText(type === 'athlete' ? 'Ver información de contacto' : 'Revisar mi acceso')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: 'Autorización activa' })).not.toBeInTheDocument()
+    expect(geolocation()).not.toHaveBeenCalled()
+    expect(fetch).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }))
+  })
+
+  it('keeps an open visit visible without current authorization', async () => {
+    account = { ...athlete, account_type: 'athlete', authorization: null }
+    status = { ...idle, account_type: 'athlete', session }
+    await open()
+
+    expect(await screen.findByText('Tu entrada está registrada', { selector: '.check-in-lead' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Tu acceso de atleta no está vigente' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+    expect(geolocation()).not.toHaveBeenCalled()
+  })
+
+  it('does not offer Check In until the status has loaded', async () => {
+    const fetchMock = vi.mocked(fetch)
+    const original = fetchMock.getMockImplementation() as Answer
+    let resolveStatus!: (response: Response) => void
+    const pendingStatus = new Promise<Response>((resolve) => { resolveStatus = resolve })
+    fetchMock.mockImplementation((path, init) => String(path).endsWith('/check-in') ? pendingStatus : original(String(path), init))
+    await open()
+
+    expect(screen.queryByRole('button', { name: 'Mantén presionado para entrar' })).not.toBeInTheDocument()
+    resolveStatus(json(idle))
+    expect(await screen.findByRole('button', { name: 'Mantén presionado para entrar' })).toBeInTheDocument()
+  })
+
   it.each([999, 1001])('advances the duration one second at a time with %i ms timer jitter (999 reproduces GI-07, 1001 is a regression guard)', async (interval) => {
     vi.useFakeTimers()
     vi.setSystemTime(new Date(Date.parse(session.started_at) + 500))

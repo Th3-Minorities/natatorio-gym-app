@@ -30,6 +30,7 @@ type RouteContext = {
   navigate: (path: string, options?: { replace?: boolean }) => void
   ended: (error: unknown) => boolean
   profile: UserProfile | null
+  reloadProfile: () => Promise<void>
   replaced: boolean
   deviceLocale: Locale
   chooseLocale: (locale: Locale) => void
@@ -50,7 +51,7 @@ const USER_ROUTES: Record<string, Route> = {
   '/account/delete': account,
   '/account/privacy': account,
   '/account/settings': account,
-  '/check-in': { protected: true, render: (c) => <CheckIn profile={c.profile} ended={c.ended} /> },
+  '/check-in': { protected: true, render: (c) => <CheckIn profile={c.profile} reloadProfile={c.reloadProfile} ended={c.ended} /> },
   '/gym': { protected: true, render: (c) => <Gym ended={c.ended} /> },
   '/install': { render: () => <InstallHelp /> },
   '/privacy': register,
@@ -126,7 +127,7 @@ export function UserApp() {
     return false
   }, [navigate])
 
-  const load = useCallback((background = false) => {
+  const load = useCallback((background = false, propagateFailure = false) => {
     const started = epoch.current
     return apiRequest<UserProfile>('/user/me', { autoRefresh: background }).then((account) => {
       if (epoch.current !== started) return
@@ -137,8 +138,10 @@ export function UserApp() {
       if (epoch.current !== started || ended(error)) return
       if (error instanceof ApiError && error.code === 'offline') setNetworkFailed(true)
       else if (!background) setFailed(true)
+      if (propagateFailure) throw error
     }).finally(() => { if (epoch.current === started) setLoading(false) })
   }, [ended])
+  const reloadProfile = useCallback(() => load(false, true), [load])
 
   useEffect(() => { if (protectedPath) void load() }, [protectedPath, load])
   useEffect(() => {
@@ -224,6 +227,7 @@ export function UserApp() {
       navigate,
       ended,
       profile,
+      reloadProfile,
       replaced,
       deviceLocale,
       chooseLocale,
