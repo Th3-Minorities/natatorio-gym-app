@@ -58,6 +58,7 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
   const [fromAddress] = useState(() => new URLSearchParams(window.location.search).get('numero')?.trim().slice(0, 255) ?? '')
   const [text, setText] = useState(fromAddress)
   const [view, setView] = useState<View>({ kind: 'start' })
+  const [photoReadyFor, setPhotoReadyFor] = useState<number | null>(null)
   const [asking, setAsking] = useState<'confirm' | 'pending' | null>(null)
   const [busy, setBusy] = useState(false)
   // While the entry is being recorded (Figma 4288:1305).
@@ -72,7 +73,7 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
   // Each new result says what it is first: focus goes to its title (WCAG 2.4.3).
   useEffect(() => {
     if (view.kind !== 'start') resultTitle.current?.focus()
-  }, [view])
+  }, [view, photoReadyFor])
 
   // The question closed and its button is gone: focus goes to the title of "Registrando entrada".
   useEffect(() => {
@@ -91,6 +92,7 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
       setView({ kind: 'offline' })
       return
     }
+    setPhotoReadyFor(null)
     setView({ kind: 'searching' })
     try {
       const { people } = await apiRequest<{ people: Person[] }>(`/staff/people?${new URLSearchParams({ search: query })}`)
@@ -298,8 +300,11 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
     return (
       <>
         <PersonCard
+          key={person.user_id}
           person={person}
           photo={person.has_photo && person.authorization.current ? `/api/staff/people/${person.user_id}/photo` : null}
+          onPhotoSettled={() => setPhotoReadyFor(person.user_id)}
+          showLoadingCaption={false}
           extra={!open && !refusal && <p className="person-card__muted">{t.noSession}</p>}
         />
         {open ? (
@@ -326,6 +331,14 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
                   {t.backToSearch}
                 </Button>
               )}
+            </div>
+          </section>
+        ) : photoReadyFor !== person.user_id ? (
+          <section className="state find-photo-loading" role="status">
+            <h2 className="state__title">{t.photoLoadingTitle}</h2>
+            <p className="state__detail">{t.photoLoadingText}</p>
+            <div className="find-verify__actions">
+              <Button variant="secondary" aria-disabled="true">{t.confirm}</Button>
             </div>
           </section>
         ) : registering ? (

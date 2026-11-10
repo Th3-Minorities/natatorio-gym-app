@@ -104,6 +104,7 @@ describe('S-05 athlete roster, read only', () => {
     fireEvent.click(link)
 
     expect(await screen.findByRole('heading', { level: 1, name: es.findPerson.title })).toBeInTheDocument()
+    fireEvent.load(await screen.findByAltText(es.sessionDetail.photo))
     expect(await screen.findByRole('heading', { name: es.findPerson.verifyTitle })).toBeInTheDocument()
     expect(screen.getByLabelText(es.findPerson.search)).toHaveValue('802612345')
     expect(callsTo(fetchMock, byNumber)).toHaveLength(1)

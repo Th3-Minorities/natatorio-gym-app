@@ -24,7 +24,7 @@ afterEach(() => {
   window.history.pushState(null, '', '/')
 })
 
-async function search(text: string, routes: Parameters<typeof fakeApi>[0] = {}) {
+async function search(text: string, routes: Parameters<typeof fakeApi>[0] = {}, loadPhoto = true) {
   const fetchMock = fakeApi({
     '/api/staff/me': () => json(lorena),
     [BY_NUMBER]: () => json({ people: [camila] }),
@@ -36,10 +36,40 @@ async function search(text: string, routes: Parameters<typeof fakeApi>[0] = {}) 
   expect(await screen.findByRole('heading', { name: t.startTitle })).toBeInTheDocument()
   fireEvent.change(screen.getByLabelText(t.search), { target: { value: text } })
   fireEvent.click(screen.getByRole('button', { name: t.submit }))
+  await waitFor(() => expect(screen.queryByText(t.searchingTitle)).not.toBeInTheDocument())
+  const photo = screen.queryByAltText(es.sessionDetail.photo)
+  if (loadPhoto && photo) fireEvent.load(photo)
   return fetchMock
 }
 
 describe('S-03 assisted Check In', () => {
+  it.each(['load', 'error'] as const)('announces the photo loading state until the image fires %s (4288:1354)', async (event) => {
+    const fetchMock = await search('802612345', {}, false)
+    const photo = await screen.findByAltText(es.sessionDetail.photo)
+    const searchBox = screen.getByLabelText(t.search)
+    searchBox.focus()
+
+    const loading = screen.getByRole('heading', { name: t.photoLoadingTitle }).closest<HTMLElement>('[role="status"]')!
+    expect(within(loading).getByText(t.photoLoadingText)).toBeInTheDocument()
+    expect(within(loading).getByRole('button', { name: t.confirm })).toHaveAttribute('aria-disabled', 'true')
+    fireEvent.click(within(loading).getByRole('button', { name: t.confirm }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: t.photoMatches })).not.toBeInTheDocument()
+    expect(callsTo(fetchMock, '/api/staff/check-in')).toEqual([])
+    expect(searchBox).toHaveFocus()
+    expect(screen.queryByText(es.sessionDetail.photoLoading)).not.toBeInTheDocument()
+
+    fireEvent[event](photo)
+
+    expect(screen.queryByText(t.photoLoadingTitle)).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: t.verifyTitle })).toHaveFocus()
+    if (event === 'load') expect(photo).not.toHaveClass('person-photo__img--hidden')
+    else {
+      expect(photo).not.toBeInTheDocument()
+      expect(screen.getByText(es.sessionDetail.photo)).toBeInTheDocument()
+    }
+  })
+
   it('opens from "Buscar persona" in the menu', async () => {
     window.history.pushState(null, '', STAFF_PATH)
     fakeApi({

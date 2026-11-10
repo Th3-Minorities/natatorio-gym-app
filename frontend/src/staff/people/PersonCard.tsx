@@ -20,7 +20,13 @@ export type Person = {
   masked_email?: string | null
 }
 
-export function PersonCard({ person, photo, extra }: { person: Person; photo: string | null; extra?: ReactNode }) {
+export function PersonCard({ person, photo, extra, onPhotoSettled, showLoadingCaption }: {
+  person: Person
+  photo: string | null
+  extra?: ReactNode
+  onPhotoSettled?: () => void
+  showLoadingCaption?: boolean
+}) {
   const texts = useMessages()
   const t = texts.sessionDetail
   const dates = useDateFormat()
@@ -28,7 +34,7 @@ export function PersonCard({ person, photo, extra }: { person: Person; photo: st
 
   return (
     <section className="person-card" aria-label={person.name ?? t.photo}>
-      <PersonPhoto src={photo} name={person.name} size="large" />
+      <PersonPhoto key={photo} src={photo} name={person.name} size="large" onSettled={onPhotoSettled} showLoadingCaption={showLoadingCaption} />
       <div className="person-card__body">
         <h2 className="person-card__name">{person.name}</h2>
         {person.student_number && <p className="person-card__muted">{t.studentNumber(person.student_number)}</p>}
