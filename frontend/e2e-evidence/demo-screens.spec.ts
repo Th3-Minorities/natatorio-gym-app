@@ -36,6 +36,8 @@ function memberEmail(): string {
 }
 
 async function shot(page: Page, name: string) {
+  // Every screen says "Cargando ..." while its data loads: take the picture after that.
+  await expect(page.getByText(/^Cargando/)).toHaveCount(0)
   await page.screenshot({ path: `${OUT}${name}.png`, fullPage: true })
 }
 
@@ -132,6 +134,8 @@ test.describe('Staff dashboard, desktop', () => {
   test('S-02 person and session', async ({ page }) => {
     await staffSignIn(page)
     const person = page.locator('.sessions-person__name').first()
+    // count() does not wait: give the S-01 list time to load before deciding nobody is inside.
+    await person.waitFor({ timeout: 15_000 }).catch(() => undefined)
     test.skip((await person.count()) === 0, 'S-02 is not on this branch yet, or nobody is inside')
     await person.click()
     await expect(page.getByRole('heading', { level: 1, name: 'Persona y sesión' })).toBeVisible()

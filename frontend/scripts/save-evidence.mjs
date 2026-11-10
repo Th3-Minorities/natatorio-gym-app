@@ -69,6 +69,16 @@ const steps = [
 const backendReport = `${ROOT}backend/storage/logs/evidence-backend.xml`
 if (existsSync(backendReport)) renameSync(backendReport, `${RESULTS}backend.xml`)
 
+// The reports get committed: keep this computer's name and folders out of them. Playwright's hostname is the
+// project name, which the file name already says.
+for (const file of readdirSync(RESULTS).filter((name) => name.endsWith('.xml'))) {
+  const xml = readFileSync(`${RESULTS}${file}`, 'utf8')
+  const clean = [ROOT, ROOT.replaceAll('\\', '/')]
+    .reduce((text, folder) => text.split(folder).join(''), xml)
+    .replace(/\bhostname="[^"]*"/g, 'hostname=""')
+  writeFileSync(`${RESULTS}${file}`, clean)
+}
+
 /**
  * Totals of a JUnit file, from the outermost tag that has them: Vitest and Playwright put them on <testsuites>,
  * PHPUnit on its first <testsuite>, which holds every other one.
