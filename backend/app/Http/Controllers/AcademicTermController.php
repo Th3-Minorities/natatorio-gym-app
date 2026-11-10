@@ -24,7 +24,7 @@ class AcademicTermController extends Controller
     {
         $input = $this->validated($request);
 
-        $term = $this->saving(function () use ($input, $log) {
+        $term = $this->saving($input, function () use ($input, $log) {
             $this->refuseOverlap($input);
             $term = AcademicTerm::query()->create($input);
             $log->record('term.create', $term, null, $this->values($term));
@@ -39,7 +39,7 @@ class AcademicTermController extends Controller
     {
         $input = $this->validated($request);
 
-        $term = $this->saving(function () use ($input, $term, $log) {
+        $term = $this->saving($input, function () use ($input, $term, $log) {
             $this->refuseOverlap($input, $term);
             $before = $this->values($term);
             $term->fill($input)->save();
@@ -51,7 +51,7 @@ class AcademicTermController extends Controller
             }
 
             return $term;
-        });
+        }, $term);
 
         return response()->json(['term' => $this->show($term)]);
     }
@@ -81,9 +81,9 @@ class AcademicTermController extends Controller
 
     /**
      * Runs the save in a transaction. Two saves at the same moment can both pass the check above; the
-     * exclusion constraint then refuses the second one, which gets the same answer.
+     * exclusion constraint then refuses the second one, which gets the same answer, with the term it overlaps.
      */
-    private function saving(callable $save): AcademicTerm
+    private function saving(array $input, callable $save, ?AcademicTerm $term = null): AcademicTerm
     {
         try {
             return DB::transaction($save);
@@ -91,6 +91,9 @@ class AcademicTermController extends Controller
             if ($e->getCode() !== '23P01') {
                 throw $e;
             }
+            // The failed save was rolled back, so the same check now finds the term that won the race.
+            $this->refuseOverlap($input, $term);
+
             throw new ApiException('term_overlap', 422);
         }
     }

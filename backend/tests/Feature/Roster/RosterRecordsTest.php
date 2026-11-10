@@ -55,6 +55,7 @@ class RosterRecordsTest extends TestCase
 
         $this->asAdmin('GET', '/api/staff/roster?status=all')->assertOk()
             ->assertJsonPath('active_count', 2)
+            ->assertJsonPath('total_count', 3)
             ->assertJsonPath('athletes.*.id', [$alina->id, $amaya->id, $darel->id])
             ->assertJsonPath('athletes.0', ['id' => $alina->id, ...self::ATHLETE, 'status' => 'active'])
             ->assertJsonPath('athletes.2.status', 'withdrawn');
@@ -67,7 +68,7 @@ class RosterRecordsTest extends TestCase
 
         $this->asAdmin('GET', '/api/staff/roster')->assertJsonPath('athletes.*.id', [$active->id]);
         $this->asAdmin('GET', '/api/staff/roster?status=withdrawn')->assertJsonPath('athletes.*.id', [$withdrawn->id])
-            ->assertJsonPath('active_count', 1);
+            ->assertJsonPath('active_count', 1)->assertJsonPath('total_count', 2);
         $this->asAdmin('GET', '/api/staff/roster?status=other')->assertUnprocessable()
             ->assertJsonPath('error.details.status', ['in']);
     }
@@ -99,7 +100,7 @@ class RosterRecordsTest extends TestCase
         $this->athlete(['removed_at' => now()]);
 
         $this->as($staff, 'GET', '/api/staff/roster?status=all')->assertOk()
-            ->assertJsonPath('athletes.*.id', [$active->id])->assertJsonPath('active_count', 1);
+            ->assertJsonPath('athletes.*.id', [$active->id])->assertJsonPath('active_count', 1)->assertJsonPath('total_count', 1);
         $this->as($staff, 'GET', '/api/staff/roster?status=withdrawn')->assertJsonPath('athletes.*.id', [$active->id]);
     }
 

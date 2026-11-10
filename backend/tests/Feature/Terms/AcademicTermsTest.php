@@ -5,7 +5,10 @@ namespace Tests\Feature\Terms;
 use App\Models\AcademicTerm;
 use App\Models\AuditLogEntry;
 use App\Models\StaffAccount;
+use Illuminate\Database\Events\TransactionRolledBack;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\CallsTheApiFromThePwa;
@@ -142,6 +145,32 @@ class AcademicTermsTest extends TestCase
         $entry = AuditLogEntry::query()->where('action', 'term.update')->sole();
         $this->assertSame(['ends_on' => '2026-12-18'], $entry->before_values);
         $this->assertSame(['ends_on' => '2026-12-11'], $entry->after_values);
+    }
+
+    /**
+     * Two saves for the same days at once: the database constraint stops the second, and the answer still names the
+     * term that won. The rival is inserted when the failed save rolls back, because that is when a save that won the
+     * race would already be committed.
+     */
+    public function test_a_race_for_the_same_days_still_names_the_other_term(): void
+    {
+        $rival = ['name' => 'Agosto - diciembre 2026', 'starts_on' => '2026-08-10', 'ends_on' => '2026-12-18'];
+        $armed = true;
+        AcademicTerm::creating(function () use (&$armed, $rival) {
+            if ($armed) {
+                $armed = false;
+                DB::table('academic_terms')->insert([...$rival, 'created_at' => now(), 'updated_at' => now()]);
+            }
+        });
+        Event::listen(TransactionRolledBack::class, function () use (&$armed, $rival) {
+            if (! $armed && ! AcademicTerm::query()->where('name', $rival['name'])->exists()) {
+                DB::table('academic_terms')->insert([...$rival, 'created_at' => now(), 'updated_at' => now()]);
+            }
+        });
+
+        $this->asAdmin('POST', '/api/staff/terms', ['name' => 'Verano 2026', 'starts_on' => '2026-12-01', 'ends_on' => '2027-01-10'])
+            ->assertUnprocessable()->assertExactJson(['error' => ['code' => 'term_overlap', 'details' => ['term' => $rival]]]);
+        $this->assertSame(0, AuditLogEntry::query()->where('action', 'term.create')->count());
     }
 
     public function test_a_term_does_not_overlap_itself_but_does_overlap_its_neighbour(): void

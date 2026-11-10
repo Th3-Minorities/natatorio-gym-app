@@ -43,6 +43,8 @@ class RosterController extends Controller
         return response()->json([
             'athletes' => $athletes->map(fn (RosterRecord $athlete) => $this->show($athlete))->all(),
             'active_count' => RosterRecord::query()->whereNull('removed_at')->count(),
+            // Lets A-05 tell a roster with no athletes from a filter that hides them all. Staff never learn how many are withdrawn.
+            'total_count' => RosterRecord::query()->when($request->user('staff')->role !== 'admin', fn (Builder $query) => $query->whereNull('removed_at'))->count(),
         ]);
     }
 
@@ -95,9 +97,13 @@ class RosterController extends Controller
         $athlete = DB::transaction(function () use ($athlete, $log) {
             $athlete = $this->locked($athlete, removed: false);
             $athlete->forceFill(['removed_at' => now()])->save();
-            $this->authorizations($athlete)->where('authorizations.status', 'active')
+            $ids = $this->authorizations($athlete)->where('authorizations.status', 'active')->pluck('authorizations.id')->all();
+            Authorization::query()->whereKey($ids)
                 ->update(['status' => 'revoked', 'reason' => self::REMOVED, 'updated_at' => now()]);
-            $log->record('roster.withdraw', $athlete, ['status' => 'active'], ['status' => 'withdrawn']);
+            // The entry lists the authorizations the withdrawal revoked, so reinstating can be traced back to them.
+            $log->record('roster.withdraw', $athlete,
+                ['status' => 'active', 'authorizations' => array_fill_keys($ids, 'active')],
+                ['status' => 'withdrawn', 'authorizations' => array_fill_keys($ids, 'revoked')]);
 
             return $athlete;
         });
@@ -124,12 +130,20 @@ class RosterController extends Controller
                     $authorization->forceFill(['status' => 'active', 'reason' => null])->save();
                 }
                 $athlete->forceFill(['removed_at' => null])->save();
-                $log->record('roster.reinstate', $athlete, ['status' => 'withdrawn'], ['status' => 'active'], $input['reason']);
+                $ids = $revoked->modelKeys();
+                $log->record('roster.reinstate', $athlete,
+                    ['status' => 'withdrawn', 'authorizations' => array_fill_keys($ids, 'revoked')],
+                    ['status' => 'active', 'authorizations' => array_fill_keys($ids, 'active')], $input['reason']);
 
                 return $athlete;
             });
         } catch (UniqueConstraintViolationException) {
             // Another active authorization appeared at the same moment: the unique index of E-94 stops this one.
+            // The rollback left the athlete as it was, so the same check names the term for the answer.
+            $this->authorizations($athlete)->where('authorizations.status', 'revoked')
+                ->where('authorizations.reason', self::REMOVED)->with('academicTerm')->get()
+                ->each(fn (Authorization $authorization) => $this->refuseSecondActive($authorization));
+
             throw new ApiException('roster_reinstate_active_authorization', 409);
         }
 

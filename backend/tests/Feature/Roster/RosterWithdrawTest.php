@@ -8,7 +8,9 @@ use App\Models\Authorization;
 use App\Models\FacilitySession;
 use App\Models\RosterRecord;
 use App\Models\StaffAccount;
+use Illuminate\Database\Events\TransactionRolledBack;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\CallsTheApiFromThePwa;
@@ -71,8 +73,9 @@ class RosterWithdrawTest extends TestCase
         $this->assertSame('removed from roster', $authorization->fresh()->reason);
         $this->assertNull($authorization->user->currentAuthorization());
         $entry = AuditLogEntry::query()->where('action', 'roster.withdraw')->sole();
-        $this->assertSame(['status' => 'active'], $entry->before_values);
-        $this->assertSame(['status' => 'withdrawn'], $entry->after_values);
+        // The entry lists the authorizations the withdrawal revoked, past terms left out.
+        $this->assertSame(['status' => 'active', 'authorizations' => [$authorization->id => 'active']], $entry->before_values);
+        $this->assertSame(['status' => 'withdrawn', 'authorizations' => [$authorization->id => 'revoked']], $entry->after_values);
         $this->assertSame($this->athlete->id, $entry->subject_id);
     }
 
@@ -129,8 +132,8 @@ class RosterWithdrawTest extends TestCase
         $this->assertNull($authorization->fresh()->reason);
         $this->assertTrue($authorization->user->currentAuthorization()->is($authorization));
         $entry = AuditLogEntry::query()->where('action', 'roster.reinstate')->sole();
-        $this->assertSame(['status' => 'withdrawn'], $entry->before_values);
-        $this->assertSame(['status' => 'active'], $entry->after_values);
+        $this->assertSame(['status' => 'withdrawn', 'authorizations' => [$authorization->id => 'revoked']], $entry->before_values);
+        $this->assertSame(['status' => 'active', 'authorizations' => [$authorization->id => 'active']], $entry->after_values);
         $this->assertSame(self::REASON, $entry->reason);
     }
 
@@ -169,6 +172,36 @@ class RosterWithdrawTest extends TestCase
         ]]);
         $this->assertNotNull($this->athlete->fresh()->removed_at);
         $this->assertSame('revoked', $authorization->fresh()->status);
+        $this->assertSame(0, AuditLogEntry::query()->where('action', 'roster.reinstate')->count());
+    }
+
+    /**
+     * Another active authorization appears at the same moment: the unique index stops the update. The answer keeps
+     * the term in its details, as the check before the update does. The rival is inserted when the failed update
+     * rolls back, because that is when a save that won the race would already be committed.
+     */
+    public function test_a_race_for_the_active_authorization_still_names_the_term(): void
+    {
+        $authorization = $this->claim();
+        $this->withdraw();
+        $armed = true;
+        Authorization::updating(function (Authorization $changing) use (&$armed, $authorization) {
+            if ($armed && $changing->is($authorization)) {
+                $armed = false;
+                Authorization::factory()->manual()->create(['user_id' => $authorization->user_id, 'academic_term_id' => $this->term->id]);
+            }
+        });
+        Event::listen(TransactionRolledBack::class, function () use (&$armed, $authorization) {
+            if (! $armed && ! Authorization::query()->where('user_id', $authorization->user_id)->where('status', 'active')->exists()) {
+                Authorization::factory()->manual()->create(['user_id' => $authorization->user_id, 'academic_term_id' => $this->term->id]);
+            }
+        });
+
+        $this->reinstate()->assertConflict()->assertExactJson(['error' => [
+            'code' => 'roster_reinstate_active_authorization',
+            'details' => ['term' => ['name' => 'Agosto - diciembre 2026']],
+        ]]);
+        $this->assertNotNull($this->athlete->fresh()->removed_at);
         $this->assertSame(0, AuditLogEntry::query()->where('action', 'roster.reinstate')->count());
     }
 

@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * The whole athlete roster as a Word or PDF file, for Administrators only (REQ-F-100, E-140, A-05 4039:2032).
  * Every athlete, active and withdrawn, whatever the table shows. The file is built on the server, so Staff never
- * receive the roster (the team's answer on #21).
+ * receive the file (the team's answer on #21).
  */
 class RosterDownloadController extends Controller
 {
