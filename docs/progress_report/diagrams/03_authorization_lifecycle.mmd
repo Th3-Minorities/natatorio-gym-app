@@ -1,0 +1,18 @@
+stateDiagram-v2
+  direction LR
+  [*] --> Active : paid order claimed at registration,<br/>or athlete registration link used
+  Active --> Revoked : athlete withdrawn<br/>from the roster
+  Revoked --> Active : athlete reinstated<br/>with a written reason
+  Active --> TermOver : academic term ends
+  Active --> [*] : account deleted
+  Revoked --> [*] : account deleted
+  TermOver --> [*] : account deleted
+
+  state "Active, term running<br/>Check In and Gym ID allowed" as Active
+  state "Revoked<br/>Check In refused" as Revoked
+  state "Active, term over<br/>no longer current" as TermOver
+
+  note right of Active
+    Check In also needs a photo on file,
+    not marked as pending by Staff
+  end note

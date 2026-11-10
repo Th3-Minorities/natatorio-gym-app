@@ -70,54 +70,55 @@ The User app (Figure~\ref{fig:ui-pwa}) is a PWA built for phones, which supply t
 
 Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, account creation, the authorization lifecycle, the Check In sequence, and the data model.
 
+% Diagrams are rendered from diagrams/*.mmd: npx -y @mermaid-js/mermaid-cli@11.4.2 -i diagrams/<name>.mmd -o diagrams/<name>.png -w 1600 -b white -c diagrams/mmd-config.json -C diagrams/big.css
 % --------------------------- FIGURE 1 ------------------------------
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.9\textwidth,height=0.45\textheight,keepaspectratio]{diagrams/01_architecture.png}
-\caption{High-Level System Architecture}
+\caption{\revised{System architecture as built}}
 \label{fig:architecture}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-This figure shows how the User PWA and Staff/Administrator interface connect to the backend, its services, and the application database. WooCommerce, institutional email verification, and device location supply information to the relevant workflows. \pending{add the proxy, scheduler, photo volume, and mail of the container list to this figure; team}
+\revised{One docker-compose stack behind an nginx proxy, with a scheduler, a private photo volume and mail (mailpit in development, the CTI gateway in production). The store sync is planned.}
 \end{figure}
 
 % --------------------------- FIGURE 2 ------------------------------
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.98\textwidth,height=0.6\textheight,keepaspectratio]{diagrams/02_account_creation.png}
-\caption{Paid-Member and Athlete Account Creation}
+\includegraphics[width=0.98\textwidth,height=0.85\textheight,keepaspectratio]{diagrams/02_account_creation.png}
+\caption{\revised{Paid-member and athlete account creation}}
 \label{fig:accountcreation}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-This figure separates paid-member validation by Authorization Number from athlete validation against the current roster. Both paths then create one persistent account with a password and current photo. \pending{redraw this figure: the one number field, the Authorization Number lookup limits, the emailed link that creates an athlete account, the photo and waiver saved together with the account; team}
+\revised{One number field: a 9-digit student number leads to the roster email link; any other value is an Authorization Number checked against a completed paid order. Both paths end with the password, waiver, emergency contact and photo.}
 \end{figure}
 
 % --------------------------- FIGURE 3 ------------------------------
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.3\textheight,keepaspectratio]{diagrams/03_authorization_lifecycle.png}
-\caption{Post-Registration Account and Authorization Lifecycle}
+\caption{\revised{Authorization states}}
 \label{fig:lifecycle}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-This figure begins after a persistent account has been established. Authorization may expire, be renewed, or change between paid-member and athlete access while the same User account remains intact. \pending{redraw this figure: renewal inside the same account with a new Authorization Number, the ``I am an athlete'' link, the new-term photo, manual grant and revoke, release of a mistaken claim, and revocation after a refund; team}
+\revised{An authorization is active or revoked, and an active authorization counts only while its academic term runs.}
 \end{figure}
 
 % --------------------------- FIGURE 4 ------------------------------
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.5\textheight,keepaspectratio]{diagrams/04_checkin_session.png}
-\caption{Check-In and Facility Session Sequence}
+\caption{\revised{Check In and facility session}}
 \label{fig:checkin}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-This figure shows how authorization, location, active-session control, Gym ID, and Staff verification interact during Check In. The active-session check and session creation are one protected backend operation, so simultaneous requests cannot create overlapping sessions. Location is requested only when a new session is needed. \pending{redraw this figure: remove the separate Authorization Service (checks run inside the Laravel app), show the two-step flow with an eligibility query before the Check In request, the cause codes, the database exclusion constraint, and the check-out and 2-hour close; team}
+\revised{An open visit is returned as is. Otherwise authorization, photo, schedule and location (accuracy 50 m or better, within 50 m) are checked, and a visit opens that closes on Staff check-out or 2 hours after Check In.}
 \end{figure}
 
 % --------------------------- FIGURE 5 ------------------------------
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.45\textheight,keepaspectratio]{diagrams/05_data_model.png}
-\caption{Conceptual Data Model}
+\caption{\revised{Data model}}
 \label{fig:datamodel}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-This figure separates identity, authorization, sign-in state, facility sessions, roles, and protected membership information. The model keeps semester-specific photographs with Authorization rather than treating the photograph as a permanent User attribute. \pending{redraw this figure: add academic terms, store orders and sync records, roster records, email links, staff accounts, and audit log entries; rename login session to sign-in session; reduce safety records to the waiver acceptance with an emergency contact; team}
+\revised{Main tables and foreign keys from the database migrations. Content, schedule, statistics, audit, import and session-support tables are omitted.}
 \end{figure}
 
 \subsection{Related Works}

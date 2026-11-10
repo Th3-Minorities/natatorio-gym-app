@@ -1,0 +1,72 @@
+---
+config:
+  er:
+    fontSize: 20
+    entityPadding: 10
+    minEntityWidth: 80
+---
+erDiagram
+  users {
+    bigint id PK
+    string email
+  }
+  waiver_acceptances {
+    bigint id PK
+    bigint user_id FK
+    string emergency_contact_phone
+  }
+  academic_terms {
+    bigint id PK
+    date starts_on
+    date ends_on
+  }
+  imported_memberships {
+    bigint id PK
+    bigint academic_term_id FK
+    string authorization_number
+  }
+  roster_records {
+    bigint id PK
+    string student_number
+    timestamptz removed_at
+  }
+  authorizations {
+    bigint id PK
+    bigint user_id FK
+    bigint academic_term_id FK
+    bigint imported_membership_id FK
+    bigint roster_record_id FK
+    string type
+    string status
+    string photo_path
+  }
+  facility_sessions {
+    bigint id PK
+    bigint user_id FK
+    bigint authorization_id FK
+    bigint checked_out_by_staff_account_id FK
+    timestamptz ends_at
+    string status
+  }
+  email_links {
+    bigint id PK
+    bigint roster_record_id FK
+    bigint staff_account_id FK
+    string token_hash
+  }
+  staff_accounts {
+    bigint id PK
+    string role
+  }
+
+  users ||--o| waiver_acceptances : signs
+  users ||--o{ authorizations : holds
+  academic_terms ||--o{ authorizations : "term of"
+  academic_terms ||--o{ imported_memberships : "paid in"
+  imported_memberships |o--o| authorizations : "paid claim"
+  roster_records |o--o{ authorizations : "athlete claim"
+  roster_records |o--o{ email_links : "athlete link"
+  users ||--o{ facility_sessions : visits
+  authorizations |o--o{ facility_sessions : "used by"
+  staff_accounts |o--o{ facility_sessions : "checks out"
+  staff_accounts |o--o{ email_links : invitation

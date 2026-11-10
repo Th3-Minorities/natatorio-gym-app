@@ -1,0 +1,27 @@
+flowchart TB
+  A(["Create account"]) --> P["Read and accept<br/>the privacy notice"]
+  P --> N["Type one number"]
+  N --> Q{"9 digits?"}
+
+  Q -->|"No: Authorization Number"| PO{"Paid order for the current<br/>term, completed and<br/>not yet claimed?"}
+  PO -->|No| E1["Number not found:<br/>shows the gym phone"]
+  PO -->|Yes| PE{"Account with the<br/>payment email?"}
+
+  Q -->|"Yes: student number"| R{"Active athlete on the<br/>roster, record not claimed?"}
+  R -->|No| E2["Not on the roster or<br/>already claimed:<br/>shows the gym phone"]
+  R -->|Yes| RE{"Account with the<br/>roster email?"}
+  RE -->|No| L["Single-use link sent to the<br/>institutional email, valid 24 h"]
+  L --> O["Athlete opens the link"]
+
+  PE -->|Yes| SI(["Sign in instead"])
+  RE -->|Yes| SI
+
+  PE -->|No| F["Final step: password, waiver,<br/>emergency contact, photo"]
+  O --> F
+  F --> C["Create account, waiver record<br/>and active authorization<br/>for the current term"]
+  C --> D(["Signed in"])
+
+  classDef stop fill:#FCEFEF,stroke:#A33A3A
+  classDef choice fill:#FFF7E6,stroke:#8A6A1F
+  class E1,E2 stop
+  class Q,PO,PE,R,RE choice

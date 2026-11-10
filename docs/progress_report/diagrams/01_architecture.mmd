@@ -1,0 +1,33 @@
+flowchart TB
+  GEO["Browser Geolocation API<br/>position and accuracy"]
+  U["User<br/>phone browser or PWA"]
+  S["Staff and Administrators<br/>dashboard at /staff"]
+
+  subgraph HOST["docker-compose on one host: member PC or CTI VM"]
+    direction TB
+    PX["proxy: nginx<br/>serves the React PWA<br/>sends /api to Laravel"]
+    APP["app: Laravel on PHP-FPM"]
+    SCH["scheduler: same image<br/>every minute: close due<br/>visits, delete photos"]
+    DB[("db: PostgreSQL")]
+    PV[("private photos<br/>volume")]
+    MP["mailpit<br/>development only"]
+  end
+
+  WOO["Department store<br/>WooCommerce orders<br/>sync not built yet"]
+  GW["CTI mail gateway<br/>production, pending CTI"]
+
+  GEO -.->|"at Check In"| U
+  U -->|HTTPS| PX
+  S -->|HTTPS| PX
+  PX -->|"/api"| APP
+  APP --> DB
+  SCH --> DB
+  APP -->|"role-checked"| PV
+  SCH --> PV
+  APP -->|SMTP| MP
+  APP -.->|"order lookup, planned"| WOO
+  APP -.->|SMTP| GW
+  MP ~~~ GW
+
+  classDef ext fill:#FFFFFF,stroke:#7A8899,stroke-dasharray:5 5
+  class GEO,GW,WOO ext

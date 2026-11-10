@@ -1,0 +1,36 @@
+---
+config:
+  sequence:
+    mirrorActors: false
+    messageFontSize: 20
+    noteFontSize: 20
+    actorFontSize: 20
+    actorMargin: 30
+    width: 130
+    noteMargin: 8
+---
+sequenceDiagram
+  actor U as User
+  participant P as PWA
+  participant A as Laravel API
+  participant D as PostgreSQL
+  actor St as Staff
+
+  U->>P: Press Check In
+  Note over P: Reads position<br/>and accuracy
+  P->>A: POST check-in
+  A->>D: Open visit?
+  alt Visit already open
+    A-->>P: Same visit
+  else No open visit
+    Note over A: Check In service checks:<br/>current authorization,<br/>photo on file, not pending,<br/>gym open, accuracy 50 m<br/>or better, within 50 m<br/>of the gym. Coordinates<br/>are never stored.
+    A->>D: Insert active visit,<br/>ends 2 h after Check In
+    A-->>P: New visit
+  end
+  P-->>U: Gym ID
+
+  St->>A: Who is inside?
+  A->>D: Active visits
+  St->>A: Check out
+  A->>D: Mark checked out
+  Note over A,D: Scheduler, every minute: closes<br/>visits 2 h after Check In,<br/>at a gym closure or at term end
