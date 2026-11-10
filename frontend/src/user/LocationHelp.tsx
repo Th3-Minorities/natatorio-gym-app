@@ -2,15 +2,15 @@ import { useEffect, useRef, type KeyboardEvent } from 'react'
 import { useMessages } from '../i18n'
 
 /** Modal help for a denied location permission. Figma 4445:4330 (pop-up) and 4459:4335 (open over the dimmed screen). */
-export function LocationHelp({ onClose }: { onClose: () => void }) {
+export function LocationHelp({ onClose, returnFocusTo }: { onClose: () => void; returnFocusTo?: HTMLElement | null }) {
   const t = useMessages().checkIn.help
   const dialog = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const opener = document.activeElement as HTMLElement | null
+    const opener = returnFocusTo ?? document.activeElement as HTMLElement | null
     dialog.current?.focus()
     return () => opener?.focus()
-  }, [])
+  }, [returnFocusTo])
   useEffect(() => {
     const escape = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') onClose() }
     document.addEventListener('keydown', escape)

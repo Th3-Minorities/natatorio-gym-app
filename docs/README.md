@@ -58,6 +58,7 @@ All documents are in the `docs` folder.
 | The proposal and its original drawings | [capstone_proposal folder](https://github.com/Th3-Minorities/natatorio-gym-app/tree/main/docs/capstone_proposal). The `v0` folder inside is the version we submitted, kept as it was |
 | How to set up the tools we use | [setup guide](setup/skills.md) |
 | How to run the code | The [README at the top of the repository](https://github.com/Th3-Minorities/natatorio-gym-app#readme) |
+| Results of the browser tests of each flow, from its first screen to its last | [Flow test results](testing/flow-results.md) |
 
 ### How each part of the app works
 

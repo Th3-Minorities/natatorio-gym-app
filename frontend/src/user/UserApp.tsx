@@ -27,7 +27,7 @@ type AccountType = 'paid' | 'athlete' | 'manual'
 
 type RouteContext = {
   path: string
-  navigate: (path: string) => void
+  navigate: (path: string, options?: { replace?: boolean }) => void
   ended: (error: unknown) => boolean
   profile: UserProfile | null
   replaced: boolean
@@ -94,8 +94,9 @@ export function UserApp() {
   const route = USER_ROUTES[path] ?? USER_ROUTES['/sign-in']
   const protectedPath = route.protected === true
 
-  const navigate = useCallback((next: string) => {
-    window.history.pushState({}, '', next)
+  const navigate = useCallback((next: string, options?: { replace?: boolean }) => {
+    if (options?.replace) window.history.replaceState({}, '', next)
+    else window.history.pushState({}, '', next)
     setPath(new URL(next, window.location.origin).pathname)
     setConfirmation(false)
     setRefused(false)
@@ -255,10 +256,10 @@ function AccountView({ path, profile, loading, failed, offline, disconnected, re
     <Button className="user-action" disabled={disconnected} onClick={retry}>{t.retry}</Button>
   </div>
   else if (failed || !profile) content = <><h1 className="user-account-title" tabIndex={-1}>{t.account}</h1>
-    <UserNotice title={t.accountError}>{t.accountErrorText}</UserNotice><Button className="user-action" onClick={retry}>{t.retry}</Button></>
+    <UserNotice title={t.accountError} danger>{t.accountErrorText}</UserNotice><Button className="user-action" onClick={retry}>{t.retry}</Button></>
   else if (path === '/account/delete') content = refused || profile.authorization ? <>
     <AccountHeading title={t.deleteAccount} back="/account/settings" backLabel={t.returnToSettings} />
-    <UserNotice title={t.activeTitle}>{t.activeText}</UserNotice>
+    <UserNotice title={t.activeTitle} danger>{t.activeText}</UserNotice>
     <a href="/account/settings" className="button button--primary user-action">{t.returnToSettings}</a>
   </> : <>
     <AccountHeading title={t.deleteAccount} back="/account/settings" backLabel={t.returnToSettings} />

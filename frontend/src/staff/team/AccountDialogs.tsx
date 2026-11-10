@@ -78,7 +78,7 @@ export function RoleDialog({ account, onClose, onDone, onError }: DialogProps) {
           <p>{account.email}</p>
           <p>{t.currentRole(texts.dashboard.roles[account.role])}</p>
         </div>
-        <ProblemNotice problem={problem} />
+        <ProblemNotice problem={problem} tone="error" />
         <fieldset className="choice">
           <legend className="field__label">{t.newRole}</legend>
           <div className="choice__options">
@@ -147,7 +147,7 @@ export function DeactivateDialog({ account, onClose, onDone, onError }: DialogPr
           {t.deactivateTitle(account.name)}
         </h2>
         <p className="modal__text">{t.deactivateText}</p>
-        <ProblemNotice problem={problem} />
+        <ProblemNotice problem={problem} tone="error" />
         <div className="modal__actions" ref={actions}>
           <Button
             aria-disabled={sending || undefined}

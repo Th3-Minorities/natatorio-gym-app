@@ -175,7 +175,9 @@ describe('changing a role', () => {
     const dialog = screen.getByRole('dialog', { name: t.changeRole })
     fireEvent.click(within(dialog).getByRole('button', { name: t.save }))
 
-    expect(await within(dialog).findByRole('alert')).toHaveTextContent(es.errors.staff_account_status_changed)
+    const refused = await within(dialog).findByRole('alert')
+    expect(refused).toHaveTextContent(es.errors.staff_account_status_changed)
+    expect(refused).toHaveClass('notice--error')
   })
 })
 
@@ -201,6 +203,26 @@ describe('deactivating an account', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(callsTo(fetchMock, '/api/staff/accounts/2/deactivate')).toEqual([['POST', undefined]])
     expect(await screen.findByRole('button', { name: `${t.reactivate}, Mariel Vélez Soto` })).toBeInTheDocument()
+  })
+
+  it('puts focus on the new first action of the row after deactivating, not back on the removed opener', async () => {
+    let accounts = team
+    fakeApi({
+      '/api/staff/me': () => json(lorena),
+      '/api/staff/accounts': () => json({ accounts }),
+      'POST /api/staff/accounts/2/deactivate': () => {
+        accounts = team.map((a) => (a.id === 2 ? { ...a, status: 'deactivated' } : a))
+        return json({ account: accounts[1] })
+      },
+    })
+    render(<StaffApp />)
+
+    fireEvent.click(await screen.findByRole('button', { name: `${t.deactivate}, Mariel Vélez Soto` }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.deactivateConfirm }))
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: `${t.reactivate}, Mariel Vélez Soto` })).toHaveFocus(),
+    )
   })
 
   it('puts focus on Cancelar first, since the other button is destructive', async () => {
@@ -241,6 +263,25 @@ describe('deactivating an account', () => {
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(callsTo(fetchMock, '/api/staff/accounts/2/deactivate')).toEqual([])
+  })
+
+  it('gives focus back to Desactivar on Cancelar and on Esc, even when the click did not focus it (Safari)', async () => {
+    fakeApi({ '/api/staff/me': () => json(lorena), '/api/staff/accounts': () => json({ accounts: team }) })
+    render(<StaffApp />)
+
+    // fireEvent.click does not focus the button, as Safari does not.
+    const button = await screen.findByRole('button', { name: `${t.deactivate}, Mariel Vélez Soto` })
+    fireEvent.click(button)
+    expect(button).not.toHaveFocus()
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.cancel }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(button).toHaveFocus()
+
+    button.blur()
+    fireEvent.click(button)
+    fireEvent(screen.getByRole('dialog'), new Event('cancel', { cancelable: true }))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await waitFor(() => expect(button).toHaveFocus())
   })
 
   it('explains why the last Administrator stays', async () => {
@@ -301,7 +342,9 @@ describe('reactivating an account', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: `${t.reactivate}, Damián Ruiz Solís` }))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent(es.errors.staff_account_status_changed)
+    const refused = await screen.findByRole('alert')
+    expect(refused).toHaveTextContent(es.errors.staff_account_status_changed)
+    expect(refused).toHaveClass('notice--error')
   })
 })
 

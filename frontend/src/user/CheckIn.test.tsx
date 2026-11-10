@@ -2,6 +2,8 @@ import { act, fireEvent, render, screen, waitFor, within } from '@testing-librar
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserApp } from './UserApp'
 import styles from './checkIn.css?raw'
+/** The name is split so its last word stays with the badge; match the whole name on its paragraph. */
+const fullName = (name: string) => (_: string, element: Element | null) => element?.tagName === 'P' && element.textContent === name
 
 const member = {
   name: 'Daniel Rivera', email: 'daniel@email.com', locale: 'es',
@@ -56,10 +58,150 @@ function hold(milliseconds = 1000) {
 const geolocation = () => navigator.geolocation.getCurrentPosition as ReturnType<typeof vi.fn>
 
 describe('U-01 Check In', () => {
+  it.each([999, 1001])('advances the duration one second at a time with %i ms timer jitter (999 reproduces GI-07, 1001 is a regression guard)', async (interval) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(Date.parse(session.started_at) + 500))
+    status = { ...idle, session }
+
+    window.history.replaceState({}, '', '/check-in')
+    await act(async () => { render(<UserApp />) })
+    expect(screen.getByText('00:00:00')).toBeInTheDocument()
+
+    for (let second = 1; second <= 6; second += 1) {
+      await act(async () => { vi.advanceTimersByTime(interval) })
+      expect(screen.getByText(`00:00:0${second}`)).toBeInTheDocument()
+    }
+  })
+
+  it('shows every second from 00:00:01 to 00:00:06 when the clock sits 10 ms before a boundary and ticks alternate 1005 and 995 ms', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(Date.parse(session.started_at) + 990))
+    status = { ...idle, session }
+
+    window.history.replaceState({}, '', '/check-in')
+    await act(async () => { render(<UserApp />) })
+    expect(screen.getByText('00:00:00')).toBeInTheDocument()
+
+    for (let second = 1; second <= 6; second += 1) {
+      await act(async () => { vi.advanceTimersByTime(second % 2 === 1 ? 1005 : 995) })
+      expect(screen.getByText(`00:00:0${second}`)).toBeInTheDocument()
+    }
+  })
+
+  it.each([1000, 2000])('keeps the duration monotonic when a server sync is %i ms behind', async (lag) => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date(Date.parse(session.started_at) + 4000))
+    status = { ...idle, session }
+    window.history.replaceState({}, '', '/check-in')
+    await act(async () => { render(<UserApp />) })
+    expect(screen.getByText('00:00:04')).toBeInTheDocument()
+    await act(async () => { vi.advanceTimersByTime(1030) })
+    expect(screen.getByText('00:00:05')).toBeInTheDocument()
+
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    fetchMock.mockImplementation(async (path: string, init?: RequestInit) => {
+      const response = await original(path, init)
+      if (path.endsWith('/check-in')) response.headers.set('Date', new Date(Date.now() - lag).toUTCString())
+      return response
+    })
+    await act(async () => { vi.advanceTimersByTime(100) })
+    const requests = fetchMock.mock.calls.length
+    await act(async () => { fireEvent(document, new Event('visibilitychange')) })
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(requests)
+    expect(screen.getByText('00:00:05')).toBeInTheDocument()
+    await act(async () => { vi.advanceTimersByTime(900) })
+    expect(screen.getByText(lag === 1000 ? '00:00:06' : '00:00:05')).toBeInTheDocument()
+  })
+
+  it.each([false, true])('only reloads the status when retrying an offline load (active visit: %s)', async (active) => {
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    let connected = false
+    fetchMock.mockImplementation((path: string, init?: RequestInit) =>
+      path.endsWith('/check-in') && !connected ? Promise.reject(new TypeError('network')) : original(path, init))
+    await open()
+    const retry = await screen.findByRole('button', { name: 'Reintentar conexión' })
+    status = active ? { ...idle, session } : idle
+    connected = true
+    fireEvent.click(retry)
+
+    if (active) await screen.findByText('Tu entrada está registrada', { selector: '.check-in-lead' })
+    else await screen.findByRole('button', { name: 'Mantén presionado para entrar' })
+    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/check-in'), expect.anything())
+    expect(fetch).not.toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }))
+    expect(geolocation()).not.toHaveBeenCalled()
+
+    if (!active) {
+      hold()
+      await screen.findByText('¡Tu entrada quedó registrada!', { selector: '.check-in-lead' })
+      expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/check-in'), expect.objectContaining({ method: 'POST' }))
+      expect(geolocation()).toHaveBeenCalledTimes(1)
+    }
+  })
+
+  it('mounts offline, shows Necesitas conexión and loads when reconnected', async () => {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    await open()
+    expect(await screen.findByRole('heading', { name: 'Necesitas conexión' })).toBeInTheDocument()
+    expect(screen.getByText('Conéctate a internet para verificar y registrar tu entrada.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar conexión' })).toBeInTheDocument()
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    expect(await screen.findByRole('heading', { name: 'Registra tu entrada' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+  })
+
+  it('shows the offline problem when disconnected before the first status loads', async () => {
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    fetchMock.mockImplementation((path: string, init?: RequestInit) =>
+      path.endsWith('/check-in') ? new Promise<Response>(() => {}) : original(path, init))
+    await open()
+    await waitFor(() => expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/check-in'), expect.anything()))
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    expect(await screen.findByRole('heading', { name: 'Necesitas conexión' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Reintentar conexión' })).toBeInTheDocument()
+
+    fetchMock.mockImplementation(original)
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    expect(await screen.findByRole('heading', { name: 'Registra tu entrada' })).toBeInTheDocument()
+  })
+
+  it('keeps the loaded ready screen when the connection drops', async () => {
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    await act(async () => {})
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mantén presionado para entrar' })).toBeInTheDocument()
+  })
+
+  it('keeps an existing refusal when the connection drops and returns', async () => {
+    post = async () => refuse('check_in_no_authorization')
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    expect(await screen.findByRole('heading', { name: 'Tu acceso no está vigente' })).toBeInTheDocument()
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    fireEvent(window, new Event('offline'))
+    await act(async () => {})
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    await act(async () => {})
+    expect(screen.getByRole('heading', { name: 'Tu acceso no está vigente' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+  })
+
   it('shows the member initial state (4104:95)', async () => {
     await open()
     expect(await screen.findByText('¿Listo para entrenar?')).toBeInTheDocument()
-    expect(await screen.findByText('Daniel Rivera')).toBeInTheDocument()
+    expect(await screen.findByText(fullName('Daniel Rivera'))).toBeInTheDocument()
     expect(screen.getByText('Miembro')).toBeInTheDocument()
     expect(screen.getByRole('img', { name: 'Autorización activa' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Registra tu entrada' })).toBeInTheDocument()
@@ -86,7 +228,7 @@ describe('U-01 Check In', () => {
     status = { ...idle, account_type: 'athlete' }
     await open()
     expect(await screen.findByText('Atleta')).toBeInTheDocument()
-    expect(await screen.findByText('Valeria Ramos')).toBeInTheDocument()
+    expect(await screen.findByText(fullName('Valeria Ramos'))).toBeInTheDocument()
     expect(document.querySelector('.check-in--athlete')).not.toBeNull()
   })
 
@@ -145,7 +287,7 @@ describe('U-01 Check In', () => {
     expect(screen.getByText('Confirmamos tu llegada al gimnasio.')).toBeInTheDocument()
     expect(screen.getByText('Permite la ubicación si el navegador lo solicita.')).toBeInTheDocument()
     expect(screen.getByRole('status')).toHaveTextContent('Obteniendo ubicación')
-    expect(screen.getByText('Daniel Rivera')).toBeInTheDocument()
+    expect(screen.getByText(fullName('Daniel Rivera'))).toBeInTheDocument()
 
     act(() => { found({ coords: { latitude: 18.2101, longitude: -67.1408, accuracy: 12 } } as GeolocationPosition) })
     expect(await screen.findByRole('button', { name: 'Registrando entrada…' })).toBeInTheDocument()
@@ -299,6 +441,24 @@ describe('U-01 Check In', () => {
 
     fireEvent.click(opener)
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar ayuda' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(opener).toHaveFocus()
+  })
+
+  it.each(['button', 'Escape'])('returns focus to the unfocused location help opener after closing with %s', async (closeWith) => {
+    position = (_, failure) => failure({ code: 1 } as GeolocationPositionError)
+    await open()
+    await screen.findByText('¿Listo para entrenar?')
+    hold()
+    const opener = await screen.findByRole('button', { name: 'Ver cómo activar ubicación' })
+    ;(document.activeElement as HTMLElement).blur()
+    expect(document.body).toHaveFocus()
+    fireEvent.click(opener)
+    expect(screen.getByRole('dialog')).toHaveFocus()
+
+    if (closeWith === 'Escape') fireEvent.keyDown(document, { key: 'Escape' })
+    else fireEvent.click(screen.getByRole('button', { name: 'Cerrar ayuda' }))
+
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(opener).toHaveFocus()
   })

@@ -36,7 +36,7 @@ async function sendLink() {
   window.history.replaceState({}, '', '/register')
   render(<UserApp />)
   fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
-  fireEvent.change(await screen.findByLabelText('Número de estudiante o transacción'), { target: { value: '802123456' } })
+  fireEvent.change(await screen.findByLabelText('Número de estudiante o autorización'), { target: { value: '802123456' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continuar' }))
 }
 
@@ -59,7 +59,7 @@ it('shows N03-09 with the masked email and a 5 minute resend countdown, and Corr
   clock.mockReturnValue(start + 1000)
   expect(await screen.findByRole('button', { name: 'Reenviar en 04:59' }, { timeout: 3000 })).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'Corregir número' }))
-  expect(await screen.findByLabelText('Número de estudiante o transacción')).toHaveValue('802123456')
+  expect(await screen.findByLabelText('Número de estudiante o autorización')).toHaveValue('802123456')
 })
 
 it('enables the resend after the countdown and sends the same number again', async () => {
@@ -97,6 +97,61 @@ it('checks the link (N05-01), then shows privacy and the password step with the 
   fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
   expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
   expect(screen.getByText('¡Hola, Marta <b>Ruiz</b>!')).toBeInTheDocument()
+})
+
+it('AR-20 accepts privacy in the same session when the emailed link opens without cookies', async () => {
+  document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/'
+  document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/register'
+  expect(document.cookie).not.toContain('XSRF-TOKEN=')
+  let session = ''
+  let noticeSession = ''
+  vi.stubGlobal('fetch', vi.fn(async (path: string, init?: RequestInit) => {
+    if (path.endsWith('/sanctum/csrf-cookie')) {
+      session = 'csrf-session'
+      document.cookie = 'XSRF-TOKEN=fresh; path=/'
+      return new Response(null, { status: 204 })
+    }
+    if (path.endsWith('/registration/privacy')) {
+      if (init?.method === 'POST') {
+        return noticeSession === session
+          ? new Response(null, { status: 204 })
+          : json({ error: { code: 'registration_privacy_required' } }, 403)
+      }
+      noticeSession = session || 'privacy-session'
+      return json({ version: 'draft', draft: true, store_url: null, contact_number: '265-3866' })
+    }
+    if (path.endsWith('/athlete/validate')) return json({ name: 'Marta Ruiz' })
+    throw new Error(`Unexpected request: ${path}`)
+  }))
+  openLink()
+  fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
+  expect(await screen.findByRole('heading', { name: 'Crea una contraseña' })).toBeInTheDocument()
+  document.cookie = 'XSRF-TOKEN=; Max-Age=0; path=/'
+})
+
+it('AR-34 keeps the link page out of history, so browser Back from the password step leaves it', async () => {
+  window.history.replaceState({}, '', '/register')
+  window.history.pushState({}, '', '/register/athlete?token=tok123')
+  render(<UserApp />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Continuar con el registro' }))
+  await screen.findByRole('heading', { name: 'Crea una contraseña' })
+  expect(window.location.pathname).toBe('/register/password')
+  await act(async () => {
+    const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }))
+    window.history.back()
+    await popped
+  })
+  expect(window.location.pathname).toBe('/register')
+  expect(screen.queryByRole('heading', { name: 'Verificando tu enlace' })).not.toBeInTheDocument()
+  expect(calls.filter((call) => call.path.endsWith('/athlete/validate'))).toHaveLength(1)
+})
+
+it('AR-22 shows N05-02b when a 256-character token fails API validation', async () => {
+  validate = () => json({ error: { code: 'validation_failed', details: { token: ['max.string'] } } }, 422)
+  openLink('x'.repeat(256))
+  expect(await screen.findByRole('heading', { name: 'Este enlace ya no es válido' })).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Pedir otro enlace' })).toHaveAttribute('href', '/register')
+  expect(calls.find((call) => call.path.endsWith('/athlete/validate'))?.body).toEqual({ token: 'x'.repeat(256) })
 })
 
 it('sends the link token, not a number, when the athlete creates the account', async () => {
