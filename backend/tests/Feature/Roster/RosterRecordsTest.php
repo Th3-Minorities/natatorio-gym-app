@@ -306,7 +306,6 @@ class RosterRecordsTest extends TestCase
         $this->assertSame(1, RosterRecord::query()->count());
     }
 
-
     /** @return array<string, array{string}> */
     public static function injections(): array
     {
