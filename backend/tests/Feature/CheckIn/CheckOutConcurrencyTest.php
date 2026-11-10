@@ -75,7 +75,8 @@ class CheckOutConcurrencyTest extends TestCase
             'type' => 'regular_hours', 'weekday' => null, 'start_time' => null, 'end_time' => null,
             'starts_at' => now()->subHour(), 'ends_at' => now()->addHours(4),
         ]);
-        $first = FacilitySession::factory()->startedMinutesAgo(30)->create([
+        // Never before midnight, or the first visit counts for yesterday (CI failed at 00:08).
+        $first = FacilitySession::factory()->startedMinutesAgo(min(30, (int) today()->diffInMinutes(now())))->create([
             'user_id' => $user->id, 'authorization_id' => $authorization->id,
         ]);
         $this->actingAs(StaffAccount::factory()->create(), 'staff')->fromThePwa()
