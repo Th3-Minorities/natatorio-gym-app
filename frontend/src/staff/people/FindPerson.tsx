@@ -59,6 +59,8 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
   const [text, setText] = useState(fromAddress)
   const [view, setView] = useState<View>({ kind: 'start' })
   const [photoReadyFor, setPhotoReadyFor] = useState<number | null>(null)
+  const [photoFailedFor, setPhotoFailedFor] = useState<number | null>(null)
+  const [photoAttempt, setPhotoAttempt] = useState(0)
   const [asking, setAsking] = useState<'confirm' | 'pending' | null>(null)
   const [busy, setBusy] = useState(false)
   // While the entry is being recorded (Figma 4288:1305).
@@ -67,6 +69,7 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
   const searchId = useId()
   const resultTitle = useRef<HTMLHeadingElement>(null)
   const searchInput = useRef<HTMLInputElement>(null)
+  const photoConfirmButton = useRef<HTMLButtonElement>(null)
   // What was searched last, so Reintentar and Actualizar datos ask the same thing even if the box changed.
   const lastQuery = useRef('')
 
@@ -93,6 +96,8 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
       return
     }
     setPhotoReadyFor(null)
+    setPhotoFailedFor(null)
+    setPhotoAttempt(0)
     setView({ kind: 'searching' })
     try {
       const { people } = await apiRequest<{ people: Person[] }>(`/staff/people?${new URLSearchParams({ search: query })}`)
@@ -136,6 +141,7 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
       else setView({ kind: 'notFound' })
     } catch (error) {
       session.reportError(error)
+      setView({ kind: error instanceof ApiError && error.code === 'offline' ? 'offline' : 'failed' })
     } finally {
       setBusy(false)
     }
@@ -302,8 +308,11 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
         <PersonCard
           key={person.user_id}
           person={person}
-          photo={person.has_photo && person.authorization.current ? `/api/staff/people/${person.user_id}/photo` : null}
-          onPhotoSettled={() => setPhotoReadyFor(person.user_id)}
+          photo={person.has_photo && person.authorization.current ? `/api/staff/people/${person.user_id}/photo${photoAttempt ? `?retry=${photoAttempt}` : ''}` : null}
+          onPhotoSettled={(loaded) => {
+            setPhotoReadyFor(loaded ? person.user_id : null)
+            setPhotoFailedFor(loaded ? null : person.user_id)
+          }}
           showLoadingCaption={false}
           extra={!open && !refusal && <p className="person-card__muted">{t.noSession}</p>}
         />
@@ -335,10 +344,17 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
           </section>
         ) : photoReadyFor !== person.user_id ? (
           <section className="state find-photo-loading" role="status">
-            <h2 className="state__title">{t.photoLoadingTitle}</h2>
-            <p className="state__detail">{t.photoLoadingText}</p>
+            <h2 className="state__title">{photoFailedFor === person.user_id ? t.photoFailedTitle : t.photoLoadingTitle}</h2>
+            <p className="state__detail">{photoFailedFor === person.user_id ? t.photoFailedText : t.photoLoadingText}</p>
             <div className="find-verify__actions">
-              <Button variant="secondary" aria-disabled="true">{t.confirm}</Button>
+              <Button {...{ ref: photoConfirmButton }} variant="secondary" aria-disabled="true">{t.confirm}</Button>
+              {photoFailedFor === person.user_id && (
+                <Button variant="secondary" onClick={() => {
+                  photoConfirmButton.current?.focus()
+                  setPhotoFailedFor(null)
+                  setPhotoAttempt((attempt) => attempt + 1)
+                }}>{texts.states.retry}</Button>
+              )}
             </div>
           </section>
         ) : registering ? (
