@@ -24,7 +24,9 @@ test('a User signs in, reaches Check In, is replaced by a second phone and recov
   await page.getByRole('navigation', { name: 'Navegación principal' }).getByRole('link', { name: 'Check-in' }).click()
   await expect(page).toHaveURL(/\/check-in$/)
   await expect(page.getByRole('heading', { level: 1, name: 'Check-in' })).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Mantén presionado para entrar' })).toBeVisible()
+  // The seeded browser test User has no authorization, so Check In shows the no-access panel instead of the hold button.
+  await expect(page.getByRole('heading', { name: 'Tu acceso no está vigente' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Mantén presionado para entrar' })).toHaveCount(0)
 
   // 3. Sign in on a second phone: the first one is signed out
   const second = await browser.newContext({ baseURL })
