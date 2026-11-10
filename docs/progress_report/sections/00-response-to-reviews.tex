@@ -18,7 +18,7 @@ The proposal received four comments. Each row below says what the team changed a
 \endhead
 \bottomrule
 \endlastfoot
-\textbf{5(b) Diagrams.} ``I would have also appreciated some UI sketches or wireframes.'' & Listed all 45 screens by role with their states and drew seven navigation maps. Wireframes are split into six issues. \pending{wireframe figures} & Technical Approach, User Interface Design \\
+\textbf{5(b) Diagrams.} ``I would have also appreciated some UI sketches or wireframes.'' & Listed the 40 screens by role with their states and drew seven navigation maps. Viviana drew the wireframes in Figma, split into six issues; the Check In, sign-in, and Staff sets are approved. \pending{wireframe figures exported from Figma, Viviana, issues \#40 to \#45} & Technical Approach, User Interface Design \\
 \addlinespace
 \textbf{5(d) Constraints.} Missing requirements from the Capstone guidelines, such as accessibility. & Added accessibility (WCAG 2.2 level AA) as a constraint with its checks: axe-core in CI, lint rules, and a manual checklist. Added the CTI VM, polling, and mail dependency, and removed refund and cancellation text. & Technical Approach, Engineering Constraints and Verification \\
 \addlinespace
@@ -28,6 +28,6 @@ The proposal received four comments. Each row below says what the team changed a
 \addlinespace
 \textbf{6(d) Testing plan.} Missing acceptance and stress testing. & Added an acceptance test with gym staff and real users and a load test with k6 for simultaneous Check Ins. & Project Plan, Testing Plan; Preliminary Results, Testing Plan Execution \\
 \addlinespace
-\textbf{Changes since the proposal.} & Moved to Laravel, PostgreSQL, and docker-compose on a CTI VM, with polling instead of real-time updates, own accounts, no refunds, and a revised phase schedule. & Solution Approach, Changes since the Proposal \\
+\textbf{Changes since the proposal.} & Moved to Laravel, PostgreSQL, and docker-compose on a CTI VM, with polling instead of real-time updates, own accounts, paid memberships read from the store's API, and a revised phase schedule. & Solution Approach, Changes since the Proposal \\
 \end{longtable}
 \end{center}
