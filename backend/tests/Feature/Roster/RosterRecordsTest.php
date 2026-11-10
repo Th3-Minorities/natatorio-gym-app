@@ -3,9 +3,12 @@
 namespace Tests\Feature\Roster;
 
 use App\Models\AuditLogEntry;
+use App\Models\Authorization;
 use App\Models\EmailLink;
+use App\Models\FacilitySession;
 use App\Models\RosterRecord;
 use App\Models\StaffAccount;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -57,7 +60,7 @@ class RosterRecordsTest extends TestCase
             ->assertJsonPath('active_count', 2)
             ->assertJsonPath('total_count', 3)
             ->assertJsonPath('athletes.*.id', [$alina->id, $amaya->id, $darel->id])
-            ->assertJsonPath('athletes.0', ['id' => $alina->id, ...self::ATHLETE, 'status' => 'active'])
+            ->assertJsonPath('athletes.0', ['id' => $alina->id, ...self::ATHLETE, 'status' => 'active', 'active_session' => null])
             ->assertJsonPath('athletes.2.status', 'withdrawn');
     }
 
@@ -249,7 +252,60 @@ class RosterRecordsTest extends TestCase
         $this->fromThePwa()->getJson('/api/staff/roster')->assertUnauthorized();
     }
 
-    // Injection (#21 "Done when")
+    /** S-05 (#26): Staff compare the photo and start an assisted Check In, so the email stays on A-05 (Administrators). */
+    public function test_the_email_goes_to_administrators_and_not_to_staff(): void
+    {
+        $this->athlete(self::ATHLETE);
+
+        $this->asAdmin('GET', '/api/staff/roster')->assertOk()
+            ->assertJsonPath('athletes.0.institutional_email', 'alina.mercado@upr.edu');
+        $staff = $this->as(StaffAccount::factory()->create(), 'GET', '/api/staff/roster')->assertOk();
+        $this->assertArrayNotHasKey('institutional_email', $staff->json('athletes.0'));
+        $this->assertStringNotContainsString('alina.mercado@upr.edu', $staff->getContent());
+    }
+
+    /** S-05 shows "Entrada registrada" for an athlete who is inside now, and nothing else about the visit. */
+    public function test_staff_and_administrators_see_when_an_athlete_visit_started(): void
+    {
+        $this->travelTo(now()->startOfSecond());
+        $inside = $this->athlete(['name' => 'Alina Mercado Cruz']);
+        $out = $this->athlete(['name' => 'Beatriz Soto Ruiz']);
+        $never = $this->athlete(['name' => 'Camila Rivera Santiago']);
+        $user = User::factory()->create();
+        Authorization::factory()->athlete($inside)->create(['user_id' => $user->id]);
+        FacilitySession::factory()->startedMinutesAgo(30)->create(['user_id' => $user->id]);
+        $other = User::factory()->create();
+        Authorization::factory()->athlete($out)->create(['user_id' => $other->id]);
+        FacilitySession::factory()->startedMinutesAgo(50)->checkedOut(20)->create(['user_id' => $other->id]);
+
+        foreach ([StaffAccount::factory()->create(), $this->admin] as $account) {
+            $response = $this->as($account, 'GET', '/api/staff/roster')->assertOk()
+                ->assertJsonPath('athletes.*.id', [$inside->id, $out->id, $never->id])
+                ->assertJsonPath('athletes.0.active_session', ['started_at' => now()->subMinutes(30)->toISOString()])
+                ->assertJsonPath('athletes.1.active_session', null)
+                ->assertJsonPath('athletes.2.active_session', null);
+            $this->assertSame(['started_at'], array_keys($response->json('athletes.0.active_session')));
+        }
+    }
+
+    public function test_a_user_sign_in_does_not_grant_the_staff_roster(): void
+    {
+        $user = User::factory()->create(['current_session_id' => 'device']);
+        $this->actingAs($user, 'web')->withSession(['user_session_id' => 'device'])->fromThePwa()
+            ->getJson('/api/staff/roster')->assertUnauthorized();
+    }
+
+    /** Staff search is answered as plain data too, with the new field in the answer. */
+    #[DataProvider('injections')]
+    public function test_staff_search_with_an_injection_string_is_plain_data(string $text): void
+    {
+        $this->athlete(self::ATHLETE);
+
+        $this->as(StaffAccount::factory()->create(), 'GET', '/api/staff/roster?search='.urlencode($text))->assertOk()
+            ->assertJsonPath('athletes', [])->assertJsonPath('active_count', 1);
+        $this->assertSame(1, RosterRecord::query()->count());
+    }
+
 
     /** @return array<string, array{string}> */
     public static function injections(): array

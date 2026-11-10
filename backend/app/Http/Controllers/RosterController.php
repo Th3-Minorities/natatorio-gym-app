@@ -7,10 +7,13 @@ use App\Models\Authorization;
 use App\Models\EmailLink;
 use App\Models\RosterRecord;
 use App\Services\AuditLog;
+use App\Services\FacilitySessions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -25,14 +28,15 @@ class RosterController extends Controller
     /** The reason a withdrawal writes on the authorizations it revokes (E-93). */
     private const REMOVED = 'removed from roster';
 
-    public function index(Request $request): JsonResponse
+    public function index(Request $request, FacilitySessions $sessions): JsonResponse
     {
         $input = $request->validate([
             'status' => ['sometimes', 'string', Rule::in(['active', 'withdrawn', 'all'])],
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
         // Staff never see withdrawn athletes, whatever they ask for.
-        $status = $request->user('staff')->role === 'admin' ? ($input['status'] ?? 'active') : 'active';
+        $admin = $request->user('staff')->role === 'admin';
+        $status = $admin ? ($input['status'] ?? 'active') : 'active';
 
         $athletes = RosterRecord::query()
             ->when($status === 'active', fn (Builder $query) => $query->whereNull('removed_at'))
@@ -40,12 +44,39 @@ class RosterController extends Controller
             ->when(trim((string) ($input['search'] ?? '')) !== '', fn (Builder $query) => $this->search($query, trim($input['search'])))
             ->orderBy('name')->orderBy('id')->get();
 
+        $open = $this->openVisits($athletes, $sessions);
+
         return response()->json([
-            'athletes' => $athletes->map(fn (RosterRecord $athlete) => $this->show($athlete))->all(),
+            // Staff read the roster to compare photos and start an assisted Check In (S-05): no email for them.
+            'athletes' => $athletes->map(fn (RosterRecord $athlete) => [
+                ...Arr::except($this->show($athlete), $admin ? [] : ['institutional_email']),
+                // When the athlete's open visit started, so S-05 shows "Entrada registrada" instead of "Check in". Nothing else of the visit.
+                'active_session' => isset($open[$athlete->id]) ? ['started_at' => $open[$athlete->id]] : null,
+            ])->all(),
             'active_count' => RosterRecord::query()->whereNull('removed_at')->count(),
             // Lets A-05 tell a roster with no athletes from a filter that hides them all. Staff never learn how many are withdrawn.
             'total_count' => RosterRecord::query()->when($request->user('staff')->role !== 'admin', fn (Builder $query) => $query->whereNull('removed_at'))->count(),
         ]);
+    }
+
+    /**
+     * The start of each listed athlete's open visit, keyed by roster id, from two queries however many there are.
+     * An athlete reaches a User through the authorizations that point at the roster record.
+     *
+     * @param  Collection<int, RosterRecord>  $athletes
+     * @return Collection<int, string>
+     */
+    private function openVisits(Collection $athletes, FacilitySessions $sessions): Collection
+    {
+        if ($athletes->isEmpty()) {
+            return collect();
+        }
+        $links = Authorization::query()->whereIn('roster_record_id', $athletes->modelKeys())->get(['roster_record_id', 'user_id']);
+        $visits = $sessions->activeForMany($links->pluck('user_id')->unique()->values());
+
+        return $links->groupBy('roster_record_id')->map(fn (Collection $rows) => $rows
+            ->map(fn (Authorization $link) => $visits[$link->user_id] ?? null)->filter()
+            ->sortByDesc('started_at')->first()?->started_at->toISOString())->filter();
     }
 
     public function store(Request $request, AuditLog $log): JsonResponse
