@@ -1,5 +1,5 @@
 <testsuites id="" name="" tests="89" failures="0" skipped="0" errors="0" time="252.582008">
-<testsuite name="check-in-frames.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="27" failures="0" skipped="0" time="86.756" errors="0">
+<testsuite name="check-in-frames.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="27" failures="0" skipped="0" time="86.756" errors="0">
 <testcase name="Check In Figma frames at 390x844 › 4104-95 member ready" classname="check-in-frames.spec.ts" time="2.715">
 </testcase>
 <testcase name="Check In Figma frames at 390x844 › 4104-173 athlete ready" classname="check-in-frames.spec.ts" time="2.536">
@@ -55,45 +55,45 @@
 <testcase name="Check In Figma frames at 390x844 › 4199-4734 athlete offline" classname="check-in-frames.spec.ts" time="3.277">
 </testcase>
 </testsuite>
-<testsuite name="flows\app-base.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="1.67" errors="0">
+<testsuite name="flows\app-base.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="1.67" errors="0">
 <testcase name="the install help shows both phones, the installed app says so, and the app opens offline" classname="flows\app-base.spec.ts" time="1.67">
 </testcase>
 </testsuite>
-<testsuite name="flows\athlete-registration.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="2.605" errors="0">
+<testsuite name="flows\athlete-registration.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="2.605" errors="0">
 <testcase name="the student number lookup answers not on the roster, claimed, wrong length and on the roster with an emailed link" classname="flows\athlete-registration.spec.ts" time="2.605">
 </testcase>
 </testsuite>
-<testsuite name="flows\check-in.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="11.39" errors="0">
+<testsuite name="flows\check-in.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="11.39" errors="0">
 <testcase name="Check In refuses each problem and opens the Gym ID from inside the gym" classname="flows\check-in.spec.ts" time="11.39">
 </testcase>
 </testsuite>
-<testsuite name="flows\end-of-visit.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="7.14" errors="0">
+<testsuite name="flows\end-of-visit.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="7.14" errors="0">
 <testcase name="a front desk check-out ends the visit on the member phone" classname="flows\end-of-visit.spec.ts" time="7.14">
 </testcase>
 </testsuite>
-<testsuite name="flows\gym-id-occupancy.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="6.795" errors="0">
+<testsuite name="flows\gym-id-occupancy.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="6.795" errors="0">
 <testcase name="the Gym ID stays on screen offline and Gimnasio counts the visit" classname="flows\gym-id-occupancy.spec.ts" time="6.795">
 </testcase>
 </testsuite>
-<testsuite name="flows\paid-registration.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="6.462" errors="0">
+<testsuite name="flows\paid-registration.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="6.462" errors="0">
 <testcase name="a paid member registers from Welcome and reaches Check In" classname="flows\paid-registration.spec.ts" time="6.462">
 </testcase>
 </testsuite>
-<testsuite name="flows\user-sign-in.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="9.336" errors="0">
+<testsuite name="flows\user-sign-in.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="9.336" errors="0">
 <testcase name="a User signs in, reaches Check In, is replaced by a second phone and recovers a forgotten password" classname="flows\user-sign-in.spec.ts" time="9.336">
 </testcase>
 </testsuite>
-<testsuite name="health.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="1" failures="0" skipped="0" time="0.928" errors="0">
+<testsuite name="health.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="1" failures="0" skipped="0" time="0.928" errors="0">
 <testcase name="page shows the API is connected through the proxy" classname="health.spec.ts" time="0.928">
 </testcase>
 </testsuite>
-<testsuite name="pwa.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="2" failures="0" skipped="0" time="1.723" errors="0">
+<testsuite name="pwa.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="2" failures="0" skipped="0" time="1.723" errors="0">
 <testcase name="manifest and launcher icons are linked and served (REQ-F-66)" classname="pwa.spec.ts" time="0.817">
 </testcase>
 <testcase name="the service worker precaches the app, never the API, and N-09 opens without connection" classname="pwa.spec.ts" time="0.906">
 </testcase>
 </testsuite>
-<testsuite name="registration-frames.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="8" failures="0" skipped="0" time="8.77" errors="0">
+<testsuite name="registration-frames.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="8" failures="0" skipped="0" time="8.77" errors="0">
 <testcase name="paid registration screen states › 179-6122" classname="registration-frames.spec.ts" time="0.818">
 </testcase>
 <testcase name="paid registration screen states › 179-6139" classname="registration-frames.spec.ts" time="1.133">
@@ -111,7 +111,7 @@
 <testcase name="paid registration reaches the photo step without claiming the number" classname="registration-frames.spec.ts" time="1.358">
 </testcase>
 </testsuite>
-<testsuite name="staff-roster.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="4" failures="0" skipped="0" time="28.999" errors="0">
+<testsuite name="staff-roster.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="4" failures="0" skipped="0" time="28.999" errors="0">
 <testcase name="an Administrator creates and edits a term" classname="staff-roster.spec.ts" time="8.593">
 </testcase>
 <testcase name="an Administrator adds, edits, withdraws and reinstates an athlete" classname="staff-roster.spec.ts" time="12.313">
@@ -121,7 +121,7 @@
 <testcase name="the terms and roster screens reflow at 320 CSS pixels" classname="staff-roster.spec.ts" time="3.122">
 </testcase>
 </testsuite>
-<testsuite name="user-frames.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="33" failures="0" skipped="0" time="60.177" errors="0">
+<testsuite name="user-frames.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="33" failures="0" skipped="0" time="60.177" errors="0">
 <testcase name="User screen states at 390x844 › 4078-11 welcome collapsed" classname="user-frames.spec.ts" time="1.865">
 </testcase>
 <testcase name="User screen states at 390x844 › 179-6068 welcome normal" classname="user-frames.spec.ts" time="1.865">
@@ -189,7 +189,7 @@
 <testcase name="User screen states at 390x844 › 4099-1207 account/settings offline" classname="user-frames.spec.ts" time="1.342">
 </testcase>
 </testsuite>
-<testsuite name="user-other-screens.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="5" failures="0" skipped="0" time="8.071" errors="0">
+<testsuite name="user-other-screens.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="5" failures="0" skipped="0" time="8.071" errors="0">
 <testcase name="install help, iPhone tab" classname="user-other-screens.spec.ts" time="1.446">
 </testcase>
 <testcase name="install help, Android tab" classname="user-other-screens.spec.ts" time="1.286">
@@ -201,7 +201,7 @@
 <testcase name="privacy notice from Mi cuenta" classname="user-other-screens.spec.ts" time="1.945">
 </testcase>
 </testsuite>
-<testsuite name="user-sign-in.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="iphone" tests="2" failures="0" skipped="0" time="6.465" errors="0">
+<testsuite name="user-sign-in.spec.ts" timestamp="2026-11-10T15:14:45.240Z" hostname="" tests="2" failures="0" skipped="0" time="6.465" errors="0">
 <testcase name="User signs in, opens settings, signs out and cannot reopen the account" classname="user-sign-in.spec.ts" time="2.922">
 </testcase>
 <testcase name="a second browser replaces the first User session" classname="user-sign-in.spec.ts" time="3.543">
