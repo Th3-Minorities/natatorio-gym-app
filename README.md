@@ -58,7 +58,7 @@ Commands in the `app` container run as the `www-data` user, the same user that a
 
 ### First run, step by step
 
-Do this once on your computer. After that, step 1 is all you need each day.
+Step 1 sets up a fresh clone and starts the stack each day.
 
 1. Start Docker Desktop. Then, from the repository root, start the containers:
 
@@ -66,39 +66,15 @@ Do this once on your computer. After that, step 1 is all you need each day.
    docker compose --profile development up -d --build --wait
    ```
 
-2. Install the PHP packages. They go in `backend/vendor/`, which is not in git:
+   With the default `APP_ENV=local`, the app installs the PHP packages when they are missing or `composer.lock` changed, creates `backend/.env` and its key if needed, and runs pending migrations as `www-data` before PHP-FPM starts. Restarts keep the key and data. The first install can take several minutes. Set `APP_ENV=production` in the stack environment to skip this setup in production.
 
-   ```powershell
-   docker compose exec app composer install
-   ```
-
-   The scheduler waits for these packages and starts by itself when they are in. Until step 4 creates the tables, its log shows a `relation "cache" does not exist` error once a minute. That is expected and stops after step 4.
-
-3. Create `backend/.env` (not in git) and give it a secret key:
-
-   ```powershell
-   docker compose exec app sh -c "cp -n .env.example .env && php artisan key:generate"
-   ```
-
-4. Create the tables:
-
-   ```powershell
-   docker compose exec app php artisan migrate
-   ```
-
-5. Only if your database volume is older than issue #47: create the test database. A new volume creates it by itself. In Git Bash, run `export MSYS_NO_PATHCONV=1` first, or Git Bash rewrites the path:
-
-   ```powershell
-   docker compose exec db sh /docker-entrypoint-initdb.d/02-test-database.sh
-   ```
-
-6. Check that the API answers through the proxy. You should see `{"status":"ok"}`. You can also open <http://localhost:8080/api/health> in the browser:
+2. Open <http://localhost:8080> for the PWA. Check the API at <http://localhost:8080/api/health> or run this command. You should see `{"status":"ok"}`:
 
    ```powershell
    curl.exe http://localhost:8080/api/health
    ```
 
-7. Run the tests. They should all pass:
+3. Run the tests. They should all pass:
 
    ```powershell
    docker compose exec app php artisan test
@@ -106,9 +82,27 @@ Do this once on your computer. After that, step 1 is all you need each day.
 
 The tests use their own database, `natatorio_gym_test`, so they never wipe your development data.
 
-### Slow on Windows
+Note: if your database volume is older than issue #47, create the test database once. New volumes create it during startup. In Git Bash, run `export MSYS_NO_PATHCONV=1` first:
 
-On Windows, each API request can take 7 to 20 seconds, and the tests about a minute. The cause is Docker Desktop reading the PHP files from a Windows folder; the code itself is fast (one measurement: Laravel started in 7.8 s from the Windows folder and in 0.17 s from inside the container). A repo inside OneDrive is likely slower still. CI runs on Linux and is not affected. Possible fixes for later: turn on OPcache in the PHP image, keep `backend/vendor/` in a Docker volume, or keep the repo in the WSL file system instead of a Windows folder.
+```powershell
+docker compose exec db sh /docker-entrypoint-initdb.d/02-test-database.sh
+```
+
+### PHP packages in a Docker volume
+
+Docker Desktop reads files from a Windows folder slowly, and likely from a macOS folder too. To make up for it, `docker-compose.override.yml` keeps the PHP packages (`backend/vendor/`) in a Docker volume instead of your folder. Docker Compose loads that file on its own, so you do not need to do anything. On Windows this cut the first start from about 6 minutes to under a minute and the backend tests from about 110 s to about 35 s.
+
+The cost: VS Code no longer sees the packages, so PHP autocomplete for Laravel classes stops working. To get it back, copy the packages to your folder. Run it again after someone changes `composer.lock`:
+
+```powershell
+docker compose cp app:/var/www/html/vendor backend/
+```
+
+The copy is only for your editor. The containers always use the volume.
+
+A repo inside OneDrive is slower still. Keep your clone in a normal folder, outside OneDrive.
+
+Production must skip the override file: start the stack there with `docker compose -f docker-compose.yml ...`.
 
 ### Everyday commands
 
@@ -143,6 +137,8 @@ npm run test:e2e  # browser test through the proxy at http://localhost:8080
 ```
 
 The dev server sends `/api` to the proxy, so the stack must be up. The browser only sees one origin, which keeps login cookies working. Before the first `test:e2e`, run `npx playwright install chromium` once.
+
+To check the shared pieces and the dashboard shell against Figma, open <http://localhost:5173/component-preview.html> and <http://localhost:5173/dashboard-preview.html> on the dev server. How to use them is in the [frontend base](docs/design/frontend-base.md).
 
 GitHub runs `.github/workflows/frontend.yml` on every pull request: lint, build, page tests, and the browser test against the full stack.
 

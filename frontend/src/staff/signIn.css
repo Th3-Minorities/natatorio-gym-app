@@ -1,0 +1,102 @@
+/* N-11, measured from Figma MOCKUPS-GYM 4039:3721: 96px green header, a 464px card 80px below it. */
+
+.sign-in {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--background);
+}
+
+.sign-in__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  padding: 0 var(--spacing-16);
+  background: var(--hero);
+}
+
+/* The brand lines up with the left edge of the card below it. */
+.sign-in__column {
+  display: flex;
+  flex-direction: column;
+  width: 464px;
+  max-width: 100%;
+}
+
+.sign-in__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px var(--spacing-16) var(--spacing-32);
+}
+
+.sign-in__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  width: 464px;
+  max-width: 100%;
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.sign-in__title,
+.sign-in__description {
+  margin: 0;
+}
+
+.sign-in__title {
+  color: var(--foreground);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 36px;
+}
+
+.sign-in__description {
+  color: var(--muted-foreground);
+  font-size: 15px;
+  line-height: 23px;
+}
+
+/* Smaller muted text under a form, like the password rules (4126:1316) and "Revisa también…" (4039:4224). */
+.sign-in__note {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.sign-in__title:focus {
+  outline: none;
+}
+
+/* "Revisando el enlace…" (4424:1753): the 20px refresh icon in the muted text color. */
+.sign-in__checking-icon {
+  color: var(--muted-foreground);
+}
+
+/* Who was invited, on "Crear tu contraseña" (4126:1316). */
+.sign-in__identity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  padding: var(--spacing-12) var(--spacing-16);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+}
+
+.sign-in__identity-name,
+.sign-in__identity-detail {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.sign-in__identity-name {
+  font-weight: 600;
+}

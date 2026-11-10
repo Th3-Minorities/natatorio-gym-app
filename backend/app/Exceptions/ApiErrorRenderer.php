@@ -5,19 +5,19 @@ namespace App\Exceptions;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Lang;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Throwable;
 
 /**
  * Turns any exception on an /api route into the one error format:
- * {"error": {"code": "...", "message": "...", "details": {...}}}
+ * {"error": {"code": "...", "details": {...}}}
  */
 class ApiErrorRenderer
 {
     /** Stable codes for the HTTP errors Laravel raises by itself. */
-    private const HTTP_CODES = [
+    public const HTTP_CODES = [
         400 => 'bad_request',
         401 => 'unauthenticated',
         403 => 'forbidden',
@@ -28,6 +28,7 @@ class ApiErrorRenderer
         419 => 'session_expired',
         422 => 'validation_failed',
         429 => 'too_many_requests',
+        500 => 'server_error',
         503 => 'service_unavailable',
     ];
 
@@ -36,8 +37,16 @@ class ApiErrorRenderer
         return match (true) {
             // A response built on purpose is sent as it is.
             $e instanceof HttpResponseException => null,
-            $e instanceof ApiException => self::response($e->status, $e->errorCode, $e->getMessage(), $e->details),
-            $e instanceof ValidationException => self::response($e->status, 'validation_failed', null, $e->errors()),
+            $e instanceof ApiException => self::response($e->status, $e->errorCode, $e->details, $e->headers),
+            $e instanceof ValidationException => self::response(
+                $e->status,
+                'validation_failed',
+                array_map(
+                    // A rule object is listed by its class; class_basename keeps only its name.
+                    fn (array $rules) => array_map(fn (string $rule) => Str::snake(class_basename($rule)), array_keys($rules)),
+                    $e->validator->failed(),
+                ),
+            ),
             $e instanceof AuthenticationException => self::response(401, 'unauthenticated'),
             $e instanceof HttpExceptionInterface => self::response(
                 $e->getStatusCode(),
@@ -56,12 +65,11 @@ class ApiErrorRenderer
     private static function response(
         int $status,
         string $code,
-        ?string $message = null,
         array $details = [],
         array $headers = [],
         ?array $debug = null,
     ): JsonResponse {
-        $error = ['code' => $code, 'message' => $message ?? self::message($code, $status)];
+        $error = ['code' => $code];
 
         if ($details !== []) {
             $error['details'] = $details;
@@ -72,19 +80,6 @@ class ApiErrorRenderer
         }
 
         return new JsonResponse(['error' => $error], $status, $headers);
-    }
-
-    /**
-     * The text for a code, from lang/<locale>/errors.php. A code with no text gets a general
-     * one instead of the raw key "errors.<code>": the server error text for 5xx, else bad_request.
-     */
-    public static function message(string $code, int $status): string
-    {
-        if (Lang::has('errors.'.$code)) {
-            return __('errors.'.$code);
-        }
-
-        return __($status >= 500 ? 'errors.server_error' : 'errors.bad_request');
     }
 
     /** Only with APP_DEBUG on, so production never shows internals. */

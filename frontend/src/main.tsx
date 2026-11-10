@@ -1,9 +1,38 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
+import { UserEntry } from './user/UserApp'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { I18nProvider } from './i18n'
+import { StaffApp } from './staff/StaffApp'
+import { isStaffPath } from './staff/staffPath'
+import { listenForInstall } from './user/installPrompt'
+import './styles/base.css'
 
+// Spanish until a signed-in account says otherwise (E-64, E-114).
+// The staff dashboard has its own address, /staff, with no link from the User side (E-124).
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <I18nProvider>
+      <ErrorBoundary>
+        {isStaffPath(window.location.pathname) ? (
+          <StaffApp />
+        ) : (
+          <UserEntry>
+            <App />
+          </UserEntry>
+        )}
+      </ErrorBoundary>
+    </I18nProvider>
   </StrictMode>,
 )
+
+listenForInstall()
+
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    void navigator.serviceWorker.register('/sw.js').catch(() => {
+      // The online app stays usable if the browser cannot install the offline shell.
+    })
+  })
+}

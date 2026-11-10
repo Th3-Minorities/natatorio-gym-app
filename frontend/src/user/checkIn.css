@@ -1,0 +1,159 @@
+/* U-01 Check In. Values from the Figma page "#41 Gym ID and Check in" (4085:1125). */
+.check-in { border-radius: var(--user-large-radius); }
+.check-in .user-navigation { padding-bottom: 1.125rem; }
+.check-in .user-content { gap: var(--spacing-12); }
+.check-in .user-content h1 { font-size: var(--user-brand-size); line-height: var(--user-account-title-line); font-weight: var(--user-weight-bold); color: var(--hero); }
+.check-in .user-content h2 { margin: 0; font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); color: var(--hero); }
+.check-in .check-in-lead { font-size: var(--user-body-size); line-height: var(--user-body-line); }
+/* 4106:1789: the banner sits 18px from the top (36px tall) and the title 12px below it. Online the same space stays empty, so the title never moves.
+   Offline UserPage renders no .user-top (12px), so the margin adds it back. .user-app.check-in outranks .user-app--account .user-offline in user.css. */
+.user-app.check-in .user-offline { margin: calc(var(--spacing-12) + var(--user-space-6)) 0 0; padding: 9px var(--spacing-24); background: var(--check-in-danger-soft); color: var(--user-danger); }
+.user-app.check-in .user-offline svg { color: inherit; }
+.check-in .user-content { padding-top: calc(var(--user-space-6) + 36px + var(--spacing-12)); }
+.check-in .user-offline + .user-content { padding-top: var(--spacing-12); }
+
+.check-in-identity { display: flex; align-items: center; gap: var(--spacing-12); height: 76px; padding: var(--spacing-12); border-radius: var(--spacing-20); }
+.check-in-identity > div { display: flex; flex-direction: column; gap: var(--user-space-2); min-width: 0; }
+.check-in .check-in-identity p { font-size: var(--user-body-size); line-height: var(--user-body-line); }
+.check-in .check-in-identity .check-in-identity__name { display: flex; align-items: center; gap: var(--user-space-6); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); color: var(--hero); }
+.check-in-photo { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--user-sage-soft); color: var(--hero); }
+.check-in-photo svg { width: 23.4px; height: 23.4px; }
+.check-in-photo { overflow: hidden; }
+.check-in-photo img { width: 100%; height: 100%; object-fit: cover; }
+.check-in .check-in-identity__name > span:first-child { min-width: 106px; }
+.check-in--athlete .check-in-identity__name > span:first-child { min-width: 112px; }
+.check-in-badge { display: grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--check-in-member); color: var(--surface); }
+.check-in--athlete .check-in-badge { background: var(--primary); }
+.check-in-badge svg { width: 12px; height: 12px; }
+
+.check-in-panel { display: flex; align-items: center; gap: var(--user-space-6); height: 220px; padding: var(--spacing-16); border-radius: var(--spacing-20); background: var(--user-sage-soft); }
+.check-in-panel > div:first-child { display: flex; flex-direction: column; gap: var(--spacing-12); width: 138px; flex: none; }
+.check-in .check-in-panel p { color: var(--hero); font-size: var(--user-body-size); line-height: var(--user-body-line); }
+.check-in-panel__art { display: grid; place-items: center; flex: none; margin-inline: auto; width: 142.2px; height: 189.6px; }
+.check-in-panel__art img { width: 142.2px; height: 146.062px; }
+
+.check-in-notice { display: flex; align-items: center; gap: 10px; height: 62px; padding: var(--spacing-12); border: var(--user-border-width) solid var(--check-in-gold); border-radius: var(--spacing-12); background: var(--check-in-gold-soft); }
+.check-in-notice img { width: 26px; height: 26px; flex: none; }
+.check-in .check-in-notice p { font-size: var(--spacing-12); line-height: var(--user-caption-line); color: var(--hero); }
+
+.check-in-hold, .check-in .check-in-action {
+  position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: var(--user-control-height);
+  padding: 0 var(--user-input-padding); border: 0; border-radius: var(--spacing-12); overflow: hidden;
+  background: var(--check-in-member); color: var(--surface); font: inherit; font-size: var(--user-label-size); line-height: var(--spacing-20);
+  font-weight: var(--user-weight-semibold); text-decoration: none; text-align: center;
+}
+.check-in--athlete .check-in-hold, .check-in--athlete .check-in-action { background: var(--primary); }
+.check-in-hold { cursor: pointer; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+.check-in .check-in-action.check-in-action--secondary { border: var(--user-border-width) solid var(--hero); background: var(--surface); color: var(--hero); }
+.check-in .check-in-action:disabled, .check-in-hold--busy { opacity: var(--user-disabled-opacity); }
+.check-in-hold__progress { position: absolute; left: 0; bottom: 0; height: 5px; width: 100%; background: var(--surface); opacity: 0.65; }
+.check-in-hold--holding .check-in-hold__progress { animation: check-in-hold 1s linear both; }
+@keyframes check-in-hold { from { width: 0; } to { width: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .check-in-hold--holding .check-in-hold__progress { animation: none; }
+}
+
+.check-in .check-in-note { display: flex; align-items: center; gap: var(--spacing-8); font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+.check-in-note svg { width: 17px; height: 17px; flex: none; }
+.check-in .check-in-caption { font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+
+.check-in-period { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--spacing-12); height: 354px; padding: var(--spacing-20); border-radius: var(--spacing-20); background: var(--check-in-gold-soft); text-align: center; }
+.check-in-period img { width: 46px; height: 46px; }
+.check-in .check-in-period p { width: 100%; color: var(--hero); font-size: var(--user-body-size); line-height: var(--user-body-line); }
+.check-in .check-in-period .check-in-period__small { font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+.check-in .check-in-period .check-in-period__time { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
+.check-in-period hr, .check-in-id hr { width: 100%; height: var(--user-border-width); margin: 0; border: 0; flex: none; }
+.check-in-period hr { background: var(--check-in-gold); opacity: 0.5; }
+.check-in-period__action.button { width: 100%; height: var(--user-touch); border: var(--user-border-width) solid var(--hero); border-radius: var(--spacing-12); background: var(--surface); color: var(--hero); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+
+.check-in-message { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; height: 300px; padding: var(--spacing-24); border-radius: var(--spacing-20); background: var(--check-in-danger-soft); color: var(--user-danger); text-align: center; }
+.check-in-message--neutral { background: var(--background); color: var(--hero); }
+.check-in-message svg { width: 42px; height: 42px; flex: none; }
+.check-in .check-in-message h2, .check-in .check-in-message p { width: 294px; }
+.check-in .check-in-message p { color: var(--foreground); font-size: var(--user-body-size); line-height: var(--user-body-line); }
+
+/* Entrada confirmada: 4199:3403 (athlete) and 4104:719 (member). */
+.user-app.check-in--confirmed { position: relative; background: var(--check-in-member-background); color: var(--surface); }
+.user-app.check-in--confirmed.check-in--athlete { background: var(--check-in-athlete-background); }
+.check-in--confirmed .user-content { background: transparent; }
+.check-in--confirmed .user-content > :not(.check-in-waves) { position: relative; }
+.check-in--confirmed .user-content h1, .check-in--confirmed .user-content p { color: var(--surface); }
+.check-in--confirmed .user-content .check-in-notice p { color: var(--hero); }
+.check-in--confirmed .user-navigation { background: transparent; }
+.check-in--confirmed .user-navigation nav::before { background: var(--surface); }
+.check-in-waves { position: absolute; left: -53px; top: -130px; width: 495.9px; height: 527.8px; pointer-events: none; }
+.check-in-waves--bottom { top: 490px; }
+
+.check-in-id { position: relative; display: flex; flex-direction: column; align-items: center; gap: var(--spacing-8); min-height: 22.75rem; padding: var(--spacing-20); overflow: hidden; border-radius: var(--spacing-20); background: var(--check-in-member); text-align: center; }
+.check-in--athlete .check-in-id, .check-in--athlete .check-in-duration { background: var(--check-in-athlete-card); }
+.check-in-id > * { position: relative; flex: none; }
+.check-in-id .check-in-id__waves { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Card waves ("animación futura" in 4104:719 and 4199:3403): a slow drift, transform only. The layer is 32px wider than the card so no edge shows. */
+.check-in-id .check-in-id__waves { left: -16px; width: calc(100% + 32px); will-change: transform; animation: check-in-drift 24s linear infinite; }
+@keyframes check-in-drift { 0%, 100% { transform: translateX(-16px); } 50% { transform: translateX(16px); } }
+@media (prefers-reduced-motion: reduce) {
+  .check-in-id .check-in-id__waves { left: 0; width: 100%; will-change: auto; animation: none; }
+}
+.check-in .check-in-id .check-in-id__state { display: flex; align-items: center; gap: var(--user-space-6); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.check-in-id__state svg { width: 18px; height: 18px; }
+.check-in-photo--large { width: 80px; height: 80px; border: var(--user-focus-width) solid var(--surface); }
+.check-in-photo--large svg { width: 36px; height: 36px; }
+.check-in .check-in-id .check-in-id__name { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
+.check-in-id .check-in-badge { background: var(--surface); color: var(--check-in-member); }
+.check-in--athlete .check-in-id .check-in-badge { background: var(--surface); color: var(--hero); }
+.check-in .check-in-id .check-in-id__small { width: 100%; font-size: var(--spacing-12); line-height: var(--user-caption-line); }
+.check-in .check-in-id .check-in-id__category { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); width: 5.125rem; padding: var(--spacing-4) 0; border-radius: 999px; background: var(--surface); color: var(--check-in-member); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.check-in--athlete .check-in-id .check-in-id__category { color: var(--hero); }
+.check-in-id__category svg { width: 14px; height: 14px; }
+.check-in-id hr { background: var(--check-in-wave); opacity: 0.6; }
+.check-in .check-in-id .check-in-id__time { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
+
+.check-in-duration { display: flex; align-items: flex-start; gap: var(--spacing-12); min-height: 3.625rem; padding: var(--spacing-12); border-radius: var(--spacing-20); background: var(--check-in-member); }
+.check-in-duration svg { width: var(--spacing-24); height: var(--spacing-24); margin-top: 0.59375rem; flex: none; }
+.check-in .check-in-duration p { display: flex; flex-direction: column; font-size: var(--user-nav-size); line-height: var(--user-nav-line); font-weight: var(--weight-medium); }
+.check-in-duration__value { font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
+.check-in .check-in-show { text-align: center; font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.check-in--confirmed .check-in-caption { text-align: center; }
+
+/* Gym ID offline (4105:1202, 4199:3897) and ended visits (4106:1076, 4160:2520). */
+.check-in--confirmed .user-content, .check-in--ended .user-content { padding-top: 3.125rem; }
+.check-in--stale .user-offline { margin-top: var(--spacing-32); }
+.check-in--stale .check-in-id__state { align-items: flex-start; }
+.check-in--stale .check-in-id__state span { width: 6.25rem; text-align: left; }
+.check-in .user-content h1:focus { outline: none; }
+.check-in--stale .check-in-id { opacity: 0.5; }
+.check-in--stale .check-in-id p { color: var(--surface); }
+.check-in--stale .check-in-duration { min-height: 4.625rem; background: var(--background); color: var(--muted-foreground); }
+.check-in--stale .check-in-show { color: var(--hero); }
+.check-in--stale .check-in-caption, .check-in--ended .check-in-caption { text-align: center; }
+.check-in--stale .check-in-id__waves, .check-in--ended .check-in-id__waves { animation: none; will-change: auto; left: 0; width: 100%; }
+.check-in--ended { --id-ended-color: var(--check-in-member-deep); --id-ended-background: var(--check-in-member-soft); }
+.check-in--ended.check-in--athlete { --id-ended-color: var(--hero); --id-ended-background: var(--user-sage-soft); }
+.check-in--ended .user-content { position: relative; }
+.check-in--ended .user-content > :not(.check-in-waves) { position: relative; }
+.check-in--ended .check-in-id { background: var(--id-ended-background); }
+.check-in--ended .check-in-id p, .check-in--ended .check-in-caption { color: var(--id-ended-color); }
+.check-in--ended .check-in-lead { color: var(--hero); }
+.check-in--ended .check-in-photo { background: var(--surface); }
+.check-in--ended .check-in-photo, .check-in--ended .check-in-id .check-in-badge, .check-in--ended .check-in-id .check-in-id__category { color: var(--id-ended-color); }
+.check-in--ended .check-in-id hr { background: var(--id-ended-color); opacity: 0.28; }
+.check-in-id__times { display: flex; justify-content: space-between; width: 100%; }
+.check-in-id__times > div { flex: 1; }
+.check-in--ended .check-in-duration { background: var(--surface); border: var(--user-border-width) solid var(--id-ended-color); color: var(--id-ended-color); }
+.check-in--ended .check-in-duration p { color: inherit; }
+.check-in--ended .check-in-waves { opacity: 0.65; }
+
+/* Figma draws every Check In icon with a 2px stroke at its own size (1.3px on the small photo placeholder). */
+.check-in .user-content svg *, .check-in .user-offline svg * { vector-effect: non-scaling-stroke; }
+.check-in-photo:not(.check-in-photo--large) svg { stroke-width: 1.3; }
+
+/* Help for a denied location permission: 4445:4330 and 4459:4335. */
+.check-in-help { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: var(--spacing-24); background: rgba(0, 0, 0, 0.32); }
+.check-in-help__dialog { display: flex; flex-direction: column; gap: var(--spacing-12); width: 100%; max-width: calc(var(--user-width) - 2 * var(--spacing-24)); max-height: 100%; overflow-y: auto; padding: var(--spacing-24); border-radius: var(--spacing-20); background: var(--surface); }
+.check-in-help__dialog:focus { outline: none; }
+.check-in .check-in-help h2, .check-in .check-in-help h3 { margin: 0; font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); color: var(--hero); }
+.check-in .check-in-help p { margin: 0; font-size: var(--user-body-size); line-height: var(--user-body-line); color: var(--muted-foreground); }
+.check-in-help li { margin: 0; font-size: var(--user-body-size); line-height: var(--user-body-line); color: var(--foreground); }
+.check-in-help section { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.check-in-help ol { margin: 0; padding-left: var(--spacing-20); }
+.check-in .check-in-help .check-in-help__note { font-size: var(--spacing-12); line-height: var(--user-caption-line); }

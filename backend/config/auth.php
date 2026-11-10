@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\StaffAccount;
 use App\Models\User;
 
 return [
@@ -42,6 +43,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Staff and Administrators sign in with their own accounts, kept apart from Users (D13).
+        'staff' => [
+            'driver' => 'session',
+            'provider' => 'staff_accounts',
+        ],
     ],
 
     /*
@@ -65,6 +72,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', User::class),
+        ],
+
+        'staff_accounts' => [
+            'driver' => 'eloquent',
+            'model' => StaffAccount::class,
         ],
 
         // 'users' => [
@@ -96,6 +108,14 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+
+        // Staff resets (#84). Own table: a User and a staff account may share an email.
+        'staff_accounts' => [
+            'provider' => 'staff_accounts',
+            'table' => 'staff_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],

@@ -10,8 +10,9 @@ These are design or implementation choices that were in the SRS v0.4. They are n
 
 ## Data
 
-- The term photo is stored with the authorization, not with the account (SRS v0.4, REQ-F-26). Import undo and the release of an added authorization delete the photo with the authorization (team.md, E-57).
-- The PIN state and the last person activity live in the browser's session data. The gym account has a PIN version; changing the PIN raises it, which closes the PIN in every browser (team.md, E-56).
+- The term photo is stored with the authorization, not with the account (SRS v0.4, REQ-F-26). The release of an added authorization deletes the photo with the authorization (team.md, E-57). The import undo that did the same was removed (team.md, E-127).
+- Paid memberships come from the store's REST API, not from a file (team.md, E-127). The read-only key lives only in the server's environment file. The Authorization Number can include letters, its length is not checked (6 and 7 characters have been seen), and it is unique across all orders (team.md, E-128, E-153).
+- There is no PIN state: Staff and Administrators have personal staff accounts (team.md, E-114), which replaced the PIN version and last-activity rules of E-56.
 - Behind the proxy, the backend reads the real client IP address from the proxy header, for the audit log (SRS v0.4, 5.3 and REQ-NF-39).
 
 ## PWA and location
@@ -26,15 +27,15 @@ Based on Proposal:350, 354-359, 426 and the team decisions. Diagrams and constra
 | Entity | Contains | Related to |
 |---|---|---|
 | User | Persistent identity, email, password, chosen language | Authorizations, sign-in sessions, facility sessions, waiver acceptance |
-| Gym account | One shared account, password hash, PIN hash, PIN version, recovery code hash, language for every computer (team.md, E-64). Open: may become one sign-in per person (gym.md, G-09) | Audit log entries, sign-in sessions |
-| Academic term | Name, start date, end date (a summer term is possible) | Authorizations, roster records, memberships |
-| Authorization | Type (paid, athlete or manual), term, status, photo for the term, reason (manual, or "removed from roster", team.md, E-93) | User, term, membership, roster record or none (manual) |
-| Imported membership | Fields of REQ-F-29, claim status, import it came from | WooCommerce order, import, authorization |
-| Roster record | Fields of REQ-F-51, claim status. Open: may need a group mark (gym.md, G-33) | Term, authorization |
-| Sign-in session | Device with an open sign-in session; for the gym account, the session data holds whether the PIN is active in that browser, its PIN version and the last person activity | User (one at a time, REQ-F-03) or gym account (no limit) |
-| Facility session | Start, end (start plus 60 minutes), status (active, expired, ended early, void), whether it was assisted | User |
+| Staff account | Name, email, password hash, role (staff or admin), language, deactivation time. One per Staff member and Administrator, never deleted (team.md, E-114) | Audit log entries, manual entries |
+| Academic term | Name, start date, end date (a summer term is possible) | Authorizations, memberships |
+| Authorization | Type (paid, athlete or manual), term, status, photo for the term, photo pending mark (team.md, E-118), reason (manual, or "removed from roster", team.md, E-93) | User, term, membership, roster record or none (manual) |
+| Imported membership | A copy of one store order: the fields of REQ-F-29, claim status, the sync run that created it (team.md, E-127) | WooCommerce order, store sync run, authorization |
+| Roster record | Name, sport, student number, institutional email, removal time. One record per athlete, not one per term (team.md, E-116) | Authorization |
+| Sign-in session | Device with an open sign-in session | User (one at a time, REQ-F-03) or staff account (no limit) |
+| Facility session | Start, end (start plus 2 hours), status (active, expired, checked out, ended early, closed, void), whether it was assisted, the staff account for a manual entry (team.md, E-115, E-119) | User |
 | Schedule slot | Type (regular hours, special hours, closure, athletes only), start, end, text in Spanish and English | None |
 | Notice, facility information | Text in Spanish and English, dates | None |
 | Waiver acceptance | Full name, email, emergency contact name and phone, acceptance time. Open: the data that proves acceptance (team), and a signature if the gym needs one (gym.md, G-21) | User |
-| Audit log entry | Gym account, time, IP address, device and browser, action, affected record, values before and after | Gym account |
-| Setting | Contact number for people who cannot register. Open: may add allowed networks (gym.md, G-31) | None |
+| Audit log entry | Staff account, time, IP address, device and browser, action, affected record, values before and after | Staff account |
+| Setting | Contact number for people who cannot register; the store address (team.md, E-126) | None |

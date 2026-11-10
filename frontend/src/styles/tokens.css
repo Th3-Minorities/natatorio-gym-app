@@ -1,0 +1,134 @@
+/*
+ * Design values from the Figma file MOCKUPS-GYM (variables of the dashboard shell, node 98:5).
+ * Change them here and in Figma together; tokens.test.ts checks them and their contrast.
+ */
+:root {
+  /* Colors */
+  --background: #f7f5ed;
+  --surface: #fffdf8;
+  --foreground: #25291e;
+  --muted-foreground: #616653;
+  --border: #d9dccb;
+  /* Text field borders. Figma uses --border (1.37:1), but a field's border shows where to type and needs
+     3:1 (WCAG 1.4.11). Same olive family, darker: 3.31:1 against the field, 3.08:1 against the page. */
+  --border-input: #8a8e7c;
+  --primary: #337137;
+  --primary-foreground: #ffffff;
+  --hero: #204e2a;
+  /* The Administration group in the sidebar. Drawn as a plain color in Figma, not a variable. */
+  --hero-raised: #325b36;
+  /* The "Administración" label on --hero-raised. Figma uses --sage there (4.00:1); this is --sage made
+     16% lighter so the small text meets WCAG AA (4.5:1). */
+  --sage-on-raised: #c5c89f;
+  --accent: #fa9500;
+  --sage: #babd8d;
+  /* Status chips of A-15 (100:676), drawn as plain colors in Figma, not variables. */
+  --chip-invited: #f9edce;
+  --chip-invited-foreground: #694708;
+  --chip-off: #eaece4;
+
+  /* Spacing */
+  --spacing-4: 4px;
+  --spacing-8: 8px;
+  --spacing-12: 12px;
+  --spacing-16: 16px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-32: 32px;
+
+  /* Type */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --weight-normal: 400;
+  --weight-medium: 500;
+
+  /* User access and account screens, N-02, N-06, N-07, U-03 and U-05. */
+  --user-sage-soft: #e8eddf;
+  --user-danger: #8e342c;
+  --user-width: 390px;
+  --user-header-height: 112px;
+  --user-large-header-height: 96px;
+  --user-touch: 44px;
+  --user-control-height: 48px;
+  --user-large-control-height: 52px;
+  --user-input-padding: 10px;
+  --user-title-size: 22px;
+  --user-title-line: 28px;
+  --user-large-title-line: 38px;
+  --user-account-title-line: 36px;
+  --user-brand-size: 30px;
+  --user-brand-line: 34px;
+  --user-brand-caption: 9px;
+  --user-body-size: 15px;
+  --user-body-line: 22px;
+  --user-label-size: 14px;
+  --user-caption-line: 17px;
+  --user-nav-size: 11px;
+  --user-nav-line: 15px;
+  --user-radius-10: 10px;
+  --user-large-radius: 28px;
+  --user-notice-padding: 14px;
+  --user-icon-small: 18px;
+  --user-avatar-size: 80px;
+  --user-navigation-account-icon-size: 22px;
+  --user-navigation-check-in-icon-size: 26px;
+  --user-field-background: var(--surface);
+  /* User fields keep the Figma border (179:6164), as the product owner chose; --border-input above stays for the dashboard. */
+  --user-border-input: var(--border);
+  --user-field-text: #737373;
+  --user-field-error: var(--user-danger);
+  --user-navigation-height: 90px;
+  --user-check-in-size: 56px;
+  --user-skeleton-short: 280px;
+  --user-skeleton-medium: 310px;
+  --user-space-2: 2px;
+  --user-space-3: 3px;
+  --user-space-6: 6px;
+  --user-border-width: 1px;
+  --user-focus-width: 2px;
+  --user-weight-semibold: 600;
+  --user-weight-bold: 700;
+  --user-weight-extra-bold: 800;
+  --user-disabled-opacity: 0.55;
+  --user-backdrop: rgb(0 0 0 / 36%);
+
+  /* N-01 welcome (Figma 179:6068). */
+  --user-handle: #c8cbba;
+  --user-welcome-sheet-height: 416px;
+  --user-welcome-collapsed-height: 204px;
+  --user-welcome-hint-height: 56px;
+  --user-welcome-sheet-radius: 26px;
+  --user-welcome-brand-top: 110px;
+  --user-welcome-brand-size: 48px;
+  --user-welcome-brand-line: 52px;
+  --user-welcome-handle-width: 48px;
+  --user-welcome-mark-width: 40px;
+  --user-welcome-link-height: 40px;
+
+  /* N-09 install help (Figma 4078:792, 4078:869, 4078:919). */
+  --install-icon-size: 56px;
+  --install-icon-radius: 14px;
+  --install-name-size: 17px;
+  --install-detail-size: 13px;
+  --install-detail-line: 18px;
+  --install-step-size: 28px;
+  --install-step-border: 1.5px;
+  --install-step-line-opacity: 0.65;
+  --install-tab-height: 36px;
+  --install-handy-size: 20px;
+  --install-handy-height: 64px;
+  --install-handy-icon: 48px;
+  --install-done-size: 72px;
+  --install-done-icon: 44px;
+
+  /* Check In, U-01 (Figma page "#41 Gym ID and Check in", 4085:1125). */
+  --check-in-member: #a55128;
+  --check-in-member-background: #783d2a;
+  --check-in-member-deep: #6c3824;
+  --check-in-member-soft: #f2dfd2;
+  --check-in-athlete-card: #2d603a;
+  --check-in-athlete-background: #153e2a;
+  --check-in-gold: #a27a24;
+  --check-in-gold-soft: #faeccb;
+  --check-in-danger-soft: #faeae5;
+  --check-in-wave: #d8cd94;
+}

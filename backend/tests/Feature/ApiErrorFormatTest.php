@@ -7,6 +7,7 @@ use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Validation\Rules\Password;
 use Tests\TestCase;
 
 class ApiErrorFormatTest extends TestCase
@@ -16,59 +17,54 @@ class ApiErrorFormatTest extends TestCase
         parent::setUp();
 
         // Routes that only exist in this test, to trigger each kind of error.
-        Route::prefix('api/test')->group(function () {
+        Route::prefix('api/test')->middleware('api')->group(function () {
             Route::post('/validation', fn (Request $request) => $request->validate(['email' => ['required', 'email']]));
-            Route::get('/api-exception', fn () => throw new ApiException('number_invalid', 422, 'Bad number.', ['field' => 'number']));
+            Route::post('/validation-rules', fn (Request $request) => $request->validate([
+                'email' => ['required', 'email', 'max:8'],
+                'name' => ['required', 'starts_with:A'],
+            ]));
+            Route::post('/password-rule', fn (Request $request) => $request->validate([
+                'password' => [Password::min(10)],
+            ]));
+            Route::get('/api-exception', fn () => throw new ApiException('number_invalid', 422, ['field' => 'number']));
             Route::get('/crash', fn () => throw new \LogicException('secret internal detail'));
             Route::get('/forbidden', fn () => abort(403, 'secret internal detail'));
             Route::get('/throttled', fn () => 'ok')->middleware('throttle:1,1');
             Route::get('/unauthenticated', fn () => throw new AuthenticationException);
             Route::get('/own-response', fn () => throw new HttpResponseException(response()->json(['custom' => true], 418)));
             Route::get('/protected', fn () => 'ok')->middleware('auth');
-            // A code nobody wrote a text for (the reviewer's example, dotted on purpose).
-            Route::get('/code-without-text', fn () => throw new ApiException('check_in.location_denied', 422));
-            Route::get('/server-code-without-text', fn () => throw new ApiException('printer_on_fire', 503));
+            Route::get('/unknown-client-status', fn () => abort(418, 'secret internal detail'));
+            Route::get('/unknown-server-status', fn () => abort(507, 'secret internal detail'));
         });
     }
 
-    public function test_code_without_text_gets_a_readable_message_in_both_languages(): void
+    public function test_unknown_client_status_uses_bad_request_code(): void
     {
-        app()->setLocale('es');
-        $this->getJson('/api/test/code-without-text')
-            ->assertUnprocessable()
-            ->assertExactJson(['error' => ['code' => 'check_in.location_denied', 'message' => 'No se pudo procesar la solicitud.']]);
-
-        app()->setLocale('en');
-        $this->getJson('/api/test/code-without-text')
-            ->assertExactJson(['error' => ['code' => 'check_in.location_denied', 'message' => 'The request could not be processed.']]);
+        $this->getJson('/api/test/unknown-client-status')
+            ->assertStatus(418)
+            ->assertExactJson(['error' => ['code' => 'bad_request']]);
     }
 
-    public function test_server_code_without_text_gets_the_server_error_message(): void
+    public function test_unknown_server_status_uses_server_error_code(): void
     {
-        app()->setLocale('es');
-        $this->getJson('/api/test/server-code-without-text')
-            ->assertStatus(503)
-            ->assertExactJson(['error' => ['code' => 'printer_on_fire', 'message' => 'Algo salió mal de nuestro lado. Intenta más tarde.']]);
-
-        app()->setLocale('en');
-        $this->getJson('/api/test/server-code-without-text')
-            ->assertExactJson(['error' => ['code' => 'printer_on_fire', 'message' => 'Something went wrong on our side. Try again later.']]);
+        $this->getJson('/api/test/unknown-server-status')
+            ->assertStatus(507)
+            ->assertExactJson(['error' => ['code' => 'server_error']]);
     }
 
     public function test_protected_route_without_json_header_answers_401(): void
     {
         // A browser link or curl sends no Accept header. There is no login page to redirect to.
-        app()->setLocale('es');
         $this->get('/api/test/protected')
             ->assertUnauthorized()
-            ->assertExactJson(['error' => ['code' => 'unauthenticated', 'message' => 'Inicia sesión para continuar.']]);
+            ->assertExactJson(['error' => ['code' => 'unauthenticated']]);
     }
 
     public function test_unauthenticated_uses_the_error_format(): void
     {
         $this->getJson('/api/test/unauthenticated')
             ->assertUnauthorized()
-            ->assertExactJson(['error' => ['code' => 'unauthenticated', 'message' => __('errors.unauthenticated')]]);
+            ->assertExactJson(['error' => ['code' => 'unauthenticated']]);
     }
 
     public function test_a_response_built_on_purpose_is_sent_as_it_is(): void
@@ -82,24 +78,46 @@ class ApiErrorFormatTest extends TestCase
     {
         $this->getJson('/api/does-not-exist')
             ->assertNotFound()
-            ->assertExactJson(['error' => ['code' => 'not_found', 'message' => __('errors.not_found')]]);
+            ->assertExactJson(['error' => ['code' => 'not_found']]);
     }
 
     public function test_validation_errors_list_each_field(): void
     {
         $this->postJson('/api/test/validation', [])
             ->assertUnprocessable()
-            ->assertJsonPath('error.code', 'validation_failed')
-            ->assertJsonStructure(['error' => ['code', 'message', 'details' => ['email']]]);
+            ->assertExactJson(['error' => [
+                'code' => 'validation_failed',
+                'details' => ['email' => ['required']],
+            ]]);
     }
 
-    public function test_api_exception_keeps_its_own_code_message_and_details(): void
+    public function test_validation_details_are_failed_rule_names_in_snake_case(): void
+    {
+        $this->postJson('/api/test/validation-rules', ['email' => 'not-an-email', 'name' => 'Bob'])
+            ->assertUnprocessable()
+            ->assertExactJson(['error' => [
+                'code' => 'validation_failed',
+                'details' => ['email' => ['email', 'max'], 'name' => ['starts_with']],
+            ]]);
+    }
+
+    public function test_a_rule_object_is_named_without_its_class_path(): void
+    {
+        // The class path would show how the app is built; the PWA only needs the rule's name.
+        $this->postJson('/api/test/password-rule', ['password' => 'short'])
+            ->assertUnprocessable()
+            ->assertExactJson(['error' => [
+                'code' => 'validation_failed',
+                'details' => ['password' => ['password']],
+            ]]);
+    }
+
+    public function test_api_exception_keeps_its_own_code_and_details(): void
     {
         $this->getJson('/api/test/api-exception')
             ->assertUnprocessable()
             ->assertExactJson(['error' => [
                 'code' => 'number_invalid',
-                'message' => 'Bad number.',
                 'details' => ['field' => 'number'],
             ]]);
     }
@@ -116,6 +134,7 @@ class ApiErrorFormatTest extends TestCase
         $this->getJson('/api/test/forbidden')
             ->assertForbidden()
             ->assertJsonPath('error.code', 'forbidden')
+            ->assertJsonMissingPath('error.message')
             ->assertJsonMissingPath('error.debug')
             ->assertDontSee('secret internal detail');
     }
@@ -136,7 +155,7 @@ class ApiErrorFormatTest extends TestCase
 
         $this->getJson('/api/test/crash')
             ->assertInternalServerError()
-            ->assertExactJson(['error' => ['code' => 'server_error', 'message' => __('errors.server_error')]]);
+            ->assertExactJson(['error' => ['code' => 'server_error']]);
     }
 
     public function test_server_errors_show_details_when_debugging(): void
@@ -146,6 +165,7 @@ class ApiErrorFormatTest extends TestCase
         $this->getJson('/api/test/crash')
             ->assertInternalServerError()
             ->assertJsonPath('error.code', 'server_error')
+            ->assertJsonMissingPath('error.message')
             ->assertJsonPath('error.debug.exception', \LogicException::class);
     }
 }

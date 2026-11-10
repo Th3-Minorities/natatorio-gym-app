@@ -1,0 +1,75 @@
+/* N-09 install help, Figma 4078:792 (iPhone), 4078:869 (Android), 4078:919 (already installed). */
+.user-app--large .user-content:has(.install, .install-done) { padding-top: var(--spacing-24); gap: 0; }
+.install, .install-done { display: flex; flex: 1; flex-direction: column; gap: var(--spacing-16); }
+.install-intro { display: flex; flex-direction: column; gap: var(--spacing-8); }
+.install-intro p, .install-done p { font-size: var(--user-body-size); line-height: var(--user-body-line); }
+
+.install-identity { display: flex; align-items: center; gap: var(--spacing-16); }
+.install-identity strong { font-size: var(--install-name-size); line-height: var(--spacing-24); font-weight: var(--user-weight-semibold); }
+.install-icon {
+  display: grid; place-items: center; flex: none;
+  width: var(--install-icon-size); height: var(--install-icon-size);
+  border-radius: var(--install-icon-radius); background: var(--primary); color: var(--primary-foreground);
+}
+
+.install-tabs {
+  display: flex; gap: var(--spacing-4); padding: var(--spacing-4);
+  border: var(--user-border-width) solid var(--border); border-radius: var(--spacing-12);
+}
+.install-tabs [role="tab"] {
+  flex: 1; height: var(--install-tab-height); border: 0; border-radius: var(--spacing-8); background: none; cursor: pointer;
+  font: inherit; font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--weight-medium);
+  color: var(--muted-foreground);
+}
+.install-tabs [aria-selected="true"] { background: var(--sage); color: var(--hero); }
+.install-panel { display: flex; flex-direction: column; gap: var(--spacing-16); }
+
+.install-steps { position: relative; display: flex; flex-direction: column; gap: var(--spacing-16); margin: 0; padding: 0; list-style: none; }
+.install-steps::before {
+  content: ''; position: absolute; top: var(--spacing-12); bottom: var(--spacing-12);
+  left: calc((var(--install-step-size) - var(--install-step-border)) / 2); width: var(--install-step-border);
+  background: var(--sage); opacity: var(--install-step-line-opacity);
+}
+.install-steps li { display: flex; align-items: flex-start; gap: var(--spacing-12); }
+.install-steps li > svg { flex: none; width: var(--spacing-24); height: var(--spacing-24); color: var(--foreground); }
+.install-steps__number {
+  position: relative; display: grid; place-items: center; flex: none;
+  width: var(--install-step-size); height: var(--install-step-size); border-radius: 50%;
+  border: var(--install-step-border) solid var(--sage); background: var(--surface);
+  font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); color: var(--hero);
+}
+.install-steps strong { display: block; font-size: var(--user-body-size); line-height: var(--user-body-line); font-weight: var(--user-weight-semibold); color: var(--foreground); }
+.install-steps p { margin-top: var(--spacing-4); font-size: var(--install-detail-size); line-height: var(--install-detail-line); }
+
+.install-note { display: flex; align-items: flex-start; gap: var(--spacing-12); padding: var(--spacing-12); border-radius: var(--user-radius-10); background: var(--background); }
+.install-note svg { flex: none; width: var(--spacing-20); height: var(--spacing-20); color: var(--muted-foreground); }
+.install-note p { font-size: var(--user-label-size); line-height: var(--spacing-20); }
+
+.install-handy { display: flex; align-items: center; gap: var(--spacing-20); min-height: var(--install-handy-height); }
+.install-handy svg { flex: none; width: var(--install-handy-icon); height: var(--install-handy-icon); color: var(--foreground); }
+.install-handy strong { font-size: var(--install-handy-size); line-height: var(--user-title-line); font-weight: var(--user-weight-bold); }
+.install-chrome {
+  display: flex; flex-direction: column; gap: var(--spacing-8); padding: var(--spacing-12);
+  border: var(--user-border-width) solid var(--border); border-radius: var(--user-radius-10); background: var(--surface);
+  font-size: var(--user-label-size); line-height: var(--spacing-20);
+}
+.install-chrome strong { font-weight: var(--user-weight-semibold); }
+.install-chrome p { font-size: inherit; line-height: inherit; }
+
+.install-skip {
+  display: grid; place-items: center; margin-top: auto; min-height: var(--user-control-height);
+  font-size: var(--user-label-size); line-height: var(--user-body-line); font-weight: var(--weight-medium);
+  color: var(--primary); text-decoration: underline;
+}
+
+.install-done { align-items: center; justify-content: center; gap: var(--spacing-24); text-align: center; }
+.install-done__check {
+  display: grid; place-items: center; width: var(--install-done-size); height: var(--install-done-size);
+  border-radius: 50%; background: var(--sage); color: var(--hero);
+}
+.install-done__check svg { width: var(--install-done-icon); height: var(--install-done-icon); }
+
+/* Figma C.03 (4453:2494): from Mi cuenta the screen keeps the cream page colour, with no spacer above the top bar and the confirmation under it. */
+.user-app--install .user-top { display: none; }
+.user-app--install .install-done { flex: none; justify-content: flex-start; }
+.user-app--install .install-done h2 { font-size: var(--spacing-32); line-height: var(--user-large-title-line); font-weight: var(--user-weight-bold); }
