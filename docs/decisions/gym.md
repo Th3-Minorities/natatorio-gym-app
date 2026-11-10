@@ -10,6 +10,14 @@
 
 "Answered" items were answered by the team on 2026-10-13. The gym must still confirm each one. "Partly answered" items have a team note but still need the gym's answer. On 2026-11-04 the team met the department (summary in [Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/99)) and answered the rest; items marked "Athletic Activities meeting and team" mix what the department said with what the team decided after the meeting.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Operations](#running-the-system) · [Registration](#accounts-and-registration) · [Terms and roster](#terms-and-athlete-roster) · [Front desk](#front-desk-work) · [Data and privacy](#data-privacy-and-safety-records) · [Content](#content) · [Gym testing](#testing-at-the-gym)
+
+</nav>
+
 ## Running the system
 
 ### G-01: Who looks after the system after December

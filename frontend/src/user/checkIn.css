@@ -15,14 +15,13 @@
 .check-in-identity { display: flex; align-items: center; gap: var(--spacing-12); height: 76px; padding: var(--spacing-12); border-radius: var(--spacing-20); }
 .check-in-identity > div { display: flex; flex-direction: column; gap: var(--user-space-2); min-width: 0; }
 .check-in .check-in-identity p { font-size: var(--user-body-size); line-height: var(--user-body-line); }
-.check-in .check-in-identity .check-in-identity__name { display: flex; align-items: center; gap: var(--user-space-6); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); color: var(--hero); }
+.check-in .check-in-identity .check-in-identity__name { display: block; font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); color: var(--hero); }
 .check-in-photo { display: grid; place-items: center; flex: none; width: 52px; height: 52px; border-radius: 50%; background: var(--user-sage-soft); color: var(--hero); }
 .check-in-photo svg { width: 23.4px; height: 23.4px; }
 .check-in-photo { overflow: hidden; }
 .check-in-photo img { width: 100%; height: 100%; object-fit: cover; }
-.check-in .check-in-identity__name > span:first-child { min-width: 106px; }
-.check-in--athlete .check-in-identity__name > span:first-child { min-width: 112px; }
-.check-in-badge { display: grid; place-items: center; flex: none; width: 18px; height: 18px; border-radius: 50%; background: var(--check-in-member); color: var(--surface); }
+.check-in-name-end { white-space: nowrap; }
+.check-in-badge { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; margin-left: var(--user-space-6); width: 18px; height: 18px; border-radius: 50%; background: var(--check-in-member); color: var(--surface); }
 .check-in--athlete .check-in-badge { background: var(--primary); }
 .check-in-badge svg { width: 12px; height: 12px; }
 
@@ -79,7 +78,7 @@
 .check-in--confirmed .user-content > :not(.check-in-waves) { position: relative; }
 .check-in--confirmed .user-content h1, .check-in--confirmed .user-content p { color: var(--surface); }
 .check-in--confirmed .user-content .check-in-notice p { color: var(--hero); }
-.check-in--confirmed .user-navigation { background: transparent; }
+.check-in--confirmed .user-navigation, .check-in--ended .user-navigation { background: transparent; }
 .check-in--confirmed .user-navigation nav::before { background: var(--surface); }
 .check-in-waves { position: absolute; left: -53px; top: -130px; width: 495.9px; height: 527.8px; pointer-events: none; }
 .check-in-waves--bottom { top: 490px; }
@@ -98,11 +97,11 @@
 .check-in-id__state svg { width: 18px; height: 18px; }
 .check-in-photo--large { width: 80px; height: 80px; border: var(--user-focus-width) solid var(--surface); }
 .check-in-photo--large svg { width: 36px; height: 36px; }
-.check-in .check-in-id .check-in-id__name { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
+.check-in .check-in-id .check-in-id__name { display: block; max-width: 100%; text-align: center; font-size: var(--user-title-size); line-height: var(--user-title-line); font-weight: var(--user-weight-semibold); }
 .check-in-id .check-in-badge { background: var(--surface); color: var(--check-in-member); }
 .check-in--athlete .check-in-id .check-in-badge { background: var(--surface); color: var(--hero); }
 .check-in .check-in-id .check-in-id__small { width: 100%; font-size: var(--spacing-12); line-height: var(--user-caption-line); }
-.check-in .check-in-id .check-in-id__category { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); width: 5.125rem; padding: var(--spacing-4) 0; border-radius: 999px; background: var(--surface); color: var(--check-in-member); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
+.check-in .check-in-id .check-in-id__category { display: flex; align-items: center; justify-content: center; gap: var(--user-space-6); width: auto; padding: var(--spacing-4) var(--spacing-8); border-radius: 999px; background: var(--surface); color: var(--check-in-member); font-size: var(--user-label-size); line-height: var(--spacing-20); font-weight: var(--user-weight-semibold); }
 .check-in--athlete .check-in-id .check-in-id__category { color: var(--hero); }
 .check-in-id__category svg { width: 14px; height: 14px; }
 .check-in-id hr { background: var(--check-in-wave); opacity: 0.6; }

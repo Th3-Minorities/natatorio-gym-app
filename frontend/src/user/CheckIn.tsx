@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type MouseEventHandler, type RefObject } from 'react'
 import { Camera, Check, Clock, DoorOpen, LockKeyhole, MapPin, TriangleAlert, UserRound, WifiOff, type LucideIcon } from 'lucide-react'
 import { ApiError, apiRequest } from '../api/client'
 import { useDateFormat } from '../format/dateTime'
@@ -75,7 +75,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const [loaded, setLoaded] = useState(false)
   const [problem, setProblem] = useState<Problem | null>(null)
   const [busy, setBusy] = useState(false)
-  const [help, setHelp] = useState(false)
+  const [help, setHelp] = useState<HTMLButtonElement | null>(null)
   const [phase, setPhase] = useState<'locating' | 'registering' | null>(null)
   const heading = useRef<HTMLHeadingElement>(null)
   const online = useConnection()
@@ -88,13 +88,10 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   const [now, setNow] = useState(0)
   const [updatedAt, setUpdatedAt] = useState(() => Date.now())
   const clockOffset = useRef(0)
-  const lastTick = useRef<number | null>(null)
   const requestId = useRef(0)
+  const loadedRef = useRef(false)
   const offline = !online || networkFailed
   const updateNow = useCallback((time: number) => {
-    const tick = performance.now()
-    if (lastTick.current !== null && tick - lastTick.current < 1000) return
-    lastTick.current = tick
     setNow((prev) => Math.max(prev, time))
   }, [])
   const syncClock = useCallback((time: number) => {
@@ -123,11 +120,11 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
         if (error instanceof ApiError && error.code === 'offline') setProblem('offline')
       }
       return null
-    } finally { if (id === requestId.current) setLoaded(true) }
+    } finally { if (id === requestId.current) { loadedRef.current = true; setLoaded(true) } }
   }, [ended, syncClock])
 
   useEffect(() => {
-    if (!online) return
+    if (!online) { if (!loadedRef.current) setProblem((current) => current ?? 'offline'); return }
     let disposed = false
     queueMicrotask(() => { if (!disposed && !document.hidden) void refresh() })
     const check = () => { if (navigator.onLine && !document.hidden) void refresh(true) }
@@ -143,11 +140,18 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   }, [])
 
   const activeSessionId = status?.session?.id
+  const activeStartedAt = status?.session?.started_at
   useEffect(() => {
     if (activeSessionId === undefined || offline) return
-    const timer = setInterval(() => updateNow(Date.now() + clockOffset.current), 1000)
-    return () => clearInterval(timer)
-  }, [activeSessionId, offline, updateNow])
+    const started = new Date(activeStartedAt ?? '').getTime()
+    let timer: ReturnType<typeof setTimeout>
+    const schedule = () => {
+      const sinceBoundary = Number.isNaN(started) ? 0 : (((Date.now() + clockOffset.current - started) % 1000) + 1000) % 1000
+      timer = setTimeout(() => { updateNow(Date.now() + clockOffset.current); schedule() }, 1000 - sinceBoundary + 30)
+    }
+    schedule()
+    return () => clearTimeout(timer)
+  }, [activeSessionId, activeStartedAt, offline, updateNow])
 
   async function register() {
     if (!navigator.onLine) { setProblem('offline'); return }
@@ -192,7 +196,7 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
   // Board 10 notes: a retry first asks whether the session was already created.
   const retry = () => run(async () => {
     const next = await refresh()
-    if (next && !next.session) await register()
+    if (next && !next.session && problem !== 'offline') await register()
   })
 
   const athlete = (status?.account_type ?? (profile?.authorization?.type === 'athlete' ? 'athlete' : 'member')) === 'athlete'
@@ -241,9 +245,9 @@ export function CheckIn({ profile, ended }: { profile: UserProfile | null; ended
       <Action href={problem === 'authorization' && !athlete ? '/account' : undefined}
         onClick={RETRYABLE.includes(problem!) ? retry : undefined} disabled={busy}>{message.action}</Action>
       {problem === 'denied' && <>
-        <Action secondary onClick={() => setHelp(true)}>{t.problems.denied.help}</Action>
+        <Action secondary onClick={(event) => setHelp(event.currentTarget)}>{t.problems.denied.help}</Action>
         <p className="check-in-caption">{t.deniedNote}</p>
-        {help && <LocationHelp onClose={() => setHelp(false)} />}
+        {help && <LocationHelp returnFocusTo={help} onClose={() => setHelp(null)} />}
       </>}
     </>}
     {view === 'exclusive' && period && <>
@@ -296,11 +300,19 @@ function Note({ icon: Svg, children }: { icon: LucideIcon; children: string }) {
  * "Ver horarios" becomes a link with #28 (schedules); "Actualizar foto" with the U-02 photo screen;
  * "Ver cómo activar ubicación" with the location help screen; "Ver información de contacto" with the gym contact screen.
  */
-function Action({ href, onClick, disabled, secondary, children }: { href?: string; onClick?: () => void; disabled?: boolean; secondary?: boolean; children: string }) {
+function Action({ href, onClick, disabled, secondary, children }: { href?: string; onClick?: MouseEventHandler<HTMLButtonElement>; disabled?: boolean; secondary?: boolean; children: string }) {
   const className = `button check-in-action ${secondary ? 'check-in-action--secondary' : ''}`
   if (href) return <a className={className} href={href}>{children}</a>
   if (onClick) return <button type="button" className={className} disabled={disabled} onClick={onClick}>{children}</button>
   return <span className={className}>{children}</span>
+}
+
+// The badge is an atomic inline, so the line could break before it; the last word and the badge stay together.
+function NameWithBadge({ name, badgeLabel }: { name?: string | null; badgeLabel: string | null }) {
+  const text = name ?? ''
+  const cut = text.lastIndexOf(' ') + 1
+  const badge = badgeLabel !== null && <span className="check-in-badge" role="img" aria-label={badgeLabel}><Check aria-hidden="true" /></span>
+  return <>{text.slice(0, cut)}<span className="check-in-name-end">{text.slice(cut)}{badge}</span></>
 }
 
 function Identity({ profile, athlete, authorized }: { profile: UserProfile | null; athlete: boolean; authorized: boolean }) {
@@ -308,8 +320,7 @@ function Identity({ profile, athlete, authorized }: { profile: UserProfile | nul
   return <div className="check-in-identity">
     <Photo profile={profile} />
     <div>
-      <p className="check-in-identity__name"><span>{profile?.name ?? profile?.email}</span>
-        {authorized && <span className="check-in-badge" role="img" aria-label={t.user.activeAuthorization}><Check aria-hidden="true" /></span>}</p>
+      <p className="check-in-identity__name"><NameWithBadge name={profile?.name ?? profile?.email} badgeLabel={authorized ? t.user.activeAuthorization : null} /></p>
       <p>{athlete ? t.checkIn.athlete : t.checkIn.member}</p>
     </div>
   </div>
@@ -374,8 +385,7 @@ function Confirmed({ profile, athlete, startedAt, heading, detail, period, now, 
       <img className="check-in-id__waves" src={lastSession ? athlete ? endedAthleteId : endedMemberId : idWaves} alt="" />
       <p className="check-in-id__state">{lastSession ? <DoorOpen aria-hidden="true" /> : <Check aria-hidden="true" />}<span>{lastSession ? t.sessionEnded : offline ? t.invalidNow : t.sessionActive}</span></p>
       <Photo profile={profile} large />
-      <p className="check-in-id__name"><span>{profile?.name ?? profile?.email}</span>
-        {profile?.authorization && <span className="check-in-badge" role="img" aria-label={user.activeAuthorization}><Check aria-hidden="true" /></span>}</p>
+      <p className="check-in-id__name"><NameWithBadge name={profile?.name ?? profile?.email} badgeLabel={profile?.authorization ? user.activeAuthorization : null} /></p>
       {profile?.name && <p className="check-in-id__small">{profile.email}</p>}
       <p className="check-in-id__category"><UserRound aria-hidden="true" /><span>{athlete ? t.athlete : t.member}</span></p>
       {/* Figma draws "Estudiante" (4104:719) and the sport (4199:3403); no frame draws the employee word. */}

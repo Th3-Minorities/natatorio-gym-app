@@ -132,6 +132,7 @@ describe('signing in and out', () => {
 
     expect(await screen.findByRole('alert')).toHaveTextContent(es.dashboard.signOutFailedTitle)
     expect(screen.getByRole('alert')).toHaveTextContent(es.dashboard.signOutFailedText)
+    expect(screen.getByRole('alert')).toHaveClass('notice--error')
     expect(screen.getByRole('button', { name: es.dashboard.signOut })).toBeInTheDocument()
   })
 })

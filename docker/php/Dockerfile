@@ -16,6 +16,14 @@ RUN apt-get update \
     && docker-php-ext-enable imagick \
     && rm -rf /var/lib/apt/lists/* /tmp/pear
 
+# zip and gd for PhpWord, which writes the Word roster download (REQ-F-100): a .docx is a zip file, and
+# PhpWord 1.4, the first with a fixed phpoffice/math (CVE-2025-48882), needs gd.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libzip-dev libzip4 libpng-dev libpng16-16 \
+    && docker-php-ext-install zip gd \
+    && rm -rf /var/lib/apt/lists/*
+# No purge of the -dev packages here: libpng-dev also holds up Imagick's libraries from the step above.
+
 COPY --from=composer /usr/bin/composer /usr/bin/composer
 
 # PHP errors go to the container logs, never to the client: production settings, plus ours.

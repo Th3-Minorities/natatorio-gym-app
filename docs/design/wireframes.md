@@ -1,8 +1,14 @@
 # Wireframes
 
-The wireframes live in the Figma file [MOCKUPS-GYM](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM). This page links each screen to its frame, grouped by issue, so the feature issues can find the design they build. Screen IDs follow the [screen map](screen-map.md).
+Find the current [MOCKUPS-GYM](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM) frames and screen states by issue. Screen IDs follow the [screen map](screen-map.md).
 
-The sections below link the main screens and their states. Use the current page and frame links for each issue when reviewing or implementing a screen.
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Check In and Gym ID](#check-in-and-gym-id-41) · [Staff screens](#staff-screens-43) · [Administration](#administration-screens-45) · [Staff sign in](#staff-sign-in-n-11) · [Sign in and account](#sign-in-and-account-42) · [Registration](#registration-and-authorization-40)
+
+</nav>
 
 ## Check In and Gym ID (#41)
 

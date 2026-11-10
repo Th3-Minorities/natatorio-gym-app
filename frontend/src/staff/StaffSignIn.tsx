@@ -158,20 +158,20 @@ export function StaffSignIn({ onSignIn, startWith = null, navigate }: StaffSignI
           <p className="sign-in__description">{t.description}</p>
 
           {problem?.kind === 'timeout' && <Notice title={t.timeoutTitle}>{t.timeoutText}</Notice>}
-          {problem?.kind === 'wrong' && <Notice title={t.wrongTitle}>{t.wrongText}</Notice>}
+          {problem?.kind === 'wrong' && <Notice tone="error" title={t.wrongTitle}>{t.wrongText}</Notice>}
           {problem?.kind === 'wait' && (
             <Notice title={t.waitTitle}>
               {problem.until ? t.waitText(dates.time(problem.until)) : errorText(texts, 'too_many_requests', 429)}
             </Notice>
           )}
           {problem?.kind === 'offline' && <Notice title={t.offlineTitle}>{t.offlineText}</Notice>}
-          {problem?.kind === 'deactivated' && <Notice title={t.deactivatedTitle}>{t.deactivatedText}</Notice>}
+          {problem?.kind === 'deactivated' && <Notice tone="error" title={t.deactivatedTitle}>{t.deactivatedText}</Notice>}
           {/* After a new password from an email link (#84). Not drawn in Figma. */}
           {problem?.kind === 'saved' && (
             <Notice title={texts.staffAccess.savedTitle}>{texts.staffAccess.savedText}</Notice>
           )}
           {problem?.kind === 'other' && (
-            <Notice title={t.wrongTitle}>{errorText(texts, problem.code, problem.status)}</Notice>
+            <Notice tone="error" title={t.wrongTitle}>{errorText(texts, problem.code, problem.status)}</Notice>
           )}
 
           <TextField

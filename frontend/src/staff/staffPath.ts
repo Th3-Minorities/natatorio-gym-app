@@ -9,6 +9,36 @@ export const STAFF_PATH = '/staff'
 /** A-15, the Administrator's staff accounts screen (#84). The proxy serves the app for it, so it opens directly. */
 export const STAFF_TEAM_PATH = '/staff/equipo'
 
+/** S-03, find a person and the assisted Check In (#26). */
+export const STAFF_FIND_PATH = '/staff/buscar'
+
+/** S-02 for one visit (#26): /staff/sesiones/11. */
+export const STAFF_SESSIONS_PATH = '/staff/sesiones'
+
+export function staffSessionPath(id: number): string {
+  return `${STAFF_SESSIONS_PATH}/${id}`
+}
+
+/** The visit id in an S-02 address, or null. */
+export function sessionIdIn(pathname: string): number | null {
+  const match = /^\/staff\/sesiones\/(\d{1,18})$/.exec(pathname)
+  return match ? Number(match[1]) : null
+}
+
+/** A-04, the Administrator's academic terms screen (#21). */
+export const STAFF_TERMS_PATH = '/staff/terminos'
+
+/** A-05, the Administrator's athlete roster (#21). */
+export const STAFF_ROSTER_PATH = '/staff/atletas'
+
+/** S-05, the read-only athlete roster for Staff and Administrators (#26). */
+export const STAFF_ROSTER_VIEW_PATH = '/staff/roster'
+
+/** S-03 with a student number already typed in: "Check in" on S-05 opens it, and the search runs once. */
+export function findPersonPath(studentNumber: string): string {
+  return `${STAFF_FIND_PATH}?${new URLSearchParams({ numero: studentNumber })}`
+}
+
 /** The N-11 pages for a forgotten password and the email links (#84). The emails link to the last two. */
 export const STAFF_FORGOT_PATH = '/staff/recuperar'
 export const STAFF_INVITE_PATH = '/staff/invitacion'

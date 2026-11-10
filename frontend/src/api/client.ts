@@ -59,6 +59,16 @@ async function toError(response: Response): Promise<ApiError> {
   return new ApiError(error.code, response.status, error.details, retryAfter > 0 ? retryAfter : undefined)
 }
 
+/** A file from the API, like the roster download: its bytes and the name the server gives it. */
+export async function apiDownload(path: string): Promise<{ blob: Blob; filename: string }> {
+  // Accept stays JSON, so a refusal (an ended sign-in, a wrong role) comes back as our error code.
+  const response = await send(path, 'GET', {})
+  if (!response.ok) throw await toError(response)
+  const disposition = response.headers.get('Content-Disposition') ?? ''
+  const filename = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? 'download'
+  return { blob: await response.blob(), filename }
+}
+
 export async function apiRequest<T = unknown>(path: string, options: RequestOptions = {}): Promise<T> {
   const method = options.method ?? 'GET'
   const changesData = method !== 'GET'

@@ -124,7 +124,7 @@ export function InviteDialog({ onClose, onInvited, onError }: InviteDialogProps)
             {t.inviteTitle}
           </h2>
           <p className="modal__text">{t.inviteText}</p>
-          <ProblemNotice problem={problem} />
+          <ProblemNotice problem={problem} tone="error" />
           <TextField
             ref={nameRef}
             label={t.fullName}
