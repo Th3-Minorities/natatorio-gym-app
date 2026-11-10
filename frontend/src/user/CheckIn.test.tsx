@@ -275,6 +275,24 @@ describe('U-01 Check In', () => {
     expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
   })
 
+  it('recovers without a tap when it mounts offline, the profile load fails and the connection returns', async () => {
+    const fetchMock = fetch as ReturnType<typeof vi.fn>
+    const original = fetchMock.getMockImplementation() as Answer
+    let connected = false
+    fetchMock.mockImplementation((path: string, init?: RequestInit) =>
+      !connected ? Promise.reject(new TypeError('network')) : original(path, init))
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    await open()
+    await screen.findByRole('heading', { name: 'Necesitas conexión' })
+
+    connected = true
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+
+    expect(await screen.findByRole('button', { name: 'Mantén presionado para entrar' })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Necesitas conexión' })).not.toBeInTheDocument()
+  })
+
   it('shows the offline problem when disconnected before the first status loads', async () => {
     const fetchMock = fetch as ReturnType<typeof vi.fn>
     const original = fetchMock.getMockImplementation() as Answer

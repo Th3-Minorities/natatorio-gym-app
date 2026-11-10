@@ -138,7 +138,17 @@ export function CheckIn({ profile, reloadProfile, ended }: { profile: UserProfil
   useEffect(() => {
     let current = true
     void reloadProfile().then(() => { if (current) { profileLoadedRef.current = true; setProfileLoaded(true) } }).catch((error: unknown) => { if (current) profileFailed(error) })
-    return () => { current = false }
+    // A mount load that failed offline has no other retry until the person taps, so reconnecting retries it.
+    const reconnected = () => {
+      if (profileLoadedRef.current) return
+      reloadProfile().then(() => {
+        if (!current) return
+        profileLoadedRef.current = true; setProfileLoaded(true)
+        setProblem((problem) => problem === 'offline' ? null : problem)
+      }).catch((error: unknown) => { if (current) profileFailed(error) })
+    }
+    window.addEventListener('online', reconnected)
+    return () => { current = false; window.removeEventListener('online', reconnected) }
   }, [reloadProfile, profileFailed])
 
   useEffect(() => {
