@@ -58,6 +58,10 @@ describe('S-05 athlete roster, read only', () => {
     expect(within(table).getByText('802612345')).toBeInTheDocument()
     expect(within(table).getByText('Voleibol')).toBeInTheDocument()
     expect(screen.getByText(t.footnote)).toBeInTheDocument()
+    // The search, the table and the note share one card.
+    const card = screen.getByLabelText(t.search).closest('.sessions-panel')!
+    expect(card).toContainElement(table)
+    expect(card).toContainElement(screen.getByText(t.footnote))
     expect(document.body.textContent).not.toContain('@upr.edu')
   })
 

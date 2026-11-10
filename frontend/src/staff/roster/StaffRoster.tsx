@@ -186,7 +186,8 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
     }
 
     return (
-      <>
+      // One card around the search, the table and the note (121:3383), the panel S-01 uses.
+      <div className="sessions-panel">
         <div className="roster-tools">
           <div className="field roster-search staff-roster-search">
             <label className="field__label" htmlFor={searchId}>
@@ -211,7 +212,7 @@ export function StaffRoster({ shell }: { shell: ShellProps }) {
         {athletes.length === 0 ? <EmptyState lead={texts.roster.noMatch(load.search)} detail={texts.roster.noMatchText} /> : table(athletes)}
 
         <p className="roster-footnote">{t.footnote}</p>
-      </>
+      </div>
     )
   }
 
