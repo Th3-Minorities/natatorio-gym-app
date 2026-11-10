@@ -22,9 +22,9 @@ export function AccountHeading({ title, back, backLabel }: { title: string; back
   </div>
 }
 
-export function UserNotice({ title, children, success = false, informational = false }: { title: string; children: string; success?: boolean; informational?: boolean }) {
+export function UserNotice({ title, children, success = false, informational = false, danger = false }: { title: string; children: string; success?: boolean; informational?: boolean; danger?: boolean }) {
   const Icon = success ? Check : TriangleAlert
-  return <div className="user-notice">{success || informational ? <div className="notice" role="status">
+  return <div className={`user-notice${danger ? ' user-notice--danger' : ''}`}>{success || informational ? <div className="notice" role="status">
     <p className="notice__title">{title}</p><p className="notice__text">{children}</p>
   </div> : <Notice title={title}>{children}</Notice>}<Icon aria-hidden="true" size={18} absoluteStrokeWidth /></div>
 }
@@ -76,13 +76,14 @@ export function UserNavigation({ current = 'account' }: { current?: Destination 
   </nav></footer>
 }
 
-export function PasswordField({ label, placeholder, value, onChange, error, autoComplete = 'new-password', hint, describedBy }: {
+export function PasswordField({ label, placeholder, value, onChange, error, autoComplete = 'new-password', hint, describedBy, id }: {
   label: string; placeholder: string; value: string; onChange: (value: string) => void; error?: string;
-  autoComplete?: string; hint?: string; describedBy?: string
+  autoComplete?: string; hint?: string; describedBy?: string; id?: string
 }) {
   const t = useMessages().user
   const [visible, setVisible] = useState(false)
-  const inputId = useId()
+  const generatedId = useId()
+  const inputId = id ?? generatedId
   const hintId = `${inputId}-hint`
   const errorId = `${inputId}-error`
   const Icon = visible ? EyeOff : Eye

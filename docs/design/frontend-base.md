@@ -2,6 +2,14 @@
 
 The pieces every screen of the PWA shares: design values, texts in Spanish and English, dates, buttons, fields, states and the dashboard shell. Set up in GitHub issue #97. The User app (#14) builds on the same pieces. Requirements: REQ-NF-10, REQ-NF-13, REQ-NF-14, REQ-NF-33, REQ-NF-34, REQ-NF-36, REQ-NF-37, REQ-NF-38.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Rules](#1-rules) · [Folders](#2-folders) · [Design values](#3-design-values) · [Texts and language](#4-texts-and-language) · [Dates and times](#5-dates-and-times) · [Shared components](#6-shared-pieces) · [Dashboard](#7-dashboard-shell) · [Visual checks](#8-checking-by-eye)
+
+</nav>
+
 ## 1. Rules
 
 - The Figma file [MOCKUPS-GYM](https://www.figma.com/design/nNbbrnfaV1Tm7dnqKhNomi/MOCKUPS-GYM) decides how things look. Build only what it draws. [Wireframes](wireframes.md) links each screen to its frame.

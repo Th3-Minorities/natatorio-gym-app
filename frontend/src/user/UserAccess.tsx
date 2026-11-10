@@ -18,12 +18,15 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   const dates = useDateFormat()
   const online = useConnection()
   const offlinePasswordHintId = useId()
+  const passwordId = useId()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [busy, setBusy] = useState(false)
   const [received, setReceived] = useState(false)
   const [validating, setValidating] = useState(mode === 'reset')
+  const [validationAttempt, setValidationAttempt] = useState(0)
+  const validated = useRef(false)
   const [problem, setProblem] = useState<Problem>(replaced ? 'replaced' : null)
   const [waitUntil, setWaitUntil] = useState<Date | null>(null)
   const [waiting, setWaiting] = useState(false)
@@ -42,19 +45,35 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   }, [waitUntil])
 
   useEffect(() => {
-    const reconnect = () => setProblem((current) => current === 'offline' ? null : current)
+    const reconnect = () => {
+      setProblem((current) => current === 'offline' ? null : current)
+      if (mode === 'reset' && !validated.current) {
+        setValidating(true)
+        setValidationAttempt((current) => current + 1)
+      }
+    }
     window.addEventListener('online', reconnect)
     return () => window.removeEventListener('online', reconnect)
-  }, [])
+  }, [mode])
 
   useEffect(() => {
     if (mode !== 'reset') return
     let active = true
-    apiRequest('/user/password/validate', { method: 'POST', body: { email: resetEmail, token } }).catch((error: unknown) => {
-      if (active) setProblem(error instanceof ApiError && error.code === 'offline' ? 'offline' : 'expired')
+    validated.current = false
+    apiRequest('/user/password/validate', { method: 'POST', body: { email: resetEmail, token } }).then(() => {
+      if (active) validated.current = true
+    }).catch((error: unknown) => {
+      if (!active) return
+      const unreachable = error instanceof ApiError && error.code === 'offline'
+      if (!unreachable) validated.current = true
+      setProblem(unreachable ? 'offline' : 'expired')
     }).finally(() => { if (active) setValidating(false) })
     return () => { active = false }
-  }, [mode, resetEmail, token])
+  }, [mode, resetEmail, token, validationAttempt])
+
+  useLayoutEffect(() => {
+    if (problem === 'wrong') document.getElementById(passwordId)?.focus()
+  }, [problem, passwordId])
 
   useLayoutEffect(() => {
     if (Object.keys(fields).length > 0) form.current?.querySelector<HTMLInputElement>('[aria-invalid="true"]')?.focus()
@@ -101,9 +120,9 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   }
 
   const title = mode === 'sign-in' ? t.signInTitle : expired ? t.expiredTitle : received ? t.checkEmail : mode === 'recover' ? t.recover : t.newPassword
-  const notice = problem === 'wrong' ? [t.wrongTitle, t.wrongText]
-    : problem === 'wait' && waitUntil ? [t.waitTitle, t.waitText(dates.time(waitUntil))]
+  const notice = problem === 'wait' && waitUntil ? [t.waitTitle, t.waitText(dates.time(waitUntil))]
     : problem === 'replaced' ? [t.replacedTitle, t.replacedText]
+    : problem === 'server' && mode === 'sign-in' ? [texts.signIn.wrongTitle, texts.errors.server_error]
     : problem === 'server' && mode === 'recover' ? [t.sendErrorTitle, t.sendErrorText] : null
   const description = received ? t.receivedText : mode === 'sign-in' ? t.description : mode === 'recover' ? t.recoverDescription : t.newDescription
   const submitText = mode === 'sign-in' ? busy ? t.signing : t.signIn : mode === 'recover' ? busy ? t.sending : t.send : t.save
@@ -111,7 +130,7 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
   // Figma 4099:2377 and 4099:2335 draw these two results without the form, in the compact layout.
   if (expired || received) return <UserPage offline={offline} back="/sign-in">
     <h1 tabIndex={-1}>{title}</h1>
-    {expired ? <UserNotice title={t.expiredNotice}>{t.expiredText}</UserNotice> : <UserNotice title={t.received} success>{t.spam}</UserNotice>}
+    {expired ? <UserNotice title={t.expiredNotice} danger>{t.expiredText}</UserNotice> : <UserNotice title={t.received} success>{t.spam}</UserNotice>}
     {received && <p>{description}</p>}
     {expired && <a className="button button--primary user-action" href="/recover-password">{t.requestAgain}</a>}
     <a className={`button ${expired ? 'button--secondary' : 'button--primary'} user-action`} href="/sign-in">{t.returnToSignIn}</a>
@@ -119,15 +138,18 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
 
   return <UserPage large offline={offline} back={mode === 'sign-in' ? '/welcome' : '/sign-in'}>
     <h1 tabIndex={-1}>{title}</h1>
-    {notice && <UserNotice title={notice[0]}>{notice[1]}</UserNotice>}
-    {validating && <UserLoading detail={t.validating} />}
+    {notice && <UserNotice title={notice[0]} danger={problem === 'server'}>{notice[1]}</UserNotice>}
+    {validating ? <UserLoading detail={t.validating} /> : <>
     <p className="user-description">{description}</p>
     <form ref={form} onSubmit={submit} noValidate aria-busy={busy} data-mode={mode}>
       {mode !== 'reset' && <TextField label={t.email} type="email" placeholder={t.emailPlaceholder} autoComplete="username"
-        maxLength={255} required value={email} error={fields.email} onChange={(event) => setEmail(event.target.value)} />}
-      {mode !== 'recover' && <PasswordField label={mode === 'reset' ? t.newPassword : t.password}
-        placeholder={mode === 'reset' ? t.newPlaceholder : t.passwordPlaceholder} value={password} onChange={setPassword}
-        error={fields.password} autoComplete={mode === 'reset' ? 'new-password' : 'current-password'}
+        maxLength={255} required value={email} error={fields.email} aria-invalid={problem === 'wrong' ? true : undefined}
+        aria-describedby={problem === 'wrong' ? `${passwordId}-error` : undefined}
+        onChange={(event) => { setEmail(event.target.value); if (problem === 'wrong') setProblem(null) }} />}
+      {mode !== 'recover' && <PasswordField id={passwordId} label={mode === 'reset' ? t.newPassword : t.password}
+        placeholder={mode === 'reset' ? t.newPlaceholder : t.passwordPlaceholder} value={password}
+        onChange={(value) => { setPassword(value); if (problem === 'wrong') setProblem(null) }}
+        error={problem === 'wrong' ? t.credentialsInvalid : fields.password} autoComplete={mode === 'reset' ? 'new-password' : 'current-password'}
         hint={mode === 'reset' && !offline ? t.passwordHint : undefined}
         describedBy={mode === 'reset' && offline ? offlinePasswordHintId : undefined} />}
       {mode === 'reset' && <PasswordField label={t.confirmPassword} placeholder={t.confirmPlaceholder}
@@ -140,5 +162,6 @@ export function UserAccess({ mode, replaced, onSignedIn, navigate }: {
       {mode !== 'sign-in' && <a className="user-return" href="/sign-in">{t.returnToSignIn}</a>}
       {mode === 'sign-in' && <div className="user-register"><span>{t.firstTime}</span><a href="/register" className="user-register-action">{t.begin}</a></div>}
     </form>
+    </>}
   </UserPage>
 }

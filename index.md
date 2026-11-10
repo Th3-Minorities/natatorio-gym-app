@@ -2,24 +2,21 @@
 title: Natatorio Gym App
 ---
 
-An app for the Weight Gym (Gimnasio de Pesas) at the UPRM Natatorio Complex. It is our Capstone project for CIIC 4151 at the University of Puerto Rico at Mayagüez.
+An installable web app for the Weight Gym at the UPRM Natatorio Complex, built as a Capstone project for CIIC 4151 at the University of Puerto Rico at Mayagüez.
 
-People open it on their phone like a website, and can also install it like an app. With it they can:
+<nav aria-label="On this page" markdown="1">
 
-- Register with the Authorization Number from their membership payment.
-- Check In when they arrive. The app checks that they are inside the gym.
-- Show a digital gym card (the Gym ID) at the front desk.
-- See about how full the gym is right now.
+**On this page**
 
-Front desk Staff check Gym IDs and see who is inside. Administrators manage the athlete roster, schedules and notices.
+[Overview](#overview) · [Progress](#objectives-and-status) · [Demo](#demo) · [Coming soon](#coming-soon) · [Team](#team) · [Resources](#links)
 
-## The problem
+</nav>
 
-Today the gym registers people on paper and checks access by hand. A person can enter with a paid membership or as an athlete on the roster. Those two lists come from different places, so Staff check several records before letting someone in. Nothing counts how many people are inside, and there are no numbers on how the gym is used. The department estimates about 150 people use the gym each day.
+## Overview
 
-## How the app solves it
+<p id="the-problem">The gym uses paper records and checks paid memberships and the athlete roster by hand. The department estimates about 150 people use the gym each day. The app brings both access checks into one place and keeps payments in the gym's online store.</p>
 
-The app checks both kinds of access in one place. Paid memberships come from the gym's online store, which keeps handling payments as it does today. A Check In opens a visit that stays open until Staff check the person out, or closes on its own after 2 hours. The open visits give the occupancy everyone sees. Every visit is saved, so the gym can later see when it is busy and who uses it.
+<p id="how-the-app-solves-it">Members register with an Authorization Number from their payment, and eligible users check in from inside the gym. They can show a digital Gym ID and see current occupancy. Staff verify Gym IDs and check people out. Visits close after two hours if they are still open, and the app saves them for usage statistics. Administrators manage the athlete roster, schedules and notices.</p>
 
 ## Objectives and status
 
@@ -31,12 +28,49 @@ The app checks both kinds of access in one place. Paid memberships come from the
 | 4. Tools for Staff and Administrators | Partly built ahead, the rest planned |
 | 5. Gym use statistics | Planned |
 
+## Demo
+
+Two short videos will show the app working. They are not recorded yet.
+
+| Dashboard (desktop) | User app (phone) |
+|---|---|
+| Video coming soon. The dashboard that Staff and Administrators use on a computer. | Video coming soon. A User registering, checking in and opening the Gym ID on a phone. |
+
+<!-- When a video exists, put the file in a media folder and replace its cell with:
+<video controls preload="none" width="100%" src="media/FILE.mp4"></video> -->
+
+## Coming soon
+
+These parts are not built yet.
+
+For Staff and Administrators:
+
+- A front desk screen to see who is inside and check people out
+- Screens to add terms and manage the athlete roster
+- Tools to grant or release access by hand, and to delete an account
+- Screens to edit the hours, closures and notices
+- A screen to read the log of what Staff and Administrators did
+
+For Users:
+
+- Athletes: add athlete access to an existing account, and renew each term
+- Paid memberships synced from the gym's online store
+- My visits, a list of your past Check Ins
+- Edit your emergency contact in My account
+- Draw your signature on the waiver
+
+For the gym:
+
+- Statistics on when the gym is busy, and a way for other services to read them
+- Backups, restore, and removal of old data
+- A way to enter the paper log after an outage
+- Mail through the CTI mail gateway, and the app running on a CTI server
+- Manuals for Users, Staff, Administrators and developers, in Spanish and English
+- A security scan and an acceptance test with the gym
+
 ## How it is built
 
-- React, TypeScript and Vite, as an installable web app (PWA)
-- Laravel backend
-- PostgreSQL database
-- Everything runs with docker-compose, on a server from CTI (UPRM's technology office)
+The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL database. It runs with Docker Compose on a server from CTI, UPRM's technology office.
 
 ## Team
 
@@ -48,5 +82,6 @@ The app checks both kinds of access in one place. Paid memberships come from the
 
 - [Source code](https://github.com/Th3-Minorities/natatorio-gym-app)
 - [Documentation](docs/README.md)
+- Progress report: coming soon
 
-The progress report, the elevator pitch video and the final slides will be linked here when they are ready.
+The elevator pitch video and the final slides will be linked here when they are ready.

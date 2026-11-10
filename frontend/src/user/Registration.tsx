@@ -25,7 +25,7 @@ type Waiver = { version: string; text: string }
 type PhotoError = 'failed' | 'format' | 'size'
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 
-export function Registration(props: { path: string; navigate: (path: string) => void }) {
+export function Registration(props: { path: string; navigate: (path: string, options?: { replace?: boolean }) => void }) {
   const parentLocale = useLocale()
   const parentTitle = useMessages().dashboard.brandName
   const [locale, setLocale] = useState<Locale>(parentLocale)
@@ -37,7 +37,7 @@ export function Registration(props: { path: string; navigate: (path: string) => 
 }
 
 function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
-  path: string; navigate: (path: string) => void; setLocale: (locale: Locale) => void; accountLocale: Locale
+  path: string; navigate: (path: string, options?: { replace?: boolean }) => void; setLocale: (locale: Locale) => void; accountLocale: Locale
 }) {
   const texts = useMessages()
   const t = texts.registration
@@ -115,10 +115,11 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       else setFailed(true)
     })
   }
-  useEffect(() => { void loadPrivacy() }, [])
-  // Checks the link once, when the page the email opens loads.
   // oxlint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (path === '/register/athlete') void checkLink() }, [])
+  useEffect(() => { if (path !== '/register/athlete') void loadPrivacy() }, [])
+  // Check the link on first load; terminal failures set their own state before navigating back here.
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (path === '/register/athlete' && linkState === 'checking') void checkLink() }, [path])
   useEffect(() => {
     if (!linkSent || now >= linkSent.resendAt) return
     const timer = setTimeout(() => setNow(Date.now()), 1000)
@@ -191,7 +192,9 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     try {
       await apiRequest('/user/registration/privacy', { method: 'POST', body: { version: privacy.version } })
       setAccepted(true)
-      navigate(linkToken && lookup?.state === 'ready' ? '/register/password' : '/register/identify')
+      const toPassword = Boolean(linkToken) && lookup?.state === 'ready'
+      // The link check already replaced the link page with this path; pushing it again would need two Backs.
+      navigate(toPassword ? '/register/password' : '/register/identify', { replace: toPassword && path === '/register/password' })
     } catch (error) {
       if (error instanceof ApiError && error.code === 'offline') setNetworkFailed(true)
       else setFailed(true)
@@ -222,7 +225,6 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       setUnavailable(null)
       if (failure.code === 'offline') {
         setNetworkFailed(true)
-        setLookupMessage(u.offlineForm)
       } else if (failure.status === 429) {
         if (failure.code === 'athlete_link_limit') { setLinkSent(null); setLinkLimit(true) }
         if (failure.retryAfter) startWaiting(failure.retryAfter)
@@ -254,17 +256,21 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   }
 
   async function checkLink() {
-    if (!linkToken) { setLinkState('invalid'); return }
+    if (!linkToken) { setLinkState('invalid'); void loadPrivacy(); return }
     setLinkState('checking')
     try {
       const { name } = await apiRequest<{ name: string }>('/user/registration/athlete/validate', { method: 'POST', body: { token: linkToken } })
+      // The POST establishes the CSRF session before the notice records that it was shown.
+      await loadPrivacy()
       setLookup({ state: 'ready', name, masked_email: '' })
       setPassword('')
       setConfirmation('')
       setPasswordErrors(false)
-      navigate('/register/password')
+      navigate('/register/password', { replace: true })
     } catch (error) {
+      await loadPrivacy()
       const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
+      if (failure.code === 'validation_failed') { setLinkState('invalid'); return }
       if (!showLinkFailure(failure)) {
         if (failure.code === 'offline') setNetworkFailed(true)
         setLinkState(failure.code === 'offline' ? 'offline' : 'error')
@@ -406,7 +412,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       <a href={privacy.store_url} target="_blank" rel="noopener noreferrer">{t.buy}<ExternalLink aria-hidden="true" /></a></div>
     : null
   const lookupStatus = <div className="registration-status" role="status">
-    {waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage}
+    {waiting ? u.waitText(dates.time(new Date(waitUntil)))
+      : lookupMessage || (offline && !passwordPage && !studentResult && !unavailable ? t.numberOfflineIntro : '')}
   </div>
 
   const a = t.athlete
@@ -422,19 +429,19 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     const newLink = <a href="/register" className="button button--primary user-action">{a.newLink}</a>
     const signIn = (variant: string) => <a href="/sign-in" className={`button button--${variant} user-action`}>{t.student.signIn}</a>
     if (linkState === 'expired') return linkStatus('/register', a.expiredTitle, a.expiredIntro, <>
-      <UserNotice title={a.expiredNotice}>{a.expiredDetail}</UserNotice>{newLink}{help('button--link')}</>)
+      <UserNotice title={a.expiredNotice} danger>{a.expiredDetail}</UserNotice>{newLink}{help('button--link')}</>)
     if (linkState === 'invalid') return linkStatus('/register', a.invalidTitle, a.expiredIntro, <>{newLink}{help('button--link')}</>)
     if (linkState === 'used') return linkStatus('/register', a.usedTitle, a.usedIntro, <>
       {signIn('primary')}<a href="/register" className="button button--secondary user-action">{t.backToRegistration}</a></>)
     if (linkState === 'replaced') return linkStatus('/register', a.replacedTitle, a.replacedIntro, <>
       <UserNotice title={a.replacedNotice}>{a.replacedDetail}</UserNotice>{newLink}</>)
     if (linkState === 'claimed') return linkStatus('/register', a.claimedTitle, a.claimedIntro, <>
-      {phone && <UserNotice title={a.claimedNotice}>{a.claimedDetail(phone)}</UserNotice>}{help('button--primary')}{signIn('secondary')}</>)
+      {phone && <UserNotice title={a.claimedNotice} danger>{a.claimedDetail(phone)}</UserNotice>}{help('button--primary')}{signIn('secondary')}</>)
     if (linkState === 'offline') return linkStatus('/register', a.offlineTitle, a.offlineIntro, <>
       <UserNotice title={a.offlineNotice}>{a.offlineDetail}</UserNotice>
       <Button className="user-action" disabled={offline} onClick={() => void checkLink()}>{u.retry}</Button></>, u.offlineBanner)
     if (linkState === 'error') return linkStatus('/register', a.errorTitle, a.errorIntro, <>
-      <UserNotice title={a.errorNotice}>{a.errorDetail}</UserNotice>
+      <UserNotice title={a.errorNotice} danger>{a.errorDetail}</UserNotice>
       <Button className="user-action" onClick={() => void checkLink()}>{u.retry}</Button></>)
     return linkStatus('/register', a.verifyingTitle, a.verifyingIntro, <>
       <UserNotice title={a.verifyingNotice}>{a.verifyingDetail}</UserNotice>
@@ -456,7 +463,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
               else navigate('/welcome')
             }}>{u.back}</Button>
           </> : failed ? <>
-            <UserNotice title={t.errorTitle}>{t.errorDetail}</UserNotice>
+            <UserNotice title={t.errorTitle} danger>{t.errorDetail}</UserNotice>
             <Button className="user-action" onClick={() => { setFailed(false); setPrivacy(null); void loadPrivacy() }}>{u.retry}</Button>
             <a href="/welcome" className="button button--secondary user-action">{u.back}</a>
           </> : <UserLoading detail={t.loading} />}
@@ -486,7 +493,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   </>)
   if ((photoPage || contactPage) && saveFailed) return step('registration--status', '/register/contact', <>
     <div className="registration-intro"><h1 tabIndex={-1}>{t.saveFailed}</h1><p>{t.saveFailedIntro}</p></div>
-    <UserNotice title={t.notCompleted}>{t.notCompletedText}</UserNotice><p>{t.keepOpen}</p>
+    <UserNotice title={t.notCompleted} danger>{t.notCompletedText}</UserNotice><p>{t.keepOpen}</p>
     <Button className="user-action" onClick={() => { setSaveFailed(false); navigate('/register/photo') }}>{t.backToPhoto}</Button>
   </>)
   if (photoPage) {
@@ -576,7 +583,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
 
   return <div className={`registration ${passwordPage ? 'registration--password' : 'registration--identification'}`}>
     {lookupStatus}
-    <UserPage large back={passwordPage ? '/register/identify' : '/register'}>
+    <UserPage large back={passwordPage ? '/register/identify' : '/register'} offline={!passwordPage && offline} offlineText={u.offlineBanner}>
       {passwordPage ? <>
         <div className="registration-intro"><p className="registration-greeting">{t.hello(lookup.name)}</p>
           <h1 tabIndex={-1}>{t.createPassword}</h1><p>{t.passwordIntro}</p></div>
@@ -611,7 +618,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
           <a href={`tel:${unavailable.phone}`} className="button button--link user-action">{t.unavailable.help(unavailable.phone)}</a>
         </form>
       </> : <>
-        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1><p>{t.identificationIntro}</p></div>
+        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1>
+          {offline ? <><p>{t.numberOfflineIntro}</p><p>{t.numberOfflineKept}</p></> : <p>{t.identificationIntro}</p>}</div>
         <form className="registration-identification-form" onSubmit={(event) => void findMembership(event)}>
           <div className="registration-number">
             <TextField label={t.number} placeholder={t.numberPlaceholder} value={number} readOnly={busy}
