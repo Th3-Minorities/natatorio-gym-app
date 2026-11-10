@@ -97,7 +97,7 @@ describe('downloading the roster', () => {
 
     fireEvent.click(within(dialog).getByRole('button', { name: t.downloadConfirm }))
 
-    expect(await within(dialog).findByText(es.errors.server_error)).toBeInTheDocument()
+    expect((await within(dialog).findByText(es.errors.server_error)).closest('.notice')).toHaveClass('notice--error')
     expect(within(dialog).getByRole('heading', { name: t.downloadTitle })).toBeInTheDocument()
     expect(saved).toEqual([])
   })

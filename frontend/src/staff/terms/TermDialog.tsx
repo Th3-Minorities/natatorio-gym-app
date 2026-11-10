@@ -182,7 +182,7 @@ export function TermDialog({ term, activeName, onClose, onSaved, onError }: Term
             <p className="state__detail">{t.offlineText}</p>
           </section>
         )}
-        <ProblemNotice problem={problem} />
+        <ProblemNotice problem={problem} tone="error" />
         <TextField
           ref={nameRef}
           label={t.name}

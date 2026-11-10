@@ -94,7 +94,7 @@ export function DownloadDialog({ onClose, onDownloaded, onError }: DownloadDialo
           {t.downloadTitle}
         </h2>
         <p className="modal__text">{t.downloadText}</p>
-        <ProblemNotice problem={problem} />
+        <ProblemNotice problem={problem} tone="error" />
         <div role="group" aria-labelledby={formatId} className="roster-format">
           <p className="field__label" id={formatId}>
             {t.format}
