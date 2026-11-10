@@ -54,10 +54,10 @@ describe('S-02 detail', () => {
   })
 
   it.each([
-    ['end early', t.endEarly, t.endEarlyTitle(name), t.endEarlyConfirm, 'end-early', 'ended_early'],
-    ['void', t.void, t.voidTitle(name), t.voidConfirm, 'void', 'void'],
-    ['check out', t.checkOut, t.checkOutTitle(name), t.checkOut, 'check-out', 'checked_out'],
-  ])('can %s an active session after asking', async (_, action, title, confirm, path, status) => {
+    ['end early', t.endEarly, t.endEarlyHeading, t.endEarlyTitle(name), t.endEarlyConfirm, 'end-early', 'ended_early'],
+    ['void', t.void, t.voidHeading, t.voidTitle(name), t.voidConfirm, 'void', 'void'],
+    ['check out', t.checkOut, t.checkOutHeading, t.checkOutTitle(name), t.checkOutConfirm, 'check-out', 'checked_out'],
+  ])('can %s an active session after asking', async (_, action, title, question, confirm, path, status) => {
     let detail: object = camilaDetail
     const fetchMock = openDetail({
       [DETAIL]: () => json(detail),
@@ -69,6 +69,7 @@ describe('S-02 detail', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: action }))
     const dialog = screen.getByRole('dialog', { name: title })
+    expect(within(dialog).getByText(question)).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: confirm }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
@@ -108,7 +109,8 @@ describe('S-02 detail', () => {
     })
 
     fireEvent.click(await screen.findByRole('button', { name: t.markPending }))
-    const dialog = screen.getByRole('dialog', { name: t.pendingConfirmTitle(name) })
+    const dialog = screen.getByRole('dialog', { name: t.pendingHeading })
+    expect(within(dialog).getByText(t.pendingConfirmTitle(name))).toBeInTheDocument()
     expect(within(dialog).getByText(t.pendingConfirmNote)).toBeInTheDocument()
     fireEvent.click(within(dialog).getByRole('button', { name: t.pendingConfirm }))
 
@@ -142,5 +144,73 @@ describe('S-02 detail', () => {
     render(<StaffApp />)
 
     expect(await screen.findByRole('heading', { name })).toBeInTheDocument()
+  })
+
+  it('moves focus to the session title after an action, since the pressed button is gone', async () => {
+    let detail: object = camilaDetail
+    openDetail({
+      [DETAIL]: () => json(detail),
+      [`POST ${DETAIL}/end-early`]: () => {
+        detail = ended('ended_early')
+        return json({ session: ended('ended_early').session })
+      },
+    })
+
+    fireEvent.click(await screen.findByRole('button', { name: t.endEarly }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.endEarlyConfirm }))
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: t.endedSession })).toHaveFocus())
+  })
+
+  it('moves focus to the pending panel after marking the photo pending', async () => {
+    let detail: object = camilaDetail
+    openDetail({
+      [DETAIL]: () => json(detail),
+      'POST /api/staff/people/7/photo-pending': () => {
+        detail = { ...camilaDetail, person: { ...camilaDetail.person, photo_pending: true } }
+        return json({ person: { ...camilaDetail.person, photo_pending: true } })
+      },
+    })
+
+    fireEvent.click(await screen.findByRole('button', { name: t.markPending }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.pendingConfirm }))
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: t.pendingTitle })).toHaveFocus())
+  })
+
+  it('offers Actualizar datos when the session changed (122:3141) and loads it again', async () => {
+    let detail: object = camilaDetail
+    const fetchMock = openDetail({
+      [DETAIL]: () => json(detail),
+      [`POST ${DETAIL}/end-early`]: () => {
+        detail = ended('checked_out')
+        return apiError('check_out_session_not_active', 409)
+      },
+    })
+    fireEvent.click(await screen.findByRole('button', { name: t.endEarly }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.endEarlyConfirm }))
+    await screen.findByRole('heading', { name: t.changedTitle })
+    const before = callsTo(fetchMock, DETAIL).length
+
+    fireEvent.click(screen.getByRole('button', { name: t.refresh }))
+
+    await waitFor(() => expect(screen.queryByRole('heading', { name: t.changedTitle })).not.toBeInTheDocument())
+    expect(callsTo(fetchMock, DETAIL).length).toBeGreaterThan(before)
+  })
+
+  it('goes back to the sessions from the error state, with the hint line (4228:1671)', async () => {
+    openDetail({ [DETAIL]: () => apiError('server_error', 500) })
+
+    expect(await screen.findByRole('heading', { name: t.errorTitle })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: t.backToSessions })).toHaveAttribute('href', '/staff')
+    expect(screen.getByText(t.loadingHint)).toBeInTheDocument()
+  })
+
+  it('shows the skeleton bars and the hint line while it loads (4228:1557)', async () => {
+    openDetail({ [DETAIL]: () => new Promise<Response>(() => {}) })
+
+    expect(await screen.findByText(t.loadingTitle)).toBeInTheDocument()
+    expect(screen.getByText(t.loadingHint)).toBeInTheDocument()
+    expect(document.querySelectorAll('.sessions-skeleton span')).toHaveLength(3)
   })
 })

@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useId, useState } from 'react'
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
 import { Button, LoadingState } from '../../components'
 import { DashboardShell } from '../../dashboard/DashboardShell'
@@ -7,10 +7,11 @@ import { useMessages } from '../../i18n'
 import { useConnection } from '../../user/useConnection'
 import { ProblemNotice } from '../ProblemNotice'
 import { minutesBetween } from '../people/personText'
-import { ConfirmDialog } from '../people/StaffParts'
+import { ConfirmDialog, StaffLink } from '../people/StaffParts'
 import { PersonCard, type Person } from '../people/PersonCard'
 import type { ShellProps } from '../team/StaffTeam'
 import { useDocumentTitle } from '../useDocumentTitle'
+import { STAFF_PATH } from '../staffPath'
 import { useStaffSession } from '../useStaffSession'
 import '../team/staffTeam.css'
 import './activeSessions.css'
@@ -55,6 +56,19 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
   const sessionTitleId = useId()
   const changedId = useId()
   const pendingId = useId()
+  // The button that was pressed is gone once the data reloads: focus goes to what replaced it (WCAG 2.4.3).
+  const sessionTitle = useRef<HTMLHeadingElement>(null)
+  const pendingTitle = useRef<HTMLHeadingElement>(null)
+  const focusAfter = useRef<'session' | 'pending' | null>(null)
+
+  useEffect(() => {
+    if (!focusAfter.current || load.status !== 'ready') return
+    const { session: visit, person } = load.detail
+    if (focusAfter.current === 'pending' ? person.photo_pending : visit.status !== 'active') {
+      ;(focusAfter.current === 'pending' ? pendingTitle : sessionTitle).current?.focus()
+      focusAfter.current = null
+    }
+  }, [load])
 
   useEffect(() => {
     let current = true
@@ -90,6 +104,7 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
         setMessage(t.done[DONE[asking]])
       }
       setChanged(false)
+      focusAfter.current = asking === 'pending' ? 'pending' : 'session'
       setAsking(null)
     } catch (error) {
       session.reportError(error)
@@ -123,6 +138,15 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
           </h2>
           <p className="notice__text">{t.changedText}</p>
           <p className="notice__text">{t.changedHint}</p>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setChanged(false)
+              setAttempt((n) => n + 1)
+            }}
+          >
+            {t.refresh}
+          </Button>
         </section>
       )}
       {content()}
@@ -130,7 +154,19 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
   )
 
   function content() {
-    if (load.status === 'loading') return <LoadingState title={t.loadingTitle} detail={t.loadingText} />
+    if (load.status === 'loading') {
+      return (
+        <>
+          <LoadingState title={t.loadingTitle} detail={t.loadingText} />
+          <div className="sessions-skeleton" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </div>
+          <p className="sessions-panel__hint">{t.loadingHint}</p>
+        </>
+      )
+    }
     if (load.status === 'error') {
       return (
         <section className="state state--error" role="alert">
@@ -145,6 +181,10 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
           >
             {texts.states.retry}
           </Button>
+          <StaffLink href={STAFF_PATH} navigate={shellProps.navigation?.onNavigate} className="button button--secondary find-link">
+            {t.backToSessions}
+          </StaffLink>
+          <p className="state__detail">{t.loadingHint}</p>
         </section>
       )
     }
@@ -170,7 +210,7 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
 
         <section className="session-card" aria-labelledby={sessionTitleId}>
           <div className="session-card__head">
-            <h2 className="session-card__title" id={sessionTitleId}>
+            <h2 className="session-card__title" id={sessionTitleId} ref={sessionTitle} tabIndex={-1}>
               {active ? t.currentSession : t.endedSession}
             </h2>
             <span className={active ? 'team-chip team-chip--active' : 'team-chip team-chip--deactivated'}>
@@ -217,7 +257,7 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
 
         {person.photo_pending ? (
           <section className="photo-question photo-question--pending" aria-labelledby={pendingId}>
-            <h2 className="photo-question__title" id={pendingId}>
+            <h2 className="photo-question__title" id={pendingId} ref={pendingTitle} tabIndex={-1}>
               {t.pendingTitle}
             </h2>
             <p className="photo-question__text">{t.pendingText}</p>
@@ -260,16 +300,21 @@ export function SessionDetail({ shell, sessionId }: { shell: ShellProps; session
     }
     switch (asking) {
       case 'check-out':
-        return <ConfirmDialog {...common} title={t.checkOutTitle(name)} text={t.checkOutText} confirm={t.checkOut} />
+        return (
+          <ConfirmDialog {...common} title={t.checkOutHeading} question={t.checkOutTitle(name)} text={t.checkOutText} confirm={t.checkOutConfirm} />
+        )
       case 'end-early':
-        return <ConfirmDialog {...common} title={t.endEarlyTitle(name)} text={t.endEarlyText} confirm={t.endEarlyConfirm} />
+        return (
+          <ConfirmDialog {...common} title={t.endEarlyHeading} question={t.endEarlyTitle(name)} text={t.endEarlyText} confirm={t.endEarlyConfirm} />
+        )
       case 'void':
-        return <ConfirmDialog {...common} title={t.voidTitle(name)} text={t.voidText} confirm={t.voidConfirm} danger />
+        return <ConfirmDialog {...common} title={t.voidHeading} question={t.voidTitle(name)} text={t.voidText} confirm={t.voidConfirm} danger />
       case 'pending':
         return (
           <ConfirmDialog
             {...common}
-            title={t.pendingConfirmTitle(name)}
+            title={t.pendingHeading}
+            question={t.pendingConfirmTitle(name)}
             text={t.pendingConfirmText}
             note={t.pendingConfirmNote}
             confirm={t.pendingConfirm}

@@ -154,4 +154,91 @@ describe('S-03 assisted Check In', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(callsTo(fetchMock, '/api/staff/check-in')).toEqual([])
   })
+
+  it('moves focus to the verify title after the search (WCAG 2.4.3)', async () => {
+    await search('802612345')
+
+    expect(await screen.findByRole('heading', { name: t.verifyTitle })).toHaveFocus()
+  })
+
+  it('goes back to an empty search from "No encontramos coincidencias" (4288:1105)', async () => {
+    await search('Zoe', { '/api/staff/people?search=Zoe': () => json({ people: [] }) })
+    await screen.findByRole('heading', { name: t.notFoundTitle })
+
+    fireEvent.click(screen.getByRole('button', { name: t.backToSearch }))
+
+    expect(screen.getByLabelText(t.search)).toHaveValue('')
+    expect(screen.getByLabelText(t.search)).toHaveFocus()
+    expect(screen.getByRole('heading', { name: t.startTitle })).toBeInTheDocument()
+  })
+
+  it('asks the same search again from Reintentar (4288:1135)', async () => {
+    let calls = 0
+    const fetchMock = await search('Zoe', {
+      '/api/staff/people?search=Zoe': () => (++calls === 1 ? apiError('server_error', 500) : json({ people: [] })),
+    })
+    await screen.findByRole('heading', { name: t.failedTitle })
+
+    fireEvent.click(screen.getByRole('button', { name: es.states.retry }))
+
+    expect(await screen.findByRole('heading', { name: t.notFoundTitle })).toBeInTheDocument()
+    expect(callsTo(fetchMock, '/api/staff/people?search=Zoe')).toHaveLength(2)
+  })
+
+  it('shows a disabled Confirmar Check in when there is no connection (4288:1160)', async () => {
+    await search('Zoe', { '/api/staff/people?search=Zoe': offline })
+
+    await screen.findByRole('heading', { name: t.offlineTitle })
+    expect(screen.getByRole('button', { name: t.confirm })).toHaveAttribute('aria-disabled', 'true')
+  })
+
+  it('offers Volver a buscar on a refusal (4288:1183 to 4288:1280)', async () => {
+    await search('802612345', { [BY_NUMBER]: () => json({ people: [{ ...camila, photo_pending: true }] }) })
+    await screen.findByRole('heading', { name: t.refusals.photoPending.title })
+
+    fireEvent.click(screen.getByRole('button', { name: t.backToSearch }))
+
+    expect(screen.getByRole('heading', { name: t.startTitle })).toBeInTheDocument()
+  })
+
+  it('offers Volver a sesiones when the person is already inside (4288:1695)', async () => {
+    await search('802612345', { [BY_NUMBER]: () => json({ people: [{ ...camila, active_session: { id: 11, started_at: new Date().toISOString() } }] }) })
+
+    expect(await screen.findByRole('link', { name: es.sessionDetail.backToSessions })).toHaveAttribute('href', STAFF_PATH)
+  })
+
+  it('says it is recording the entry while it waits (4288:1305)', async () => {
+    let finish: (response: Response) => void = () => {}
+    await search('802612345', { 'POST /api/staff/check-in': () => new Promise<Response>((resolve) => (finish = resolve)) })
+    fireEvent.click(await screen.findByRole('button', { name: t.photoMatches }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.confirm }))
+
+    expect(await screen.findByText(t.registeringTitle)).toBeInTheDocument()
+    expect(screen.getByText(t.registeringText)).toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: t.photoMatches })).not.toBeInTheDocument()
+
+    finish(json({ session: { id: 31, status: 'active' } }, 201))
+    await waitFor(() => expect(window.location.pathname).toBe(STAFF_PATH))
+  })
+
+  it('checks again for the entry from Actualizar datos when it could not be confirmed (4288:1329)', async () => {
+    let entered = false
+    const fetchMock = await search('802612345', {
+      [BY_NUMBER]: () => json({ people: [entered ? { ...camila, active_session: { id: 11, started_at: new Date().toISOString() } } : camila] }),
+      'POST /api/staff/check-in': () => {
+        entered = true
+        return apiError('server_error', 500)
+      },
+    })
+    fireEvent.click(await screen.findByRole('button', { name: t.photoMatches }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.confirm }))
+    await screen.findByRole('heading', { name: t.unconfirmedTitle })
+    expect(screen.queryByRole('button', { name: t.photoMatches })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: es.sessionDetail.refresh }))
+
+    expect(await screen.findByRole('heading', { name: t.activeTitle })).toBeInTheDocument()
+    expect(callsTo(fetchMock, BY_NUMBER)).toHaveLength(2)
+  })
 })

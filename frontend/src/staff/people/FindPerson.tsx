@@ -58,19 +58,28 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
   const [view, setView] = useState<View>({ kind: 'start' })
   const [asking, setAsking] = useState<'confirm' | 'pending' | null>(null)
   const [busy, setBusy] = useState(false)
+  // While the entry is being recorded (Figma 4288:1305).
+  const [registering, setRegistering] = useState(false)
   const [problem, setProblem] = useState<ApiError | null>(null)
   const searchId = useId()
   const resultTitle = useRef<HTMLHeadingElement>(null)
+  const searchInput = useRef<HTMLInputElement>(null)
+  // What was searched last, so Reintentar and Actualizar datos ask the same thing even if the box changed.
+  const lastQuery = useRef('')
 
   // Each new result says what it is first: focus goes to its title (WCAG 2.4.3).
   useEffect(() => {
     if (view.kind !== 'start') resultTitle.current?.focus()
   }, [view])
 
-  async function search(event: FormEvent) {
+  function search(event: FormEvent) {
     event.preventDefault()
-    const query = text.trim()
+    void run(text.trim())
+  }
+
+  async function run(query: string) {
     if (!query || view.kind === 'searching') return
+    lastQuery.current = query
     if (!online) {
       setView({ kind: 'offline' })
       return
@@ -91,9 +100,35 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
     setView({ kind: 'person', person, refusal: refusalOf(person) })
   }
 
+  /** Starts over: an empty box, and the cursor in it. */
+  function backToSearch() {
+    setText('')
+    setView({ kind: 'start' })
+    searchInput.current?.focus()
+  }
+
+  /** "Actualizar datos" (4288:1329): asks again for this person, who may have an open visit by now. */
+  async function refresh(person: Person) {
+    if (busy || !online) return
+    setBusy(true)
+    try {
+      const { people } = await apiRequest<{ people: Person[] }>(`/staff/people?${new URLSearchParams({ search: lastQuery.current })}`)
+      const updated = people.find((other) => other.user_id === person.user_id)
+      if (updated) choose(updated)
+      else setView({ kind: 'notFound' })
+    } catch (error) {
+      session.reportError(error)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function checkIn(person: Person) {
     setBusy(true)
     setProblem(null)
+    // The question closes and the screen says the entry is being recorded.
+    setAsking(null)
+    setRegistering(true)
     try {
       const { session: visit } = await apiRequest<{ session: { id: number } }>('/staff/check-in', {
         method: 'POST',
@@ -117,6 +152,7 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
       }
     } finally {
       setBusy(false)
+      setRegistering(false)
     }
   }
 
@@ -146,6 +182,7 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
           </label>
           <input
             id={searchId}
+            ref={searchInput}
             className="field__input"
             autoComplete="off"
             maxLength={255}
@@ -185,6 +222,11 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
           <section className="state" role="status">
             {heading(t.notFoundTitle)}
             <p className="state__detail">{t.notFoundText}</p>
+            <div className="find-verify__actions">
+              <Button variant="secondary" onClick={backToSearch}>
+                {t.backToSearch}
+              </Button>
+            </div>
           </section>
         )
       case 'failed':
@@ -193,6 +235,16 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
           <section className="state state--error" role="alert">
             {heading(view.kind === 'failed' ? t.failedTitle : t.offlineTitle)}
             <p className="state__detail">{view.kind === 'failed' ? t.failedText : t.offlineText}</p>
+            <div className="find-verify__actions">
+              {view.kind === 'failed' ? (
+                <Button variant="secondary" onClick={() => void run(lastQuery.current)}>
+                  {texts.states.retry}
+                </Button>
+              ) : (
+                // Offline (4288:1160): the entry cannot be confirmed.
+                <Button aria-disabled="true">{t.confirm}</Button>
+              )}
+            </div>
           </section>
         )
       case 'select':
@@ -235,12 +287,22 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
             <StaffLink href={staffSessionPath(open.id)} navigate={navigate} className="button button--secondary find-link">
               {t.openActive}
             </StaffLink>
+            <StaffLink href={STAFF_PATH} navigate={navigate} className="button button--secondary find-link">
+              {texts.sessionDetail.backToSessions}
+            </StaffLink>
           </section>
         ) : refusal ? (
           <section className="state state--error" role="alert">
             {heading(t.refusals[refusal].title)}
             <p className="state__detail">{t.refusals[refusal].text}</p>
+            <div className="find-verify__actions">
+              <Button variant="secondary" onClick={backToSearch}>
+                {t.backToSearch}
+              </Button>
+            </div>
           </section>
+        ) : registering ? (
+          <LoadingState title={t.registeringTitle} detail={t.registeringText} />
         ) : (
           <section className="state find-verify">
             {unconfirmed ? (
@@ -250,17 +312,26 @@ export function FindPerson({ shell }: { shell: ShellProps }) {
               </div>
             ) : (
               <>
-                <h2 className="state__title">{t.verifyTitle}</h2>
+                {heading(t.verifyTitle)}
                 <p className="state__detail">{t.verifyText}</p>
               </>
             )}
             <div className="find-verify__actions">
-              <Button variant="secondary" aria-disabled={!online || undefined} onClick={() => online && setAsking('confirm')}>
-                {t.photoMatches}
-              </Button>
-              <Button className="button--danger" aria-disabled={!online || undefined} onClick={() => online && setAsking('pending')}>
-                {t.photoDiffers}
-              </Button>
+              {unconfirmed ? (
+                // Figma's only action here (4288:1329).
+                <Button variant="secondary" aria-disabled={busy || !online || undefined} onClick={() => void refresh(person)}>
+                  {texts.sessionDetail.refresh}
+                </Button>
+              ) : (
+                <>
+                  <Button variant="secondary" aria-disabled={!online || undefined} onClick={() => online && setAsking('confirm')}>
+                    {t.photoMatches}
+                  </Button>
+                  <Button className="button--danger" aria-disabled={!online || undefined} onClick={() => online && setAsking('pending')}>
+                    {t.photoDiffers}
+                  </Button>
+                </>
+              )}
             </div>
           </section>
         )}
