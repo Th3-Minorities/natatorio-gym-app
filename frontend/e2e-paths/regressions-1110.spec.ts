@@ -4,6 +4,7 @@ import { createMember, flushCache, resetSchedule, signInApi } from './setup.ts'
 import { checkInApi, deskCheckOut } from './setup-end-of-visit.ts'
 import { ensurePhotoFile } from './setup-occupancy.ts'
 import { deskPage, findBox, rowOf } from './setup-sessions.ts'
+import { fakeLocation, INSIDE } from '../e2e/flows/flow.ts'
 
 test.setTimeout(150_000)
 
@@ -92,4 +93,29 @@ test('RG-03 focused controls stay above the bottom navigation on a short phone',
   await expect(page.getByRole('heading', { name: 'Mi cuenta', exact: true })).toBeVisible()
   await assertUnobscured(page.getByRole('link', { name: /^Privacidad/ }), 'privacy')
   await assertUnobscured(page.getByRole('link', { name: /^Ajustes/ }), 'settings')
+})
+
+test('RG-04 a User without a current authorization sees the no-access state before any press, with no Check In button', async ({ page, baseURL }, info) => {
+  test.skip(!['android', 'iphone'].includes(info.project.name), 'the user PWA runs on phones')
+  flushCache()
+  resetSchedule()
+  // Figma 4106:1284 and 4631:4463 (paid member), 4199:4067 (athlete); rule: docs/design/check-in-flows.md, check the authorization before enabling Check In.
+  const cases = [
+    { name: 'paid member, term ended', options: { authorization: 'ended' } as const, title: es.checkIn.problems.authorization.title, action: es.checkIn.problems.authorization.action },
+    { name: 'revoked athlete', options: { kind: 'athlete', authorization: 'revoked' } as const, title: es.checkIn.problems.athleteAuthorization.title, action: es.checkIn.problems.athleteAuthorization.action },
+  ]
+  for (const { name, options, title, action } of cases) {
+    await test.step(name, async () => {
+      const member = createMember(options)
+      await fakeLocation(page, INSIDE)
+      await signInApi(page.request, baseURL!, member)
+      await page.goto('/check-in')
+      await expect(page.getByRole('heading', { level: 1, name: es.user.checkIn, exact: true })).toBeVisible()
+      // No press, no hold: the screen must already say the access is not valid.
+      await expect.soft(page.getByRole('heading', { name: title, exact: true }), `${name}: no-access panel title`).toBeVisible({ timeout: 5000 })
+      await expect.soft(page.getByText(action, { exact: true }), `${name}: no-access action`).toBeVisible({ timeout: 5000 })
+      await expect.soft(page.getByRole('button', { name: es.checkIn.hold, exact: true }), `${name}: hold button must not exist`).toHaveCount(0, { timeout: 5000 })
+      await page.screenshot({ path: info.outputPath(`no-access-${options.kind ?? 'paid'}.png`) })
+    })
+  }
 })
