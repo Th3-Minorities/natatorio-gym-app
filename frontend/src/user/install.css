@@ -68,3 +68,8 @@
   border-radius: 50%; background: var(--sage); color: var(--hero);
 }
 .install-done__check svg { width: var(--install-done-icon); height: var(--install-done-icon); }
+
+/* Figma C.03 (4453:2494): from Mi cuenta the screen keeps the cream page colour, with no spacer above the top bar and the confirmation under it. */
+.user-app--install .user-top { display: none; }
+.user-app--install .install-done { flex: none; justify-content: flex-start; }
+.user-app--install .install-done h2 { font-size: var(--spacing-32); line-height: var(--user-large-title-line); font-weight: var(--user-weight-bold); }

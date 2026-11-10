@@ -106,6 +106,14 @@ describe('Notice', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('No pudimos iniciar sesión')
     expect(screen.getByRole('alert')).toHaveTextContent('Verifica tu correo y contraseña e intenta de nuevo.')
   })
+
+  it('is neutral by default and pink with tone="error" (E-188)', () => {
+    const { rerender } = render(<Notice title="Intenta de nuevo a las 10:45">Espera.</Notice>)
+    expect(screen.getByRole('alert')).not.toHaveClass('notice--error')
+
+    rerender(<Notice tone="error" title="No pudimos iniciar sesión" />)
+    expect(screen.getByRole('alert')).toHaveClass('notice', 'notice--error')
+  })
 })
 
 describe('states', () => {
@@ -140,6 +148,7 @@ describe('states', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(es.states.errorTitle)
     expect(screen.getByRole('alert')).not.toHaveAttribute('aria-busy')
     expect(screen.getByRole('alert')).toHaveTextContent(es.states.errorDetail)
+    expect(screen.getByRole('alert')).toHaveClass('state--error')
     fireEvent.click(screen.getByRole('button', { name: es.states.retry }))
     expect(onRetry).toHaveBeenCalledOnce()
   })

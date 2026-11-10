@@ -45,7 +45,8 @@ test('Staff do not see the Administration items', async ({ page }) => {
   await signIn(page, STAFF.email, 'password')
 
   await expect(page.getByText(`${STAFF.name} · Staff`)).toBeVisible()
-  await expect(page.getByText('Sesiones activas')).toBeVisible()
+  // The menu link: the S-01 title says Sesiones activas too.
+  await expect(page.getByRole('link', { name: 'Sesiones activas' })).toBeVisible()
   await expectNoViolations(page)
   await expect(page.getByText('Registro de auditoría')).toHaveCount(0)
 

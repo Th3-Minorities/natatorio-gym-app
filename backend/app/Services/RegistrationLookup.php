@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Exceptions\ApiException;
 use App\Models\Authorization;
 use App\Models\ImportedMembership;
+use App\Models\RosterRecord;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\Exceptions\ThrottleRequestsException;
@@ -54,7 +55,7 @@ class RegistrationLookup
         return (int) $cache->increment($key);
     }
 
-    public function failed(Request $request): ApiException
+    public function failed(Request $request, string $code = 'registration_number_unavailable'): ApiException
     {
         $window = config('registration.window_seconds');
         RateLimiter::hit('registration:global', $window);
@@ -66,9 +67,13 @@ class RegistrationLookup
             ]);
         }
 
-        return new ApiException('registration_number_unavailable', 422, [
-            'contact_number' => [$this->contactNumber()],
-        ]);
+        $errors = ['contact_number' => [$this->contactNumber()]];
+
+        return match ($code) {
+            'student_not_on_roster' => new ApiException('student_not_on_roster', 422, $errors),
+            'roster_record_claimed' => new ApiException('roster_record_claimed', 422, $errors),
+            default => new ApiException('registration_number_unavailable', 422, $errors),
+        };
     }
 
     public function contactNumber(): string
@@ -92,6 +97,23 @@ class RegistrationLookup
         return $membership;
     }
 
+    /** A 9-digit number is a student number: the athlete must be on the roster; a claimed record is refused unless the roster email already has an account (REQ-F-15, E-70). */
+    public function findStudent(string $number, Request $request): RosterRecord
+    {
+        $this->ensureAllowed($request);
+        $record = RosterRecord::query()->where('student_number', $number)->whereNull('removed_at')->first();
+        if ($record === null) {
+            throw $this->failed($request, 'student_not_on_roster');
+        }
+        if (! $this->emailHasAccount($record->institutional_email)
+            && Authorization::query()->where('roster_record_id', $record->id)->exists()) {
+            throw $this->failed($request, 'roster_record_claimed');
+        }
+        RateLimiter::decrement($this->ipKey($request->ip()), config('registration.window_seconds'));
+
+        return $record;
+    }
+
     public function available(ImportedMembership $membership): bool
     {
         $term = $membership->academicTerm;
@@ -104,18 +126,30 @@ class RegistrationLookup
 
     public function hasAccount(ImportedMembership $membership): bool
     {
-        return User::query()->whereRaw('lower(email) = lower(?)', [$membership->email])->exists();
+        return $this->emailHasAccount($membership->email);
     }
 
     public function result(ImportedMembership $membership): array
     {
-        [$local, $domain] = explode('@', $membership->email, 2);
         $state = $this->hasAccount($membership) ? 'renewal' : 'ready';
 
         return [
             'state' => $state,
             ...($state === 'ready' ? ['name' => $membership->name] : []),
-            'masked_email' => Str::substr($local, 0, 1).'***'.(Str::length($local) > 1 ? Str::substr($local, -1) : '').'@'.$domain,
+            'masked_email' => $this->mask($membership->email),
         ];
+    }
+
+    /** First and last letter before the @ (E-72), for example m***z@upr.edu. */
+    public function mask(string $email): string
+    {
+        [$local, $domain] = explode('@', $email, 2);
+
+        return Str::substr($local, 0, 1).'***'.(Str::length($local) > 1 ? Str::substr($local, -1) : '').'@'.$domain;
+    }
+
+    public function emailHasAccount(string $email): bool
+    {
+        return User::query()->whereRaw('lower(email) = lower(?)', [$email])->exists();
     }
 }

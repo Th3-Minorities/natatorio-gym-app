@@ -1,0 +1,221 @@
+/* A-05 "Roster de atletas", Figma 4007:1535. The table, chips, summary and note come from staffTeam.css. */
+
+.roster-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.roster-context > :first-child {
+  flex: 1 1 auto;
+}
+
+.roster-context__actions {
+  display: flex;
+  gap: var(--spacing-12);
+}
+
+/* Search field 480 pixels wide, then the two filter buttons, all on one line (101:413). */
+.roster-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-16) var(--spacing-24);
+}
+
+.roster-search {
+  flex: 0 1 480px;
+  min-width: 240px;
+}
+
+.roster-filter {
+  min-width: 110px;
+}
+
+/* Figma's columns: 185, 140, 155, 275, 105 and 228 pixels. */
+.roster-table {
+  min-width: 960px;
+}
+
+.roster-chip--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.roster-chip--withdrawn {
+  background: var(--chip-off);
+  color: var(--muted-foreground);
+}
+
+
+.roster-modal-chip {
+  align-self: flex-start;
+}
+
+.roster-dialog-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+/* "802612346 · Voleibol" under the Retirar text (101:1221). */
+.roster-meta {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 22px;
+}
+
+/* "Mínimo 10 caracteres." and the counter (101:1248, 101:1285). */
+.roster-reason-hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.roster-reason-hint--short {
+  color: var(--foreground);
+  font-weight: var(--weight-medium);
+}
+
+/* "Formato" with Word and PDF side by side, then "Roster completo" (4039:2032). */
+.roster-format,
+.roster-whole {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.roster-format .field__label,
+.roster-whole__title,
+.roster-whole__text {
+  margin: 0;
+}
+
+.roster-format__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+.roster-whole__title {
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 22px;
+}
+
+.roster-whole__text {
+  color: var(--foreground);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+/* S-05 (Figma 121:3383): four columns, a search field 760 pixels wide with the read-only chip above the count at its right,
+   and the note under the table. A-05 keeps its 480 pixel field. */
+.staff-roster-table {
+  min-width: 640px;
+}
+
+.roster-search.staff-roster-search {
+  flex: 0 1 760px;
+}
+
+.roster-readonly {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-8);
+}
+
+.roster-readonly__count {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+/* "Entrada registrada" and its time, centered in the Acción column (4265:2957). */
+.roster-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-4);
+  width: 100%;
+  text-align: center;
+}
+
+.roster-entry__time {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.roster-footnote {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 19px;
+  text-align: right;
+}
+
+/* The wrapper only gives focus a place to look: it adds no box. */
+.staff-roster-result {
+  display: contents;
+}
+
+/* The three bars sit inside the loading card, the full width of it (122:3214). */
+.staff-roster-skeleton {
+  align-self: stretch;
+}
+
+/* No connection (122:3253): one panel, the chip and sentence centered, then the old rows as cards. */
+.staff-roster-offline__chip {
+  align-self: center;
+}
+
+.staff-roster-offline__text {
+  align-self: center;
+  text-align: center;
+}
+
+.staff-roster-offline__search {
+  align-self: stretch;
+}
+
+.staff-roster-cards {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  gap: var(--spacing-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.staff-roster-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-8);
+  text-align: center;
+}
+
+.staff-roster-card__name {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.staff-roster-card__meta {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.staff-roster-card .button {
+  width: 100%;
+}

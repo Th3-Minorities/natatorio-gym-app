@@ -1,0 +1,553 @@
+/* S-01 (Figma 121:2841): the "Ocupación actual" card (121:3019) with the level and bar of C-01 (4106:1869, E-178),
+   and the "Gimnasio abierto" chip top right (121:3026). */
+
+.staff-gym--open {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+/* Not drawn on S-01: closed in the grey of a finished state, athletes only outlined like the term chip. */
+.staff-gym--closed {
+  background: var(--chip-off);
+  color: var(--muted-foreground);
+}
+
+.staff-gym--athletes_only {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--primary);
+}
+
+.staff-occupancy {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--spacing-24);
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.staff-occupancy__main {
+  display: flex;
+  flex: 1 1 320px;
+  flex-direction: column;
+  gap: var(--spacing-4);
+  max-width: 560px;
+}
+
+.staff-occupancy__label,
+.staff-occupancy__count,
+.staff-occupancy__caption,
+.staff-occupancy__problem,
+.staff-occupancy__rule {
+  margin: 0;
+}
+
+/* Written in normal case and shown in capitals, so screen readers read words, not letters. */
+.staff-occupancy__label {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-transform: uppercase;
+}
+
+.staff-occupancy__count {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.staff-occupancy__count strong {
+  color: var(--foreground);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 58px;
+}
+
+.staff-occupancy__level {
+  display: inline-flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 2px var(--spacing-8);
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: var(--background);
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: var(--weight-medium);
+  line-height: 16px;
+}
+
+.staff-occupancy__bar {
+  height: var(--spacing-8);
+  margin: var(--spacing-4) 0;
+  overflow: hidden;
+  border-radius: 999rem;
+  background: var(--sage);
+}
+
+.staff-occupancy__bar > div {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--primary);
+}
+
+.staff-occupancy__caption,
+.staff-occupancy__rule {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 19px;
+}
+
+.staff-occupancy__rule {
+  flex: 1 1 280px;
+  max-width: 460px;
+}
+
+.staff-occupancy__problem {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-8);
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.staff-occupancy__problem svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
+
+.staff-occupancy__skeleton {
+  width: 120px;
+  height: 58px;
+  border-radius: 12px;
+  background: var(--border);
+}
+
+/* S-01's list (121:3032), S-02 (121:3142) and S-03 (4283:1011), #26. */
+
+/* The grey bars under "Cargando" (122:2957, 4228:1557), the same grey as the occupancy skeleton. */
+.sessions-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.sessions-skeleton span {
+  height: 20px;
+  border-radius: 12px;
+  background: var(--border);
+}
+
+.sessions-skeleton span:nth-child(2) {
+  width: 70%;
+}
+
+.sessions-skeleton span:nth-child(3) {
+  width: 45%;
+}
+
+.button--danger {
+  border-color: var(--danger-text);
+  background: var(--danger-text);
+  color: var(--primary-foreground);
+}
+
+.sessions-live:empty {
+  display: none;
+}
+
+.sessions-live {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+}
+
+/* "Check in registrado" (4319:1662): a green card with the title and the person's name. */
+.sessions-welcome {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+  padding: var(--spacing-16) var(--spacing-20);
+  border: 1px solid var(--primary);
+  border-radius: 12px;
+  background: var(--border);
+}
+
+.sessions-welcome__title,
+.sessions-welcome__text,
+.sessions-message {
+  margin: 0;
+}
+
+.sessions-welcome__title {
+  color: var(--foreground);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 26px;
+}
+
+.sessions-welcome__text {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+  text-align: center;
+}
+
+.sessions-message {
+  padding: var(--spacing-12) var(--spacing-16);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.sessions-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.sessions-panel__tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--spacing-16) var(--spacing-24);
+}
+
+.sessions-search {
+  flex: 0 1 700px;
+  min-width: 220px;
+}
+
+.sessions-panel__title,
+.sessions-panel__date,
+.sessions-panel__hint {
+  margin: 0;
+}
+
+.sessions-panel__title {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.sessions-panel__date,
+.sessions-panel__hint {
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.sessions-table {
+  overflow-x: auto;
+}
+
+.sessions-table table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 21px;
+  text-align: left;
+}
+
+.sessions-table th {
+  height: 40px;
+  padding: 0 var(--spacing-8);
+  background: var(--background);
+  color: var(--muted-foreground);
+  font-weight: var(--weight-medium);
+}
+
+.sessions-table td {
+  height: 64px;
+  padding: 0 var(--spacing-8);
+  color: var(--foreground);
+}
+
+/* The new visit after an assisted Check In (4319:1662). */
+.sessions-row--new td {
+  background: var(--border);
+}
+
+.sessions-person {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.sessions-person__name {
+  color: var(--foreground);
+  font-weight: var(--weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sessions-checkout {
+  width: 180px;
+}
+
+/* The photo, with the initials Figma draws until it loads (121:3059, 121:3324). */
+.person-photo {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--background);
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+.person-photo--small {
+  width: 40px;
+  height: 40px;
+  font-size: 12px;
+  font-weight: var(--weight-medium);
+}
+
+.person-photo--large {
+  width: 216px;
+  height: 216px;
+  gap: var(--spacing-12);
+  border-radius: 12px;
+}
+
+.person-photo--large .person-photo__initials {
+  color: var(--foreground);
+  font-size: 48px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.person-photo__caption {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.person-photo__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.person-photo__img--hidden {
+  visibility: hidden;
+}
+
+.person-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-24);
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.person-card__body {
+  display: flex;
+  flex: 1 1 280px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--spacing-8);
+}
+
+.person-card__name,
+.person-card__line,
+.person-card__muted,
+.person-card__label {
+  margin: 0;
+}
+
+.person-card__name {
+  color: var(--foreground);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 32px;
+}
+
+.person-card__line,
+.person-card__label {
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.person-card__line--strong,
+.person-card__label {
+  font-weight: var(--weight-medium);
+}
+
+.person-card__muted {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.session-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-16);
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.session-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-12);
+}
+
+.session-card__title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.session-card__facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-16) var(--spacing-48, 48px);
+  margin: 0;
+}
+
+.session-card__facts dt {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.session-card__facts dd {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 28px;
+}
+
+.session-card__rule {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 18px;
+}
+
+.session-card__actions,
+.find-verify__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+/* "¿La foto no corresponde a la persona?" (121:3372), pink like the error banners. */
+.photo-question {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-16);
+  padding: var(--spacing-20);
+  border: 1px solid var(--danger-border);
+  border-radius: 12px;
+  background: var(--danger-soft);
+}
+
+.photo-question__title,
+.photo-question__text {
+  margin: 0;
+}
+
+.photo-question__title {
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.photo-question__text {
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.photo-question--pending {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.photo-question--pending .photo-question__title,
+.photo-question--pending .photo-question__text {
+  color: var(--danger-text);
+}
+
+.confirm-meta {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+/* S-03's search row (4283:1102). */
+.find-search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-16);
+  padding: var(--spacing-20);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.find-search__field {
+  flex: 1 1 320px;
+}
+
+.find-select__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.find-select__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-12);
+  color: var(--foreground);
+  font-size: 14px;
+}
+
+.find-link {
+  align-self: flex-start;
+  text-decoration: none;
+}

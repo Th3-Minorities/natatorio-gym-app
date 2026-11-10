@@ -2,7 +2,21 @@
 
 This document draws how Check In decides, how a facility session lives and ends, how Staff do an assisted Check In and verify a Gym ID, what the Gym ID shows in each state, and how occupancy is counted. It covers SRS sections 3.6, 3.7 and 3.8 (GitHub issue #6). The backend is Laravel and the database is PostgreSQL (`docs/context.md` section 2). The single active session rule depends on a PostgreSQL exclusion constraint, so it depends on CTI accepting PostgreSQL (M-09). Values the SRS leaves to design are in "Design decisions to confirm". On 2026-11-04 the team decided that a session ends at a Staff check-out, 2 hours after Check In, or at a closure (E-115), and that Staff can mark a photo as pending (E-118).
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Diagrams](#diagrams) · [Design decisions](#design-decisions-to-confirm) · [Open questions](#gaps-and-questions) · [Traceability](#traceability)
+
+</nav>
+
 ## Diagrams
+
+<nav aria-label="Diagram topics" markdown="1">
+
+[Check In checks](#1-check-in-checks-before-location) · [Session states](#4-facility-session-states) · [Staff-assisted Check In](#5-staff-assisted-check-in) · [Gym ID states](#6-gym-id-states-paid-member) · [Occupancy](#9-occupancy-counting) · [Staff check-out](#11-staff-check-out-and-photo-pending)
+
+</nav>
 
 Legend used in the flowcharts: blue nodes run on the phone (PWA) or are Staff actions, yellow nodes run on the backend, red nodes are rejections, green nodes are outcomes that show a session.
 
@@ -498,6 +512,9 @@ Decision: A. The earlier recommendation was B. How far back the list goes: all h
 
 ## Traceability
 
+<details markdown="1">
+<summary>Show traceability tables</summary>
+
 | Requirement or decision | Where it appears |
 |---|---|
 | REQ-F-26 | 1. Check In checks before location; 5. Staff-assisted Check In |
@@ -548,3 +565,5 @@ Decision: A. The earlier recommendation was B. How far back the list goes: all h
 | Architecture D6 (50 m check always runs at startup) | 2. Check In location checks and session creation; D2 |
 
 E-56, E-60, E-78, E-83 and E-101 (PIN, recovery code, Lock button) were replaced by E-114 and change no flow in this document. E-57 (photos on import undo), E-58 ("I am an athlete"), E-102 to E-104, E-106 and E-107 do not change any flow either.
+
+</details>

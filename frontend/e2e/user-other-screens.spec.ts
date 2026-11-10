@@ -29,6 +29,12 @@ for (const platform of ['iPhone', 'Android']) {
   })
 }
 
+test('install help after registration', async ({ page }) => {
+  await page.goto('/install?registered')
+  await expect(page.getByRole('tab', { name: 'iPhone' })).toBeVisible()
+  await expectNoViolations(page)
+})
+
 test('gym occupancy', async ({ page }) => {
   await page.goto('/gym')
   await expect(page.getByText('personas', { exact: true })).toBeVisible()

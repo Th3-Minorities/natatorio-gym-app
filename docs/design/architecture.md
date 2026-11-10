@@ -2,7 +2,21 @@
 
 This document shows how the system is built and where it runs. It replaces the Supabase and Vercel picture of the proposal (`docs/capstone_proposal/diagrams/01_architecture.png`) with the current stack: a React PWA, a Laravel backend and PostgreSQL, all in `docker-compose` (`docs/context.md` section 2). It covers the outside systems, the containers, development versus production, the demo environment, and the path of one Check In from the phone to the database. Inside the diagrams, items that still wait for CTI say "pending CTI answer" in words. The table "Pending CTI items" after diagram 4 maps them to their question IDs (`docs/decisions/cti.md`). Dashed lines and dashed boxes mean pending or proposed. CTI described a path for mail: a mail service on the VM (CTI suggests Postfix) relays to the CTI mail gateway after CTI authorizes the VM. The mail box stays dashed until CTI authorizes the VM. The app assumes mail exists (E-61).
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Diagrams](#diagrams) · [Design decisions](#design-decisions-to-confirm) · [Open questions](#gaps-and-questions) · [Traceability](#traceability)
+
+</nav>
+
 ## Diagrams
+
+<nav aria-label="Diagram topics" markdown="1">
+
+[System context](#1-system-context) · [Containers](#2-containers-on-one-host) · [Local development](#3-development-on-each-members-pc) · [Production and demo](#4-production-and-demo) · [Check In request](#5-request-path-one-check-in)
+
+</nav>
 
 ### 1. System context
 
@@ -393,6 +407,9 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 
 ## Traceability
 
+<details markdown="1">
+<summary>Show traceability tables</summary>
+
 | Requirement | Where it appears |
 |---|---|
 | REQ-NF-10 | 2. Containers on one host (one PWA build served at `/` to phone and desktop, including the dashboard routes) |
@@ -438,3 +455,5 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 | E-125 (every kind of data kept 5 years) | 2. Containers on one host notes, 4. Production and demo notes |
 
 E-56 (PIN state in the browser session) was replaced by E-114. E-57 (photos on release) and E-59 (Staff see the roster) change no diagram in this file.
+
+</details>

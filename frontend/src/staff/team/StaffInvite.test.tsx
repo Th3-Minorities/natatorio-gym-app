@@ -85,6 +85,20 @@ describe('inviting a person', () => {
     expect(callsTo(fetchMock, '/api/staff/accounts').some(([method]) => method === 'POST')).toBe(false)
   })
 
+  it('gives focus back to Invitar on Esc, even when the click did not focus it (Safari)', async () => {
+    fakeApi({ '/api/staff/me': () => json(lorena), '/api/staff/accounts': () => json({ accounts: team }) })
+    render(<StaffApp />)
+
+    // fireEvent.click does not focus the button, as Safari does not.
+    const dialog = await openInvite()
+    const invite = screen.getByRole('button', { name: t.invite })
+    expect(invite).not.toHaveFocus()
+    fireEvent(dialog, new Event('cancel', { cancelable: true }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    await waitFor(() => expect(invite).toHaveFocus())
+  })
+
   it('shows "Este correo ya está en uso", then goes back to the form to fix the email', async () => {
     fakeApi({
       '/api/staff/me': () => json(lorena),
@@ -180,6 +194,22 @@ describe('inviting a person', () => {
     const alert = await within(dialog).findByRole('alert')
     expect(alert).toHaveTextContent(es.signIn.offlineTitle)
     expect(alert).toHaveTextContent(es.states.offlineRetryText)
+    expect(alert).not.toHaveClass('notice--error')
+  })
+
+  it('shows a refused invitation in the pink error notice', async () => {
+    fakeApi({
+      '/api/staff/me': () => json(lorena),
+      '/api/staff/accounts': () => json({ accounts: team }),
+      'POST /api/staff/accounts': () => apiError('server_error', 500),
+    })
+    render(<StaffApp />)
+
+    const dialog = await openInvite()
+    fill(dialog, 'Yariel Nieves León', 'yariel@example.com')
+    fireEvent.click(within(dialog).getByRole('button', { name: t.sendInvite }))
+
+    expect(await within(dialog).findByRole('alert')).toHaveClass('notice--error')
   })
 
   it('goes back to sign-in when the session ended', async () => {

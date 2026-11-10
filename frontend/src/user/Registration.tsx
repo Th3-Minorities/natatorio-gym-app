@@ -11,11 +11,21 @@ import { useConnection } from './useConnection'
 import './registration.css'
 
 type Lookup = { state: 'ready'; name: string; masked_email: string } | { state: 'renewal'; masked_email: string }
+  | { state: 'athlete'; masked_email: string; resend_in: number }
+type StudentResult = { claimed: boolean; phone: string }
+// The page the athlete's email link opens: N05-01 checking, N05-02 expired, N05-02b invalid (unknown, garbled or
+// removed from the roster), N05-03 used, N05-04 replaced, N05-05 claimed, N05-06 offline and N05-07 error.
+type LinkState = 'checking' | 'expired' | 'invalid' | 'used' | 'replaced' | 'claimed' | 'offline' | 'error'
+const LINK_STATES: Record<string, LinkState> = {
+  athlete_link_invalid: 'invalid', athlete_link_expired: 'expired', athlete_link_used: 'used',
+  athlete_link_replaced: 'replaced', roster_record_claimed: 'claimed',
+}
+type Unavailable = { phone: string }
 type Waiver = { version: string; text: string }
 type PhotoError = 'failed' | 'format' | 'size'
 const MAX_PHOTO_BYTES = 10 * 1024 * 1024
 
-export function Registration(props: { path: string; navigate: (path: string) => void }) {
+export function Registration(props: { path: string; navigate: (path: string, options?: { replace?: boolean }) => void }) {
   const parentLocale = useLocale()
   const parentTitle = useMessages().dashboard.brandName
   const [locale, setLocale] = useState<Locale>(parentLocale)
@@ -27,7 +37,7 @@ export function Registration(props: { path: string; navigate: (path: string) => 
 }
 
 function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
-  path: string; navigate: (path: string) => void; setLocale: (locale: Locale) => void; accountLocale: Locale
+  path: string; navigate: (path: string, options?: { replace?: boolean }) => void; setLocale: (locale: Locale) => void; accountLocale: Locale
 }) {
   const texts = useMessages()
   const t = texts.registration
@@ -41,7 +51,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   const [accepted, setAccepted] = useState(false)
   const [busy, setBusy] = useState(false)
   const [number, setNumber] = useState('')
-  const [studentNumber, setStudentNumber] = useState(false)
+  const [studentResult, setStudentResult] = useState<StudentResult | null>(null)
+  const [unavailable, setUnavailable] = useState<Unavailable | null>(null)
   const [lookup, setLookup] = useState<Lookup | null>(null)
   const [lookupMessage, setLookupMessage] = useState('')
   const [password, setPassword] = useState('')
@@ -64,6 +75,13 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   const [contactErrors, setContactErrors] = useState<{ name?: boolean; phone?: boolean }>({})
   const [saving, setSaving] = useState(false)
   const [saveFailed, setSaveFailed] = useState(false)
+  // The link token stays in page memory; the account is created only at the final step (REQ-F-15).
+  const [linkToken, setLinkToken] = useState(() => path === '/register/athlete' ? new URLSearchParams(window.location.search).get('token') : null)
+  const [linkState, setLinkState] = useState<LinkState>('checking')
+  const [linkPhone, setLinkPhone] = useState('')
+  const [linkSent, setLinkSent] = useState<{ email: string; resendAt: number } | null>(null)
+  const [linkLimit, setLinkLimit] = useState(false)
+  const [now, setNow] = useState(Date.now)
   const cameraInput = useRef<HTMLInputElement>(null)
   const uploadInput = useRef<HTMLInputElement>(null)
   const pending = useRef(false)
@@ -82,7 +100,9 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   if (privacyPage !== previousPrivacyPage) {
     setPreviousPrivacyPage(privacyPage)
     setLookupMessage('')
-    setStudentNumber(false)
+    setStudentResult(null)
+    setUnavailable(null)
+    if (lookup?.state === 'renewal') setLookup(null)
   }
 
   function loadPrivacy() {
@@ -95,7 +115,16 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       else setFailed(true)
     })
   }
-  useEffect(() => { void loadPrivacy() }, [])
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (path !== '/register/athlete') void loadPrivacy() }, [])
+  // Check the link on first load; terminal failures set their own state before navigating back here.
+  // oxlint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { if (path === '/register/athlete' && linkState === 'checking') void checkLink() }, [path])
+  useEffect(() => {
+    if (!linkSent || now >= linkSent.resendAt) return
+    const timer = setTimeout(() => setNow(Date.now()), 1000)
+    return () => clearTimeout(timer)
+  }, [linkSent, now])
   useEffect(() => {
     const reconnect = () => { setNetworkFailed(false); void loadPrivacy() }
     window.addEventListener('online', reconnect)
@@ -135,6 +164,15 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   useEffect(() => {
     if (saving || saveFailed || waiverFailed) document.querySelector<HTMLHeadingElement>('main h1')?.focus()
   }, [saving, saveFailed, waiverFailed])
+  // N03-02 and N03-03 replace the whole step: put the focus on the new title, and again when it is dismissed.
+  const lookupState = studentResult ?? unavailable ?? linkSent ?? (linkLimit || null)
+  const shownLookupState = useRef(lookupState)
+  useEffect(() => {
+    if (shownLookupState.current === lookupState) return
+    shownLookupState.current = lookupState
+    const frame = requestAnimationFrame(() => document.querySelector<HTMLHeadingElement>('main h1')?.focus())
+    return () => cancelAnimationFrame(frame)
+  }, [lookupState])
   useEffect(() => {
     if (saving || !focusInvalid.current) return
     focusInvalid.current = false
@@ -154,43 +192,105 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     try {
       await apiRequest('/user/registration/privacy', { method: 'POST', body: { version: privacy.version } })
       setAccepted(true)
-      navigate('/register/identify')
+      const toPassword = Boolean(linkToken) && lookup?.state === 'ready'
+      // The link check already replaced the link page with this path; pushing it again would need two Backs.
+      navigate(toPassword ? '/register/password' : '/register/identify', { replace: toPassword && path === '/register/password' })
     } catch (error) {
       if (error instanceof ApiError && error.code === 'offline') setNetworkFailed(true)
       else setFailed(true)
     } finally { pending.current = false; setBusy(false) }
   }
 
-  async function findMembership(event: FormEvent) {
-    event.preventDefault()
+  async function findMembership(event?: FormEvent) {
+    event?.preventDefault()
     if (offline || waiting || pending.current || !number.trim()) return
     setLookupMessage('')
-    if (/^\d{9}$/.test(number.trim())) { setStudentNumber(true); setLookupMessage(t.studentHint); return }
     const generation = lookupGeneration.current
     pending.current = true
     setBusy(true)
     try {
-      const result = await apiRequest<Lookup>('/user/registration/lookup', { method: 'POST', body: { authorization_number: number } })
+      const result = await apiRequest<Lookup>('/user/registration/lookup', { method: 'POST', body: { authorization_number: number, locale: accountLocale } })
       if (generation !== lookupGeneration.current) return
+      setUnavailable(null)
+      setLinkLimit(false)
+      // N03-09: the link went to the roster email; the account is created on the page the link opens.
+      if (result.state === 'athlete') { setNow(Date.now()); setLinkSent({ email: result.masked_email, resendAt: Date.now() + result.resend_in * 1000 }); return }
       setLookup(result)
+      // A number typed here replaces an earlier athlete link on this page.
+      setLinkToken(null)
       if (result.state === 'ready') { setPassword(''); setConfirmation(''); setPasswordErrors(false); navigate('/register/password') }
-      else setLookupMessage(t.renewal(result.masked_email))
     } catch (error) {
       if (generation !== lookupGeneration.current) return
       const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
+      setUnavailable(null)
       if (failure.code === 'offline') {
         setNetworkFailed(true)
-        setLookupMessage(u.offlineForm)
       } else if (failure.status === 429) {
+        if (failure.code === 'athlete_link_limit') { setLinkSent(null); setLinkLimit(true) }
         if (failure.retryAfter) startWaiting(failure.retryAfter)
         else setLookupMessage(u.waitTitle)
       } else {
         const code = failure.status >= 500 ? 'server_error' : failure.code
         const phone = failure.details?.contact_number?.[0]
-        setLookupMessage(failure.status === 422 && failure.code === 'registration_number_unavailable' && phone
-          ? t.paymentHelp(phone) : errorText(texts, code, failure.status))
+        if (failure.status === 422 && phone && (failure.code === 'student_not_on_roster' || failure.code === 'roster_record_claimed')) {
+          const claimed = failure.code === 'roster_record_claimed'
+          setStudentResult({ claimed, phone })
+          setLookupMessage(claimed ? t.student.claimed : t.student.notOnRoster(phone))
+          return
+        }
+        if (failure.status === 422 && failure.code === 'registration_number_unavailable' && phone) {
+          setUnavailable({ phone })
+          setLookupMessage(t.numberUnavailable(phone))
+          return
+        }
+        setLookupMessage(errorText(texts, code, failure.status))
       }
     } finally { pending.current = false; setBusy(false) }
+  }
+
+  function clearStudentResult() {
+    setStudentResult(null)
+    setLinkSent(null)
+    setLinkLimit(false)
+    setLookupMessage('')
+  }
+
+  async function checkLink() {
+    if (!linkToken) { setLinkState('invalid'); void loadPrivacy(); return }
+    setLinkState('checking')
+    try {
+      const { name } = await apiRequest<{ name: string }>('/user/registration/athlete/validate', { method: 'POST', body: { token: linkToken } })
+      // The POST establishes the CSRF session before the notice records that it was shown.
+      await loadPrivacy()
+      setLookup({ state: 'ready', name, masked_email: '' })
+      setPassword('')
+      setConfirmation('')
+      setPasswordErrors(false)
+      navigate('/register/password', { replace: true })
+    } catch (error) {
+      await loadPrivacy()
+      const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
+      if (failure.code === 'validation_failed') { setLinkState('invalid'); return }
+      if (!showLinkFailure(failure)) {
+        if (failure.code === 'offline') setNetworkFailed(true)
+        setLinkState(failure.code === 'offline' ? 'offline' : 'error')
+      }
+    }
+  }
+
+  /** A link that stopped working while the form was open goes back to the N05 screen for its state. */
+  function showLinkFailure(failure: ApiError) {
+    const state = LINK_STATES[failure.code]
+    if (!linkToken || !state) return false
+    setLinkState(state)
+    setLinkPhone(failure.details?.contact_number?.[0] ?? '')
+    if (path !== '/register/athlete') navigate('/register/athlete')
+    return true
+  }
+
+  // The receipt example is the box on the identification step; there is no separate screen for it.
+  function showReceiptExample() {
+    setTimeout(() => document.querySelector('.registration-receipt')?.scrollIntoView?.({ block: 'center' }))
   }
 
   function keepPassword(event: FormEvent) {
@@ -224,7 +324,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     setLookupMessage('')
     setPhotoError(null)
     const form = new FormData()
-    form.append('authorization_number', number)
+    if (linkToken) form.append('token', linkToken)
+    else form.append('authorization_number', number)
     form.append('password', password)
     form.append('password_confirmation', confirmation)
     form.append('photo', photo)
@@ -234,16 +335,16 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     form.append('emergency_contact_phone', contactPhone)
     form.append('locale', accountLocale)
     try {
-      const result = await apiRequest<{ state?: string; masked_email?: string }>('/user/registration/complete', { method: 'POST', body: form })
+      const result = await apiRequest<{ state?: string; masked_email?: string }>(linkToken ? '/user/registration/athlete/complete' : '/user/registration/complete', { method: 'POST', body: form })
       if (result?.state === 'renewal' && result.masked_email) {
         setLookup({ state: 'renewal', masked_email: result.masked_email })
-        setLookupMessage(t.renewal(result.masked_email))
         navigate('/register/identify')
       } else navigate('/install?registered')
     } catch (error) {
       const failure = error instanceof ApiError ? error : new ApiError('server_error', 500)
       const fields = failure.details ?? {}
       const photoRules = fields.photo ?? []
+      if (showLinkFailure(failure)) return
       if (failure.status === 413 || photoRules.includes('max') || photoRules.includes('uploaded')) showPhotoError('size')
       else if (failure.code === 'offline') setSaveFailed(true)
       else if (failure.code === 'registration_privacy_required') { setAccepted(false); navigate('/register') }
@@ -274,7 +375,8 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
         showContact()
       } else if (failure.code === 'registration_number_unavailable') {
         const phone = failure.details?.contact_number?.[0]
-        setLookupMessage(phone ? t.paymentHelp(phone) : errorText(texts, failure.code, failure.status))
+        setLookupMessage(phone ? t.numberUnavailable(phone) : errorText(texts, failure.code, failure.status))
+        if (phone) setUnavailable({ phone })
         navigate('/register/identify')
       } else setSaveFailed(true)
     } finally { pending.current = false; setSaving(false) }
@@ -310,8 +412,41 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
       <a href={privacy.store_url} target="_blank" rel="noopener noreferrer">{t.buy}<ExternalLink aria-hidden="true" /></a></div>
     : null
   const lookupStatus = <div className="registration-status" role="status">
-    {waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage}
+    {waiting ? u.waitText(dates.time(new Date(waitUntil)))
+      : lookupMessage || (offline && !passwordPage && !studentResult && !unavailable ? t.numberOfflineIntro : '')}
   </div>
+
+  const a = t.athlete
+  const phone = linkPhone || privacy?.contact_number || ''
+  const help = (className: string) => phone ? <a href={`tel:${phone}`} className={`button ${className} user-action`}>{t.unavailable.help(phone)}</a> : null
+  const linkStatus = (back: string, title: string, intro: string, children: ReactNode, offlineText?: string) =>
+    <div className="registration registration--step registration--status">
+      <UserPage large back={back} offline={offline} offlineText={offlineText}>
+        <div className="registration-intro"><h1 tabIndex={-1}>{title}</h1><p>{intro}</p></div>{children}
+      </UserPage>
+    </div>
+  if (path === '/register/athlete') {
+    const newLink = <a href="/register" className="button button--primary user-action">{a.newLink}</a>
+    const signIn = (variant: string) => <a href="/sign-in" className={`button button--${variant} user-action`}>{t.student.signIn}</a>
+    if (linkState === 'expired') return linkStatus('/register', a.expiredTitle, a.expiredIntro, <>
+      <UserNotice title={a.expiredNotice} danger>{a.expiredDetail}</UserNotice>{newLink}{help('button--link')}</>)
+    if (linkState === 'invalid') return linkStatus('/register', a.invalidTitle, a.expiredIntro, <>{newLink}{help('button--link')}</>)
+    if (linkState === 'used') return linkStatus('/register', a.usedTitle, a.usedIntro, <>
+      {signIn('primary')}<a href="/register" className="button button--secondary user-action">{t.backToRegistration}</a></>)
+    if (linkState === 'replaced') return linkStatus('/register', a.replacedTitle, a.replacedIntro, <>
+      <UserNotice title={a.replacedNotice}>{a.replacedDetail}</UserNotice>{newLink}</>)
+    if (linkState === 'claimed') return linkStatus('/register', a.claimedTitle, a.claimedIntro, <>
+      {phone && <UserNotice title={a.claimedNotice} danger>{a.claimedDetail(phone)}</UserNotice>}{help('button--primary')}{signIn('secondary')}</>)
+    if (linkState === 'offline') return linkStatus('/register', a.offlineTitle, a.offlineIntro, <>
+      <UserNotice title={a.offlineNotice}>{a.offlineDetail}</UserNotice>
+      <Button className="user-action" disabled={offline} onClick={() => void checkLink()}>{u.retry}</Button></>, u.offlineBanner)
+    if (linkState === 'error') return linkStatus('/register', a.errorTitle, a.errorIntro, <>
+      <UserNotice title={a.errorNotice} danger>{a.errorDetail}</UserNotice>
+      <Button className="user-action" onClick={() => void checkLink()}>{u.retry}</Button></>)
+    return linkStatus('/register', a.verifyingTitle, a.verifyingIntro, <>
+      <UserNotice title={a.verifyingNotice}>{a.verifyingDetail}</UserNotice>
+      <Button className="user-action" disabled>{a.verifying}</Button></>)
+  }
 
   if (privacyPage) {
     const compact = offline || failed || !privacy || locale !== accountLocale || path === '/privacy'
@@ -328,7 +463,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
               else navigate('/welcome')
             }}>{u.back}</Button>
           </> : failed ? <>
-            <UserNotice title={t.errorTitle}>{t.errorDetail}</UserNotice>
+            <UserNotice title={t.errorTitle} danger>{t.errorDetail}</UserNotice>
             <Button className="user-action" onClick={() => { setFailed(false); setPrivacy(null); void loadPrivacy() }}>{u.retry}</Button>
             <a href="/welcome" className="button button--secondary user-action">{u.back}</a>
           </> : <UserLoading detail={t.loading} />}
@@ -358,7 +493,7 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
   </>)
   if ((photoPage || contactPage) && saveFailed) return step('registration--status', '/register/contact', <>
     <div className="registration-intro"><h1 tabIndex={-1}>{t.saveFailed}</h1><p>{t.saveFailedIntro}</p></div>
-    <UserNotice title={t.notCompleted}>{t.notCompletedText}</UserNotice><p>{t.keepOpen}</p>
+    <UserNotice title={t.notCompleted} danger>{t.notCompletedText}</UserNotice><p>{t.keepOpen}</p>
     <Button className="user-action" onClick={() => { setSaveFailed(false); navigate('/register/photo') }}>{t.backToPhoto}</Button>
   </>)
   if (photoPage) {
@@ -428,9 +563,27 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
     </form>
   </>, u.offlineBanner)
 
+  // Figma N03-04 (4591:3403): the number belongs to an existing account, for athletes and paid members alike.
+  if (lookup?.state === 'renewal') return linkStatus('/register', t.renewalTitle, t.renewalIntro, <>
+    <UserNotice title={t.renewalEmail}>{lookup.masked_email}</UserNotice><p className="registration-body">{t.renewalNotUsed}</p>
+    <a href="/sign-in" className="button button--primary user-action">{t.student.signIn}</a>
+    <Button className="user-action" variant="secondary" onClick={() => setLookup(null)}>{t.backToRegistration}</Button></>)
+  if (!passwordPage && linkLimit) return linkStatus('/register', a.limitTitle, a.limitIntro, <>
+    <UserNotice title={a.limitRetry(dates.time(new Date(waitUntil)))}>{a.limitDetail}</UserNotice>
+    <Button className="user-action" disabled={busy || offline || waiting} onClick={() => void findMembership()}>{a.request}</Button>
+    {help('button--link')}</>)
+  if (!passwordPage && linkSent) {
+    const left = Math.max(0, Math.ceil((linkSent.resendAt - now) / 1000))
+    return linkStatus('/register', a.sentTitle, a.sentIntro, <>
+      <UserNotice title={linkSent.email}>{a.sentDetail}</UserNotice><p className="registration-body">{a.spam}</p>
+      <Button className="user-action" variant="secondary" disabled={busy || offline || left > 0} onClick={() => void findMembership()}>
+        {left > 0 ? a.resendIn(`${String(Math.floor(left / 60)).padStart(2, '0')}:${String(left % 60).padStart(2, '0')}`) : a.request}</Button>
+      <Button className="user-action" variant="link" onClick={clearStudentResult}>{t.student.fixNumber}</Button></>)
+  }
+
   return <div className={`registration ${passwordPage ? 'registration--password' : 'registration--identification'}`}>
     {lookupStatus}
-    <UserPage large back={passwordPage ? '/register/identify' : '/register'}>
+    <UserPage large back={passwordPage ? '/register/identify' : '/register'} offline={!passwordPage && offline} offlineText={u.offlineBanner}>
       {passwordPage ? <>
         <div className="registration-intro"><p className="registration-greeting">{t.hello(lookup.name)}</p>
           <h1 tabIndex={-1}>{t.createPassword}</h1><p>{t.passwordIntro}</p></div>
@@ -442,16 +595,39 @@ function RegistrationFlow({ path, navigate, setLocale, accountLocale }: {
             error={passwordErrors && confirmation !== password ? u.confirmationInvalid : undefined} />
           <Button className="user-action" type="submit">{t.continue}</Button>
         </form>
+      </> : studentResult ? <>
+        <div className="registration-intro"><h1 tabIndex={-1}>{studentResult.claimed ? t.student.claimedTitle : t.student.title}</h1>
+          <p>{studentResult.claimed ? t.student.claimedIntro : t.student.intro}</p></div>
+        <div className="registration-number"><TextField label={t.student.label} value={number} readOnly error={lookupMessage || undefined} /></div>
+        <p className="registration-body">{studentResult.claimed ? t.student.claimedBody(studentResult.phone) : t.student.notOnRosterBody}</p>
+        {studentResult.claimed
+          ? <a href="/sign-in" className="button button--primary user-action">{t.student.signIn}</a>
+          : <Button className="user-action" variant="secondary" onClick={() => { clearStudentResult(); showReceiptExample() }}>{t.student.receiptExample}</Button>}
+        {studentResult.claimed
+          ? <Button className="user-action" variant="secondary" onClick={clearStudentResult}>{t.student.changeNumber}</Button>
+          : <Button className="user-action" onClick={clearStudentResult}>{t.student.fixNumber}</Button>}
+      </> : unavailable ? <>
+        <div className="registration-intro"><h1 tabIndex={-1}>{t.student.title}</h1><p>{t.unavailable.intro}</p></div>
+        <form className="registration-identification-form" onSubmit={(event) => void findMembership(event)}>
+          <div className="registration-number">
+            <TextField label={t.unavailable.label} value={number} readOnly={busy}
+              error={(waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage) || undefined}
+              onChange={(event) => { setNumber(event.target.value); setLookup(null); setLookupMessage('') }} autoComplete="off" required />
+          </div>
+          <Button type="submit" className="user-action" disabled={busy || offline || waiting}>{t.continue}</Button>
+          <a href={`tel:${unavailable.phone}`} className="button button--link user-action">{t.unavailable.help(unavailable.phone)}</a>
+        </form>
       </> : <>
-        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1><p>{t.identificationIntro}</p></div>
+        <div className="registration-intro"><h1 tabIndex={-1}>{t.title}</h1>
+          {offline ? <><p>{t.numberOfflineIntro}</p><p>{t.numberOfflineKept}</p></> : <p>{t.identificationIntro}</p>}</div>
         <form className="registration-identification-form" onSubmit={(event) => void findMembership(event)}>
           <div className="registration-number">
             <TextField label={t.number} placeholder={t.numberPlaceholder} value={number} readOnly={busy}
-              error={studentNumber ? undefined : (waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage) || undefined} onChange={(event) => {
-              setNumber(event.target.value); setLookup(null); setLookupMessage(''); setStudentNumber(false)
-            }} aria-invalid={studentNumber || undefined} aria-describedby="registration-number-hint" autoComplete="off" required />
+              error={(waiting ? u.waitText(dates.time(new Date(waitUntil))) : lookupMessage) || undefined} onChange={(event) => {
+              setNumber(event.target.value); setLookup(null); setLookupMessage('')
+            }} aria-describedby="registration-number-hint" autoComplete="off" required />
             <div className="registration-hints" id="registration-number-hint">
-              <div className={`registration-hint${studentNumber ? ' registration-hint--flagged' : ''}`}><GraduationCap aria-hidden="true" /><p>{t.studentHint}</p></div>
+              <div className="registration-hint"><GraduationCap aria-hidden="true" /><p>{t.studentHint}</p></div>
               <div className="registration-hint"><ReceiptText aria-hidden="true" /><p>{t.numberHint}</p></div>
             </div>
             <div className="registration-receipt"><p>{t.paymentDescription}</p><div><span>{t.receiptNumber}</span><strong>{t.exampleNumber}</strong></div></div>

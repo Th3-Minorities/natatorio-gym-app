@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { UserApp, UserEntry } from './UserApp'
+import { es } from '../i18n/es'
 
 const account = {
   name: 'María Rodríguez', email: 'm***z@upr.edu', locale: 'es', account_type: null, authorization: null,
@@ -18,6 +19,8 @@ beforeEach(() => {
 })
 afterEach(() => { vi.unstubAllGlobals(); vi.restoreAllMocks(); vi.useRealTimers(); localStorage.clear() })
 
+const expandWelcome = () => fireEvent.click(screen.getByRole('button', { name: 'Toca o desliza para continuar' }))
+
 function open(path = '/sign-in') {
   window.history.replaceState({}, '', path)
   render(<UserApp />)
@@ -26,6 +29,27 @@ function fillSignIn() {
   fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'user@example.com' } })
   fireEvent.change(screen.getByLabelText('Contraseña'), { target: { value: 'a long password' } })
 }
+
+it('replaces the validated athlete link so browser Back leaves its page', async () => {
+  answer = async (path) => path.endsWith('/athlete/validate')
+    ? json({ name: 'Marta Ruiz' })
+    : json({ version: 'draft', draft: true, store_url: null, contact_number: '265-3866' })
+  window.history.replaceState({}, '', '/welcome')
+  window.history.pushState({}, '', '/register/athlete?token=abc')
+  const historyLength = window.history.length
+  render(<UserApp />)
+  await screen.findByRole('heading', { name: 'Antes de comenzar' })
+  expect(window.location.pathname).toBe('/register/password')
+  expect(window.location.search).toBe('')
+  expect(window.history.length).toBe(historyLength)
+  await act(async () => {
+    const popped = new Promise<void>((resolve) => window.addEventListener('popstate', () => resolve(), { once: true }))
+    window.history.back()
+    await popped
+  })
+  expect(window.location.pathname).toBe('/welcome')
+  expect(screen.queryByRole('heading', { name: 'Verificando tu enlace' })).not.toBeInTheDocument()
+})
 
 function expectAccessLayout(passwords = 1, signIn = true) {
   expect(screen.getByRole('main').closest('.user-app')).toHaveClass('user-app--large')
@@ -65,12 +89,51 @@ describe('N-02', () => {
     expectAccessLayout()
   })
 
-  it('shows identical wrong-credentials copy and retains the entered email', async () => {
+  it('marks both wrong-credentials fields and shows one inline password error', async () => {
     answer = async () => error('user_credentials_invalid')
     open(); fillSignIn()
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
-    expect(await screen.findByRole('alert')).toHaveTextContent('Revisa el correo y la contraseña e intenta de nuevo.')
+    const message = await screen.findByText('Correo o contraseña incorrectos.')
+    const email = screen.getByLabelText('Correo electrónico')
+    const password = screen.getByLabelText('Contraseña')
+    expect(screen.queryByRole('alert')).toBeNull()
+    expect(document.querySelectorAll('.field__error')).toHaveLength(1)
+    expect(message).toHaveClass('field__error')
+    expect(password.closest('.user-password')).toContainElement(message)
+    expect(email).toHaveAttribute('aria-invalid', 'true')
+    expect(password).toHaveAttribute('aria-invalid', 'true')
+    expect(password).toHaveAccessibleDescription('Correo o contraseña incorrectos.')
+    expect(email).toHaveAccessibleDescription('Correo o contraseña incorrectos.')
+    expect(password).toHaveFocus()
+    expect(message.compareDocumentPosition(screen.getByRole('link', { name: '¿Olvidaste tu contraseña?' })) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
     expect(screen.getByLabelText('Correo electrónico')).toHaveValue('user@example.com')
+    expectAccessLayout()
+  })
+
+  it.each(['Correo electrónico', 'Contraseña'])('clears the credentials error when editing %s', async (label) => {
+    answer = async () => error('user_credentials_invalid')
+    open(); fillSignIn()
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
+    await screen.findByText('Correo o contraseña incorrectos.')
+    fireEvent.change(screen.getByLabelText(label), { target: { value: 'changed' } })
+    expect(screen.queryByText('Correo o contraseña incorrectos.')).toBeNull()
+    expect(screen.getByLabelText('Correo electrónico')).not.toHaveAttribute('aria-invalid', 'true')
+    expect(screen.getByLabelText('Contraseña')).not.toHaveAttribute('aria-invalid', 'true')
+  })
+
+  it.each(['server_error', 'unexpected_error'])('shows a server notice and keeps sign-in ready to retry after a 500 (%s)', async (code) => {
+    answer = async () => error(code, 500)
+    open(); fillSignIn()
+    fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
+    const notice = await screen.findByRole('alert')
+    expect(notice).toHaveTextContent(es.signIn.wrongTitle)
+    expect(notice).toHaveTextContent(es.errors.server_error)
+    expect(notice.closest('.user-notice')).toBeInTheDocument()
+    expect(notice.closest('.user-notice')).toHaveClass('user-notice--danger')
+    expect(notice.compareDocumentPosition(document.querySelector('form')!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(screen.getByLabelText('Correo electrónico')).toHaveValue('user@example.com')
+    expect(screen.getByLabelText('Contraseña')).toHaveValue('a long password')
+    expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeEnabled()
     expectAccessLayout()
   })
 
@@ -79,6 +142,7 @@ describe('N-02', () => {
     open(); fillSignIn()
     fireEvent.click(screen.getByRole('button', { name: 'Iniciar sesión' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('Intenta de nuevo a las')
+    expect(screen.getByRole('alert').closest('.user-notice')).not.toHaveClass('user-notice--danger')
     expectAccessLayout()
     expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeDisabled()
     await waitFor(() => expect(screen.getByRole('button', { name: 'Iniciar sesión' })).toBeEnabled(), { timeout: 2000 })
@@ -182,26 +246,85 @@ describe('N-06 and N-07', () => {
     fireEvent.change(screen.getByLabelText('Correo electrónico'), { target: { value: 'any@example.com' } })
     fireEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }))
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos enviar la solicitud')
+    expect(screen.getByRole('alert').closest('.user-notice')).toHaveClass('user-notice--danger')
     expectAccessLayout(0, false)
     expect(screen.getByLabelText('Correo electrónico')).toHaveValue('any@example.com')
   })
 
-  it('keeps the new password form while validating and prevents submission until the link is valid', async () => {
+  it('shows only the new password heading and loading skeleton until the link is valid', async () => {
     let finish!: (response: Response) => void
     answer = () => new Promise((resolve) => { finish = resolve })
     open('/reset-password?token=token&email=user%40example.com')
     expect(screen.getByText('Estamos verificando el enlace…')).toBeInTheDocument()
-    expectAccessLayout(2, false)
-    expect(screen.getByRole('button', { name: 'Guardar contraseña' })).toBeDisabled()
+    expect(screen.getByRole('heading', { name: 'Nueva contraseña' })).toBeInTheDocument()
+    expect(document.querySelector('.user-skeleton')?.querySelectorAll('span')).toHaveLength(3)
+    expect(document.querySelector('.user-skeleton svg')).toBeInTheDocument()
+    expect(screen.queryByText(es.user.newDescription)).toBeNull()
+    expect(document.querySelector('form')).toBeNull()
+    expect(screen.queryByLabelText('Nueva contraseña')).toBeNull()
+    expect(screen.queryByLabelText('Confirmar contraseña')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Guardar contraseña' })).toBeNull()
+    expect(screen.queryByRole('link', { name: es.user.returnToSignIn })).toBeNull()
     await act(async () => finish(new Response(null, { status: 204 })))
     expect(await screen.findByLabelText('Confirmar contraseña')).toBeInTheDocument()
+    expect(screen.queryByText(es.user.validating)).toBeNull()
+    expect(screen.getByText(es.user.newDescription)).toBeInTheDocument()
+    expectAccessLayout(2, false)
     await waitFor(() => expect(screen.getByRole('button', { name: 'Guardar contraseña' })).toBeEnabled())
+  })
+
+  it.each([false, true])('revalidates an offline reset link on reconnect (expired: %s)', async (expired) => {
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    let finish!: (response: Response) => void
+    const validate = vi.fn()
+      .mockRejectedValueOnce(new TypeError('network'))
+      .mockImplementation(() => new Promise<Response>((resolve) => { finish = resolve }))
+    answer = (path) => {
+      expect(path).toBe('/api/user/password/validate')
+      return validate()
+    }
+    open('/reset-password?token=token&email=user%40example.com')
+    await screen.findByText(es.user.offlineForm)
+    await waitFor(() => expect(screen.queryByText(es.user.validating)).toBeNull())
+    expect(validate).toHaveBeenCalledTimes(1)
+
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    fireEvent(window, new Event('online'))
+    await waitFor(() => expect(validate).toHaveBeenCalledTimes(2))
+    expect(screen.getByText(es.user.validating)).toBeInTheDocument()
+    expect(document.querySelector('form')).toBeNull()
+    expect(screen.queryByText(es.user.newDescription)).toBeNull()
+    expect(screen.queryByRole('button', { name: es.user.save })).toBeNull()
+    expect(fetch).not.toHaveBeenCalledWith('/api/user/password/reset', expect.anything())
+
+    await act(async () => finish(expired ? error('user_reset_link_invalid') : new Response(null, { status: 204 })))
+    if (expired) {
+      expect(await screen.findByRole('heading', { name: es.user.expiredTitle })).toBeInTheDocument()
+    } else {
+      expect(await screen.findByRole('button', { name: es.user.save })).toBeEnabled()
+      await act(async () => { fireEvent(window, new Event('online')) })
+      expect(validate).toHaveBeenCalledTimes(2)
+    }
+  })
+
+  it('keeps the expired screen when the connection returns', async () => {
+    const validate = vi.fn()
+      .mockResolvedValueOnce(error('user_reset_link_invalid'))
+      .mockResolvedValue(new Response('<html>', { status: 502 }))
+    answer = () => validate()
+    open('/reset-password?token=used&email=user%40example.com')
+    expect(await screen.findByRole('heading', { name: es.user.expiredTitle })).toBeInTheDocument()
+
+    await act(async () => { fireEvent(window, new Event('online')) })
+    expect(validate).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('heading', { name: es.user.expiredTitle })).toBeInTheDocument()
   })
 
   it('shows expired or used links with the drawn recovery actions', async () => {
     answer = async () => error('user_reset_link_invalid')
     open('/reset-password?token=used&email=user%40example.com')
     expect(await screen.findByRole('heading', { name: 'El enlace ya no es válido' })).toBeInTheDocument()
+    expect(screen.getByText('Solicita un nuevo enlace').closest('.user-notice')).toHaveClass('user-notice--danger')
     // Figma 4099:2377: compact layout, no password fields.
     expect(screen.getByRole('main').closest('.user-app')).not.toHaveClass('user-app--large')
     expect(screen.queryByLabelText('Nueva contraseña')).toBeNull()
@@ -387,6 +510,7 @@ describe('U-03 and U-05', () => {
     open('/account')
     expect(screen.getByText('Cargando tu cuenta…')).toBeInTheDocument()
     expect(await screen.findByRole('alert')).toHaveTextContent('No pudimos cargar tu cuenta')
+    expect(screen.getByRole('alert').closest('.user-notice')).toHaveClass('user-notice--danger')
     answer = async () => json(account)
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }))
     expect(await screen.findByText(account.name)).toBeInTheDocument()
@@ -426,6 +550,7 @@ describe('U-03 and U-05', () => {
     answer = async () => error('user_session_replaced', 401)
     open('/account')
     expect(await screen.findByRole('alert')).toHaveTextContent('Iniciaste sesión en otro dispositivo')
+    expect(screen.getByRole('alert').closest('.user-notice')).not.toHaveClass('user-notice--danger')
     expectAccessLayout()
   })
 
@@ -434,7 +559,7 @@ describe('U-03 and U-05', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Eliminar mi cuenta' }))
     expect(screen.getByRole('heading', { name: '¿Eliminar tu cuenta?' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Sí, eliminar mi cuenta' }))
-    expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
     expect(window.location.pathname).toBe('/welcome')
     expect(screen.queryByText('Tu cuenta se eliminó')).toBeNull()
   })
@@ -454,10 +579,13 @@ describe('U-03 and U-05', () => {
 })
 
 describe('User destinations', () => {
-  it('opens the welcome screen with the Figma copy and its links', () => {
+  it('opens the welcome screen collapsed, then expands it with the Figma copy and its links', () => {
     window.history.replaceState({}, '', '/welcome')
     render(<UserEntry><p>Health page</p></UserEntry>)
-    expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Comenzar' })).toBeNull()
+    expandWelcome()
+    expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toHaveFocus()
     expect(screen.getByText('Tu espacio para entrenar en el RUM.')).toBeInTheDocument()
     expect(screen.getByText('¿Ya tienes cuenta?')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
@@ -468,8 +596,50 @@ describe('User destinations', () => {
     expect(screen.queryByText(/Ayuda para instalar/)).toBeNull()
   })
 
+  it('disables Comenzar and Iniciar sesión under a connection banner while offline and enables them when it returns (4546:2929)', () => {
+    open('/welcome')
+    expandWelcome()
+    expect(screen.queryByRole('status')).toBeNull()
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: false })
+    act(() => { fireEvent(window, new Event('offline')) })
+    const banner = screen.getByRole('status')
+    expect(banner).toHaveTextContent('Sin conexión. Conéctate para continuar.')
+    expect(banner).toHaveTextContent(es.user.welcomeOffline)
+    expect(screen.getByRole('main')).toContainElement(banner)
+    expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' }).compareDocumentPosition(banner) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('link', { name: 'Comenzar' })).not.toHaveAttribute('href')
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('aria-disabled', 'true')
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).not.toHaveAttribute('href')
+    Object.defineProperty(navigator, 'onLine', { configurable: true, value: true })
+    act(() => { fireEvent(window, new Event('online')) })
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
+    expect(screen.getByRole('link', { name: 'Iniciar sesión' })).toHaveAttribute('href', '/sign-in')
+  })
+
+  it('expands the welcome sheet with a tap or an upward swipe, not with a short drag', () => {
+    open('/welcome')
+    const sheet = screen.getByRole('main')
+    fireEvent.pointerDown(sheet, { clientY: 700, pointerId: 1 })
+    fireEvent.pointerMove(sheet, { clientY: 680, pointerId: 1 })
+    fireEvent.pointerUp(sheet, { clientY: 680, pointerId: 1 })
+    expect(screen.getByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
+    fireEvent.pointerDown(sheet, { clientY: 700, pointerId: 1 })
+    fireEvent.pointerMove(sheet, { clientY: 665, pointerId: 1 })
+    expect(screen.getByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+  })
+
+  it('expands the welcome sheet with a tap on it', () => {
+    open('/welcome')
+    const sheet = screen.getByRole('main')
+    fireEvent.click(sheet)
+    expect(screen.getByRole('link', { name: 'Comenzar' })).toBeInTheDocument()
+  })
+
   it('keeps the language chosen on the welcome screen for every screen before sign in', async () => {
     open('/welcome')
+    expandWelcome()
     fireEvent.click(screen.getByRole('button', { name: 'English' }))
     expect(screen.getByRole('heading', { name: 'Welcome to the gym' })).toBeInTheDocument()
     expect(document.documentElement.lang).toBe('en')
@@ -482,7 +652,8 @@ describe('User destinations', () => {
     open()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
     fireEvent.click(screen.getByRole('link', { name: 'Volver' }))
-    expect(await screen.findByRole('heading', { name: 'Bienvenido al gimnasio' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Bienvenido' })).toBeInTheDocument()
+    expandWelcome()
     expect(screen.getByRole('link', { name: 'Comenzar' })).toHaveAttribute('href', '/register')
   })
 
