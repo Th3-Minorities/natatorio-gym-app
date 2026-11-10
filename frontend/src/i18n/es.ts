@@ -401,6 +401,157 @@ export const es = {
     reactivated: (name: string) => `${name} se reactivó.`,
   },
 
+  // A-04 "Términos", Figma 101:1526, 4007:1310 and the states in section 170:1373 (#21).
+  terms: {
+    title: 'Términos',
+    description: 'Crea y ajusta las fechas de los períodos académicos.',
+    create: 'Crear término',
+    activeChip: 'Término activo',
+    noActiveChip: 'Sin término activo',
+    noActiveTitle: 'No hay un término activo hoy',
+    noActiveText: 'No se pueden crear autorizaciones nuevas. Crea o edita un término para cubrir la fecha de hoy.',
+    currentTitle: 'Término actual',
+    currentHint: 'Las fechas definen la vigencia de las autorizaciones.',
+    pastTitle: 'Términos pasados',
+    showPast: 'Ver términos pasados',
+    hidePast: 'Ocultar términos pasados',
+    columns: { name: 'Término', startsOn: 'Fecha de inicio', endsOn: 'Fecha de fin', status: 'Estado', actions: 'Acciones' },
+    // "Próximo" is not drawn in Figma: a term that starts later than today.
+    status: { active: 'Activo', upcoming: 'Próximo', past: 'Finalizado' },
+    edit: 'Editar',
+    noteTitle: 'Corrige un término editando sus fechas',
+    noteText: 'Los términos se conservan. Las autorizaciones mantienen su término y su fecha de fin sigue el nuevo cierre del término.',
+    loadingTitle: 'Cargando términos…',
+    loadingText: 'Espera un momento mientras se consultan las fechas.',
+    emptyTitle: 'Aún no hay términos',
+    emptyText: 'No hay un término activo hoy. Crea el primero para definir cuándo comienzan y terminan las autorizaciones.',
+    offlineText: 'Tus cambios siguen en el formulario. Podrás guardarlos cuando vuelva la conexión.',
+    // Crear and Editar, Figma 101:1737 and 101:1793.
+    createTitle: 'Crear término',
+    createText: 'Define un nombre y las fechas de inicio y fin.',
+    editTitle: 'Editar término',
+    name: 'Nombre del término',
+    startsOn: 'Fecha de inicio',
+    endsOn: 'Fecha de fin',
+    saveNew: 'Guardar término',
+    saveChanges: 'Guardar cambios',
+    cancel: 'Cancelar',
+    editNote: (date: string) =>
+      `Los registros fuera de estas fechas conservan su término. Las autorizaciones terminan el ${date}.`,
+    // Fecha inválida and Solapamiento, Figma 101:1850 and 101:1884.
+    orderTitle: 'Revisa el orden de las fechas',
+    orderText: 'La fecha de inicio debe ser anterior a la fecha de fin.',
+    overlapTitle: 'Las fechas coinciden con otro término',
+    overlapText: (name: string, start: string, end: string) =>
+      `Este período se solapa con ${name} (${start} - ${end}). Ajusta las fechas antes de guardar.`,
+    fixDates: 'Corregir fechas',
+    // Shown in the confirmation card above the list and announced (Figma 4745:2051).
+    saved: (name: string) => `${name} se guardó.`,
+  },
+
+  // A-05 "Roster de atletas", Figma 4007:1535, 4007:1918, 4007:2301 and the states in section 170:1373 (#21).
+  roster: {
+    title: 'Roster de atletas',
+    description: 'Gestiona atletas, sus datos y su acceso al gimnasio.',
+    continuous: 'Lista continua entre términos',
+    // Figma 101:1417: A-05 says this when no term is active. A-15 keeps staffTeam.noTermText.
+    noTermText: 'No se puede crear una autorización nueva. Revisa las fechas en Términos.',
+    add: 'Añadir atleta',
+    activeCount: (count: number) => `${count} ${count === 1 ? 'atleta activo' : 'atletas activos'}`,
+    search: 'Buscar atleta',
+    searchHint: 'Nombre o número de estudiante',
+    filterActive: 'Activo',
+    filterWithdrawn: 'Retirado',
+    // Not drawn: the table has no visible title, so screen readers get this one.
+    tableTitle: 'Atletas del roster',
+    columns: {
+      name: 'Nombre',
+      sport: 'Deporte',
+      studentNumber: 'Núm. estudiante',
+      email: 'Correo institucional',
+      status: 'Estado',
+      actions: 'Acciones',
+    },
+    status: { active: 'Activo', withdrawn: 'Retirado' },
+    edit: 'Editar',
+    noteTitle: 'Números de estudiante completos',
+    noteText: 'Cada atleta permanece en el roster entre términos, hasta que lo retires.',
+    loadingTitle: 'Cargando atletas…',
+    loadingText: 'Espera un momento mientras se consulta el roster.',
+    emptyTitle: 'Aún no hay atletas',
+    emptyText: 'Añade el primer atleta al roster.',
+    noMatch: (text: string) => `No encontramos atletas para “${text}”.`,
+    noMatchText: 'Revisa el nombre o el número de estudiante.',
+    // Añadir, Figma 101:1084 and 101:1150. The title before a sport is typed is not drawn.
+    addTitle: 'Añadir atleta',
+    addingTitle: (sport: string) => `Añadiendo atletas de: ${sport}`,
+    addText: 'Guarda un atleta y continúa con el próximo sin cerrar el formulario.',
+    savedNext: (name: string) => `${name} se guardó. Añade el próximo atleta.`,
+    savedChip: 'Atleta guardado',
+    sport: 'Deporte',
+    fullName: 'Nombre completo',
+    fullNameHint: 'Nombre y apellidos',
+    studentNumber: 'Número de estudiante',
+    studentNumberHint: 'Número completo',
+    email: 'Correo institucional',
+    saveAndNext: 'Guardar y añadir otro',
+    close: 'Cerrar',
+    // Editar, Figma 101:1314.
+    editTitle: 'Editar atleta',
+    editText: (name: string) => `Actualiza los datos de ${name}.`,
+    saveChanges: 'Guardar cambios',
+    cancel: 'Cancelar',
+    // Número repetido, Figma 101:1380. "Corregir número" is not drawn: the way back to the form.
+    takenTitle: 'Este número ya está en el roster',
+    takenText: (number: string, name: string) =>
+      `${number} pertenece a ${name}. Revisa el número de estudiante antes de guardar.`,
+    fixNumber: 'Corregir número',
+    // Sin conexión, Figma 101:1403.
+    offlineText: 'Recupera la conexión para guardar cambios.',
+    saved: (name: string) => `${name} se guardó.`,
+    // Retirar, Figma 101:1221.
+    withdraw: 'Retirar',
+    withdrawTitle: (name: string) => `¿Retirar a ${name}?`,
+    withdrawText: 'El Gym ID deja de valer de inmediato. No podrá hacer nuevos Check In. Su sesión activa, si existe, permanece abierta hasta su cierre.',
+    withdrawMeta: (number: string, sport: string) => `${number} · ${sport}`,
+    withdrawConfirm: 'Retirar atleta',
+    // Shown in the confirmation card above the list and announced (Figma 4745:2109).
+    withdrawn: (name: string) => `${name} se retiró del roster.`,
+    // Restituir, Figma 101:1248, 101:1285 and 101:1383.
+    reinstate: 'Restituir',
+    reinstateTitle: (name: string) => `Restituir a ${name}`,
+    reinstateText: 'Se reactivará su autorización revocada. El motivo quedará registrado en Registro de auditoría.',
+    reason: 'Motivo obligatorio',
+    reasonHint: 'Mínimo 10 caracteres.',
+    shortTitle: 'El motivo debe tener al menos 10 caracteres',
+    shortText: 'Escribe una explicación antes de restituir al atleta.',
+    reasonCount: (count: number) => `${count} / 10 caracteres mínimos`,
+    reinstateConfirm: 'Restituir',
+    reinstated: (name: string) => `${name} se restituyó.`,
+    refusedTitle: 'Ya tiene una autorización activa',
+    refusedText: (name: string, term: string) =>
+      `${name} ya tiene una autorización activa en ${term}. No se puede restituir otra.`,
+    // Descargar roster, Figma 4039:2032 and 4039:2077 (E-140).
+    download: 'Descargar roster',
+    downloadTitle: 'Descargar roster',
+    downloadText: 'Elige el formato del roster completo.',
+    format: 'Formato',
+    word: 'Word (.docx)',
+    pdf: 'PDF (.pdf)',
+    wholeTitle: 'Roster completo',
+    wholeText:
+      'Todos los atletas, activos y retirados, sin aplicar los filtros de la tabla. Incluye nombre, deporte, número de estudiante y correo institucional.',
+    downloadConfirm: 'Descargar',
+    preparingTitle: 'Preparando archivo',
+    preparingText: (format: string) =>
+      `Estamos preparando el roster completo en ${format}. La descarga comenzará cuando el archivo esté listo.`,
+    wordName: 'Word',
+    pdfName: 'PDF',
+    preparing: 'Preparando archivo…',
+    // Shown in the confirmation card above the list and announced (Figma 4745:2125).
+    downloaded: 'Se descargó el roster.',
+  },
+
   // Shared loading, empty, error and no connection states (Figma A-08: 107:1884, 107:1898, 132:3759, 132:3777).
   states: {
     loading: 'Cargando',
@@ -465,6 +616,13 @@ export const es = {
     staff_deactivate_own_account: 'No puedes desactivar tu propia cuenta.',
     staff_last_administrator: 'Debe quedar al menos un Administrador activo.',
     staff_account_status_changed: 'Esta cuenta cambió mientras la veías. Actualiza la lista.',
+    // A-04 "Solapamiento" (101:1884).
+    term_overlap: 'Las fechas coinciden con otro término.',
+    // A-05 "Número repetido" (101:1380).
+    roster_student_number_taken: 'Este número ya está en el roster.',
+    roster_status_changed: 'Este atleta cambió mientras lo veías. Actualiza la lista.',
+    // A-05 "Restitución rechazada" (101:1383).
+    roster_reinstate_active_authorization: 'Ya tiene una autorización activa.',
   },
 
   validation: {
@@ -477,6 +635,8 @@ export const es = {
     unique: 'Este valor ya está en uso.',
     confirmed: 'La confirmación no coincide.',
     password: 'Usa al menos 10 caracteres y evita contraseñas conocidas o filtradas.',
+    date_format: 'Escribe una fecha válida.',
+    digits: 'Escribe el número completo, solo con dígitos.',
     invalid: 'Revisa este campo.',
   },
 }

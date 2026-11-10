@@ -1,0 +1,115 @@
+/* A-05 "Roster de atletas", Figma 4007:1535. The table, chips, summary and note come from staffTeam.css. */
+
+.roster-context {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-16);
+}
+
+.roster-context > :first-child {
+  flex: 1 1 auto;
+}
+
+.roster-context__actions {
+  display: flex;
+  gap: var(--spacing-12);
+}
+
+/* Search field 480 pixels wide, then the two filter buttons, all on one line (101:413). */
+.roster-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--spacing-16) var(--spacing-24);
+}
+
+.roster-search {
+  flex: 0 1 480px;
+  min-width: 240px;
+}
+
+.roster-filter {
+  min-width: 110px;
+}
+
+/* Figma's columns: 185, 140, 155, 275, 105 and 228 pixels. */
+.roster-table {
+  min-width: 960px;
+}
+
+.roster-chip--active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.roster-chip--withdrawn {
+  background: var(--chip-off);
+  color: var(--muted-foreground);
+}
+
+
+.roster-modal-chip {
+  align-self: flex-start;
+}
+
+.roster-dialog-status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+/* "802612346 · Voleibol" under the Retirar text (101:1221). */
+.roster-meta {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 22px;
+}
+
+/* "Mínimo 10 caracteres." and the counter (101:1248, 101:1285). */
+.roster-reason-hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.roster-reason-hint--short {
+  color: var(--foreground);
+  font-weight: var(--weight-medium);
+}
+
+/* "Formato" with Word and PDF side by side, then "Roster completo" (4039:2032). */
+.roster-format,
+.roster-whole {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
+}
+
+.roster-format .field__label,
+.roster-whole__title,
+.roster-whole__text {
+  margin: 0;
+}
+
+.roster-format__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-12);
+}
+
+.roster-whole__title {
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: var(--weight-medium);
+  line-height: 22px;
+}
+
+.roster-whole__text {
+  color: var(--foreground);
+  font-size: 15px;
+  line-height: 22px;
+}

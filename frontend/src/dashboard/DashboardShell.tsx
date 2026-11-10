@@ -32,7 +32,13 @@ type Icon = { icon: LucideIcon; accent?: boolean; strokeWidth?: number }
 type Item = Icon & { label: string; href?: string }
 
 /** Moves between dashboard screens without reloading. Items with an href are links; the rest are plain text. */
-export type DashboardNavigation = { currentPath: string; onNavigate: (path: string) => void; staffAccounts: string }
+export type DashboardNavigation = {
+  currentPath: string
+  onNavigate: (path: string) => void
+  staffAccounts: string
+  terms: string
+  roster: string
+}
 
 /** Icons as drawn: 18px, line 1.5 (2 for Información and Cuentas del staff), orange only for the first two. */
 function NavIcon({ icon: Icon, accent, strokeWidth = 1.5 }: Icon) {
@@ -156,8 +162,8 @@ export function DashboardShell({
               navigation={navigation}
               label={texts.adminSection}
               items={[
-                { label: admin.terms, icon: Calendar },
-                { label: admin.manageAthletes, icon: ClipboardList },
+                { label: admin.terms, icon: Calendar, href: navigation?.terms },
+                { label: admin.manageAthletes, icon: ClipboardList, href: navigation?.roster },
                 { label: admin.storeSync, icon: RefreshCw },
                 { label: admin.accounts, icon: UserCog },
                 { label: admin.staffAccounts, icon: ShieldCheck, strokeWidth: 2, href: navigation?.staffAccounts },

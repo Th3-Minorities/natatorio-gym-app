@@ -11,11 +11,15 @@ import {
   STAFF_INVITE_PATH,
   STAFF_PATH,
   STAFF_RESET_PATH,
+  STAFF_ROSTER_PATH,
   STAFF_TEAM_PATH,
+  STAFF_TERMS_PATH,
   useStaffPath,
   type Navigate,
 } from './staffPath'
+import { AthleteRoster } from './roster/AthleteRoster'
 import { StaffTeam } from './team/StaffTeam'
+import { AcademicTerms } from './terms/AcademicTerms'
 import { useStaffSession, type StaffAccount } from './useStaffSession'
 
 // The staff part of the PWA, at /staff (#16): N-11 until someone signs in, then the dashboard shell.
@@ -34,9 +38,15 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     document.querySelector<HTMLElement>('#dashboard-content h1')?.focus()
   }, [path])
 
-  const navigation = { currentPath: path, onNavigate: navigate, staffAccounts: STAFF_TEAM_PATH }
+  const navigation = {
+    currentPath: path,
+    onNavigate: navigate,
+    staffAccounts: STAFF_TEAM_PATH,
+    terms: STAFF_TERMS_PATH,
+    roster: STAFF_ROSTER_PATH,
+  }
   // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
-  const onTeam = account.role === 'admin' && path === STAFF_TEAM_PATH
+  const admin = account.role === 'admin'
 
   async function signOut() {
     setSignOutFailed(false)
@@ -52,10 +62,12 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     account: { name: account.name, role: account.role },
     onSignOut: signOut,
     navigation,
-    notice: signOutFailed ? <Notice title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice> : null,
+    notice: signOutFailed ? <Notice tone="error" title={texts.signOutFailedTitle}>{texts.signOutFailedText}</Notice> : null,
   }
 
-  if (onTeam) return <StaffTeam shell={shell} />
+  if (admin && path === STAFF_TEAM_PATH) return <StaffTeam shell={shell} />
+  if (admin && path === STAFF_TERMS_PATH) return <AcademicTerms shell={shell} />
+  if (admin && path === STAFF_ROSTER_PATH) return <AthleteRoster shell={shell} />
 
   const { notice, ...shellProps } = shell
   return (
