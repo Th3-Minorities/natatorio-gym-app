@@ -102,8 +102,8 @@ class RosterController extends Controller
                 ->update(['status' => 'revoked', 'reason' => self::REMOVED, 'updated_at' => now()]);
             // The entry lists the authorizations the withdrawal revoked, so reinstating can be traced back to them.
             $log->record('roster.withdraw', $athlete,
-                ['status' => 'active', 'authorizations' => array_fill_keys($ids, 'active')],
-                ['status' => 'withdrawn', 'authorizations' => array_fill_keys($ids, 'revoked')]);
+                ['status' => 'active', 'authorizations' => (object) array_fill_keys($ids, 'active')],
+                ['status' => 'withdrawn', 'authorizations' => (object) array_fill_keys($ids, 'revoked')]);
 
             return $athlete;
         });
@@ -132,8 +132,8 @@ class RosterController extends Controller
                 $athlete->forceFill(['removed_at' => null])->save();
                 $ids = $revoked->modelKeys();
                 $log->record('roster.reinstate', $athlete,
-                    ['status' => 'withdrawn', 'authorizations' => array_fill_keys($ids, 'revoked')],
-                    ['status' => 'active', 'authorizations' => array_fill_keys($ids, 'active')], $input['reason']);
+                    ['status' => 'withdrawn', 'authorizations' => (object) array_fill_keys($ids, 'revoked')],
+                    ['status' => 'active', 'authorizations' => (object) array_fill_keys($ids, 'active')], $input['reason']);
 
                 return $athlete;
             });

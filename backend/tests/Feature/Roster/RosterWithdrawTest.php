@@ -96,6 +96,9 @@ class RosterWithdrawTest extends TestCase
         $this->withdraw()->assertOk();
 
         $this->assertNotNull($this->athlete->fresh()->removed_at);
+        // With nothing to list, the field is still an object, never an empty array.
+        $entry = AuditLogEntry::query()->where('action', 'roster.withdraw')->sole();
+        $this->assertIsObject(json_decode($entry->getRawOriginal('after_values'))->authorizations);
     }
 
     /** A past term's authorization is history: it stays as it was. */
