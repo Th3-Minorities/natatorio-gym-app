@@ -38,13 +38,13 @@ Without the row the tests still check the closed answer and skip the later steps
 
 Result words: pass, fail, skipped (with the reason in the row), not built (the screen is not on `main` yet), not automated (only a real phone can do it), pending (not run yet).
 
-The CI column holds the Frontend workflow run of 2026-11-09 on this branch, commit `34508d1` ([run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778)). The user app flows ran in the Android (Pixel 7) and iPhone (iPhone 13) browser jobs, the dashboard flows in the Chrome, Edge, Firefox and Safari jobs, each with `--workers=1` and two retries. The workflow seeds the database and adds the special-hours row, so the Check In, Gym ID and end of visit tests run at any hour. A step is pass when its test passed on every device of its flow. No step failed. The rows marked skipped below are not run by any test in CI.
+The CI column holds the Frontend workflow run of 2026-11-09 on this branch, commit `64c5646` ([run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653)). The user app flows ran in the Android (Pixel 7) and iPhone (iPhone 13) browser jobs, the dashboard flows in the Chrome, Edge, Firefox and Safari jobs, each with `--workers=1` and two retries. The workflow seeds the database and adds the special-hours row, so the Check In, Gym ID and end of visit tests run at any hour. A step is pass when its test passed on every device of its flow. No step failed. The rows marked skipped below are not run by any test in CI.
 
 ## 1. Paid member registration
 
 Test: `paid-registration.spec.ts`
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#1-paid-member-registration). Bugs the path tests found, fixed and retested: PR-23 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19487648), fixed in `1c12007`).
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#1-paid-member-registration). Bugs the path tests found, fixed and retested: PR-23 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19487648), fixed in `1c12007`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -67,7 +67,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `athlete-registration.spec.ts`. It covers the student number lookup, the emailed link and the account it creates. The API allows 10 failed lookups per IP in 15 minutes, so only the desktop path runs look up the numbers that fail (steps 1 to 3). In CI the seeded student number `802000001` can have a link less than 300 seconds old, so step 4 can answer "Espera para pedir otro enlace" instead, and the test accepts both. Only a local stack makes a new roster record per run, so only there the test goes on to step 6.
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#2-athlete-registration). Bugs the path tests found, fixed and retested: AR-20 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490187), fixed in `7dcd4c0`); AR-34 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490192), fixed in `7dcd4c0`); AR-22 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490197), fixed in `7dcd4c0`).
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#2-athlete-registration). Bugs the path tests found, fixed and retested: AR-20 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490187), fixed in `7dcd4c0`); AR-34 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490192), fixed in `7dcd4c0`); AR-22 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19490197), fixed in `7dcd4c0`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -83,7 +83,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `user-sign-in.spec.ts`
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#3-user-sign-in). Bugs the path tests found, fixed and retested: SI-50 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19488756), fixed in `d3d1eef`).
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#3-user-sign-in). Bugs the path tests found, fixed and retested: SI-50 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19488756), fixed in `d3d1eef`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -99,7 +99,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `check-in.spec.ts`
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#4-check-in). Bugs the path tests found, fixed and retested: CI-66 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6735515910), fixed in `8d1c3f7`); CI-18 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6735696177), fixed in `8d1c3f7`).
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#4-check-in). Bugs the path tests found, fixed and retested: CI-66 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6735515910), fixed in `8d1c3f7`); CI-18 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6735696177), fixed in `8d1c3f7`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -115,7 +115,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `gym-id-occupancy.spec.ts`
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#5-gym-id-and-occupancy). Bugs the path tests found, fixed and retested: GI-07 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19501881), fixed in `34508d1`).
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#5-gym-id-and-occupancy). Bugs the path tests found, fixed and retested: GI-07 ([Discussion](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/158#discussioncomment-19501881), fixed in `34508d1`).
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -130,7 +130,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `end-of-visit.spec.ts`
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#6-end-of-a-visit). No bug found by the path tests.
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#6-end-of-a-visit). No bug found by the path tests.
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -145,7 +145,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `app-base.spec.ts`
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#7-app-base). No bug found by the path tests.
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Android and iPhone browser jobs. Paths: [flow-paths.md](flow-paths.md#7-app-base). No bug found by the path tests.
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -160,7 +160,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `staff-accounts.spec.ts`
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Chrome, Edge, Firefox and Safari browser jobs. Paths: [flow-paths.md](flow-paths.md#8-staff-accounts). No bug found by the path tests.
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Chrome, Edge, Firefox and Safari browser jobs. Paths: [flow-paths.md](flow-paths.md#8-staff-accounts). No bug found by the path tests.
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
@@ -176,7 +176,7 @@ CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/action
 
 Test: `terms-roster.spec.ts`, skipped.
 
-CI: [run 42700244778](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42700244778), Chrome, Edge, Firefox and Safari browser jobs: the test is skipped because `main` has no Terms or roster screen, so every step is not built. Paths: [flow-paths.md](flow-paths.md#9-terms-and-athlete-roster). No bug found by the path tests.
+CI: [run 42705124653](https://github.com/Th3-Minorities/natatorio-gym-app/actions/runs/42705124653), Chrome, Edge, Firefox and Safari browser jobs: the test is skipped because `main` has no Terms or roster screen, so every step is not built. Paths: [flow-paths.md](flow-paths.md#9-terms-and-athlete-roster). No bug found by the path tests.
 
 | Step | Action | Test data | Expected result | CI | Manual |
 |---|---|---|---|---|---|
