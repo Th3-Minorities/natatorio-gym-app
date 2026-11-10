@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AthleteRegistrationController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\HealthController;
@@ -30,6 +31,11 @@ Route::prefix('user/registration')->middleware(EnsureRegistrationGuest::class)->
     Route::post('/lookup', [PaidRegistrationController::class, 'lookup']);
     Route::get('/waiver', [PaidRegistrationController::class, 'waiver']);
     Route::post('/complete', [PaidRegistrationController::class, 'complete']);
+    // The page the athlete's email link opens (REQ-F-15).
+    Route::post('/athlete/validate', [AthleteRegistrationController::class, 'validateLink'])
+        ->name('user.registration.athlete.validate')->middleware('throttle:user.registration.athlete.validate');
+    Route::post('/athlete/complete', [AthleteRegistrationController::class, 'completeAthlete'])
+        ->name('user.registration.athlete.complete')->middleware('throttle:user.registration.athlete.complete');
 });
 
 // Staff and Administrator sign-in on the gym dashboard (N-11, REQ-F-52).

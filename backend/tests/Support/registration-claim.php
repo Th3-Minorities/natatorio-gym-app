@@ -1,7 +1,9 @@
 <?php
 
 use App\Exceptions\ApiException;
+use App\Http\Controllers\AthleteRegistrationController;
 use App\Http\Controllers\PaidRegistrationController;
+use App\Services\AthleteLinks;
 use App\Services\RegistrationLookup;
 use App\Services\RegistrationPhoto;
 use Illuminate\Contracts\Console\Kernel;
@@ -48,18 +50,24 @@ $photos = new class extends RegistrationPhoto
 };
 $temporary = tempnam(sys_get_temp_dir(), 'registration-');
 file_put_contents($temporary, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII='));
-$request = Request::create('/api/user/registration/complete', 'POST', [
-    'authorization_number' => 'A', 'password' => 'a long password', 'password_confirmation' => 'a long password',
+$athlete = ($input['mode'] ?? 'paid') === 'athlete';
+$fields = [
+    'password' => 'a long password', 'password_confirmation' => 'a long password',
     'waiver_accepted' => true, 'waiver_version' => 'test-v1',
     'emergency_contact_name' => 'Ana', 'emergency_contact_phone' => '787 555 0100', 'locale' => 'es',
-], files: ['photo' => new UploadedFile($temporary, 'photo.png', 'image/png', test: true)]);
+];
+$request = Request::create('/api/user/registration/'.($athlete ? 'athlete/' : '').'complete', 'POST',
+    $athlete ? ['token' => 'tok', ...$fields] : ['authorization_number' => 'A', ...$fields],
+    files: ['photo' => new UploadedFile($temporary, 'photo.png', 'image/png', test: true)]);
 $session = $app->make('session')->driver();
 $session->start();
 $session->put('registration_privacy_accepted', config('registration.privacy_version'));
 $request->setLaravelSession($session);
 $app->instance('request', $request);
 try {
-    $response = $app->make(PaidRegistrationController::class)->complete($request, $app->make(RegistrationLookup::class), $photos);
+    $response = $athlete
+        ? $app->make(AthleteRegistrationController::class)->completeAthlete($request, $app->make(AthleteLinks::class), $app->make(RegistrationLookup::class), $photos)
+        : $app->make(PaidRegistrationController::class)->complete($request, $app->make(RegistrationLookup::class), $photos);
     echo $response->getStatusCode();
 } catch (ApiException $error) {
     echo $error->status;

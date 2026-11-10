@@ -56,6 +56,7 @@ const USER_ROUTES: Record<string, Route> = {
   '/privacy': register,
   '/recover-password': access('recover'),
   '/register': register,
+  '/register/athlete': register,
   '/register/contact': register,
   '/register/identify': register,
   '/register/password': register,

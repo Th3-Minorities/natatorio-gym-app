@@ -97,7 +97,7 @@ class RegistrationLookup
         return $membership;
     }
 
-    /** A 9-digit number is a student number: the athlete must be on the roster and not claimed yet (REQ-F-15). */
+    /** A 9-digit number is a student number: the athlete must be on the roster; a claimed record is refused unless the roster email already has an account (REQ-F-15, E-70). */
     public function findStudent(string $number, Request $request): RosterRecord
     {
         $this->ensureAllowed($request);
@@ -105,7 +105,8 @@ class RegistrationLookup
         if ($record === null) {
             throw $this->failed($request, 'student_not_on_roster');
         }
-        if (Authorization::query()->where('roster_record_id', $record->id)->exists()) {
+        if (! $this->emailHasAccount($record->institutional_email)
+            && Authorization::query()->where('roster_record_id', $record->id)->exists()) {
             throw $this->failed($request, 'roster_record_claimed');
         }
         RateLimiter::decrement($this->ipKey($request->ip()), config('registration.window_seconds'));
@@ -125,18 +126,30 @@ class RegistrationLookup
 
     public function hasAccount(ImportedMembership $membership): bool
     {
-        return User::query()->whereRaw('lower(email) = lower(?)', [$membership->email])->exists();
+        return $this->emailHasAccount($membership->email);
     }
 
     public function result(ImportedMembership $membership): array
     {
-        [$local, $domain] = explode('@', $membership->email, 2);
         $state = $this->hasAccount($membership) ? 'renewal' : 'ready';
 
         return [
             'state' => $state,
             ...($state === 'ready' ? ['name' => $membership->name] : []),
-            'masked_email' => Str::substr($local, 0, 1).'***'.(Str::length($local) > 1 ? Str::substr($local, -1) : '').'@'.$domain,
+            'masked_email' => $this->mask($membership->email),
         ];
+    }
+
+    /** First and last letter before the @ (E-72), for example m***z@upr.edu. */
+    public function mask(string $email): string
+    {
+        [$local, $domain] = explode('@', $email, 2);
+
+        return Str::substr($local, 0, 1).'***'.(Str::length($local) > 1 ? Str::substr($local, -1) : '').'@'.$domain;
+    }
+
+    public function emailHasAccount(string $email): bool
+    {
+        return User::query()->whereRaw('lower(email) = lower(?)', [$email])->exists();
     }
 }
