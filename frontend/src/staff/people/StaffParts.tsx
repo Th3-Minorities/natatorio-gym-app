@@ -39,7 +39,13 @@ export function StaffLink({
  * The ID photo Staff compare with the person (REQ-F-45). The initials stay until it loads, and stay if there is no
  * photo or it fails, so Staff never see a broken image. The photo route is private and never cached.
  */
-export function PersonPhoto({ src, name, size }: { src: string | null; name: string | null; size: 'small' | 'large' }) {
+export function PersonPhoto({ src, name, size, onSettled, showLoadingCaption = true }: {
+  src: string | null
+  name: string | null
+  size: 'small' | 'large'
+  onSettled?: () => void
+  showLoadingCaption?: boolean
+}) {
   const t = useMessages().sessionDetail
   const [state, setState] = useState<'loading' | 'shown' | 'failed'>(src ? 'loading' : 'failed')
 
@@ -50,7 +56,7 @@ export function PersonPhoto({ src, name, size }: { src: string | null; name: str
           {initials(name)}
         </span>
       )}
-      {size === 'large' && state !== 'shown' && (
+      {size === 'large' && (state === 'failed' || (state === 'loading' && showLoadingCaption)) && (
         <span className="person-photo__caption">{state === 'loading' ? t.photoLoading : t.photo}</span>
       )}
       {src && state !== 'failed' && (
@@ -58,8 +64,14 @@ export function PersonPhoto({ src, name, size }: { src: string | null; name: str
           src={src}
           alt={size === 'large' ? t.photo : ''}
           className={state === 'shown' ? 'person-photo__img' : 'person-photo__img person-photo__img--hidden'}
-          onLoad={() => setState('shown')}
-          onError={() => setState('failed')}
+          onLoad={() => {
+            setState('shown')
+            onSettled?.()
+          }}
+          onError={() => {
+            setState('failed')
+            onSettled?.()
+          }}
         />
       )}
     </div>

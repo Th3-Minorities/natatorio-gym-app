@@ -464,6 +464,28 @@
   gap: var(--spacing-12);
 }
 
+/* S-03 photo loading (4288:1354). */
+.find-photo-loading {
+  align-items: stretch;
+  gap: var(--spacing-16);
+}
+
+.find-photo-loading .state__title {
+  line-height: 29px;
+}
+
+.find-photo-loading .state__detail {
+  text-align: center;
+}
+
+.find-photo-loading .find-verify__actions {
+  justify-content: center;
+}
+
+.find-photo-loading .button {
+  width: 216px;
+}
+
 /* "¿La foto no corresponde a la persona?" (121:3372), pink like the error banners. */
 .photo-question {
   display: flex;
