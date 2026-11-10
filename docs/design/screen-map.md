@@ -8,7 +8,21 @@ Pending answers touch several screens:
 - Contact number (gym, G-25). N-03 (number entry), U-06, U-07 and U-08 show it (E-184).
 - Store address (gym). N-03 has a "Buy membership" button at number entry that opens the store (E-184). It does not redirect, it shows only while a term runs, and the address is a setting (E-92, E-96, E-126).
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Diagrams](#diagrams) · [Screen inventory](#8-screen-inventory) · [Role coverage](#9-role-table-coverage) · [Phone and front desk](#10-phone-and-front-desk) · [Accessibility](#11-accessibility-notes) · [Design decisions](#design-decisions-to-confirm) · [Open questions](#gaps-and-questions) · [Traceability](#traceability)
+
+</nav>
+
 ## Diagrams
+
+<nav aria-label="Diagram topics" markdown="1">
+
+[Public](#1-public-screens) · [User with access](#2-user-with-an-active-authorization) · [User without access](#3-user-with-no-active-authorization) · [Staff](#4-staff-staff-account-with-the-staff-role) · [Administrator](#5-administrator-staff-account-with-the-administrator-role) · [Shared screens](#6-shared-screens-and-the-app-frame) · [Data states](#7-standard-data-states)
+
+</nav>
 
 ### 1. Public screens
 
@@ -465,6 +479,9 @@ Decided (team, 2026-10-17): B (E-77), with a persistent top banner for the whole
 
 ## Traceability
 
+<details markdown="1">
+<summary>Show traceability tables</summary>
+
 | Requirement or decision | Where it appears |
 |---|---|
 | REQ-F-23 | Diagram 3. User with no active authorization; 8. Inventory U-07, U-08; Gaps 1 |
@@ -527,3 +544,5 @@ Decided (team, 2026-10-17): B (E-77), with a persistent top banner for the whole
 | E-183 | Diagrams 1 and 6; 8. Inventory N-01, C-02, C-03, A-11; 9. Coverage; Gap 5 |
 | E-184 | Diagram 1; 8. Inventory N-01 and N-03; Gap 13 |
 | E-120 | 8. Inventory A-08 |
+
+</details>

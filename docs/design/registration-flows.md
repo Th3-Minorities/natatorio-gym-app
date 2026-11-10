@@ -13,7 +13,21 @@ Mail is assumed available (E-61). CTI described a path: the server runs a mail s
 
 Before an account exists, the welcome screen (N-01) has a Spanish / English switch, Spanish by default (E-159). The choice stays on the device, applies before sign in and is saved to the new account without another language step (E-174). After sign in, the account language applies.
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Diagrams](#diagrams) · [Design decisions](#design-decisions-to-confirm) · [Open questions](#gaps-and-questions) · [Traceability](#traceability)
+
+</nav>
+
 ## Diagrams
+
+<nav aria-label="Diagram topics" markdown="1">
+
+[Paid membership](#1-paid-member-registration) · [Number lookup](#2-authorization-number-lookup-with-limits) · [Athlete email link](#4-athlete-registration-by-email-link) · [Renewal](#6-renewal-and-type-change-with-a-new-authorization-number) · [New term](#8-athlete-in-a-new-term) · [Authorization states](#9-authorization-states)
+
+</nav>
 
 ### 1. Paid member registration
 
@@ -449,6 +463,9 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 
 ## Traceability
 
+<details markdown="1">
+<summary>Show traceability tables</summary>
+
 | Requirement or decision | Where it appears |
 |---|---|
 | REQ-F-10 | 2. Authorization Number lookup with limits |
@@ -518,3 +535,5 @@ Drawn in diagram 8. Under E-116 the roster is one list, so the same record serve
 | E-159 (Spanish / English switch on Welcome, refined by E-174) | intro; 1, 4; REG-13 |
 | E-160 (a student number has exactly 9 digits) | 1, 2, 4; REG-14 |
 | E-184 (purchase, prerequisite and help on number entry; original Welcome layout) | 1; intro |
+
+</details>

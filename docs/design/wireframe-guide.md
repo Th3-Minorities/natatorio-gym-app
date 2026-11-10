@@ -2,11 +2,20 @@
 
 ## 1. What this guide is
 
-This guide is for whoever draws the wireframes of issues #40 to #45. For each issue it says how many screens you draw, in which order, and what each screen must show. Everything in it comes from the [screen map](screen-map.md), the issue bodies and the team decisions. If this guide and the screen map ever disagree, follow the screen map and tell the team.
+Use this guide to draw the wireframes for issues #40 to #45. Pick an issue, open its diagrams, and draw the screens in table order with every listed state. If the guide and the [screen map](screen-map.md) disagree, follow the screen map and tell the team.
 
-How to use it: pick an issue, read its section in [5. The six issues](#5-the-six-issues), open the diagrams listed there, then draw the screens in the table order with every state in the "States to draw" column.
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Legend](#2-legend) · [Screen totals](#3-totals) · [Work order](#4-recommended-work-order) · [Issue checklists](#5-the-six-issues) · [Wireframe rules](#6-rules-for-every-wireframe) · [Diagram map](#7-diagram-reading-map) · [Open items](#8-open-items-that-affect-wireframes)
+
+</nav>
 
 ## 2. Legend
+
+<details markdown="1">
+<summary>Screen IDs, devices, states and codes</summary>
 
 ### Screen letters
 
@@ -53,6 +62,8 @@ A key state is one version of a screen that you draw on its own. Diagram 7 of th
 | admin D-N | A staff account and administration design decision | [administration flows](admin-flows.md) |
 | WCAG N.N.N | An accessibility rule of WCAG 2.2 | screen map section 11 |
 
+</details>
+
 ## 3. Totals
 
 | Issue | Name | Screens |
@@ -83,6 +94,12 @@ Proposed; the team can change it.
 If you work in parallel, the gym dashboard is its own path (E-65, E-124), so one person can take the User app track (#42, #41, #40: 20 screens) and the other the dashboard track (#43, #45, then #44: 20 screens). The User app issues also hold the dashboard sign-in screen (N-11); S-03 belongs to #43. Where a screen links to one that someone else draws, draw the link as a labeled button.
 
 ## 5. The six issues
+
+<nav aria-label="Wireframe issues" markdown="1">
+
+[Sign in and account](#issue-42-sign-in-and-account) · [Check In and Gym ID](#issue-41-check-in-and-gym-id) · [Staff](#issue-43-staff) · [Registration](#issue-40-registration) · [Content and analytics](#issue-44-content-and-analytics) · [Administration](#issue-45-administration)
+
+</nav>
 
 The sections follow the order of section 4. In each table, "Who sees it" is the Roles column of the screen map, "What it must show" is its Purpose, and "States to draw" is its Key states. "Comes from" and "Leads to" come from the navigation diagrams; "none drawn" means the diagrams draw no exit for that screen.
 

@@ -9,6 +9,14 @@
 |---|---|---|---|
 | 15 | 2 | 6 | 7 |
 
+<nav aria-label="On this page" markdown="1">
+
+**On this page**
+
+[Hosting and network](#hosting-and-network) · [VM evaluation](#vm-evaluation-and-timing) · [Database](#database) · [Outgoing mail](#outgoing-mail) · [Backups and access](#storage-backups-and-server-access) · [Privacy](#data-rules-and-privacy) · [WooCommerce](#woocommerce)
+
+</nav>
+
 ## Hosting and network
 
 ### M-01: Access to the VM from outside campus

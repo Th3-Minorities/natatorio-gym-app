@@ -25,7 +25,7 @@ Three groups are involved:
 | Requirement | One thing the app must do, written as a rule. All of them are in one document, the SRS |
 | SRS | Software Requirements Specification: the document with every requirement |
 | Proposal | The project plan we submitted at the start of the course |
-| Check In | What a person does in the app when they arrive. It only works inside the gym, and it starts a 60-minute visit |
+| Check In | What a person does in the app when they arrive. It only works inside the gym, and it opens a visit. The visit ends when Staff check the person out, or on its own 2 hours after Check In |
 | Gym ID | The digital gym card the app shows. Staff look at it to let a person in |
 | Authorization Number | A code (6 or 7 characters so far, letters allowed) a member gets by email when they pay for the gym. They type it to register in the app |
 | Roster | The list of student athletes allowed in the gym this term |
@@ -55,9 +55,9 @@ All documents are in the `docs` folder.
 | What changed since the proposal, and why | [Project context](context.md) |
 | Questions we asked and the answers we got | [The team's questions](decisions/team.md), [the gym's questions](decisions/gym.md), [CTI's questions](decisions/cti.md) |
 | Summaries of meetings with the gym or CTI | [Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/categories/announcements) |
-| The proposal and its original drawings | [capstone_proposal folder](capstone_proposal/). The `v0` folder inside is the version we submitted, kept as it was |
-| How to set up the tools we use | [setup folder](setup/) |
-| How to run the code | The [README at the top of the repository](../README.md) |
+| The proposal and its original drawings | [capstone_proposal folder](https://github.com/Th3-Minorities/natatorio-gym-app/tree/main/docs/capstone_proposal). The `v0` folder inside is the version we submitted, kept as it was |
+| How to set up the tools we use | [setup guide](setup/skills.md) |
+| How to run the code | The [README at the top of the repository](https://github.com/Th3-Minorities/natatorio-gym-app#readme) |
 
 ### How each part of the app works
 
@@ -66,7 +66,7 @@ All documents are in the `docs` folder.
 | Servers and how the pieces connect | [Architecture](design/architecture.md) | 5 |
 | What the database stores | [Data model](design/data-model.md) | 4 |
 | Registering and renewing each term | [Registration flows](design/registration-flows.md) | 9 |
-| Check In, the 60-minute visit, the Gym ID, how full the gym is | [Check In flows](design/check-in-flows.md) | 11 |
+| Check In, how a visit ends, the Gym ID, how full the gym is | [Check In flows](design/check-in-flows.md) | 11 |
 | Staff and administration tasks | [Administration flows](design/admin-flows.md) | 17 |
 | Every screen and how people move between them | [Screen map](design/screen-map.md) | 7 |
 | What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) | |
@@ -79,7 +79,7 @@ Each design document ends with three lists: decisions still waiting for a yes, o
 
 ## For developers: where the code is
 
-The app has two halves that talk to each other. The backend (Laravel, in PHP) keeps the data and the rules. The frontend (React) is what people see on the phone. Both run in containers, so one command starts everything on any computer. The [README at the top](../README.md) has the commands.
+The app has two halves that talk to each other. The backend (Laravel, in PHP) keeps the data and the rules. The frontend (React) is what people see on the phone. Both run in containers, so one command starts everything on any computer. The [README at the top](https://github.com/Th3-Minorities/natatorio-gym-app#readme) has the commands.
 
 | What you are looking for | Where it is |
 |---|---|
@@ -129,7 +129,7 @@ The documents use short codes so they can point to each other. When you see one,
 | `A-01` | A screen for the administration | Same |
 | `C-01` | A screen everyone sees, such as how full the gym is | Same |
 | `#12` | A GitHub issue or pull request | Click it, or search the number on GitHub |
-| `Proposal:175` | Line 175 of the proposal | [Proposal](capstone_proposal/main.tex) |
+| `Proposal:175` | Line 175 of the proposal | [Proposal](https://github.com/Th3-Minorities/natatorio-gym-app/blob/main/docs/capstone_proposal/main.tex) |
 
 If you cannot find a requirement code, it may have been merged into another one or removed. Appendix B of the SRS lists those.
 
