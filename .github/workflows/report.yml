@@ -1,0 +1,23 @@
+name: Report PDF
+
+on:
+  push:
+    branches: ['docs/progress-report']
+  workflow_dispatch:
+
+jobs:
+  pdf:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tectonic
+        run: curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
+      - name: Build the PDF
+        working-directory: docs/progress_report
+        run: ../../tectonic -X compile main.tex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: progress-report
+          path: docs/progress_report/main.pdf
+          retention-days: 14
