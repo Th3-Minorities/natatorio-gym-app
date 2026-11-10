@@ -79,11 +79,22 @@ function OccupancyCard({ occupancy }: { occupancy: OccupancyState }) {
             </div>
             <p className="staff-occupancy__caption">{gym.updated(dates.time(data.updated_at, true))}</p>
           </>
-        ) : offline || problem ? (
+        ) : offline ? (
+          // Figma 122:2983: the title, the chip, why, and when the number was last right.
           <>
             <p className="staff-occupancy__problem" role="status">
-              {offline ? <WifiOff aria-hidden="true" /> : <TriangleAlert aria-hidden="true" />}
-              {offline ? gym.offline : gym.failed}
+              <WifiOff aria-hidden="true" />
+              {gym.offline}
+              <span className="team-chip team-chip--deactivated">{t.staleChip}</span>
+            </p>
+            <p className="staff-occupancy__caption">{t.offlineText}</p>
+            {data && <p className="staff-occupancy__caption">{texts.checkIn.lastUpdate(dates.time(data.updated_at))}</p>}
+          </>
+        ) : problem ? (
+          <>
+            <p className="staff-occupancy__problem" role="status">
+              <TriangleAlert aria-hidden="true" />
+              {gym.failed}
             </p>
             <p className="staff-occupancy__caption">{gym.stale(data ? dates.time(data.updated_at) : undefined)}</p>
           </>

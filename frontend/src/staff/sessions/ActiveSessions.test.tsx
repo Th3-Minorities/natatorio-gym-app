@@ -1,9 +1,9 @@
-import { act, fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { es } from '../../i18n/es'
 import { StaffApp } from '../StaffApp'
 import { STAFF_PATH, STAFF_TEAM_PATH } from '../staffPath'
-import { apiError, callsTo, fakeApi, json, lorena, offline, team } from '../team/fakeTeamApi'
+import { apiError, callsTo, fakeApi, goOffline, goOnline, json, lorena, offline, team } from '../team/fakeTeamApi'
 
 // S-01 "Sesiones activas" (Figma 121:2841), for now only the occupancy card (#26). The card adds the level and the
 // bar of C-01 (Figma 4106:1869), as E-178 says.
@@ -19,11 +19,19 @@ beforeEach(() => {
 })
 
 afterEach(() => {
+  goOnline()
   vi.useRealTimers()
   vi.unstubAllGlobals()
   Reflect.deleteProperty(document, 'hidden')
   window.history.pushState(null, '', '/')
 })
+
+/** The X-Auto-Refresh header of each call to a route, in order: undefined for a request that counts as activity. */
+function autoRefreshOf(fetchMock: ReturnType<typeof fakeApi>, path: string) {
+  return fetchMock.mock.calls
+    .filter(([called]) => called === path)
+    .map(([, init]) => (init?.headers as Record<string, string> | undefined)?.['X-Auto-Refresh'])
+}
 
 function openScreen(routes: Parameters<typeof fakeApi>[0] = {}, account: object = lorena) {
   const fetchMock = fakeApi({
@@ -103,7 +111,71 @@ describe('S-01 occupancy', () => {
     openScreen({ [OCCUPANCY]: offline })
 
     expect(await screen.findByText(gym.offline)).toBeInTheDocument()
-    expect(screen.getByText(gym.stale())).toBeInTheDocument()
+    expect(screen.getByText(t.staleChip)).toBeInTheDocument()
+    expect(screen.getByText(t.offlineText)).toBeInTheDocument()
+  })
+
+  it('draws the offline state of 122:2983 once: title, chip, why and the last update', async () => {
+    openScreen()
+    await screen.findByText('18')
+    await screen.findByText(es.activeSessions.emptyTitle)
+
+    act(() => goOffline())
+
+    const card = screen.getByRole('region', { name: t.inside })
+    const status = within(card).getByRole('status')
+    expect(status).toHaveTextContent(gym.offline)
+    expect(within(status).getByText(t.staleChip)).toHaveClass('team-chip')
+    expect(within(card).getByText(es.checkIn.lastUpdate('1:07 p. m.'))).toBeInTheDocument()
+    expect(card).not.toHaveTextContent('18')
+    // The sessions list does not say it again next to the card.
+    expect(screen.getAllByText(t.offlineText)).toHaveLength(1)
+  })
+
+  it('announces a problem with the count through one status region', async () => {
+    openScreen({ [OCCUPANCY]: () => apiError('server_error', 500) })
+
+    await screen.findByText(gym.failed)
+    const card = screen.getByRole('region', { name: t.inside })
+    expect(within(card).getByRole('status')).toHaveTextContent(gym.failed)
+  })
+
+  it('sends the first request as activity and every later one as a background refresh (E-130)', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const fetchMock = openScreen()
+    expect(await screen.findByText('18')).toBeInTheDocument()
+    expect(autoRefreshOf(fetchMock, OCCUPANCY)).toEqual([undefined])
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(25_000)
+    })
+
+    expect(autoRefreshOf(fetchMock, OCCUPANCY)).toEqual([undefined, '1'])
+  })
+
+  it('asks again as a background refresh when the connection comes back', async () => {
+    const fetchMock = openScreen()
+    expect(await screen.findByText('18')).toBeInTheDocument()
+
+    act(() => goOffline())
+    act(() => goOnline())
+
+    await vi.waitFor(() => expect(callsTo(fetchMock, OCCUPANCY)).toHaveLength(2))
+    expect(autoRefreshOf(fetchMock, OCCUPANCY)).toEqual([undefined, '1'])
+  })
+
+  it('asks again as soon as the tab is visible again, as a background refresh', async () => {
+    const fetchMock = openScreen()
+    expect(await screen.findByText('18')).toBeInTheDocument()
+
+    Object.defineProperty(document, 'hidden', { configurable: true, value: true })
+    document.dispatchEvent(new Event('visibilitychange'))
+    expect(callsTo(fetchMock, OCCUPANCY)).toHaveLength(1)
+    Object.defineProperty(document, 'hidden', { configurable: true, value: false })
+    document.dispatchEvent(new Event('visibilitychange'))
+
+    await vi.waitFor(() => expect(callsTo(fetchMock, OCCUPANCY)).toHaveLength(2))
+    expect(autoRefreshOf(fetchMock, OCCUPANCY)).toEqual([undefined, '1'])
   })
 
   it('asks again every 25 seconds, only while the page is visible', async () => {

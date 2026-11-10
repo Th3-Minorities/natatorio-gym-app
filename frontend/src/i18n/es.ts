@@ -366,6 +366,13 @@ export const es = {
     noMatchTitle: 'Sin coincidencias',
     noMatchText: (text: string) => `No hay sesiones activas que coincidan con “${text}”.`,
     offlineText: 'Sin internet no podemos actualizar la ocupación.',
+    // The chip of the offline card (Figma 122:2983).
+    staleChip: 'Datos no actuales',
+    // The confirmation (Figma 122:3002): the title, then the question, then the button.
+    confirmTitle: 'Confirmar salida',
+    confirmCheckOut: 'Sí, marcar salida',
+    // No match (Figma 122:3020).
+    clearSearch: 'Limpiar búsqueda',
     checkOutTitle: (name: string) => `¿Marcar la salida de ${name}?`,
     checkOutText: 'La sesión terminará con la hora actual de salida.',
     cancel: 'Cancelar',
@@ -409,7 +416,15 @@ export const es = {
     markPending: 'Marcar foto pendiente',
     pendingTitle: 'Foto pendiente',
     pendingText: 'Debe subir una foto nueva desde su teléfono. No puede hacer Check In ni Check In asistido.',
-    // The confirmations, Figma 122:3040, 122:3058, 122:3076 and 122:3094.
+    // The confirmations, Figma 122:3040, 122:3058, 122:3076 and 122:3094: the title, then the question, then the text.
+    checkOutHeading: 'Confirmar salida',
+    endEarlyHeading: 'Confirmar fin anticipado',
+    voidHeading: 'Confirmar anulación',
+    pendingHeading: 'Confirmar foto pendiente',
+    checkOutConfirm: 'Sí, marcar salida',
+    // Buttons: error and already active (4228:1671, 4288:1695), and "La sesión cambió" (122:3141, 4288:1329).
+    backToSessions: 'Volver a sesiones',
+    refresh: 'Actualizar datos',
     checkOutTitle: (name: string) => `¿Marcar la salida de ${name}?`,
     checkOutText: 'La sesión dejará de contar como activa. La visita se conserva.',
     endEarlyTitle: (name: string) => `¿Terminar antes la sesión de ${name}?`,
@@ -456,6 +471,8 @@ export const es = {
     failedText: 'Ocurrió un error al consultar los datos. Inténtalo de nuevo.',
     offlineTitle: 'Sin conexión',
     offlineText: 'Conéctate a internet para buscar personas o registrar entradas. No podemos confirmar si los datos están actualizados.',
+    // Buttons of the not found, refusal and offline states (Figma 4288:1105, 4288:1160, 4288:1183 to 4288:1280).
+    backToSearch: 'Volver a buscar',
     selectTitle: 'Selecciona a la persona',
     selectText: 'Hay varias cuentas con ese nombre. Comprueba cuál corresponde a la persona presente.',
     select: 'Seleccionar',

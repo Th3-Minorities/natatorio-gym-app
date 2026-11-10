@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useId, useState } from 'react'
+import { useEffect, useEffectEvent, useId, useRef, useState } from 'react'
 import { ApiError, apiRequest } from '../../api/client'
 import { Button, LoadingState } from '../../components'
 import { useDateFormat } from '../../format/dateTime'
@@ -55,10 +55,17 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
   const [problem, setProblem] = useState<ApiError | null>(null)
   // Recounts the time inside each minute without asking the server.
   const [now, setNow] = useState(() => Date.now())
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
   const titleId = useId()
   const searchId = useId()
   const welcomeId = useId()
+  const searchInput = useRef<HTMLInputElement>(null)
+  const countTitle = useRef<HTMLHeadingElement>(null)
+  // The row that was pressed is gone after a check-out: focus goes to the list title (WCAG 2.4.3).
+  const [checkedOutCount, setCheckedOutCount] = useState(0)
+
+  useEffect(() => {
+    if (checkedOutCount > 0) countTitle.current?.focus()
+  }, [checkedOutCount])
 
   useEffect(() => {
     const timer = window.setTimeout(() => setSearch(query.trim()), SEARCH_DELAY)
@@ -78,7 +85,6 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
         const path = search ? `/staff/sessions?${new URLSearchParams({ search })}` : '/staff/sessions'
         const { sessions } = await apiRequest<{ sessions: Visit[] }>(path, { autoRefresh: background })
         if (!current) return
-        setLastUpdated(new Date().toISOString())
         setNow(Date.now())
         setLoad({ status: 'ready', visits: sessions, search })
       } catch (error) {
@@ -109,6 +115,7 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
       await apiRequest(`/staff/sessions/${checkingOut.id}/check-out`, { method: 'POST' })
       setMessage(t.checkedOut(checkingOut.name ?? ''))
       setCheckingOut(null)
+      setCheckedOutCount((n) => n + 1)
     } catch (error) {
       session.reportError(error)
       setProblem(error instanceof ApiError ? error : new ApiError('server_error', 500))
@@ -127,9 +134,10 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
     <>
       {checkingOut && (
         <ConfirmDialog
-          title={t.checkOutTitle(checkingOut.name ?? '')}
+          title={t.confirmTitle}
+          question={t.checkOutTitle(checkingOut.name ?? '')}
           text={t.checkOutText}
-          confirm={t.checkOut}
+          confirm={t.confirmCheckOut}
           busy={busy}
           problem={<ProblemNotice problem={problem} tone="error" />}
           onConfirm={() => void checkOut()}
@@ -150,12 +158,6 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
           </section>
         )}
         {message && <p className="sessions-message">{message}</p>}
-        {!online && load.status === 'ready' && (
-          <p className="sessions-message">
-            {t.offlineText}
-            {lastUpdated && ` ${texts.checkIn.lastUpdate(dates.time(lastUpdated))}`}
-          </p>
-        )}
       </div>
 
       <section className="sessions-panel" aria-labelledby={titleId}>
@@ -166,6 +168,7 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
             </label>
             <input
               id={searchId}
+              ref={searchInput}
               className="field__input"
               type="search"
               autoComplete="off"
@@ -175,7 +178,7 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
             />
           </div>
           <div className="sessions-panel__count">
-            <h2 className="sessions-panel__title" id={titleId}>
+            <h2 className="sessions-panel__title" id={titleId} ref={countTitle} tabIndex={-1}>
               {load.status === 'ready' ? t.count(visits.length) : t.tableTitle}
             </h2>
             <p className="sessions-panel__date">{t.today(dates.date(new Date(now).toISOString()))}</p>
@@ -189,7 +192,16 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
   function content() {
     switch (load.status) {
       case 'loading':
-        return <LoadingState title={t.loadingTitle} detail={t.loadingText} />
+        return (
+          <>
+            <LoadingState title={t.loadingTitle} detail={t.loadingText} />
+            <div className="sessions-skeleton" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+            </div>
+          </>
+        )
       case 'error':
       case 'offline':
         return (
@@ -207,6 +219,17 @@ export function SessionsList({ navigate, onChange }: { navigate?: (path: string)
         <section className="state">
           <h3 className="state__title">{t.noMatchTitle}</h3>
           <p className="state__detail">{t.noMatchText(load.search)}</p>
+          <Button
+            variant="secondary"
+            className="state__button"
+            onClick={() => {
+              setQuery('')
+              setSearch('')
+              searchInput.current?.focus()
+            }}
+          >
+            {t.clearSearch}
+          </Button>
         </section>
       ) : (
         <section className="state">

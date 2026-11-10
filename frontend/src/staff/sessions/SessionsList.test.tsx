@@ -88,9 +88,10 @@ describe('S-01 list', () => {
     })
 
     fireEvent.click(await screen.findByRole('button', { name: `${t.checkOut}, Camila Rivera Santiago` }))
-    const dialog = screen.getByRole('dialog', { name: t.checkOutTitle('Camila Rivera Santiago') })
+    const dialog = screen.getByRole('dialog', { name: t.confirmTitle })
+    expect(within(dialog).getByText(t.checkOutTitle('Camila Rivera Santiago'))).toBeInTheDocument()
     expect(within(dialog).getByText(t.checkOutText)).toBeInTheDocument()
-    fireEvent.click(within(dialog).getByRole('button', { name: t.checkOut }))
+    fireEvent.click(within(dialog).getByRole('button', { name: t.confirmCheckOut }))
 
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
     expect(await screen.findByText(t.checkedOut('Camila Rivera Santiago'))).toBeInTheDocument()
@@ -112,7 +113,7 @@ describe('S-01 list', () => {
     await waitFor(() => expect(card).toHaveTextContent('2'))
 
     fireEvent.click(await screen.findByRole('button', { name: `${t.checkOut}, Camila Rivera Santiago` }))
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.checkOut }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.confirmCheckOut }))
 
     await waitFor(() => expect(card.querySelector('strong')).toHaveTextContent('1'))
   })
@@ -123,7 +124,7 @@ describe('S-01 list', () => {
     })
     fireEvent.click(await screen.findByRole('button', { name: `${t.checkOut}, Camila Rivera Santiago` }))
     const before = callsTo(fetchMock, SESSIONS).length
-    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.checkOut }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.confirmCheckOut }))
 
     expect(await within(screen.getByRole('dialog')).findByText(es.errors.check_out_session_not_active)).toBeInTheDocument()
     await waitFor(() => expect(callsTo(fetchMock, SESSIONS).length).toBeGreaterThan(before))
@@ -147,5 +148,43 @@ describe('S-01 list', () => {
     expect(row).toHaveClass('sessions-row--new')
     // The notice is said once; a reload does not bring it back.
     expect(window.location.search).toBe('')
+  })
+
+  it('moves focus to the list title after a check-out, since the pressed button is gone', async () => {
+    let list = [camilaVisit, luisVisit]
+    openList({
+      [SESSIONS]: () => sessions(list)(),
+      'POST /api/staff/sessions/11/check-out': () => {
+        list = [luisVisit]
+        return json({ session: { id: 11, status: 'checked_out' } })
+      },
+    })
+
+    fireEvent.click(await screen.findByRole('button', { name: `${t.checkOut}, Camila Rivera Santiago` }))
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: t.confirmCheckOut }))
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    await waitFor(() => expect(screen.getByRole('heading', { name: t.count(1) })).toHaveFocus())
+  })
+
+  it('clears the search from the empty result, and puts the cursor back in the box (122:3020)', async () => {
+    openList({ [`${SESSIONS}?search=Daniela`]: sessions([]) })
+    await screen.findByRole('table', { name: t.tableTitle })
+    const box = screen.getByRole('searchbox', { name: t.search })
+    fireEvent.change(box, { target: { value: 'Daniela' } })
+    await screen.findByText(t.noMatchText('Daniela'))
+
+    fireEvent.click(screen.getByRole('button', { name: t.clearSearch }))
+
+    expect(box).toHaveValue('')
+    expect(box).toHaveFocus()
+    expect(await screen.findByRole('table', { name: t.tableTitle })).toBeInTheDocument()
+  })
+
+  it('shows the skeleton bars while it loads (122:2957)', async () => {
+    openList({ [SESSIONS]: () => new Promise<Response>(() => {}) })
+
+    expect(await screen.findByText(t.loadingTitle)).toBeInTheDocument()
+    expect(document.querySelectorAll('.sessions-skeleton span')).toHaveLength(3)
   })
 })

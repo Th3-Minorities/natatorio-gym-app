@@ -132,6 +132,28 @@
 
 /* S-01's list (121:3032), S-02 (121:3142) and S-03 (4283:1011), #26. */
 
+/* The grey bars under "Cargando" (122:2957, 4228:1557), the same grey as the occupancy skeleton. */
+.sessions-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.sessions-skeleton span {
+  height: 20px;
+  border-radius: 12px;
+  background: var(--border);
+}
+
+.sessions-skeleton span:nth-child(2) {
+  width: 70%;
+}
+
+.sessions-skeleton span:nth-child(3) {
+  width: 45%;
+}
+
 .button--danger {
   border-color: var(--danger-text);
   background: var(--danger-text);

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError, apiRequest } from '../api/client'
 import { useConnection } from '../user/useConnection'
 
@@ -32,6 +32,8 @@ export function useOccupancy(path: string, ended: (error: unknown) => boolean) {
   const [problem, setProblem] = useState<'offline' | 'error' | null>(null)
   // Counts up to ask again at once, after a change on the same screen, like a check-out on S-01.
   const [asked, setAsked] = useState(0)
+  // Only the first load counts as activity; a reconnection, a poll or a return to the tab is a background refresh (E-130).
+  const loaded = useRef(false)
 
   useEffect(() => {
     if (!online) return
@@ -43,6 +45,7 @@ export function useOccupancy(path: string, ended: (error: unknown) => boolean) {
       try {
         const next = await apiRequest<Occupancy>(path, { autoRefresh: background })
         if (!disposed) {
+          loaded.current = true
           setData(next)
           setProblem(null)
         }
@@ -52,7 +55,7 @@ export function useOccupancy(path: string, ended: (error: unknown) => boolean) {
         pending = false
       }
     }
-    void refresh()
+    void refresh(loaded.current)
     const timer = setInterval(() => void refresh(true), OCCUPANCY_POLL)
     const visible = () => {
       if (!document.hidden) void refresh(true)

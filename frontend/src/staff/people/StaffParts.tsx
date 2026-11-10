@@ -69,6 +69,7 @@ export function PersonPhoto({ src, name, size }: { src: string | null; name: str
 /** A question before an action (Figma 122:3002, 122:3040 to 122:3094, 4288:1920, 4288:2028). */
 export function ConfirmDialog({
   title,
+  question,
   text,
   meta,
   note,
@@ -80,6 +81,8 @@ export function ConfirmDialog({
   onClose,
 }: {
   title: string
+  /** The line under the title that asks what will happen, like "¿Marcar la salida de Ana?". */
+  question?: string
   text: string
   meta?: string
   note?: string
@@ -99,6 +102,7 @@ export function ConfirmDialog({
         <h2 className="modal__title" id={titleId}>
           {title}
         </h2>
+        {question && <p className="modal__text">{question}</p>}
         {meta && <p className="confirm-meta">{meta}</p>}
         <p className="modal__text">{text}</p>
         {note && <p className="modal__text">{note}</p>}
