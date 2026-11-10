@@ -7,6 +7,7 @@ use App\Models\ScheduleSlot;
 use App\Models\StaffAccount;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\CallsTheApiFromThePwa;
 use Tests\TestCase;
@@ -29,6 +30,14 @@ class StaffOccupancyTest extends TestCase
         $user = User::factory()->create(['current_session_id' => 'device']);
         $this->actingAs($user, 'web')->withSession(['user_session_id' => 'device'])->fromThePwa()
             ->getJson('/api/staff/occupancy')->assertUnauthorized();
+    }
+
+    public function test_the_schedule_is_read_once_per_poll(): void
+    {
+        DB::enableQueryLog();
+        $this->actingAs(StaffAccount::factory()->create(), 'staff')->fromThePwa()->getJson('/api/staff/occupancy')->assertOk();
+
+        $this->assertCount(1, array_filter(array_column(DB::getQueryLog(), 'query'), fn (string $sql) => str_contains($sql, 'from "schedule_slots"')));
     }
 
     /** @return array<string, array{string}> */

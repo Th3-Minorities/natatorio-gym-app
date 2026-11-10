@@ -32,11 +32,12 @@ class CheckIns
 
         $now = now();
         // An athletes-only period outside regular hours opens the gym for athletes (G-28).
-        if ($this->schedule->state($now) === 'closed') {
+        $schedule = $this->schedule->status($now);
+        if ($schedule['state'] === 'closed') {
             throw new ApiException('check_in_gym_closed', 409);
         }
         // Manual authorizations count as paid members (E-126).
-        if ($authorization->type !== 'athlete' && ($period = $this->schedule->covering($now, 'athletes_only'))) {
+        if ($authorization->type !== 'athlete' && ($period = $schedule['athletes_only'])) {
             throw new ApiException('check_in_athletes_only', 409, [
                 'starts_at' => $period['starts_at']->toISOString(), 'ends_at' => $period['ends_at']->toISOString(),
             ]);

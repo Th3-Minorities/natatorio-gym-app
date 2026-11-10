@@ -18,11 +18,28 @@ class GymSchedule
      */
     public function state(Carbon $now): string
     {
-        if ($this->covering($now, 'closure') || ! $this->covering($now, 'regular_hours', 'special_hours', 'athletes_only')) {
-            return 'closed';
+        return $this->status($now)['state'];
+    }
+
+    /**
+     * The state and the athletes-only period that covers now, from one load of the periods, for callers that need
+     * both (Check In).
+     *
+     * @return array{state: string, athletes_only: array{type: string, starts_at: Carbon, ends_at: Carbon}|null}
+     */
+    public function status(Carbon $now): array
+    {
+        $periods = $this->periods($now);
+        $covering = fn (string ...$types) => $periods->first(
+            fn ($p) => in_array($p['type'], $types, true) && $p['starts_at'] <= $now && $now < $p['ends_at']
+        );
+        $athletesOnly = $covering('athletes_only');
+
+        if ($covering('closure') || ! ($athletesOnly || $covering('regular_hours', 'special_hours'))) {
+            return ['state' => 'closed', 'athletes_only' => $athletesOnly];
         }
 
-        return $this->covering($now, 'athletes_only') ? 'athletes_only' : 'open';
+        return ['state' => $athletesOnly ? 'athletes_only' : 'open', 'athletes_only' => $athletesOnly];
     }
 
     /**
