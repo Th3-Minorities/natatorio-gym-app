@@ -1,18 +1,15 @@
 \section{Project Objectives}
 %=====================================================================
 
-The target date gives the proposal deadline and the end of the matching phase in the Project Plan. \emph{In progress} means some of the objective's code is merged; \emph{Planned} means none is.
-
 \begin{center}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{longtable}{L{2.6cm} L{3.3cm} L{4.6cm} L{2.0cm} L{2.2cm}}
+\small
+\begin{longtable}{L{3.1cm} L{4.2cm} L{4.2cm} L{1.8cm}}
 \toprule
-\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Deadline} \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Target date} & \textbf{Status} \\
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Deadline} \\
 \midrule
 \endhead
 \bottomrule
@@ -24,35 +21,29 @@ Percentage of authorization cases correctly approved or denied using a controlle
 &
 Every defined authorization case must return the expected decision. Users with valid authorization must be approved, while users without valid authorization must be denied.
 &
-Proposal: Oct 16. Plan: Nov 22 paid members (Phase 4); Dec 11 athletes and store sync
-&
-In progress. Database rules and paid registration backend merged; screens being finished. Athletes and store sync: Final report (store sync waits on CTI). \\
+Oct 16 \\
 \addlinespace
 \midrule
 \addlinespace
 
 2. Implement a user-initiated check-in process that creates and manages a valid facility session from check-in through automatic expiration.
 &
-Percentage of defined check-in and session scenarios that reach the expected state, including location validation, successful and rejected check-ins, session creation, Gym ID generation, duplicate attempts, \revised{Staff check-out, and the automatic close 2 hours after Check In}.
+Percentage of defined check-in and session scenarios that reach the expected state, including location validation, successful and rejected check-ins, session creation, Gym ID generation, duplicate attempts, Staff check-out, and the automatic close 2 hours after Check In.
 &
-Every valid check-in must create exactly one active session and one current Gym ID. Invalid attempts must create no session, duplicate attempts must follow the defined session rule, and \revised{each session must stop counting as active after Staff check the person out or 2 hours after its Check In}.
+Every valid check-in must create exactly one active session and one current Gym ID. Invalid attempts must create no session, duplicate attempts must follow the defined session rule, and each session must stop counting as active after Staff check the person out or 2 hours after its Check In.
 &
-Proposal: Oct 30. Plan: Nov 8 (Phase 3)
-&
-In progress. User Check In, Gym ID, and automatic closes built; Staff check-out in the API. On-site boundary test: Final report. \\
+Oct 30 \\
 \addlinespace
 \midrule
 \addlinespace
 
 3. Maintain a consistent active-session state and use it to provide estimated facility occupancy across the platform.
 &
-Difference between the estimated occupancy reported by the system and the expected number of active sessions after Check Ins, \revised{check-outs, automatic closes, Staff corrections, and concurrent session events}.
+Difference between the estimated occupancy reported by the system and the expected number of active sessions after Check Ins, check-outs, automatic closes, Staff corrections, and concurrent session events.
 &
-The reported estimated occupancy must match the number of active session records in every tested state. \revised{User, Staff, and Administrator screens must show the same value once each screen has refreshed; screens poll the server every 20 to 30 seconds, so the test compares values after each refresh.}
+The reported estimated occupancy must match the number of active session records in every tested state. \roundthree{User, Staff, and Administrator screens must show the same value once each screen has refreshed; screens poll every 25 seconds, and the test compares values after each refresh.}
 &
-Proposal: Nov 6. Plan: Nov 8 (Phase 3)
-&
-In progress. User view built; Staff view not started. \\
+Nov 6 \\
 \addlinespace
 \midrule
 \addlinespace
@@ -61,11 +52,9 @@ In progress. User view built; Staff view not started. \\
 &
 Percentage of role-permission checks and administrative tasks that produce the expected result according to the final User, Staff, and Administrator permission matrix.
 &
-Every tested action must be allowed or denied according to the assigned role. \revised{Staff and Administrators sign in with individual accounts, and an Administrator invites each person by email and assigns the role.} Staff must be able to perform the defined monitoring and session-correction tasks, while Administrators must be able to manage athlete authorizations, schedules, closures, and Staff accounts.
+Every tested action must be allowed or denied according to the assigned role. Staff must be able to perform the defined monitoring and session-correction tasks, while Administrators must be able to manage athlete authorizations, schedules, closures, and Staff accounts.
 &
-Proposal: Nov 20. Plan: Nov 29 (Phase 5)
-&
-In progress, ahead of plan. Roles, invitations, and audit log merged; Staff panel not started. \\
+Nov 20 \\
 \addlinespace
 \midrule
 \addlinespace
@@ -74,11 +63,9 @@ In progress, ahead of plan. Roles, invitations, and audit log merged; Staff pane
 &
 Percentage of finalized utilization metrics that match their known expected values when calculated from controlled historical check-in and session datasets.
 &
-Every finalized metric must match its expected value in the controlled datasets, including utilization by time period, periods of higher and lower use, estimated occupancy trends and approved summary values, and utilization by authorization type. \revised{Analytics are open to every signed-in role and show aggregated counts only, with no names.}
+Every finalized metric must match its expected value in the controlled datasets, including utilization by time period, periods of higher and lower use, estimated occupancy trends and approved summary values, and utilization by authorization type.
 &
-Proposal: Dec 4. Plan: Nov 29 (Phase 5)
-&
-Planned for the Final report. \\
+Dec 4 \\
 \end{longtable}
 \end{center}
 

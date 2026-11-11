@@ -3,7 +3,7 @@
 \addcontentsline{toc}{section}{Response to Proposal Reviews}
 %=====================================================================
 
-The proposal received four comments. Each row below says what the team changed and where to find it in this report. \revised{Text in blue} changed after the proposal review or is new in this report. The last rows list the design decisions updated since the proposal; the rest of the report describes the current design only.
+The proposal received four comments. Each row below says what the team changed and where to find it in this report. \ifshowchanges\revised{Text in blue} changed after the proposal review or is new in this report. \fi{}The last rows list the design decisions updated since the proposal; the rest of the report describes the current design only.
 
 \begin{center}
 \small
@@ -35,7 +35,7 @@ The proposal received four comments. Each row below says what the team changed a
 \addlinespace
 \textbf{Hosting.} & Docker Desktop on each PC in development; a CTI VM (Rocky Linux 10) with a UPRM subdomain and HTTPS in production, with backups on a second disk. & Solution Approach \\
 \addlinespace
-\textbf{Live updates.} & Polling every 20 to 30 seconds replaces real-time channels. & Technical Approach \\
+\textbf{Live updates.} & Polling every \roundthree{25 seconds} replaces real-time channels. & Technical Approach \\
 \addlinespace
 \textbf{Accounts.} & Own accounts with email and password replace institutional login, one device per User. Staff and Administrators have individual accounts, invited by email, and the first Administrator comes from the install command. & Solution Approach; Technical Approach \\
 \addlinespace
@@ -52,7 +52,5 @@ The proposal received four comments. Each row below says what the team changed a
 \textbf{Analytics.} & Open to every signed-in role, with aggregated counts only. & Objectives \\
 \addlinespace
 \textbf{Data.} & Visit data is kept 5 years; only the current photo is kept; daily totals with no personal data are kept for good. & Solution Approach \\
-\addlinespace
-\textbf{Schedule.} & Six phases with dates replace the eleven sprints; the final date is December 11. & Project Plan \\
 \end{longtable}
 \end{center}

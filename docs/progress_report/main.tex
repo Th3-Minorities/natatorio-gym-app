@@ -34,14 +34,29 @@
 % Open items that wait on a decision or on code. List them with: grep -rn "\\pending" sections
 \newcommand{\pending}[1]{\textcolor{red}{\textbf{[PENDING:} #1\textbf{]}}}
 % Text that changed after the proposal review or is new in this report. List it with: grep -rn "\\revised" sections
-\DeclareRobustCommand{\revised}[1]{{\color{blue!70!black}#1}}
+% Delivery versions from one source. Review look (default): \showchangestrue \reviewroundtrue.
+% Changes in blue: \showchangestrue \reviewroundfalse. Clean black: \showchangesfalse.
+\newif\ifshowchanges \showchangestrue
+\newif\ifreviewround \reviewroundtrue
+\ifshowchanges
+  \DeclareRobustCommand{\revised}[1]{{\color{blue!70!black}#1}}
+  \ifreviewround
+    % Text added or rewritten in round 3 of the review. List it with: grep -rn "\roundthree" sections
+    \DeclareRobustCommand{\roundthree}[1]{{\color{violet!80!black}#1}}
+  \else
+    \DeclareRobustCommand{\roundthree}[1]{{\color{blue!70!black}#1}}
+  \fi
+\else
+  \DeclareRobustCommand{\revised}[1]{#1}
+  \DeclareRobustCommand{\roundthree}[1]{#1}
+\fi
 \usepackage{caption}
 
 %---------------------------- Links ---------------------------------
 \usepackage[hidelinks]{hyperref}
 \usepackage{url}
 \urlstyle{same}
-\pdfstringdefDisableCommands{\renewcommand{\revised}[1]{#1}} % keep bookmarks plain
+\pdfstringdefDisableCommands{\renewcommand{\revised}[1]{#1}\renewcommand{\roundthree}[1]{#1}} % keep bookmarks plain
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % break long URLs anywhere
 
 %------------------- Global formatting choices ----------------------

@@ -3,13 +3,13 @@
 
 \subsection{Architecture and Deployment}
 
-The platform is a layered client-server system. A mobile-first, component-based PWA built with React, TypeScript, and Vite serves Users, Staff, and Administrators from one codebase on phones and desktops, so no separate iOS and Android apps are needed. \revised{A Laravel API [10] (PHP 8.3 or higher) holds the business rules, and PostgreSQL is the source of truth. Backend time decides when a session closes by itself. Everything runs as containers from one \texttt{docker-compose} file. An nginx proxy, the only published port, ends HTTPS and sends \texttt{/api} to Laravel and everything else to the PWA's static files, so the app and the API share one origin and cookie sign-in needs no cross-site settings. The service worker never caches API responses. The app container (Laravel on PHP-FPM) runs the API, the role policies, and the store sync. A scheduler from the same image closes sessions and deletes replaced photographs every minute. PostgreSQL enforces one active session per User and one claim per Authorization Number or roster record, and photographs sit on a private volume that only the API reads.}
+The platform is a layered client-server system. A mobile-first, component-based PWA built with React, TypeScript, and Vite serves Users, Staff, and Administrators from one codebase on phones and desktops, so no separate iOS and Android apps are needed. \revised{A Laravel API [3] (PHP 8.3 or higher) holds the business rules, and PostgreSQL is the source of truth. Backend time decides when a session closes by itself. Everything runs as containers from one \texttt{docker-compose} file. An nginx proxy, the only published port, ends HTTPS and sends \texttt{/api} to Laravel and everything else to the PWA's static files, so the app and the API share one origin and cookie sign-in needs no cross-site settings. The service worker never caches API responses. The app container (Laravel on PHP-FPM) runs the API, the role policies, and the store sync. A scheduler from the same image closes sessions and deletes replaced photographs every minute. PostgreSQL enforces one active session per User and one claim per Authorization Number or roster record, and photographs sit on a private volume that only the API reads.}
 
-\revised{Outside the host are the phone's location (W3C Geolocation API [7]), outgoing mail for invitations, athlete links, and password resets, the WooCommerce REST API, and a compromised-password check that receives only the first five characters of a password hash. Figure~\ref{fig:architecture} shows the modules and Figure~\ref{fig:checkin} the Check In flow: the PWA asks the API whether the User may enter, reads a fresh high-accuracy location only when a new visit is needed, and posts it. The API repeats every check, and a PostgreSQL exclusion constraint rejects a second overlapping visit. Coordinates are never stored, only the result of the check. Resources Required for Operation describes the development and production hosts.}
+\revised{Outside the host are the phone's location (W3C Geolocation API [4]), outgoing mail for invitations, athlete links, and password resets, the WooCommerce REST API, and a compromised-password check that receives only the first five characters of a password hash. Figure~\ref{fig:architecture} shows the modules and Figure~\ref{fig:checkin} the Check In flow: the PWA asks the API whether the User may enter, reads a fresh high-accuracy location only when a new visit is needed, and posts it. The API repeats every check, and a PostgreSQL exclusion constraint rejects a second overlapping visit. Coordinates are never stored, only the result of the check. Resources Required for Operation describes the development and production hosts.}
 
 \subsection{Identity, Authorization, and Session Model}
 
-\revised{An \textbf{account} is the persistent person, kept across semesters, with one role: User, Staff, or Administrator.} A \textbf{semester authorization} says whether a User currently has access; a User may have several over time and move between paid-member and athlete authorization without a new account. \revised{A \textbf{sign-in session} is the device signed in. A \textbf{facility session} is the visit created by a Check In, open until Staff check the person out or 2 hours pass.}
+An \textbf{account} is the persistent person, kept across semesters, with one role: User, Staff, or Administrator. A \textbf{semester authorization} says whether a User currently has access; a User may have several over time. \revised{A \textbf{sign-in session} is the device signed in. A \textbf{facility session} is the visit created by a Check In, open until Staff check the person out or 2 hours pass.}
 
 \revised{\textbf{Roles.} An Administrator invites each Staff or Administrator by email to an individual account; an install command creates the first Administrator. Staff verify Gym IDs, check people out, make assisted Check Ins and corrections, and read the roster. Administrators also manage terms, the roster, the store sync, schedules, notices, accounts, and the audit log, which records who acted, when, from where, and the values before and after.}
 
@@ -19,7 +19,7 @@ The platform is a layered client-server system. A mobile-first, component-based 
 
 \subsection{WooCommerce Membership Integration}
 
-\revised{WooCommerce remains the authoritative source for paid memberships. The app reads orders from its REST API with a read-only key kept in the server's environment file; a test read of all 84 orders on November 4 worked. When a person types an Authorization Number the app does not have, the app asks the store right then, so a person who just paid can register at once. A full sync runs at least 3 times a day, and the Administrator sees the last sync and has a ``Sync now'' button. The sync is planned for the Final report.} Only the fields needed for authorization are copied into PostgreSQL\revised{; the order's student number, address, phone, IP address, and marketing fields are not. The Authorization Number, a UPR Payment Gateway code, is unique and matched without regard to letter case, so one membership cannot be claimed twice. Only completed orders give access; a cancelled or refunded order loses it, and an Administrator revokes refunds made outside the store. Reading an order twice updates the same record.}
+WooCommerce remains the authoritative source for paid memberships. \roundthree{A test read of all 84 real orders in the store worked. Today, registration checks the number against the imported orders, with fake orders in the tests and the demo. Asking the store directly and the regular sync are planned for the Final report.} Only the fields needed for authorization are copied into PostgreSQL\revised{; the order's student number, address, phone, IP address, and marketing fields are not. The Authorization Number, a UPR Payment Gateway code, is unique and matched without regard to letter case, so one membership cannot be claimed twice. Only completed orders give access; a cancelled or refunded order loses it, and an Administrator revokes refunds made outside the store. Reading an order twice updates the same record.}
 
 \subsection{User Interface Design}
 \label{sec:ui}
@@ -56,13 +56,13 @@ The User app (Figure~\ref{fig:ui-pwa}) is a PWA built for phones, which supply t
 
 \begin{figure}[!htbp]
   \centering
-  \uishot{0.49}{ui-desk-02-active-sessions.png}{(a) S-01 Active sessions and occupancy}\hfill
-  \uishot{0.49}{ui-desk-03-session.png}{(b) S-02 Person and session}\\[6pt]
-  \uishot{0.49}{ui-desk-04-find-person.png}{(c) S-03 Find person, assisted Check In}\hfill
-  \uishot{0.49}{ui-desk-06-terms.png}{(d) A-04 Academic terms}\\[6pt]
-  \uishot{0.49}{ui-desk-07-roster.png}{(e) A-05 Athlete roster}\hfill
-  \uishot{0.49}{ui-desk-08-staff-accounts.png}{(f) A-15 Staff accounts}
-  \caption{Staff and Administrator dashboard on a desktop browser, 1440 by 900 pixels. Staff start on the active sessions (a), open a person and their visit (b), and find a person for an assisted Check In (c). Administrators also manage academic terms (d), the athlete roster (e), and staff accounts (f).}
+  \uishot{0.49}{ui-desk-02-active-sessions.png}{(a) Active sessions and occupancy}\hfill
+  \uishot{0.49}{ui-desk-03-session.png}{(b) Person and session}\\[6pt]
+  \uishot{0.49}{ui-desk-04-find-person.png}{(c) Find person, assisted Check In}\hfill
+  \uishot{0.49}{ui-desk-06-terms.png}{(d) Academic terms}\\[6pt]
+  \uishot{0.49}{ui-desk-07-roster.png}{(e) Athlete roster}\hfill
+  \uishot{0.49}{ui-desk-08-staff-accounts.png}{(f) Staff accounts}
+  \caption{Staff and Administrator dashboard on a desktop browser. Staff start on the active sessions (a), open a person and their visit (b), and find a person for an assisted Check In (c). Administrators also manage academic terms (d), the athlete roster (e), and staff accounts (f).}
   \label{fig:ui-desk}
 \end{figure}
 
@@ -75,7 +75,7 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.9\textwidth,height=0.45\textheight,keepaspectratio]{diagrams/01_architecture.png}
-\caption{\revised{System architecture as built}}
+\caption{System architecture as built}
 \label{fig:architecture}
 \par\vspace{0.35em}\noindent\small\RaggedRight
 \revised{One docker-compose stack behind an nginx proxy, with a scheduler, a private photo volume and mail (mailpit in development, the CTI gateway in production). The store sync is planned.}
@@ -85,7 +85,7 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.85\textheight,keepaspectratio]{diagrams/02_account_creation.png}
-\caption{\revised{Paid-member and athlete account creation}}
+\caption{Paid-member and athlete account creation}
 \label{fig:accountcreation}
 \par\vspace{0.35em}\noindent\small\RaggedRight
 \revised{One number field: a 9-digit student number leads to the roster email link; any other value is an Authorization Number checked against a completed paid order. Both paths end with the password, waiver, emergency contact and photo.}
@@ -95,17 +95,17 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.3\textheight,keepaspectratio]{diagrams/03_authorization_lifecycle.png}
-\caption{\revised{Authorization states}}
+\caption{Authorization states}
 \label{fig:lifecycle}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-\revised{An authorization is active or revoked, and an active authorization counts only while its academic term runs.}
+An authorization is active or revoked, and an active authorization counts only while its academic term runs.
 \end{figure}
 
 % --------------------------- FIGURE 4 ------------------------------
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.5\textheight,keepaspectratio]{diagrams/04_checkin_session.png}
-\caption{\revised{Check In and facility session}}
+\caption{Check In and facility session}
 \label{fig:checkin}
 \par\vspace{0.35em}\noindent\small\RaggedRight
 \revised{An open visit is returned as is. Otherwise authorization, photo, schedule and location (accuracy 50 m or better, within 50 m) are checked, and a visit opens that closes on Staff check-out or 2 hours after Check In. The dashed box shows the two cases.}
@@ -115,7 +115,7 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.45\textheight,keepaspectratio]{diagrams/05_data_model.png}
-\caption{\revised{Data model}}
+\caption{Data model}
 \label{fig:datamodel}
 \par\vspace{0.35em}\noindent\small\RaggedRight
 \revised{Main tables and foreign keys from the database migrations. Content, schedule, statistics, audit, import and session-support tables are omitted.}
@@ -123,11 +123,11 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 
 \subsection{Related Works}
 
-\textbf{Progressive Web Applications.} Królikowski and Mi{\l}osz studied what affects PWA performance on mobile devices, such as resource minimization and lazy loading; the team uses their findings as performance guidance [3].
+\textbf{Progressive Web Applications.} Królikowski and Mi{\l}osz studied what affects PWA performance on mobile devices, such as resource minimization and lazy loading; the team uses their findings as performance guidance [5].
 
-\textbf{Indoor smartphone location.} NIST measured indoor smartphone location in five large buildings and found clear differences between Android and iPhone [4]. Device location is therefore supporting evidence for Check In, not proof of presence, and the boundary and accepted accuracy are set by tests at the Weight Gym.
+\textbf{Indoor smartphone location.} NIST measured indoor smartphone location in five large buildings and found clear differences between Android and iPhone [6]. Device location is therefore supporting evidence for Check In, not proof of presence, and the boundary and accepted accuracy are set by tests at the Weight Gym.
 
-\textbf{Role-Based Access Control.} The NIST RBAC model grants permissions to roles rather than to users directly [5]. It shapes the separation of User, Staff, and Administrator privileges and keeps Developer access outside the gym's roles.
+\textbf{Role-Based Access Control.} The NIST RBAC model grants permissions to roles rather than to users directly [7]. It shapes the separation of User, Staff, and Administrator privileges and keeps Developer access outside the gym's roles.
 
 \subsection{Engineering Constraints and Verification}
 
@@ -144,17 +144,17 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 \endhead
 \bottomrule
 \endlastfoot
-\textbf{Accessibility.} Members use their own iPhone or Android phone, the front desk a desktop browser; some people use a keyboard, a screen reader, or zoom. WCAG 2.2 AA [6]. & \revised{One PWA for every device. States use text or an icon, not color alone; tap targets are at least 24 by 24 pixels. Browser tests cover iPhone (WebKit) and Android (Chromium) profiles and the dashboard on Chrome, Edge, Firefox, and Safari's engine; axe-core runs in CI.} & \revised{A manual checklist passes on the main flows: keyboard only, VoiceOver on an iPhone, NVDA on a desktop, 200\% zoom, and a 320 pixel width; Safari is checked on a real iPhone before each delivery.} \\
+\textbf{Accessibility.} Members use their own iPhone or Android phone, the front desk a desktop browser; some people use a keyboard, a screen reader, or zoom. WCAG 2.2 AA [8]. & \revised{One PWA for every device. States use text or an icon, not color alone; tap targets are at least 24 by 24 pixels. Browser tests cover iPhone (WebKit) and Android (Chromium) profiles and the dashboard on Chrome, Edge, Firefox, and Safari's engine; axe-core runs in CI.} & A manual checklist passes on the main flows: keyboard only, VoiceOver on an iPhone, NVDA on a desktop, 200\% zoom, and a 320 pixel width; Safari is checked on a real iPhone before each delivery. \\
 \addlinespace
-\textbf{Availability and fault tolerance.} \revised{Sign-in, authorization, sessions, and Gym ID verification need the backend; a person may leave without a check-out; the VM can fail.} & Require connectivity and disable offline Check In. \revised{The scheduler closes forgotten sessions after 2 hours. Containers restart by themselves after a crash. Backups go to a second disk every two weeks, keeping the last two. Mail goes through the CTI mail gateway.} & \revised{No session is created offline. The full stack starts from \texttt{docker-compose} on the VM, and a restore from backup works before the release.} \pending{CTI: authorize the VM on its mail gateway; confirm Rocky Linux 10 and the backup disk} \\
+\textbf{Availability and fault tolerance.} Sign-in, authorization, sessions, and Gym ID verification need the backend; a person may leave without a check-out; the VM can fail. & Require connectivity and disable offline Check In. \revised{The scheduler closes forgotten sessions after 2 hours. Containers restart by themselves after a crash. Backups go to a second disk every two weeks, keeping the last two. Mail goes through the CTI mail gateway.} & \revised{No session is created offline. The full stack starts from \texttt{docker-compose} on the VM, and a restore from backup works before the release.} \\
 \addlinespace
-\textbf{Load tolerance and concurrency.} \revised{About 150 visits a day, with arrival peaks; simultaneous requests can duplicate sessions or claims.} & \revised{Check In runs in one transaction. A PostgreSQL exclusion constraint allows one open visit per User, and unique indexes allow one claim per Authorization Number and per roster record and term. Occupancy screens poll every 25 seconds. Each photo is shrunk to at most 512 KB, and the 60 GB disk is sized for 5 years of data.} & \revised{A peak of 50 Check Ins in 5 minutes: p95 under 3 seconds, errors under 1\%, and at most one open visit per User. Every screen shows the same occupancy within 25 seconds. Measured locally (Preliminary Results) and repeated on the CTI VM before the release.} \\
+\textbf{Load tolerance and concurrency.} About 150 visits a day, with arrival peaks; simultaneous requests can duplicate sessions or claims. & \revised{Check In runs in one transaction. A PostgreSQL exclusion constraint allows one open visit per User, and unique indexes allow one claim per Authorization Number and per roster record and term. Occupancy screens poll every 25 seconds. Each photo is shrunk to at most 512 KB, and the 60 GB disk is sized for 5 years of data.} & \revised{A peak of 50 Check Ins in 5 minutes: p95 under 3 seconds, errors under 1\%, and at most one open visit per User. Every screen shows the same occupancy within 25 seconds. Measured locally (Preliminary Results) and repeated on the CTI VM before the release.} \\
 \addlinespace
-\textbf{Indoor location [4].} Phone accuracy varies by device and indoors. & \revised{A fresh high-accuracy reading, accepted with an accuracy of 50 meters or better inside 50 meters of the gym's center; both limits are settings.} & \revised{On real iPhone and Android phones: Check In works anywhere in the weight room and is refused outside the building. Measured on site before the Final report.} \\
+\textbf{Indoor location [6].} Phone accuracy varies by device and indoors. & A fresh high-accuracy reading, accepted with an accuracy of 50 meters or better inside 50 meters of the gym's center; both limits are settings. & \revised{On real iPhone and Android phones: Check In works anywhere in the weight room and is refused outside the building. Measured on site before the Final report.} \\
 \addlinespace
-\textbf{WooCommerce source.} Membership data remains in an external system. & \revised{Keep WooCommerce authoritative, copy only needed fields, and read orders through the REST API with a read-only key.} & \revised{Against the live store: reading an order twice creates no duplicate, and a cancelled order loses access. For the Final report.} \\
+\textbf{WooCommerce source.} Membership data remains in an external system. & Keep WooCommerce authoritative, copy only needed fields, and read orders through the REST API with a read-only key. & \revised{Against the live store: reading an order twice creates no duplicate, and a cancelled order loses access. For the Final report.} \\
 \addlinespace
-\textbf{Sensitive data.} \revised{Photos, waivers, emergency contacts, and the audit log need protection.} & \revised{Laravel policies check every role-restricted action; photos sit on a private volume; Staff see only Check In essentials. Deleting data after 5 years is designed, not built.} & \revised{Each Staff and Administrator account opens only the records its role allows, checked with real accounts before the release.} \\
+\textbf{Sensitive data.} Photos, waivers, emergency contacts, and the audit log need protection. & \revised{Laravel policies check every role-restricted action; photos sit on a private volume; Staff see only Check In essentials. Deleting data after 5 years is designed, not built.} & Each Staff and Administrator account opens only the records its role allows, checked with real accounts before the release. \\
 \end{longtable}
 \end{center}
 
@@ -173,31 +173,31 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 \endhead
 \bottomrule
 \endlastfoot
-WCAG 2.2, relevant Level AA criteria [6]
+WCAG 2.2, relevant Level AA criteria [8]
 &
 User, Staff, and Administrator web interfaces
 &
 Targets accessible forms, navigation, touch interactions, and status information. Key states such as the live Gym ID use text or icons in addition to color. \\
 \addlinespace
-W3C Geolocation specification [7]
+W3C Geolocation specification [4]
 &
 Location-based Check In
 &
 Uses browser-provided geolocation through the standard API. Permission state and reported accuracy are handled in the Check In flow. \\
 \addlinespace
-NIST SP 800-63B-4, Digital Identity Guidelines: Authentication [8]
+NIST SP 800-63B-4, Digital Identity Guidelines: Authentication [9]
 &
 Passwords, password reset, and sign-in sessions
 &
 At least 64 characters accepted, no composition rules, breached passwords rejected, failed attempts limited, and the same answer to every reset request. The 10-character minimum deviates from the 15 the standard asks for passwords used alone, because people type on phones. \\
 \addlinespace
-OWASP ASVS 5.0.0 [9]
+OWASP ASVS 5.0.0 [10]
 &
 Authentication, session, and access-control design
 &
-Consulted for hashed passwords, same-origin cookie sessions, attempt limits, one device per User, server-side role checks, and an audit log that names the person. \pending{control-by-control mapping and target ASVS level; team} \\
+Consulted for hashed passwords, same-origin cookie sessions, attempt limits, one device per User, server-side role checks, and an audit log that names the person. \\
 \addlinespace
-NIST RBAC model [5]
+NIST RBAC model [7]
 &
 User, Staff, and Administrator roles
 &
@@ -237,8 +237,8 @@ Protocols & HTTPS, JSON REST API, polling every 25 s & Occupancy changes only wi
 \end{longtable}
 \end{center}
 
-\textbf{Security, privacy, and reliability.} Users receive only role-required access, and Developers do not routinely access production safety or emergency data. \revised{Credentials stay in the server's environment file, never in the repository.} Location is not stored as movement history. WooCommerce data is validated before granting access, and unverifiable records fail safely.
+\textbf{Security, privacy, and reliability.} Users receive only role-required access, and Developers do not routinely access production safety or emergency data. Credentials stay in the server's environment file, never in the repository. Location is not stored as movement history. WooCommerce data is validated before granting access, and unverifiable records fail safely.
 
-\textbf{Development and testing.} \revised{Work reaches \texttt{main} through reviewed pull requests with automated checks, and migrations make the schema reproducible; the Testing Plan describes the tests.}
+\textbf{Development and testing.} Work reaches \texttt{main} through reviewed pull requests with automated checks, and migrations make the schema reproducible; the Testing Plan describes the tests.
 
 %=====================================================================
