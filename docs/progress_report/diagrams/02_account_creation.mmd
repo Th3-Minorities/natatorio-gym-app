@@ -1,27 +1,18 @@
 flowchart TB
-  A(["Create account"]) --> P["Read and accept<br/>the privacy notice"]
-  P --> N["Type one number"]
-  N --> Q{"9 digits?"}
-
-  Q -->|"No: Authorization Number"| PO{"Paid order for the current<br/>term, completed and<br/>not yet claimed?"}
-  PO -->|No| E1["Number not found:<br/>shows the gym phone"]
-  PO -->|Yes| PE{"Account with the<br/>payment email?"}
-
-  Q -->|"Yes: student number"| R{"Active athlete on the<br/>roster, record not claimed?"}
-  R -->|No| E2["Not on the roster or<br/>already claimed:<br/>shows the gym phone"]
-  R -->|Yes| RE{"Account with the<br/>roster email?"}
-  RE -->|No| L["Single-use link sent to the<br/>institutional email, valid 24 h"]
-  L --> O["Athlete opens the link"]
-
-  PE -->|Yes| SI(["Sign in instead"])
-  RE -->|Yes| SI
-
-  PE -->|No| F["Final step: password, waiver,<br/>emergency contact, photo"]
-  O --> F
-  F --> C["Create account, waiver record<br/>and active authorization<br/>for the current term"]
-  C --> D(["Signed in"])
+  S(["Create Account"]) --> T["Type One Number"]
+  T --> Q{"9 Digits?"}
+  Q -->|"No: Authorization Number"| PO{"Valid Paid<br/>Membership?"}
+  Q -->|"Yes: Student Number"| R{"Current Athlete<br/>Roster Match?"}
+  PO -->|Yes| RI["Retrieve Required<br/>Membership Information"]
+  PO -->|No| E1["Registration<br/>Cannot Continue"]
+  R -->|No| E1
+  R -->|Yes| CE["Confirm Institutional<br/>Email"]
+  RI --> PW["Create Password, Accept the Waiver,<br/>Give an Emergency Contact<br/>and Provide Current Photo"]
+  CE --> PW
+  PW --> CA["Create Persistent<br/>Account"]
+  CA --> F(["Current Facility<br/>Authorization Established"])
 
   classDef stop fill:#FCEFEF,stroke:#A33A3A
   classDef choice fill:#FFF7E6,stroke:#8A6A1F
-  class E1,E2 stop
-  class Q,PO,PE,R,RE choice
+  class E1 stop
+  class Q,PO,R choice

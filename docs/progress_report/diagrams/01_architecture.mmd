@@ -1,33 +1,23 @@
+%% 01_architecture.png is the proposal's original figure, kept unchanged because the design it shows did not change.
+%% This source mirrors that figure for future edits; render it only if the design changes.
 flowchart TB
-  GEO["Browser Geolocation API<br/>position and accuracy"]
-  U["User<br/>phone browser or PWA"]
-  S["Staff and Administrators<br/>dashboard at /staff"]
-
-  subgraph HOST["docker-compose on one host: member PC or CTI VM"]
-    direction TB
-    PX["proxy: nginx<br/>serves the React PWA<br/>sends /api to Laravel"]
-    APP["app: Laravel on PHP-FPM"]
-    SCH["scheduler: same image<br/>every minute: close due<br/>visits, delete photos"]
-    DB[("db: PostgreSQL")]
-    PV[("private photos<br/>volume")]
-    MP["mailpit<br/>development only"]
-  end
-
-  WOO["Department store<br/>WooCommerce orders<br/>sync not built yet"]
-  GW["CTI mail gateway<br/>production"]
-
-  GEO -.->|"at Check In"| U
-  U -->|HTTPS| PX
-  S -->|HTTPS| PX
-  PX -->|"/api"| APP
-  APP --> DB
-  SCH --> DB
-  APP -->|"role-checked"| PV
-  SCH --> PV
-  APP -->|SMTP| MP
-  APP -.->|"order lookup, planned"| WOO
-  APP -.->|SMTP| GW
-  MP ~~~ GW
-
-  classDef ext fill:#FFFFFF,stroke:#7A8899,stroke-dasharray:5 5
-  class GEO,GW,WOO ext
+  ST["Staff"] --> SI["Staff / Admin<br/>Interface"]
+  AD["Administrator"] --> SI
+  U["User"] --> PWA["User PWA"]
+  LOC["Device Location"] -.-> PWA
+  SI --> BE["Application<br/>Backend"]
+  PWA --> BE
+  WOO["UPRM<br/>WooCommerce"] -.-> AM
+  BE --> AM["Authorization<br/>Management"]
+  BE --> CI["Check In and<br/>Facility Sessions"]
+  BE --> OC["Estimated<br/>Occupancy"]
+  BE --> FI["Facility<br/>Information"]
+  BE --> UA["Utilization<br/>Analytics"]
+  BE --> AUTH["Authentication and<br/>Account Management"]
+  EM["Institutional Email<br/>Verification"] -.-> AUTH
+  AM --> DB[("Application<br/>Database")]
+  CI --> DB
+  OC --> DB
+  FI --> DB
+  UA --> DB
+  AUTH --> DB

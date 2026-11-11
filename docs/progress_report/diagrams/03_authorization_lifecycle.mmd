@@ -1,17 +1,20 @@
-stateDiagram-v2
-  direction LR
-  state "Account exists" as Account {
-    [*] --> Active : paid order claimed at registration,<br/>or athlete registration link used
-    Active --> Revoked : athlete withdrawn<br/>from the roster
-    Revoked --> Active : athlete reinstated<br/>with a written reason
-    Active --> TermOver : academic term ends
-  }
-  Account --> [*] : account deleted<br/>(from any state)
+flowchart TB
+  S(["Account exists"])
+  NA("No Current<br/>Authorization")
+  PA("Paid<br/>Authorized")
+  PE("Paid Expired")
+  AA("Athlete<br/>Authorized")
+  AE("Athlete Expired")
 
-  state "Current<br/>Check In and Gym ID allowed" as Active
-  state "Revoked (athletes only)<br/>Check In refused" as Revoked
-  state "Expired<br/>term ended" as TermOver
+  S --> NA
+  NA -->|"Valid Authorization Number"| PA
+  NA -->|"Current roster match"| AA
+  PA -->|"Academic term ends"| PE
+  PE -->|"New Authorization Number<br/>and new term photo"| PA
+  PA <-->|"Change access type"| AA
+  AA -->|"Academic term ends"| AE
+  AE -->|"New term photo<br/>(still on the roster)"| AA
+  AE -->|"Removed from the roster"| NA
 
-  note right of Active
-    Check In also needs a current photo;<br/>Staff can ask for a new one
-  end note
+  classDef state fill:#EEF4FB,stroke:#2F5D8A
+  class NA,PA,PE,AA,AE state

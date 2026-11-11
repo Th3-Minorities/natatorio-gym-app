@@ -74,51 +74,51 @@ Figures~\ref{fig:architecture} to~\ref{fig:datamodel} show the architecture, acc
 % --------------------------- FIGURE 1 ------------------------------
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.9\textwidth,height=0.45\textheight,keepaspectratio]{diagrams/01_architecture.png}
-\caption{System architecture as built}
+\includegraphics[width=0.9\textwidth,height=0.5\textheight,keepaspectratio]{diagrams/01_architecture.png}
+\caption{High-Level System Architecture}
 \label{fig:architecture}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-\revised{One docker-compose stack behind an nginx proxy, with a scheduler, a private photo volume and mail (mailpit in development, the CTI gateway in production). The store sync is planned.}
+\roundthree{The figure} shows how the User PWA and Staff/Administrator interface connect to the backend, its services, and the application database. WooCommerce, institutional email verification, and device location supply information to the relevant workflows.
 \end{figure}
 
 % --------------------------- FIGURE 2 ------------------------------
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.85\textheight,keepaspectratio]{diagrams/02_account_creation.png}
-\caption{Paid-member and athlete account creation}
+\caption{Paid-Member and Athlete Account Creation}
 \label{fig:accountcreation}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-\revised{One number field: a 9-digit student number leads to the roster email link; any other value is an Authorization Number checked against a completed paid order. Both paths end with the password, waiver, emergency contact and photo.}
+\roundthree{One number field} separates paid-member validation by Authorization Number from athlete validation against the current roster. Both paths then create one persistent account with a password\roundthree{, the waiver, an emergency contact} and current photo.
 \end{figure}
 
 % --------------------------- FIGURE 3 ------------------------------
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.98\textwidth,height=0.3\textheight,keepaspectratio]{diagrams/03_authorization_lifecycle.png}
-\caption{Authorization states}
+\includegraphics[width=0.98\textwidth,height=0.4\textheight,keepaspectratio]{diagrams/03_authorization_lifecycle.png}
+\caption{Post-Registration Account and Authorization Lifecycle}
 \label{fig:lifecycle}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-\roundthree{An authorization is current while its academic term runs, expired after it ends, and revoked when an athlete is withdrawn.}
+\roundthree{The figure} begins after a persistent account has been established. Authorization may expire, be renewed, or change between paid-member and athlete access while the same User account remains intact.
 \end{figure}
 
 % --------------------------- FIGURE 4 ------------------------------
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.98\textwidth,height=0.5\textheight,keepaspectratio]{diagrams/04_checkin_session.png}
-\caption{Check In and facility session}
+\includegraphics[width=0.98\textwidth,height=0.55\textheight,keepaspectratio]{diagrams/04_checkin_session.png}
+\caption{Check-In and Facility Session Sequence}
 \label{fig:checkin}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-\revised{An open visit is returned as is. Otherwise authorization, photo, schedule and location (accuracy 50 m or better, within 50 m) are checked, and a visit opens that closes on Staff check-out or 2 hours after Check In. The dashed box shows the two cases.}
+\roundthree{The figure} shows how authorization, location, active-session control, Gym ID, and Staff verification interact during Check In. The active-session check and session creation are handled as one protected backend operation so simultaneous requests cannot create overlapping sessions. Location is requested only when a new session is needed. A second Check In during an existing session returns the current Gym ID, while another valid Check In may create a new session after expiration. The notes identify rejection conditions without adding alternative branches to the sequence.
 \end{figure}
 
 % --------------------------- FIGURE 5 ------------------------------
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.98\textwidth,height=0.45\textheight,keepaspectratio]{diagrams/05_data_model.png}
-\caption{Data model}
+\caption{Conceptual Data Model}
 \label{fig:datamodel}
 \par\vspace{0.35em}\noindent\small\RaggedRight
-\revised{Main tables and foreign keys from the database migrations. Content, schedule, statistics, audit, import and session-support tables are omitted.}
+\roundthree{The figure} separates identity, authorization, login-session state, facility sessions, \roundthree{staff accounts}, and protected membership information. The model keeps \roundthree{term-specific} photographs with Authorization rather than treating the photograph as a permanent User attribute.
 \end{figure}
 
 \subsection{Related Works}

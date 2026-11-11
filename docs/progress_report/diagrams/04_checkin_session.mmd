@@ -12,25 +12,30 @@ config:
 sequenceDiagram
   actor U as User
   participant P as PWA
-  participant A as Laravel API
-  participant D as PostgreSQL
-  actor St as Staff
+  participant B as Backend
+  participant AS as Authorization Service
+  participant DB as Application Database
+  actor S as Staff
 
   U->>P: Press Check In
-  Note over P: Reads position<br/>and accuracy
-  P->>A: POST check-in
-  A->>D: Open visit?
-  alt Visit already open
-    A-->>P: Same visit
-  else No open visit
-    Note over A: Check In service checks:<br/>current authorization,<br/>a current photo,<br/>gym open, accuracy 50 m<br/>or better, within 50 m<br/>of the gym. Coordinates<br/>are never stored.
-    A->>D: Insert active visit,<br/>ends 2 h after Check In
-    A-->>P: New visit
-  end
-  P-->>U: Gym ID
-
-  St->>A: Who is inside?
-  A->>D: Active visits
-  St->>A: Check out
-  A->>D: Mark checked out
-  Note over A,D: Scheduler, every minute: closes<br/>visits 2 h after Check In,<br/>at a gym closure or at term end
+  P->>B: Request Check In
+  B->>AS: Validate current authorization
+  AS-->>B: Authorization result
+  Note over B: Invalid authorization stops Check In
+  B->>DB: Read current facility session
+  DB-->>B: Session status
+  Note over P,B: Existing active session returns current Gym ID
+  B-->>P: Request location for a new session
+  P->>U: Ask for device location
+  U-->>P: Provide permission and location
+  P->>B: Send location result
+  Note over B: Invalid or unavailable location rejects new session
+  B->>DB: Atomically check and create 2-hour session
+  DB-->>B: Session created
+  B-->>P: Return current Gym ID
+  P-->>U: Display Gym ID
+  S->>B: Verify current Gym ID
+  B->>DB: Read active session
+  DB-->>B: Current session state
+  B-->>S: Confirm valid session
+  Note over B,DB: Session expires after 2 hours and occupancy updates
