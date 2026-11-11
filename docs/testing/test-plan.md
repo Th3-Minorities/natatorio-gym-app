@@ -2,7 +2,7 @@
 
 Each case of the proposal's testing plan for objectives 1 to 3, the requirement it proves, the seeded data it uses and the tests that pass it (REQ-NF-44). Issue #81.
 
-The full flows, screen by screen, are in `flow-results.md` (#152). This page answers a different question: for each case the proposal promised, which test proves it.
+For each case the proposal promised, this page names the test that proves it.
 
 ## How to run it
 
@@ -83,6 +83,6 @@ The proposal names a 60-minute visit. The team replaced it with check-out at the
 
 ## Not covered here
 
-- Check In on real phones through the tunnel (REQ-NF-43): the manual column of `flow-results.md`.
+- Check In on real phones through the tunnel (REQ-NF-43): #174.
 - The load test (REQ-NF-50): #83.
 - Objectives 4 and 5 (roles and analytics): later issues.

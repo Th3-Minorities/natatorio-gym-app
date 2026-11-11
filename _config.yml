@@ -3,8 +3,12 @@ description: Phone check-in, current occupancy and a Staff dashboard for the UPR
 theme: jekyll-theme-cayman
 
 exclude:
+  - CLAUDE.md
+  - AGENTS.md
+  - .claude/
   - .github/
   - .env.example
+  - graphify-out/
   - docs/meetings/private/
   - backend/
   - frontend/

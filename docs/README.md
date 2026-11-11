@@ -46,10 +46,10 @@ All documents are in the `docs` folder.
 | Questions we asked and the answers we got | [The team's questions](decisions/team.md), [the gym's questions](decisions/gym.md), [CTI's questions](decisions/cti.md) |
 | Summaries of meetings with the gym or CTI | [Announcements](https://github.com/Th3-Minorities/natatorio-gym-app/discussions/categories/announcements) |
 | The proposal and its original drawings | [capstone_proposal folder](https://github.com/Th3-Minorities/natatorio-gym-app/tree/main/docs/capstone_proposal). The `v0` folder inside is the version we submitted, kept as it was |
+| How to set up the tools we use | [setup guide](setup/skills.md) |
 | How to run the code | The [README at the top of the repository](https://github.com/Th3-Minorities/natatorio-gym-app#readme) |
 | Each test case for objectives 1 to 3 and its result | [Test plan](testing/test-plan.md) |
 | The saved test results and screenshots | [Test evidence](testing/evidence/summary.md) |
-| Results of the browser tests of each flow, from its first screen to its last | [Flow test results](testing/flow-results.md) |
 | The manual accessibility checks of each screen | [Accessibility checklist](accessibility-checklist.md) |
 
 ### How each part of the app works

@@ -1,6 +1,3 @@
 graphify-out/
 .env
 template
-CLAUDE.md
-AGENTS.md
-.claude/
