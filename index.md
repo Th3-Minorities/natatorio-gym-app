@@ -22,22 +22,33 @@ An installable web app for the Weight Gym at the UPRM Natatorio Complex, built a
 
 | Objective | Status |
 |---|---|
-| 1. Decide who may enter, from paid memberships and the athlete roster | Paid member path built. Athlete registration and the store sync are planned for the Final report |
-| 2. Check In that opens a visit and closes it on its own | Built for the User |
-| 3. Show the same occupancy estimate across the app | Built for the User |
-| 4. Tools for Staff and Administrators | Partly built ahead, the rest planned |
+| 1. Decide who may enter, from paid memberships and the athlete roster | Paid member and athlete registration built. The store sync is planned for the Final report |
+| 2. Check In that opens a visit and closes it on its own | Built for the User and for Staff (assisted Check In) |
+| 3. Show the same occupancy estimate across the app | Built for the User and Staff |
+| 4. Tools for Staff and Administrators | Partly built: active sessions and check-out, person search, terms, the athlete roster and Staff accounts. The rest is planned |
 | 5. Gym use statistics | Planned |
 
 ## Demo
 
-Two short videos will show the app working. They are not recorded yet.
+Three recordings of the app running on test data, with no editing and no sound.
 
-| Dashboard (desktop) | User app (phone) |
-|---|---|
-| Video coming soon. The dashboard that Staff and Administrators use on a computer. | Video coming soon. A User registering, checking in and opening the Gym ID on a phone. |
+### Dashboard (desktop)
 
-<!-- When a video exists, put the file in a media folder and replace its cell with:
-<video controls preload="none" width="100%" src="media/FILE.mp4"></video> -->
+Staff check a person out, find a member and check them in after comparing the photo, and look up an athlete on the roster. An Administrator then opens terms, the athlete roster and the Staff accounts.
+
+<video controls preload="none" width="100%" poster="media/poster-1.png" src="media/demo-1.webm"></video>
+
+### Paid member (phone)
+
+A member registers with the Authorization Number from their payment, adds a photo and accepts the waiver. They sign in, check in from inside the gym and show their Gym ID, and occupancy goes up by one.
+
+<video controls preload="none" width="320" poster="media/poster-2.png" src="media/demo-2.webm"></video>
+
+### Athlete (phone)
+
+An athlete enters their student number, gets a link at their university email and finishes registration. They check in, and the Gym ID shows that they are an athlete and their sport.
+
+<video controls preload="none" width="320" poster="media/poster-3.png" src="media/demo-3.webm"></video>
 
 ## Coming soon
 
@@ -45,9 +56,7 @@ These parts are not built yet.
 
 For Staff and Administrators:
 
-- A front desk screen to see who is inside and check people out
-- Screens to add terms and manage the athlete roster
-- Tools to grant or release access by hand, and to delete an account
+- Tools to grant or release access by hand, and for an Administrator to delete an account
 - Screens to edit the hours, closures and notices
 - A screen to read the log of what Staff and Administrators did
 
