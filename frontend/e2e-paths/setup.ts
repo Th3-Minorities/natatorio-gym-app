@@ -5,10 +5,10 @@ import { api } from '../e2e/flows/flow.ts'
 
 // Shared setup for the #152 path tests (e2e-paths/*.spec.ts). Data is built straight in the database of the running
 // stack with `php artisan tinker`, so every test makes its own users and never depends on the seeded ones.
-// Stack: explicit project KIM_PROJECT, proxy port APP_PORT (default 8096), optional subnet TEST_SUBNET.
+// Stack: explicit project TEST_PROJECT, proxy port APP_PORT (default 8096), optional subnet TEST_SUBNET.
 
 export const DOCKER = 'docker'
-const WORKTREE = process.env.KIM_WORKTREE ?? resolve(import.meta.dirname, '../..')
+const WORKTREE = process.env.TEST_WORKTREE ?? resolve(import.meta.dirname, '../..')
 export const stackEnv = {
   ...process.env,
   APP_PORT: process.env.APP_PORT ?? '8096',
@@ -17,10 +17,10 @@ export const stackEnv = {
 
 /** Targets only the explicitly selected local stack, with an optional network override. */
 export function composeArgs(...command: string[]): string[] {
-  if (!process.env.KIM_PROJECT) throw new Error('KIM_PROJECT is not set: select a local test stack')
+  if (!process.env.TEST_PROJECT) throw new Error('TEST_PROJECT is not set: select a local test stack')
   const files = ['-f', `${WORKTREE}/docker-compose.yml`, '-f', `${WORKTREE}/docker-compose.override.yml`]
-  if (process.env.KIM_TEST_NET) files.push('-f', process.env.KIM_TEST_NET)
-  return ['compose', '-p', process.env.KIM_PROJECT, ...files, '--profile', 'development', ...command]
+  if (process.env.TEST_NET_FILE) files.push('-f', process.env.TEST_NET_FILE)
+  return ['compose', '-p', process.env.TEST_PROJECT, ...files, '--profile', 'development', ...command]
 }
 
 /** Runs PHP in the app container of the stack and returns what it printed. */

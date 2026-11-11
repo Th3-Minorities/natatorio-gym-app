@@ -631,11 +631,11 @@ Bug reports: [Discussion #158](https://github.com/Th3-Minorities/natatorio-gym-a
 
 ## Rerunning the path tests
 
-Before running the paths, rebuild and restart the proxy for the selected `KIM_PROJECT` from the repo root (add `-f` for the `KIM_TEST_NET` file when you use one); the proxy image tag is shared between stacks:
+Before running the paths, rebuild and restart the proxy for the selected `TEST_PROJECT` from the repo root (add `-f` for the `TEST_NET_FILE` file when you use one); the proxy image tag is shared between stacks:
 
 ```powershell
 docker compose -p <project> build proxy
 docker compose -p <project> up -d proxy
 ```
 
-From `frontend/`, run `npm run test:e2e:paths` against an isolated seeded stack, with Docker on `PATH` and `CI` unset. Set `KIM_PROJECT` and `APP_PORT`; optionally set `KIM_WORKTREE` for another checkout, `KIM_TEST_NET` and `TEST_SUBNET` for a network override, and `E2E_BASE_URL` for a different proxy URL. Install Playwright Chromium, Firefox and WebKit plus Python with Pillow for registration fixtures. Add Playwright arguments after `--` to select a file or project.
+From `frontend/`, run `npm run test:e2e:paths` against an isolated seeded stack, with Docker on `PATH` and `CI` unset. Set `TEST_PROJECT` and `APP_PORT`; optionally set `TEST_WORKTREE` for another checkout, `TEST_NET_FILE` and `TEST_SUBNET` for a network override, and `E2E_BASE_URL` for a different proxy URL. Install Playwright Chromium, Firefox and WebKit plus Python with Pillow for registration fixtures. Add Playwright arguments after `--` to select a file or project.

@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test'
 
-if (!process.env.KIM_PROJECT) throw new Error('KIM_PROJECT is not set: select a local test stack')
+if (!process.env.TEST_PROJECT) throw new Error('TEST_PROJECT is not set: select a local test stack')
 
 export default defineConfig({
   testDir: './e2e-paths',

@@ -5,13 +5,13 @@ import { join } from 'node:path'
 import { flushCache, tinker as sharedTinker } from './setup.ts'
 
 // Test data for the paid registration path tests, created through tinker on the test stack (never in the seeder).
-// The docker call lives in setup.ts; this wrapper refuses to run without KIM_PROJECT so a missing variable can never
-// send a test to the default kim stack.
+// The docker call lives in setup.ts; this wrapper refuses to run without TEST_PROJECT so a missing variable can never
+// send a test to the default test stack.
 
-export const tinkerAvailable = () => !process.env.CI && !!process.env.KIM_PROJECT
+export const tinkerAvailable = () => !process.env.CI && !!process.env.TEST_PROJECT
 
 export function tinker(php: string): string {
-  if (!process.env.KIM_PROJECT) throw new Error('KIM_PROJECT is not set')
+  if (!process.env.TEST_PROJECT) throw new Error('TEST_PROJECT is not set')
   return sharedTinker(php)
 }
 
@@ -20,7 +20,7 @@ const BS = String.fromCharCode(92)
 const cls = (...parts: string[]) => parts.join(BS)
 const [Term, Membership, Import, User, Setting] = ['AcademicTerm', 'ImportedMembership', 'Import', 'User', 'Setting'].map((name) => cls('App', 'Models', name))
 
-export const flushLimiter = () => { if (!process.env.KIM_PROJECT) throw new Error('KIM_PROJECT is not set'); flushCache() }
+export const flushLimiter = () => { if (!process.env.TEST_PROJECT) throw new Error('TEST_PROJECT is not set'); flushCache() }
 
 export type OrderOptions = { email?: string; name?: string; status?: string; paidAt?: 'term-start' | 'before-term-start'; term?: 'next' }
 
@@ -74,7 +74,7 @@ for quality in (92, 85, 75, 65, 55, 45):
 `
 
 export function fixtures() {
-  const dir = join(tmpdir(), 'kim-registration-fixtures')
+  const dir = join(tmpdir(), 'registration-fixtures')
   if (!existsSync(join(dir, 'big.jpg'))) {
     mkdirSync(dir, { recursive: true })
     execFileSync('python', ['-I', '-c', PY, dir], { timeout: 180_000 })

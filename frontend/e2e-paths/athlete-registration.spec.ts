@@ -8,10 +8,10 @@ import {
 } from './setup-athlete.ts'
 
 // #152 path tests for athlete registration (docs inventory: athlete-registration.md, ids AR-xx). Each row makes its own roster
-// record with tinker on the test stack (KIM_PROJECT), because a student number gets one link per 300 s and 5 a day. Rows that
+// record with tinker on the test stack (TEST_PROJECT), because a student number gets one link per 300 s and 5 a day. Rows that
 // only need a link page make the link in the database; AR-01 to AR-03, AR-12 to AR-16, AR-18 to AR-20, AR-25 and AR-27 use the
 // real email. Failed lookups count against the IP (10 per 15 minutes): rows that fail on purpose flush the limiter first.
-// Not run: AR-51 and AR-52 (not built), AR-53 (real phones). Edge (E) is not a project of the kim config.
+// Not run: AR-51 and AR-52 (not built), AR-53 (real phones). Edge (E) is not a project of the path test config.
 
 test.setTimeout(240_000)
 

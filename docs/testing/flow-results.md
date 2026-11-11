@@ -42,10 +42,10 @@ The CI column holds the Frontend workflow run of 2026-11-09 on this branch, comm
 
 ## Run 2026-11-10
 
-Full run of the path tests on the kim stack, branch `152-flow-e2e-tests`. Sections 9 to 11 use a Run column with the result of this run, since those path tests live in `frontend/e2e-paths/` and CI does not run them.
+Full run of the path tests on the test stack, branch `152-flow-e2e-tests`. Sections 9 to 11 use a Run column with the result of this run, since those path tests live in `frontend/e2e-paths/` and CI does not run them.
 
-- kim-014 fixed: `7b3dff1` on this branch, in `main` through #177.
-- kim-015 fixed: `79775d1`.
+- bug 14 fixed: `7b3dff1` on this branch, in `main` through #177.
+- bug 15 fixed: `79775d1`.
 - SA-02 and SA-91 updated for S-01 (`51c065e`).
 - AR-40 passed 3 of 3 on a clean stack.
 - CI-10 on iPhone and `StaffChanges.test.tsx` were flaky under load and pass alone.
@@ -247,7 +247,7 @@ TR-N24: the zero-athlete case was not run.
 
 ## 10. Staff sessions and find person
 
-Tests: `staff-sessions.spec.ts` (SS) and `cross-device-sessions.spec.ts` (SS-X). Screens S-01 (Sesiones activas), S-02 (session detail) and S-03 (find person, assisted Check In). Every row runs on the desktop project; the SS-X rows open a second context with the Pixel 7 profile for the phone. Bugs found by these paths: kim-014 (RG-02, S-03 confirm before the photo loaded, fixed in `7b3dff1`, issue #26). Not built, so no test: approving a new photo on S-02, the phone photo upload (U-02), and the read-only roster check from S-03.
+Tests: `staff-sessions.spec.ts` (SS) and `cross-device-sessions.spec.ts` (SS-X). Screens S-01 (Sesiones activas), S-02 (session detail) and S-03 (find person, assisted Check In). Every row runs on the desktop project; the SS-X rows open a second context with the Pixel 7 profile for the phone. Bugs found by these paths: bug 14 (RG-02, S-03 confirm before the photo loaded, fixed in `7b3dff1`, issue #26). Not built, so no test: approving a new photo on S-02, the phone photo upload (U-02), and the read-only roster check from S-03.
 
 ### 10a. S-01 Sesiones activas
 
@@ -373,11 +373,11 @@ Tests: `staff-sessions.spec.ts` (SS) and `cross-device-sessions.spec.ts` (SS-X).
 
 ## 11. Regressions of 2026-11-10
 
-Test: `regressions-1110.spec.ts`. One test per bug found on 2026-11-10 after the path run. Bugs: kim-014 ([issue #26 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/26#issuecomment-6761273391), fixed in `7b3dff1`) and kim-015 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6761675254), fixed in `79775d1`).
+Test: `regressions-1110.spec.ts`. One test per bug found on 2026-11-10 after the path run. Bugs: bug 14 ([issue #26 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/26#issuecomment-6761273391), fixed in `7b3dff1`) and bug 15 ([issue #17 comment](https://github.com/Th3-Minorities/natatorio-gym-app/issues/17#issuecomment-6761675254), fixed in `79775d1`).
 
 | Path | Test | Project | Expected result | Run | Manual |
 |---|---|---|---|---|---|
 | RG-01 | assisted Check In announces its confirmation after navigating to S-01 | desktop | After the assisted Check In the page is S-01 with the new row, and the confirmation title is announced in a status or live region. | pass | pending |
-| RG-02 | S-03 explains that the identification photo is still loading | desktop | While the photo request is held, S-03 shows the photo loading title and text instead of a search error. | pass (bug kim-014, fixed in `7b3dff1`) | pending |
+| RG-02 | S-03 explains that the identification photo is still loading | desktop | While the photo request is held, S-03 shows the photo loading title and text instead of a search error. | pass (bug bug 14, fixed in `7b3dff1`) | pending |
 | RG-03 | focused controls stay above the bottom navigation on a short phone | android, iphone | On a 320 by 568 phone, the focused Continuar button (end of visit), Privacidad link and Ajustes link sit above the top of the bottom navigation. | pass | pending |
-| RG-04 | a User without a current authorization sees the no-access state before any press, with no Check In button | android, iphone | A paid member whose term ended and a revoked athlete see the no-access panel (title and action) before any press, and no Check In hold button exists. | pass (bug kim-015, fixed in `79775d1`) | pending |
+| RG-04 | a User without a current authorization sees the no-access state before any press, with no Check In button | android, iphone | A paid member whose term ended and a revoked athlete see the no-access panel (title and action) before any press, and no Check In hold button exists. | pass (bug bug 15, fixed in `79775d1`) | pending |

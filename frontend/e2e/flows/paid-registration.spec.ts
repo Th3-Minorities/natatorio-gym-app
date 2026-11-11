@@ -3,7 +3,7 @@ import { createOrder, tinkerAvailable } from '../../e2e-paths/setup-registration
 
 // #152 flow 1, paid member registration: Welcome to Check In, after the install help. CI claims one of the unclaimed seeded
 // orders per browser (FakeDataSeeder::FREE_AUTHORIZATION_NUMBERS), so a second run needs a fresh seed. On a local test stack
-// (KIM_PROJECT set, CI unset) each run creates its own order, so any number of devices and runs can register.
+// (TEST_PROJECT set, CI unset) each run creates its own order, so any number of devices and runs can register.
 
 test.setTimeout(240_000)
 
