@@ -216,7 +216,9 @@ describe('S-03 assisted Check In', () => {
   it('moves focus to the verify title after the search (WCAG 2.4.3)', async () => {
     await search('802612345')
 
-    expect(await screen.findByRole('heading', { name: t.verifyTitle })).toHaveFocus()
+    // The screen moves focus in an effect after the title renders: wait for it.
+    const title = await screen.findByRole('heading', { name: t.verifyTitle })
+    await waitFor(() => expect(title).toHaveFocus())
   })
 
   it('goes back to an empty search from "No encontramos coincidencias" (4288:1105)', async () => {
@@ -296,7 +298,7 @@ describe('S-03 assisted Check In', () => {
 
     expect(await screen.findByText(t.registeringTitle)).toBeInTheDocument()
     expect(screen.getByText(t.registeringText)).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: t.registeringTitle })).toHaveFocus()
+    await waitFor(() => expect(screen.getByRole('heading', { name: t.registeringTitle })).toHaveFocus())
     expect(screen.getByRole('button', { name: t.registeringButton })).toHaveAttribute('aria-disabled', 'true')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: t.photoMatches })).not.toBeInTheDocument()
@@ -318,7 +320,7 @@ describe('S-03 assisted Check In', () => {
 
     const title = await screen.findByRole('heading', { name: code === 'offline' ? t.offlineTitle : t.failedTitle })
     expect(title.closest('[role="alert"]')).toHaveTextContent(code === 'offline' ? t.offlineText : t.failedText)
-    expect(title).toHaveFocus()
+    await waitFor(() => expect(title).toHaveFocus())
     expect(callsTo(fetchMock, BY_NUMBER)).toHaveLength(2)
     expect(callsTo(fetchMock, '/api/staff/check-in')).toHaveLength(1)
   })
