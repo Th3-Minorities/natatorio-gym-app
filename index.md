@@ -22,10 +22,10 @@ An installable web app for the Weight Gym at the UPRM Natatorio Complex, built a
 
 | Objective | Status |
 |---|---|
-| 1. Decide who may enter, from paid memberships and the athlete roster | Paid member and athlete registration built. Renewal and the store sync are planned for the Final report |
-| 2. Check In that opens a visit and closes it on its own | Built: Check In, the Gym ID, Staff check-out and the 2-hour close. The location boundary is still to be measured at the gym |
+| 1. Decide who may enter, from paid memberships and the athlete roster | We built paid member and athlete registration. Renewal and the store sync come in the Final report |
+| 2. Check In that opens a visit and closes it on its own | We built Check In, the Gym ID, Staff check-out and the 2-hour close. We still have to measure the location boundary at the gym |
 | 3. Show the same occupancy estimate across the app | Built in the User app and on the Staff dashboard |
-| 4. Tools for Staff and Administrators | Built: Staff and Administrator accounts, the front desk screens, terms and the athlete roster. Planned: hours and notices, access tools and the audit log screen |
+| 4. Tools for Staff and Administrators | We built Staff and Administrator accounts, the front desk screens, terms and the athlete roster. Hours and notices, access tools and the audit log screen come next |
 | 5. Gym use statistics | Planned |
 
 ## Demo
@@ -66,7 +66,7 @@ For the gym:
 
 ## How it is built
 
-The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL database. It runs with Docker Compose on a server from CTI, UPRM's technology office.
+The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL database. It runs with Docker Compose, and for the release it moves to a server from CTI, UPRM's technology office.
 
 ## Team
 

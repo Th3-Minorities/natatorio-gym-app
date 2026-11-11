@@ -1,5 +1,5 @@
 title: Natatorio Gym App
-description: An app for checking in, gym cards and current occupancy at the UPRM Weight Gym.
+description: Phone check-in, current occupancy and a Staff dashboard for the UPRM Weight Gym.
 theme: jekyll-theme-cayman
 
 exclude:

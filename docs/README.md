@@ -4,7 +4,7 @@ Start here if you are new to the project or if you are grading it.
 
 ## What the project is
 
-We are building an app for the UPRM Weight Gym that people open on their phone and can install. The [project website](https://th3-minorities.github.io/natatorio-gym-app/) explains what it does and how far along it is.
+We are building an app for the UPRM Weight Gym that you open on your phone and can install. The [project website](https://th3-minorities.github.io/natatorio-gym-app/) says what it does and what we have built so far.
 
 Three groups are involved:
 
@@ -24,7 +24,7 @@ Three groups are involved:
 | Authorization Number | A code (6 or 7 characters so far, letters allowed) a member gets by email when they pay for the gym. They type it to register in the app |
 | Roster | The list of student athletes allowed in the gym this term |
 | Term | A semester, with its start and end dates |
-| Milestone | Our two GitHub milestones, `Midterm report` and `Final report`, group the issues due on each date |
+| Milestone | The two GitHub milestones, `Midterm report` and `Final report`. Each one groups the issues due on that date |
 
 The SRS has a longer glossary at the end (Appendix A).
 
@@ -73,7 +73,7 @@ Each design document ends with three lists: decisions still waiting for a yes, o
 
 ## For developers: where the code is
 
-The app has two halves that talk to each other. The backend (Laravel, in PHP) keeps the data and the rules. The frontend (React) is what people see on the phone. Both run in containers, so one command starts everything on any computer.
+The backend (Laravel, in PHP) keeps the data and the rules. The frontend (React) is what people see: the User app on the phone and the dashboard on the front desk computer. Both run in containers, so one command starts everything on any computer.
 
 | What you are looking for | Where it is |
 |---|---|
@@ -100,7 +100,7 @@ The app has two halves that talk to each other. The backend (Laravel, in PHP) ke
 
 ## Codes you will see
 
-The documents use short codes so they can point to each other. When you see one, this tells you what it is and where to find it.
+The documents use short codes so they can point to each other.
 
 | Code | What it is | Where to find it |
 |---|---|---|
