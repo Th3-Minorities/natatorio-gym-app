@@ -23,7 +23,7 @@ sequenceDiagram
   alt Visit already open
     A-->>P: Same visit
   else No open visit
-    Note over A: Check In service checks:<br/>current authorization,<br/>photo on file, not pending,<br/>gym open, accuracy 50 m<br/>or better, within 50 m<br/>of the gym. Coordinates<br/>are never stored.
+    Note over A: Check In service checks:<br/>current authorization,<br/>a current photo,<br/>gym open, accuracy 50 m<br/>or better, within 50 m<br/>of the gym. Coordinates<br/>are never stored.
     A->>D: Insert active visit,<br/>ends 2 h after Check In
     A-->>P: New visit
   end
