@@ -8,7 +8,7 @@ An installable web app for the Weight Gym at the UPRM Natatorio Complex, built a
 
 **On this page**
 
-[Overview](#overview) · [Progress](#objectives-and-status) · [Demo](#demo) · [Coming soon](#coming-soon) · [Team](#team) · [Resources](#links)
+[Overview](#overview) · [Progress](#progress) · [Demo](#demo) · [Coming soon](#coming-soon) · [How it is built](#how-it-is-built) · [Team](#team) · [Resources](#resources)
 
 </nav>
 
@@ -18,14 +18,14 @@ An installable web app for the Weight Gym at the UPRM Natatorio Complex, built a
 
 <p id="how-the-app-solves-it">Members register with an Authorization Number from their payment, and eligible users check in from inside the gym. They can show a digital Gym ID and see current occupancy. Staff verify Gym IDs and check people out. Visits close after two hours if they are still open, and the app saves them for usage statistics. Administrators manage the athlete roster, schedules and notices.</p>
 
-## Objectives and status
+## Progress
 
 | Objective | Status |
 |---|---|
-| 1. Decide who may enter, from paid memberships and the athlete roster | Paid member and athlete registration built. The store sync is planned for the Final report |
-| 2. Check In that opens a visit and closes it on its own | Built for the User and for Staff (assisted Check In) |
-| 3. Show the same occupancy estimate across the app | Built for the User and Staff |
-| 4. Tools for Staff and Administrators | Partly built: active sessions and check-out, person search, terms, the athlete roster and Staff accounts. The rest is planned |
+| 1. Decide who may enter, from paid memberships and the athlete roster | We built paid member and athlete registration. Renewal and the store sync come in the Final report |
+| 2. Check In that opens a visit and closes it on its own | We built Check In, the Gym ID, Staff check-out and the 2-hour close. We still have to measure the location boundary at the gym |
+| 3. Show the same occupancy estimate across the app | Built in the User app and on the Staff dashboard |
+| 4. Tools for Staff and Administrators | We built Staff and Administrator accounts, the front desk screens, terms and the athlete roster. Hours and notices, access tools and the audit log screen come next |
 | 5. Gym use statistics | Planned |
 
 ## Demo
@@ -52,11 +52,9 @@ An athlete enters their student number, gets a link at their university email an
 
 ## Coming soon
 
-These parts are not built yet.
-
 For Staff and Administrators:
 
-- Tools to grant or release access by hand, and for an Administrator to delete an account
+- Tools to grant or release access by hand, and to delete an account
 - Screens to edit the hours, closures and notices
 - A screen to read the log of what Staff and Administrators did
 
@@ -79,15 +77,15 @@ For the gym:
 
 ## How it is built
 
-The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL database. It runs with Docker Compose on a server from CTI, UPRM's technology office.
+The app uses React, TypeScript and Vite, with a Laravel backend and a PostgreSQL database. It runs with Docker Compose, and for the release it moves to a server from CTI, UPRM's technology office.
 
 ## Team
 
 - Carlos J. Pepin Delgado
-- Pierre G Vales Torres
-- Viviana V Ramos Vivoni
+- Pierre G. Vales Torres
+- Viviana V. Ramos Vivoni
 
-## Links
+## Resources
 
 - [Source code](https://github.com/Th3-Minorities/natatorio-gym-app)
 - [Documentation](docs/README.md)
