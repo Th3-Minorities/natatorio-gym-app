@@ -4,7 +4,7 @@ import { linkIn } from '../e2e/mail.ts'
 import { tinker as run } from './setup-registration.ts'
 import { composeArgs, DOCKER, stackEnv } from './setup.ts'
 
-// Test data for the athlete registration path tests (athlete-registration.md, ids AR-xx): roster records, email links and
+// Test data for the athlete registration path tests (ids AR-xx): roster records, email links and
 // the Mailpit messages they produce. Everything is made with tinker on the test stack, never in the seeder.
 
 const BS = String.fromCharCode(92)

@@ -7,7 +7,7 @@ import {
   setLinkAge, setLinkExpiry, tokenOf, usersWith, waitForMails, type Athlete, type AthleteOptions, type LinkOptions,
 } from './setup-athlete.ts'
 
-// #152 path tests for athlete registration (docs inventory: athlete-registration.md, ids AR-xx). Each row makes its own roster
+// #152 path tests for athlete registration (ids AR-xx). Each row makes its own roster
 // record with tinker on the test stack (TEST_PROJECT), because a student number gets one link per 300 s and 5 a day. Rows that
 // only need a link page make the link in the database; AR-01 to AR-03, AR-12 to AR-16, AR-18 to AR-20, AR-25 and AR-27 use the
 // real email. Failed lookups count against the IP (10 per 15 minutes): rows that fail on purpose flush the limiter first.
@@ -321,7 +321,7 @@ test.describe('athlete registration paths', () => {
     const dialogs: string[] = []
     page.on('dialog', (dialog) => { dialogs.push(dialog.message()); void dialog.dismiss() })
     await openIdentify(page)
-    // 34 characters: over the 20 of the field, so the server answers validation_failed, not the unavailable text of the inventory.
+    // 34 characters: over the 20 of the field, so the server answers validation_failed, not the unavailable text.
     await lookup(page, `${athlete.number}<script>alert(1)</script>`)
     await expect(numberField(page)).toHaveAttribute('aria-invalid', 'true')
     await expect(page).toHaveURL(/\/register\/identify$/)
@@ -344,7 +344,7 @@ test.describe('athlete registration paths', () => {
     expect(await mailsTo(page.request, athlete.email)).toHaveLength(0)
     await page.getByRole('button', { name: 'Volver al registro' }).click()
     await expect(heading(page, 'Registro')).toBeVisible()
-    // The number stays in the field (the inventory says empty).
+    // The number stays in the field.
     await expect(numberField(page)).toHaveValue(athlete.number)
   })
 

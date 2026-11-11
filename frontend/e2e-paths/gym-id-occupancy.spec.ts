@@ -8,7 +8,7 @@ import {
   addVisit, ageUserVisit, ageVisit, closeDue, createWaiverlessVisitor, dropUser, dropVisit, endUserVisit, ensurePhotoFile, release, setOccupancy,
 } from './setup-occupancy.ts'
 
-// #152 path tests for flow 5, Gym ID and occupancy. One test per built row of the path inventory (GI-01 to GI-58).
+// #152 path tests for flow 5, Gym ID and occupancy. One test per built path (GI-01 to GI-58).
 // Occupancy is global: a test that needs an exact count makes it with setOccupancy() and gives the visits back in finally.
 
 test.setTimeout(120_000)
@@ -20,10 +20,10 @@ test.beforeAll(() => {
 test.afterAll(() => dropMarkedSlots())
 
 const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
-/** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). */
+/** Limits a row to the devices listed (D desktop, A Android, I iPhone). */
 function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
-  test.skip(!devices.includes(device), `the inventory lists ${devices} for this path`)
+  test.skip(!devices.includes(device), `this path runs on ${devices}`)
 }
 
 const HOLD = '.check-in-hold'

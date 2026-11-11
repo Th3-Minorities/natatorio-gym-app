@@ -3,7 +3,7 @@ import { expect, test, devices, type BrowserContext, type Page, type TestInfo } 
 import { MEMBER, signInUser } from '../e2e/flows/flow.ts'
 import { clearSessions, createOrder, createUser, fixtures, flushLimiter, jpegInfo, setStoreUrl, setTermEnd, termEnd, type OrderOptions } from './setup-registration.ts'
 
-// #152 path tests for paid member registration (docs inventory: paid-registration.md, ids PR-xx). Each test creates its own
+// #152 path tests for paid member registration (ids PR-xx). Each test creates its own
 // orders with tinker on the test stack (TEST_PROJECT), so rows are independent and can run in any order, on every device.
 // Failed lookups count against the IP (10 per 15 minutes): every row that fails on purpose flushes the limiter first.
 

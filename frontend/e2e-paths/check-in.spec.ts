@@ -5,7 +5,7 @@ import {
   restoreHours, sessionCount, setCurrentTermEnd, setHoursEndingIn, setPhotoPending, signInApi, tinkerJson, type Member, type MemberOptions,
 } from './setup.ts'
 
-// #152 path tests for flow 4, Check In. One test per row of the path inventory (CI-01 to CI-83), each on its own fresh users.
+// #152 path tests for flow 4, Check In. One test per path (CI-01 to CI-83), each on its own fresh users.
 
 test.setTimeout(120_000)
 
@@ -16,10 +16,10 @@ test.beforeAll(() => {
 test.afterAll(() => dropMarkedSlots())
 
 const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
-/** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). */
+/** Limits a row to the devices listed (D desktop, A Android, I iPhone). */
 function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
-  test.skip(!devices.includes(device), `the inventory lists ${devices} for this path`)
+  test.skip(!devices.includes(device), `this path runs on ${devices}`)
 }
 
 const NORTH_INSIDE = { latitude: 18.211449, longitude: -67.141, accuracy: 12 }

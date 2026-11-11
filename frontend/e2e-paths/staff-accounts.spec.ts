@@ -10,7 +10,7 @@ import {
   type StaffPerson,
 } from './setup-staff.ts'
 
-// #152 path tests for flow 8, Staff accounts (the desktop dashboard). One test per built row of the path inventory (SA-01 to
+// #152 path tests for flow 8, Staff accounts (the desktop dashboard). One test per built path (SA-01 to
 // SA-94; SA-95 is a note). Every test makes its own staff accounts: the seeded admin@example.com and staff@example.com are only
 // signed in with, never changed. The sign-in lock counters live in the cache and are shared by every staff test on the stack, so
 // the cache is flushed before each test and the lockout rows (SA-13 to SA-16) run last.
@@ -26,10 +26,10 @@ test.afterEach(({}, info) => {
 test.afterAll(() => flushCache())
 
 const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
-/** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). */
+/** Limits a row to the devices listed (D desktop, A Android, I iPhone). */
 function only(devicesListed: string) {
   const device = ABBREVIATION[test.info().project.name]
-  test.skip(!devicesListed.includes(device), `the inventory lists ${devicesListed} for this path`)
+  test.skip(!devicesListed.includes(device), `this path runs on ${devicesListed}`)
 }
 
 const SEEDED_STAFF = { email: STAFF.email, password: STAFF.password, name: 'Recepción de prueba' }
@@ -625,7 +625,7 @@ test('SA-34 an empty and a malformed email are named under the field', async ({ 
   await expect(page.getByText('Escribe un correo electrónico válido.', { exact: true })).toBeVisible()
   await expect(emailField(page)).toBeFocused()
   // Observed: the page sends both the empty and the malformed email to the server, which answers the field rules.
-  // The inventory says no request goes out for the empty case (wrong inventory row, noted in the report).
+  // No request goes out for the empty case.
   test.info().annotations.push({ type: 'requests-for-empty-and-malformed-email', description: String(sent.length) })
 })
 

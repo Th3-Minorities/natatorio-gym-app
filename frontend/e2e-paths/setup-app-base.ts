@@ -5,10 +5,10 @@ import { signInApi, createMember, type Member, type MemberOptions } from './setu
 
 const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
 
-/** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). */
+/** Limits a row to the devices listed (D desktop, A Android, I iPhone). */
 export function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
-  test.skip(!devices.includes(device), `the inventory lists ${devices} for this path`)
+  test.skip(!devices.includes(device), `this path runs on ${devices}`)
 }
 
 /** The tab the install help preselects for this project: the iPhone user agent opens the iPhone tab, everything else Android. */

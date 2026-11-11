@@ -16,7 +16,7 @@ export default defineConfig({
     serviceWorkers: 'block',
     trace: 'retain-on-failure',
   },
-  // Preserve the project names used by the path inventory's device guards.
+  // Preserve the project names used by the device guards.
   // Mixed flows select devices per row, including dashboard effects on phone users.
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },

@@ -10,7 +10,7 @@ import {
 } from './setup-sessions.ts'
 
 // #152 path tests for the Staff sessions and people screens: S-01 active sessions, S-02 person and session, S-03 find a person and
-// the assisted Check In (paths/staff-sessions.md, SS-01 to SS-92). Dashboard paths run on desktop Chrome only (E-171).
+// the assisted Check In (SS-01 to SS-92). Dashboard paths run on desktop Chrome only (E-171).
 // The schedule rows (closure, athletes-only period) end other visits, so they sit at the end of the file.
 
 test.setTimeout(150_000)

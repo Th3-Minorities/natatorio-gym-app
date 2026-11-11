@@ -13,7 +13,7 @@ import {
   renameTerm, restoreTerms, setTerms, snapshotTerms, startVisitLastNight, todayPR, tryReactivate, withdraw, type TermRow,
 } from './setup-terms.ts'
 
-// #152 path tests for flow 9, Terms and athlete roster. One test per row of paths/terms-roster.md: TR-01 to TR-21 from the seed and
+// #152 path tests for flow 9, Terms and athlete roster. One test per path: TR-01 to TR-21 from the seed and
 // the phone, TR-Nxx for the Administrator and Staff screens A-04, A-05 and S-05. Phone and mixed rows live in
 // cross-device-roster.spec.ts (TR-Xxx). Term rows move the dates of the current term for the whole stack: this file runs alone on its
 // own stack with one worker, and every change is restored in finally (and again after the last test).
@@ -36,10 +36,10 @@ test.afterAll(() => {
 })
 
 const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
-/** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone, T terminal: run once, on desktop). */
+/** Limits a row to the devices listed (D desktop, A Android, I iPhone, T terminal: run once, on desktop). */
 function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
-  test.skip(!devices.includes(device), `the inventory lists ${devices} for this path`)
+  test.skip(!devices.includes(device), `this path runs on ${devices}`)
 }
 
 const HOLD = '.check-in-hold'

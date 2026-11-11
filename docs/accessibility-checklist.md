@@ -23,7 +23,7 @@ Manual test evidence for [issue #82](https://github.com/Th3-Minorities/natatorio
 | Delete account `/account/delete` | Pass | Pass | Pass | Pass | Pass | N/A | Pass | Enter opens the confirmation, which initially focuses Cancel. Escape restores focus to the opening button. |
 | Install help `/install` | Pass | Pass | Pass | Pass | Pass | N/A | N/A | ArrowLeft selects iPhone from Android, so only the selected tab is a Tab stop. The page is static help with no offline notice. |
 | Gym `/gym` | Pass | Pass | Pass | Pass | Pass | N/A | Pass | Occupancy loads and the three tabs take visible focus. Headings distinguish occupancy, the equipment guide and individual machines. |
-| Check-in, expired or no active authorization `/check-in` | Pass | Pass | Pass | Pass | Pass | Pass | Pass | The expired-payment account still shows the enabled hold button. Holding it shows "Tu acceso no está vigente", read from the status region. |
+| Check-in, expired or no active authorization `/check-in` | Pass | Pass | Pass | Pass | Pass | Pass | Pass | The expired-payment account no longer shows the hold button: the no-access panel replaces it. Fixed on main through #189. |
 | Check-in, ended visit `/check-in` | Pass | Pass | Pass | Pass | Pass | N/A | Pass | After a desk check-out. At 320 × 568 px on Pixel 7 and iPhone 13, a scripted test focuses Continue and checks it sits above the bottom bar (RG-03, passed November 10, 2026). |
 | Check-in success `/check-in` | Pass | Pass | Pass | Pass | Pass | Pass | Pass | Holding the button with Space announces "Registrando entrada" and then "¡Tu entrada quedó registrada!" in the status region. |
 | Gym ID card `/check-in` | Pass | Pass | Pass | Pass | Pass | N/A | Pass | Reopened with an open visit: "Tu entrada está registrada" with name, type, entry time and duration. |
@@ -49,7 +49,7 @@ Manual test evidence for [issue #82](https://github.com/Th3-Minorities/natatorio
 
 ## Findings
 
-1. **Check-in shows an enabled action for accounts without active authorization.** Still happens in part on `main`. Sign in as the expired-payment account and open Check-in: "Mantén presionado para entrar" is enabled. Holding it now ends with "Tu acceso no está vigente" and a "Revisar mi acceso" link to My account, read from the status region, so the server refusal is verified. The button itself stays enabled.
+1. **Check-in shows an enabled action for accounts without active authorization.** Fixed on `main` through #189. Signed in as the expired-payment account, Check-in shows the no-access panel instead of the hold button, so nobody presses for a refusal.
 2. **Unclaimed athlete lookup gives no visible confirmation.** Fixed on `main`. Submitting an unclaimed roster number now shows "Revisa tu correo", the masked institutional address in an alert region and a disabled resend countdown, and the email link arrives.
 3. **On S-03 the identity check was possible before the photo loaded.** Fixed by holding the check until the photo loads (frame 4288:1354), in main through #177.
 
@@ -59,5 +59,4 @@ Chrome's accessibility tree exposes the Welcome and Sign in headings at level on
 
 ## Pending evidence
 
-- Merge commit 7b3dff1 (finding 3) and re-check S-03 on `main`.
 - Record new screens as they are built.

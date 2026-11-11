@@ -4,7 +4,7 @@ import { lastEmailTo, linkIn } from '../e2e/mail.ts'
 import { countRequests, createMember, dropMarkedSlots, flushCache, rawApi, resetSchedule, sessionCount, signInApi, tinkerJson } from './setup.ts'
 import { ageResetToken, clearLockWaits, createUser, expireSession, mailCount, softDelete, unique } from './setup-sign-in.ts'
 
-// #152 path tests for flow 3, User sign in. One test per row of the path inventory (SI-01 to SI-53; SI-54 is not built and
+// #152 path tests for flow 3, User sign in. One test per path (SI-01 to SI-53; SI-54 is not built and
 // SI-55 is manual). Every test makes its own users: the seeded sin-autorizacion@example.com is never used because the flow
 // spec rewrites its password. The lockout rows (SI-14 to SI-18 and SI-40) lock the whole IP, so they run last.
 
@@ -21,10 +21,10 @@ test.afterAll(() => {
 })
 
 const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
-/** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone; the inventory's E is Edge, not a project). */
+/** Limits a row to the devices listed (D desktop, A Android, I iPhone; E is Edge, not a project). */
 function only(devicesListed: string) {
   const device = ABBREVIATION[test.info().project.name]
-  test.skip(!devicesListed.includes(device), `the inventory lists ${devicesListed} for this path`)
+  test.skip(!devicesListed.includes(device), `this path runs on ${devicesListed}`)
 }
 
 const SEEDED_USER = { email: process.env.E2E_USER_EMAIL ?? 'user@example.com', password: process.env.E2E_USER_PASSWORD ?? 'test-user-password-129' }
@@ -261,7 +261,7 @@ test('SI-09 email format: nombre@ and nombre are invalid, a@b passes the format'
 
 test('SI-10 email length: the field stops at 255 and the server refuses a 255 and a 256 character address', async ({ page, baseURL }) => {
   only('AI')
-  // The inventory expected the 255 character address to reach the account lookup; the server's email rule refuses it first
+  // The 255 character address was expected to reach the account lookup; the server's email rule refuses it first
   // (addresses much shorter than 255 characters already fail that rule), so the notice is the invalid email one.
   const email = longEmail(255)
   expect(email).toHaveLength(255)

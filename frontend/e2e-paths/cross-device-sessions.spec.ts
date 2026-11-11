@@ -7,7 +7,7 @@ import {
 } from './setup-sessions.ts'
 
 // #152 cross-device path tests: the phone (Pixel 7 profile, second browser context, location faked at the gym) and the front desk
-// dashboard (desktop Chrome) on the same stack (paths/staff-sessions.md, SS-X-01 to SS-X-13).
+// dashboard (desktop Chrome) on the same stack (SS-X-01 to SS-X-13).
 
 test.setTimeout(180_000)
 

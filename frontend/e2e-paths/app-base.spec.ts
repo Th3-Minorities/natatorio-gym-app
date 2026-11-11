@@ -5,7 +5,7 @@ import {
 } from './setup-app-base.ts'
 import { createMember, signInApi } from './setup.ts'
 
-// #152 path tests for flow 7, app base: install help, installed app, offline. One test per row of the path inventory (AB-01 to AB-35),
+// #152 path tests for flow 7, app base: install help, installed app, offline. One test per path (AB-01 to AB-35),
 // each on its own fresh member. The real install (Add to Home Screen, Chrome's dialog) only happens on a phone: AB-33 and AB-34 are manual.
 
 test.setTimeout(120_000)

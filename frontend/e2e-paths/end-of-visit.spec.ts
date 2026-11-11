@@ -10,7 +10,7 @@ import {
   moveVisitToPastTermEnd, phoneTime, sessionRow, startPeriodNow,
 } from './setup-end-of-visit.ts'
 
-// #152 path tests for flow 6, End of a visit. One test per built row of the path inventory (EV-01 to EV-47). The staff screen is
+// #152 path tests for flow 6, End of a visit. One test per built path (EV-01 to EV-47). The staff screen is
 // not built, so the desk is the API. The closure rows end other users' visits and sit at the end of the file.
 
 test.setTimeout(150_000)
@@ -22,10 +22,10 @@ test.beforeAll(() => {
 test.afterAll(() => dropMarkedSlots())
 
 const ABBREVIATION: Record<string, string> = { desktop: 'D', 'desktop-firefox': 'D', 'desktop-webkit': 'D', android: 'A', iphone: 'I' }
-/** Limits a row to the devices the inventory lists (D desktop, A Android, I iPhone). API rows run once, on desktop. */
+/** Limits a row to the devices listed (D desktop, A Android, I iPhone). API rows run once, on desktop. */
 function only(devices: string) {
   const device = ABBREVIATION[test.info().project.name]
-  test.skip(!devices.includes(device), `the inventory lists ${devices} for this path`)
+  test.skip(!devices.includes(device), `this path runs on ${devices}`)
 }
 
 const HOLD = '.check-in-hold'
