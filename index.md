@@ -30,14 +30,25 @@ An installable web app for the Weight Gym at the UPRM Natatorio Complex, built a
 
 ## Demo
 
-Two short videos will show the app working.
+Three recordings of the app running on test data, with no editing and no sound.
 
-| Dashboard (desktop) | User app (phone) |
-|---|---|
-| Video coming soon. The dashboard that Staff and Administrators use on a computer. | Video coming soon. A User registering, checking in and opening the Gym ID on a phone. |
+### Dashboard (desktop)
 
-<!-- When a video exists, put the file in a media folder and replace its cell with:
-<video controls preload="none" width="100%" src="media/FILE.mp4"></video> -->
+Staff check a person out, find a member and check them in after comparing the photo, and look up an athlete on the roster. An Administrator then opens terms, the athlete roster and the Staff accounts.
+
+<video controls preload="none" width="100%" poster="media/poster-1.png" src="media/demo-1.webm"></video>
+
+### Paid member (phone)
+
+A member registers with the Authorization Number from their payment, adds a photo and accepts the waiver. They sign in, check in from inside the gym and show their Gym ID, and occupancy goes up by one.
+
+<video controls preload="none" width="320" poster="media/poster-2.png" src="media/demo-2.webm"></video>
+
+### Athlete (phone)
+
+An athlete enters their student number, gets a link at their university email and finishes registration. They check in, and the Gym ID shows that they are an athlete and their sport.
+
+<video controls preload="none" width="320" poster="media/poster-3.png" src="media/demo-3.webm"></video>
 
 ## Coming soon
 
