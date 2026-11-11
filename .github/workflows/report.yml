@@ -8,29 +8,39 @@ on:
 jobs:
   pdf:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
       - name: Install Tectonic
         run: curl --proto '=https' --tlsv1.2 -fsSL https://drop-sh.fullyjustified.net | sh
-      - name: Build the PDF
+      - name: Build the three versions (review, changes in blue, clean black)
         working-directory: docs/progress_report
-        run: ../../tectonic -X compile main.tex
+        run: |
+          mkdir -p out
+          build() {
+            printf '%s\n' "$2" > version.tex
+            ../../tectonic -X compile main.tex
+            cp main.pdf "out/progress-report-$1.pdf"
+          }
+          build review ''
+          build changes-blue '\reviewroundfalse'
+          build clean-black '\showchangesfalse'
+          rm -f version.tex
       - uses: actions/upload-artifact@v4
         with:
           name: progress-report
-          path: docs/progress_report/main.pdf
+          path: docs/progress_report/out/*.pdf
           retention-days: 14
-      - name: Publish the PDF to the report-pdf branch
+      - name: Publish the PDFs to the report-pdf branch
         run: |
-          cp docs/progress_report/main.pdf /tmp/progress-report.pdf
+          cp docs/progress_report/out/*.pdf /tmp/
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan report-pdf
           git rm -rfq .
-          cp /tmp/progress-report.pdf progress-report.pdf
-          git add progress-report.pdf
-          git commit -qm "Progress report PDF from ${GITHUB_SHA::7} [skip ci]"
+          cp /tmp/progress-report-*.pdf .
+          git add progress-report-*.pdf
+          git commit -qm "Progress report PDFs from ${GITHUB_SHA::7} [skip ci]"
           git push -f origin report-pdf

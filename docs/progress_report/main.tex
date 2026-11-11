@@ -38,6 +38,7 @@
 % Changes in blue: \showchangestrue \reviewroundfalse. Clean black: \showchangesfalse.
 \newif\ifshowchanges \showchangestrue
 \newif\ifreviewround \reviewroundtrue
+\InputIfFileExists{version.tex}{}{} % CI writes the delivery flags here
 \ifshowchanges
   \DeclareRobustCommand{\revised}[1]{{\color{blue!70!black}#1}}
   \ifreviewround
