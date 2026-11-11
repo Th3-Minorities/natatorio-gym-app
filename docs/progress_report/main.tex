@@ -1,0 +1,132 @@
+%=====================================================================
+%  UPRM Weight Gym Operations and Member-Access Platform
+%  CIIC 4151 Senior Design Project
+%  Overleaf-ready LaTeX source (compile with pdfLaTeX)
+%
+%  Progress report: built from the proposal (docs/capstone_proposal/v0), one file per section in sections/.
+%=====================================================================
+\documentclass[11pt,letterpaper]{article}
+
+%---------------------------- Encoding ------------------------------
+\usepackage[utf8]{inputenc}     % accented characters: Mayagüez, José, Miłosz
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\IfFileExists{lmodern.sty}{\usepackage{lmodern}}{} % optional nicer font
+
+%---------------------------- Layout --------------------------------
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+
+%---------------------------- Tables --------------------------------
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{ragged2e}
+
+%---------------------------- Lists / Figures -----------------------
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{xcolor}
+% Open items that wait on a decision or on code. List them with: grep -rn "\\pending" sections
+\newcommand{\pending}[1]{\textcolor{red}{\textbf{[PENDING:} #1\textbf{]}}}
+% Text that changed after the proposal review or is new in this report. List it with: grep -rn "\\revised" sections
+% Delivery versions from one source. Review look (default): \showchangestrue \reviewroundtrue.
+% Changes in blue: \showchangestrue \reviewroundfalse. Clean black: \showchangesfalse.
+\newif\ifshowchanges \showchangestrue
+\newif\ifreviewround \reviewroundtrue
+\InputIfFileExists{version.tex}{}{} % CI writes the delivery flags here
+\ifshowchanges
+  \DeclareRobustCommand{\revised}[1]{{\color{blue!70!black}#1}}
+  \ifreviewround
+    % Text added or rewritten in round 3 of the review. List it with: grep -rn "\roundthree" sections
+    \DeclareRobustCommand{\roundthree}[1]{{\color{violet!80!black}#1}}
+  \else
+    \DeclareRobustCommand{\roundthree}[1]{{\color{blue!70!black}#1}}
+  \fi
+\else
+  \DeclareRobustCommand{\revised}[1]{#1}
+  \DeclareRobustCommand{\roundthree}[1]{#1}
+\fi
+\usepackage{caption}
+
+%---------------------------- Links ---------------------------------
+\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\urlstyle{same}
+\pdfstringdefDisableCommands{\renewcommand{\revised}[1]{#1}\renewcommand{\roundthree}[1]{#1}} % keep bookmarks plain
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % break long URLs anywhere
+
+%------------------- Global formatting choices ----------------------
+% Sections are numbered with Roman numerals (I. INTRODUCTION ... VII. ...)
+\renewcommand{\thesection}{\Roman{section}}
+\titleformat{\section}{\normalfont\large\bfseries}{\thesection.}{0.6em}{\MakeUppercase}
+\titleformat{\subsection}{\normalfont\normalsize\bfseries}{}{0em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\itshape}{}{0em}{}
+\setcounter{secnumdepth}{1}   % only top-level sections are numbered
+
+% "Figure 1." instead of "Figure 1:"
+\captionsetup{labelsep=period,font=small,labelfont=bf}
+
+% Ragged-right, fixed-width column type used by all tables
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small UPRM Weight Gym Operations and Member-Access Platform}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\setlength{\emergencystretch}{1.5em}   % avoid overfull lines
+\setlist[itemize]{leftmargin=1.5em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=2em,itemsep=2pt,topsep=3pt}
+
+%=====================================================================
+\begin{document}
+
+%--------------------------- TITLE PAGE ------------------------------
+\begin{titlepage}
+\thispagestyle{empty}
+\centering
+\vspace*{3.5cm}
+
+{\LARGE\bfseries UPRM Weight Gym Operations and\\[0.3cm] Member-Access Platform\par}
+
+\vspace{4cm}
+
+{\large CIIC 4151 Senior Design Project\par}
+\vspace{0.6cm}
+{\large Carlos J. Pepin Delgado\par}
+{\large Pierre G. Vales Torres\par}
+{\large Viviana V. Ramos Vivoni\par}
+
+\vspace{2cm}
+
+{\large Advisor: Fernando Torre\par}
+{\large Prof. Wilson Rivera\par}
+\vspace{0.4cm}
+{\large Department of Computer Science and Engineering\par}
+{\large University of Puerto Rico at Mayaguez Campus\par}
+\vspace{0.4cm}
+{\large Progress Report\par}
+\vspace{0.4cm}
+{\large November 10th, 2026\par}
+
+\vfill
+\end{titlepage}
+
+\input{sections/00-response-to-reviews}
+\input{sections/01-introduction}
+\input{sections/02-problem-statement}
+\input{sections/03-objectives}
+\input{sections/04-solution-approach}
+\input{sections/05-technical-approach}
+\input{sections/06-project-plan}
+\input{sections/07-results}
+\input{sections/08-project-documentation}
+\input{sections/09-references}
+
+\end{document}

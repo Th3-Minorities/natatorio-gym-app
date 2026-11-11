@@ -1,0 +1,73 @@
+\section{Project Plan}
+%=====================================================================
+
+\subsection{Activities and Process}
+
+The team works in one-week Scrum sprints. At planning, it selects objective-linked backlog tasks, splitting oversized work; several weekly standups report progress, plans, and blockers. Blockers affecting the sprint are handled the same day, while others return to the backlog. Each sprint ends with an acceptance-criteria review and retrospective that revises the backlog and test plan. The five objectives generally proceed in dependency order, with independent later tasks pulled forward when practical; all three members contribute by layer.
+
+\subsection{Timetable, Milestones, and Deliverables}
+
+\begin{center}
+\small
+\begin{longtable}{L{1.4cm} L{2.4cm} L{11.2cm}}
+\toprule
+\textbf{Sprints} & \textbf{Dates} & \textbf{Work} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Sprints} & \textbf{Dates} & \textbf{Work} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1--3 & Sep 30--Oct 20 & Repository, environment, schema, WooCommerce export, paid and athlete authorization, account creation, and controlled fixes. \\
+\addlinespace
+4--5 & Oct 21--Nov 3 & Check In UI, geolocation and boundary checks, \roundthree{one-session creation, Staff check-out, the 2-hour automatic close}, duplicate handling, Gym ID, and scenario tests. \\
+\addlinespace
+6 & Nov 4--10 & Occupancy calculation, interface consistency, and controlled tests. \\
+\addlinespace
+7--8 & Nov 11--24 & Staff dashboard, Administrator tools, role matrix, and fixes. \\
+\addlinespace
+9--10 & Nov 25--Dec 8 & Utilization calculations by period, high/low use, and authorization type; analytics view and tests. \\
+\addlinespace
+11 & \roundthree{Dec 9--11} & Integrated end-to-end testing, documentation, and submission. \\
+\end{longtable}
+\end{center}
+
+\subsection{Team Responsibilities}
+
+\revised{Each member owns work areas and reviews the others' pull requests. All three met with CTI and the gym and wrote this report. Table~\ref{tab:team} lists what each member did and owns.}
+
+\begin{table}[h]
+\centering
+\caption{Work done and owned by each member}
+\label{tab:team}
+\small
+\begin{tabularx}{\textwidth}{L{3.2cm} X}
+\toprule
+\textbf{Member} & \textbf{Work done and owned} \\
+\midrule
+Carlos J. Pepin Delgado & \revised{Software Requirements Specification and design documents: architecture, data model, registration, Check In and administration flows, and the screen map by role. Team rules, issue templates, and the wireframe guide. Frontend base and its CI. User app base: phone layout, navigation, install help, and offline support. User sign in on one device, password reset, and account deletion. Check In with location. Gym ID and occupancy. Paid member and athlete registration. Test data for Objective 1 and \roundthree{the load test.} Automatic accessibility checks and the flow tests. Project home page. Server requests to CTI.} \\
+\addlinespace
+Pierre G. Vales Torres & \revised{Containers, database, Laravel API, and backend CI. Database tables and rules, and the fake test data. Staff and Administrator accounts: sign in, roles, invitations, password reset, and the audit log. Dashboard base: layout, menu, design tokens, and Spanish and English texts. Staff check-out and the automatic 2-hour close. Academic terms and the athlete roster, with the Word and PDF download. Staff panel: who is inside, assisted Check In, and visit corrections. Occupancy on the dashboard. Security updates and the review of merged pull requests. \roundthree{The load test.}} \\
+\addlinespace
+Viviana V. Ramos Vivoni & \revised{Wireframes in Figma for registration, Check In and Gym ID, sign in and account, and Staff screens; content, analytics, and administration screens are in progress. The open design decisions of the screen map. \roundthree{User app code: Welcome and install help, sign in, Check In, the Gym ID and occupancy, paid member and athlete registration, and emergency contact.} Manual accessibility check. Project website on GitHub Pages and the design document updates.} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsection{Testing Plan}
+
+\roundthree{Each test is linked to an objective}, and every case uses a controlled dataset. One seed command loads the same fake data into a fresh local database, and the automated tests and the live demo both run on it, so the demo shows the cases the tests prove.
+
+\textbf{Authorization (\roundthree{Sprints 1--3}):} a controlled dataset checks valid and expired paid memberships, valid and invalid athlete approvals, missing authorization, and unmatched users against expected approve and deny decisions. \textbf{Check In and sessions (\roundthree{Sprints 4--5}):} tests cover location inside and outside the boundary, denied permission, inadequate accuracy, successful, rejected, and duplicate Check Ins, Staff check-out, the automatic close after 2 hours, closures, and concurrent requests that must create at most one session. Staff-assisted Check In tests (\roundthree{Sprints 7--8}) verify the authorized user without a smartphone, photo and authorization checks, actor and timestamp audit, and no overlapping session.
+
+\textbf{Occupancy (\roundthree{Sprint 6}):} expected active-session counts are compared after Check Ins, check-outs, automatic closes, Staff corrections, and concurrent events; User, Staff, and Administrator views must agree. \textbf{Roles (\roundthree{Sprints 7--8}):} the permission matrix confirms allowed actions succeed and forbidden actions fail. \textbf{Analytics (\roundthree{Sprints 9--10}):} each finalized metric is compared with a known result from controlled historical data. \textbf{Integration (\roundthree{Sprint 11}):} one integrated dataset runs from sign in to session creation to analytics, and all five areas are checked together. Engineering-constraint pass conditions and timing appear in Engineering Constraints and Verification.
+
+\revised{\textbf{Accessibility.} An axe-core scan [11] with the WCAG 2.0, 2.1, and 2.2 A and AA rules runs on each screen inside the browser tests \roundthree{[12]} and fails the build on a violation, and the linter's accessibility rules are on. A manual checklist covers what a scan cannot: keyboard only, visible focus never covered by the bottom bar, NVDA on Windows, VoiceOver on iPhone, 200\% zoom, a 320 pixel wide screen, and status messages read aloud. Each pull request that adds a screen includes the filled checklist. Scans find only part of the problems, so results claim no automatically detectable violations plus the manual checks, not full WCAG conformance.}
+
+\revised{\textbf{Stress testing with k6.} k6 scripts [13] sign in the fake users before the timed part and then run three profiles. The gym gave no count for its busiest hour, so the team set the sizes from the estimate of about 150 visits a day: a peak of 50 Check Ins spread over 5 minutes (about a third of the daily visits in the busiest hour, compressed), a stress run of 100 over 5 minutes, and a burst of 50 members at once, each sending two Check Ins in parallel. In the peak and stress runs each member repeats the Check In 60 seconds later and must get the same session. A run passes with a Check In p95 under 3 seconds, errors under 1\%, and every check passing; after the run, the test counts sessions per user and reads the occupancy number. A preliminary run uses the local containers, where k6 and the app share one computer, so its numbers only compare runs with each other. The full run is on the CTI VM. Separately, the Check In button must be usable in under 3 seconds on mobile data on a mid-range phone, which needs a real phone. \roundthree{It is tested on the team members' own iPhone and Android phones on mobile data.}}
+
+\revised{\textbf{Acceptance testing.} \roundthree{On the CTI VM, before the release to all users,} gym staff and real users, both paid members and athletes, run the main flows on their own phones and computers: registration, Check In, Gym ID, Staff-assisted Check In, check-out, and the store sync. Browsers: iPhone with Safari, Android with Chrome, and Windows with Chrome and Edge, with macOS and Firefox as a secondary check. The gym records accepted or not accepted for each flow and the problems found, and each problem becomes an issue.}
+
+%=====================================================================

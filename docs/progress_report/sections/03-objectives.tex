@@ -1,0 +1,72 @@
+\section{Project Objectives}
+%=====================================================================
+
+\begin{center}
+\small
+\begin{longtable}{L{3.1cm} L{4.2cm} L{4.2cm} L{1.8cm}}
+\toprule
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Deadline} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Objective} & \textbf{Metric} & \textbf{Acceptance Criteria} & \textbf{Deadline} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+
+1. Consolidate user identity and facility-access authorization into one correct access decision.
+&
+Percentage of authorization cases correctly approved or denied using a controlled dataset with valid and expired paid memberships, valid and invalid athlete authorizations, missing authorization, and unmatched user records.
+&
+Every defined authorization case must return the expected decision. Users with valid authorization must be approved, while users without valid authorization must be denied.
+&
+Oct 16 \\
+\addlinespace
+\midrule
+\addlinespace
+
+2. Implement a user-initiated check-in process that creates and manages a valid facility session from check-in through automatic expiration.
+&
+Percentage of defined check-in and session scenarios that reach the expected state, including location validation, successful and rejected check-ins, session creation, Gym ID generation, duplicate attempts, Staff check-out, and the automatic close 2 hours after Check In.
+&
+Every valid check-in must create exactly one active session and one current Gym ID. Invalid attempts must create no session, duplicate attempts must follow the defined session rule, and each session must stop counting as active after Staff check the person out or 2 hours after its Check In.
+&
+Oct 30 \\
+\addlinespace
+\midrule
+\addlinespace
+
+3. Maintain a consistent active-session state and use it to provide estimated facility occupancy across the platform.
+&
+Difference between the estimated occupancy reported by the system and the expected number of active sessions after Check Ins, check-outs, automatic closes, Staff corrections, and concurrent session events.
+&
+The reported estimated occupancy must match the number of active session records in every tested state. \roundthree{User, Staff, and Administrator screens must show the same value once each screen has refreshed; screens poll every 25 seconds, and the test compares values after each refresh.}
+&
+Nov 6 \\
+\addlinespace
+\midrule
+\addlinespace
+
+4. Provide Staff and Administrators with role-controlled tools to supervise facility use and maintain operational information.
+&
+Percentage of role-permission checks and administrative tasks that produce the expected result according to the final User, Staff, and Administrator permission matrix.
+&
+Every tested action must be allowed or denied according to the assigned role. Staff must be able to perform the defined monitoring and session-correction tasks, while Administrators must be able to manage athlete authorizations, schedules, closures, and Staff accounts.
+&
+Nov 20 \\
+\addlinespace
+\midrule
+\addlinespace
+
+5. Transform recorded facility-use data into utilization metrics that support operational decision-making.
+&
+Percentage of finalized utilization metrics that match their known expected values when calculated from controlled historical check-in and session datasets.
+&
+Every finalized metric must match its expected value in the controlled datasets, including utilization by time period, periods of higher and lower use, estimated occupancy trends and approved summary values, and utilization by authorization type.
+&
+Dec 4 \\
+\end{longtable}
+\end{center}
+
+%=====================================================================

@@ -1,0 +1,41 @@
+---
+config:
+  sequence:
+    mirrorActors: false
+    messageFontSize: 20
+    noteFontSize: 20
+    actorFontSize: 20
+    actorMargin: 30
+    width: 130
+    noteMargin: 8
+---
+sequenceDiagram
+  actor U as User
+  participant P as PWA
+  participant B as Backend
+  participant AS as Authorization Service
+  participant DB as Application Database
+  actor S as Staff
+
+  U->>P: Press Check In
+  P->>B: Request Check In
+  B->>AS: Validate current authorization
+  AS-->>B: Authorization result
+  Note over B: Invalid authorization stops Check In
+  B->>DB: Read current facility session
+  DB-->>B: Session status
+  Note over P,B: Existing active session returns current Gym ID
+  B-->>P: Request location for a new session
+  P->>U: Ask for device location
+  U-->>P: Provide permission and location
+  P->>B: Send location result
+  Note over B: Invalid or unavailable location rejects new session
+  B->>DB: Atomically check and create 2-hour session
+  DB-->>B: Session created
+  B-->>P: Return current Gym ID
+  P-->>U: Display Gym ID
+  S->>B: Verify current Gym ID
+  B->>DB: Read active session
+  DB-->>B: Current session state
+  B-->>S: Confirm valid session
+  Note over B,DB: Session expires after 2 hours and occupancy updates

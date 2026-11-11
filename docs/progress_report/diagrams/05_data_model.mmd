@@ -1,0 +1,73 @@
+---
+config:
+  themeCSS: ".edgeLabel, .edgeLabel * { font-size: 26px !important; white-space: nowrap !important; } foreignObject { overflow: visible !important; }"
+  er:
+    fontSize: 20
+    entityPadding: 10
+    minEntityWidth: 80
+---
+erDiagram
+  STAFF_ACCOUNT {
+    int staff_account_id PK
+    string email
+    string role
+  }
+  USER ||--o{ AUTHORIZATION : has
+  USER ||--o{ LOGIN_SESSION : signs_in
+  USER ||--o{ GYM_SESSION : creates
+  USER ||--o| SAFETY_RECORD : has
+  USER |o--o{ ATHLETE_ROSTER : claimed_by
+  AUTHORIZATION ||--o| PAID_MEMBERSHIP : may_use
+  AUTHORIZATION }o--o| ATHLETE_ROSTER : may_reference
+
+  USER {
+    int user_id PK
+    string name
+    string email
+    string student_number
+    string account_status
+  }
+  AUTHORIZATION {
+    int authorization_id PK
+    int user_id FK
+    string authorization_type
+    string academic_term
+    string photo_reference
+    string status
+    date valid_from
+    date valid_until
+  }
+  LOGIN_SESSION {
+    int auth_session_id PK
+    int user_id FK
+    string device_id
+    datetime last_active_at
+  }
+  GYM_SESSION {
+    int session_id PK
+    int user_id FK
+    datetime check_in_time
+    datetime expiration_time
+    string session_status
+  }
+  SAFETY_RECORD {
+    int record_id PK
+    int user_id FK
+    string waiver_status
+    string emergency_contact_reference
+    string safety_warning_reference
+  }
+  PAID_MEMBERSHIP {
+    int paid_membership_id PK
+    int authorization_id FK
+    string authorization_number
+    string woo_order_reference
+  }
+  ATHLETE_ROSTER {
+    int athlete_record_id PK
+    string student_number
+    string institutional_email
+    string academic_term
+    string roster_status
+    int claimed_user_id FK
+  }

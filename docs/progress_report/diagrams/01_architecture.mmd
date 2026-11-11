@@ -1,0 +1,23 @@
+%% 01_architecture.png is the proposal's original figure, kept unchanged because the design it shows did not change.
+%% This source mirrors that figure for future edits; render it only if the design changes.
+flowchart TB
+  ST["Staff"] --> SI["Staff / Admin<br/>Interface"]
+  AD["Administrator"] --> SI
+  U["User"] --> PWA["User PWA"]
+  LOC["Device Location"] -.-> PWA
+  SI --> BE["Application<br/>Backend"]
+  PWA --> BE
+  WOO["UPRM<br/>WooCommerce"] -.-> AM
+  BE --> AM["Authorization<br/>Management"]
+  BE --> CI["Check In and<br/>Facility Sessions"]
+  BE --> OC["Estimated<br/>Occupancy"]
+  BE --> FI["Facility<br/>Information"]
+  BE --> UA["Utilization<br/>Analytics"]
+  BE --> AUTH["Authentication and<br/>Account Management"]
+  EM["Institutional Email<br/>Verification"] -.-> AUTH
+  AM --> DB[("Application<br/>Database")]
+  CI --> DB
+  OC --> DB
+  FI --> DB
+  UA --> DB
+  AUTH --> DB

@@ -1,0 +1,20 @@
+flowchart TB
+  S(["Account exists"])
+  NA("No Current<br/>Authorization")
+  PA("Paid<br/>Authorized")
+  PE("Paid Expired")
+  AA("Athlete<br/>Authorized")
+  AE("Athlete Expired")
+
+  S --> NA
+  NA -->|"Valid Authorization Number"| PA
+  NA -->|"Current roster match"| AA
+  PA -->|"Academic term ends"| PE
+  PE -->|"New Authorization Number<br/>and new term photo"| PA
+  PA <-->|"Change access type"| AA
+  AA -->|"Academic term ends"| AE
+  AE -->|"New term photo<br/>(still on the roster)"| AA
+  AE -->|"Removed from the roster"| NA
+
+  classDef state fill:#EEF4FB,stroke:#2F5D8A
+  class NA,PA,PE,AA,AE state

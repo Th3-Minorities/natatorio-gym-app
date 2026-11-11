@@ -1,0 +1,109 @@
+%=====================================================================
+\section{Preliminary Results}
+%=====================================================================
+
+\subsection{Performance Results and Documentation}
+On \texttt{main}, the backend workflow took 2 min 40 s and the frontend workflow 6 min 59 s, both passing. The local load test ran the three k6 profiles of the Testing Plan on Docker Desktop on a laptop with an Intel i7-1260P (12 cores), 15.7 GB of RAM, and Windows 11. Docker had 16 CPUs and 7.6 GB, and PHP-FPM ran with its default 5 workers. Each run started from a fresh seed with 100 members. Table~\ref{tab:load} lists the results.
+
+\begin{table}[h]
+\centering
+\caption{Load test results}
+\label{tab:load}
+\small
+\begin{tabularx}{\textwidth}{L{4.6cm} l l l l X}
+\toprule
+\textbf{Run} & \textbf{p95} & \textbf{p99} & \textbf{Errors} & \textbf{Checks} & \textbf{Occupancy} \\
+\midrule
+Peak: 50 Check Ins spread over 5 min & 1.61 s & 2.52 s & 0\% & 202/202 & 3 to 53 \\
+\addlinespace
+Stress: 100 Check Ins over 5 min & 1.98 s & 5.4 s & 0\% & 402/402 & 3 to 103 \\
+\addlinespace
+Burst: 50 members at once, each sending two Check Ins in parallel & 8.61 s & 8.93 s & 0\% & 152/152 & 3 to 53 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Occupancy starts at 3 because the seed already has 3 people inside. Peak and stress meet all thresholds. \roundthree{Burst is an extra profile, harder than the required load of 50 and 100 Check Ins in 5 minutes, which passed.} In the burst, every member ended with exactly one session and there were no errors, but the p95 is above the 3 second threshold. The likely cause is the PHP-FPM default of 5 workers on a laptop running Docker on Windows. The team will raise the worker count and repeat the test on the CTI server. Repeating Check In for the same user returns the same session (idempotent). Location accuracy at the gym is measured for the Final report.
+
+\subsection{Operational Demonstration}
+The seeded test data covers every authorization case of Objective 1: valid paid, expired paid, valid athlete, removed athlete, no authorization, unmatched record, and cancelled order. It also holds store orders outside the term and with a repeated number, which the sync skips.
+
+\input{sections/07b-screenshots}
+
+\subsection{Testing Plan Execution}
+Table~\ref{tab:test-exec} shows, for each test type in the Testing Plan, what ran and its result. O1 to O5 are the five objectives in Project Objectives. The automated numbers come from the CI run on \texttt{main}, where every workflow passed.
+
+{
+\small
+\begin{longtable}{L{2.4cm} L{5.8cm} L{4.4cm} L{2.0cm}}
+\caption{Testing plan execution by test type}\label{tab:test-exec} \\
+\toprule
+\textbf{Test type} & \textbf{What ran} & \textbf{Result} & \textbf{Objectives} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Test type} & \textbf{What ran} & \textbf{Result} & \textbf{Objectives} \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Unit, frontend & Vitest, 37 files & 641 passed & O1 to O4 \\
+\addlinespace
+Backend and database & PHPUnit on PostgreSQL & 657 passed, 1 skipped, 3677 assertions & O1 to O4 \\
+\addlinespace
+Concurrency & Registrations, roster claims, withdrawals, and Check Ins, in the backend run & One account, claim, or session each time & O1, O2 \\
+\addlinespace
+Occupancy & Counts after Check Ins, check-outs, automatic closes, and Staff corrections, in the backend run & Passed; Users and Staff get the same answer & O3 \\
+\addlinespace
+Roles & Each staff route allowed or refused by role, in the backend run & Passed; a route with no role check fails the test & O4 \\
+\addlinespace
+Browser & Playwright on the full stack: Chromium, Edge, Firefox, and WebKit for the dashboard; Pixel 7 and iPhone 13 emulation for the User app & 230 tests: 12 passed and 1 skipped on each desktop browser; 89 passed on Android and on iPhone & O1 to O4 \\
+\addlinespace
+Accessibility, automatic & axe scan in the browser tests; linter rules & 0 violations; lint passed & O1 to O4 \\
+\addlinespace
+Accessibility, manual & Manual checklist & \roundthree{40 screens and states checked with keyboard, 200\% zoom, 320 px and screen readers; no failures} & O1 to O4 \\
+\addlinespace
+End-to-end flows & \roundthree{10 flows and 662 path tests} (Table~\ref{tab:flow-results}) & No step or path failed & O1 to O4 \\
+\addlinespace
+Stress, local & k6 peak, stress, and burst (Table~\ref{tab:load}) & Peak and stress met every threshold; burst kept one session per user with no errors, but its p95 was 8.61 s & O2, O3 \\
+\addlinespace
+Stress, full, and real phones & Same runs on the CTI VM; Check In time, location, and PWA install on an iPhone and an Android phone & \roundthree{Planned before the release to all users} & O2, O3 \\
+\addlinespace
+Analytics & Metrics against known results & \roundthree{Planned for the Final report} & O5 \\
+\addlinespace
+Integration and acceptance & One dataset from sign in to analytics; main flows run by gym staff and real users & \roundthree{Planned before the release to all users} & O1 to O5 \\
+\end{longtable}
+}
+
+The tests cover the \roundthree{ten} flows in the midterm scope. Each flow test follows the steps a person takes, on the seeded data. Each path of a flow has its own browser test, written with one technique: equivalence partitions, boundary values, state transitions, error guessing, or permissions. The path tests ran on a test branch, on the same \roundthree{five devices}; a path passes when it passes on every device it runs on. Each bug they found was reported, fixed, and its path run again. Table~\ref{tab:flow-results} lists the results per flow.
+
+\begin{table}[h]
+\centering
+\caption{End-to-end flow results}
+\label{tab:flow-results}
+\small
+\begin{tabularx}{\textwidth}{X l r r r r}
+\toprule
+\textbf{Flow} & \textbf{Devices} & \textbf{Steps passed} & \textbf{Paths} & \textbf{Paths passed} & \textbf{Not passed} \\
+\midrule
+Paid member registration & phones & 14 of 14 & 70 & 67 & 3 \\
+Athlete registration & phones & 2 of 7 & 53 & 50 & 3 \\
+User sign in & phones & 7 of 7 & 55 & 52 & 3 \\
+Check In & phones & 6 of 7 & 83 & 81 & 2 \\
+Gym ID and occupancy & phones & 6 of 6 & 58 & 57 & 1 \\
+End of a visit & phones & 4 of 6 & 47 & 47 & 0 \\
+App base & phones & 5 of 6 & 35 & 31 & 4 \\
+Staff accounts & desktop & 7 of 7 & 95 & 94 & 1 \\
+Terms and athlete roster & all & 0 of 1 & \roundthree{64} & \roundthree{64} & 0 \\
+Staff sessions and find person & desktop & \roundthree{n/a} & \roundthree{102} & \roundthree{102} & \roundthree{0} \\
+\midrule
+Total & & 51 of 61 & \roundthree{662} & \roundthree{645} & 17 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+No step and no path failed. A step that did not pass was skipped or is not built: four athlete registration steps hit the lookup limit or need a new roster record per run, three need the server clock at a set time, one install step needs a real phone, and two steps need screens that were not on \texttt{main} when the flow tests were written. Of the 17 paths that did not pass, 3 passed only on the automatic retry, 4 need a screen not on \texttt{main} at the time, and 10 were not run, 4 of them because they need a real phone, such as taking a photo with the camera. Nobody has run the flows on real phones yet.
+
+Table~\ref{tab:test-trace} groups the test files on \texttt{main} by area and objective.
+
+\input{sections/07c-test-traceability}

@@ -1,0 +1,56 @@
+%=====================================================================
+\section*{Response to Proposal Reviews}
+\addcontentsline{toc}{section}{Response to Proposal Reviews}
+%=====================================================================
+
+The proposal received four comments. Each row below says what the team changed and where to find it in this report. \ifshowchanges\revised{Text in blue} changed after the proposal review or is new in this report. \fi{}The last rows list the design decisions updated since the proposal; the rest of the report describes the current design only.
+
+\begin{center}
+\small
+\begin{longtable}{L{3.3cm} L{6.4cm} L{3.7cm}}
+\toprule
+\textbf{Comment} & \textbf{What we changed} & \textbf{Where in this report} \\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Comment} & \textbf{What we changed} & \textbf{Where in this report} \\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\textbf{5(b) Diagrams.} ``I would have also appreciated some UI sketches or wireframes.'' & Viviana drew the wireframes in Figma, and the built screens follow them. Added screenshots of the main screens of the phone app and the dashboard, ordered by flow. & Technical Approach, User Interface Design \\
+\addlinespace
+\textbf{5(d) Constraints.} Missing requirements from the Capstone guidelines, such as accessibility. & Added accessibility (WCAG 2.2 level AA) as a constraint with its checks: axe-core in CI, lint rules, and a manual checklist. Added the CTI VM, polling, and mail dependency, and removed refund and cancellation text. & Technical Approach, Engineering Constraints and Verification \\
+\addlinespace
+\textbf{5(e) Standards.} Missing authentication standards. & Added NIST SP 800-63B-4 and OWASP ASVS 5.0.0 with the controls we apply: password rules, attempt limits, sessions, and role checks. Individual accounts with roles replace the shared gym account. & Technical Approach, Engineering Standards; Identity, Authorization, and Session Model \\
+\addlinespace
+\textbf{5(e) Architecture.} System Architecture was expected in this section or the next. & Added a System Architecture subsection with the components, the Check In request path, and the deployment on a CTI VM. & Technical Approach, \roundthree{Architecture and Deployment} \\
+\addlinespace
+\textbf{6(d) Testing plan.} Missing acceptance and stress testing. & Added an acceptance test with gym staff and real users and a load test with k6 for simultaneous Check Ins. & Project Plan, Testing Plan; Preliminary Results, Testing Plan Execution \\
+\addlinespace
+\midrule
+\multicolumn{3}{l}{\textbf{Design decisions updated since the proposal}} \\
+\midrule
+\textbf{Stack.} & Laravel and PostgreSQL in docker-compose replace Supabase and Vercel. & Solution Approach; Technical Approach \\
+\addlinespace
+\textbf{Hosting.} & Docker Desktop on each PC in development; a CTI VM (Rocky Linux 10) with a UPRM subdomain and HTTPS in production, with backups on a second disk. & Solution Approach \\
+\addlinespace
+\textbf{Live updates.} & Polling every \roundthree{25 seconds} replaces real-time channels. & Technical Approach \\
+\addlinespace
+\textbf{Accounts.} & Own accounts with email and password replace institutional login, one device per User. Staff and Administrators have individual accounts, invited by email, and the first Administrator comes from the install command. & Solution Approach; Technical Approach \\
+\addlinespace
+\textbf{Registration.} & One field: a 9-digit number is a student number, anything else is an Authorization Number. Paid memberships come from the store's API with a read-only key, and only completed orders count. Athletes register from a link sent to their roster email. & Solution Approach \\
+\addlinespace
+\textbf{Visits.} & A visit stays open until Staff check the person out, with an automatic close 2 hours after Check In. Athletes-only periods show a notice and never end a visit. & Solution Approach; Objectives \\
+\addlinespace
+\textbf{Safety records.} & The system keeps the waiver acceptance with its version and an emergency contact. & Solution Approach \\
+\addlinespace
+\textbf{Access rules.} & Administrators grant or revoke an authorization by hand with a logged reason. Check In accepts a browser location reading with accuracy of 50 m or better, within 50 m of the gym. & Solution Approach; Technical Approach \\
+\addlinespace
+\textbf{Devices.} & The User app is for phones; the Staff and Administrator dashboard is for desktop. & Technical Approach, User Interface Design \\
+\addlinespace
+\textbf{Analytics.} & Open to every signed-in role, with aggregated counts only. & Objectives \\
+\addlinespace
+\textbf{Data.} & Visit data is kept 5 years; only the current photo is kept; daily totals with no personal data are kept for good. & Solution Approach \\
+\end{longtable}
+\end{center}
