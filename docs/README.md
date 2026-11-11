@@ -1,16 +1,10 @@
 # Guide to this project
 
-Start here if you are new to the project or if you are grading it. This page tells you what the project is, which words and codes you will see in the documents, and where to find each thing.
+Start here if you are new to the project or if you are grading it.
 
 ## What the project is
 
-We are building an app for the UPRM Weight Gym. People open it on their phone, like a website, and can also install it like an app.
-
-- Members and athletes register, check in when they arrive at the gym, and show a digital gym card at the front desk.
-- Front desk staff check those cards and see who is inside.
-- The gym administration manages the list of athletes, the schedules and the notices.
-
-Anyone signed in can see about how full the gym is right now.
+We are building an app for the UPRM Weight Gym that you open on your phone and can install. The [project website](https://th3-minorities.github.io/natatorio-gym-app/) says what it does and what we have built so far.
 
 Three groups are involved:
 
@@ -30,11 +24,7 @@ Three groups are involved:
 | Authorization Number | A code (6 or 7 characters so far, letters allowed) a member gets by email when they pay for the gym. They type it to register in the app |
 | Roster | The list of student athletes allowed in the gym this term |
 | Term | A semester, with its start and end dates |
-| Wireframe | A simple drawing of a screen, made before building it |
-| Diagram | A drawing that shows steps or parts of the system. They are inside the design documents, and GitHub shows them as pictures |
-| Issue | A task on GitHub. Each one says what to do and how to know it is done |
-| Pull request (PR) | A set of changes waiting to join the main code |
-| Milestone | A group of issues due on one date. Ours are `Midterm report` and `Final report` |
+| Milestone | The two GitHub milestones, `Midterm report` and `Final report`. Each one groups the issues due on that date |
 
 The SRS has a longer glossary at the end (Appendix A).
 
@@ -58,29 +48,32 @@ All documents are in the `docs` folder.
 | The proposal and its original drawings | [capstone_proposal folder](https://github.com/Th3-Minorities/natatorio-gym-app/tree/main/docs/capstone_proposal). The `v0` folder inside is the version we submitted, kept as it was |
 | How to set up the tools we use | [setup guide](setup/skills.md) |
 | How to run the code | The [README at the top of the repository](https://github.com/Th3-Minorities/natatorio-gym-app#readme) |
+| Each test case for objectives 1 to 3 and its result | [Test plan](testing/test-plan.md) |
+| The saved test results and screenshots | [Test evidence](testing/evidence/summary.md) |
 | Results of the browser tests of each flow, from its first screen to its last | [Flow test results](testing/flow-results.md) |
+| The manual accessibility checks of each screen | [Accessibility checklist](accessibility-checklist.md) |
 
 ### How each part of the app works
 
-| Part of the app | Document | Diagrams |
-|---|---|---|
-| Servers and how the pieces connect | [Architecture](design/architecture.md) | 5 |
-| What the database stores | [Data model](design/data-model.md) | 4 |
-| Registering and renewing each term | [Registration flows](design/registration-flows.md) | 9 |
-| Check In, how a visit ends, the Gym ID, how full the gym is | [Check In flows](design/check-in-flows.md) | 11 |
-| Staff and administration tasks | [Administration flows](design/admin-flows.md) | 17 |
-| Every screen and how people move between them | [Screen map](design/screen-map.md) | 7 |
-| What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) | |
-| Where each finished wireframe is in Figma | [Wireframes](design/wireframes.md) | |
-| Rules for the code that answers the app | [API conventions](design/api-conventions.md) | |
-| Design values, texts, dates and shared pieces of the screens | [Frontend base](design/frontend-base.md) | |
-| Older notes moved out of the SRS | [Design notes](design/design-notes.md) | |
+| Part of the app | Document |
+|---|---|
+| Servers and how the pieces connect | [Architecture](design/architecture.md) |
+| What the database stores | [Data model](design/data-model.md) |
+| Registering and renewing each term | [Registration flows](design/registration-flows.md) |
+| Check In, how a visit ends, the Gym ID, how full the gym is | [Check In flows](design/check-in-flows.md) |
+| Staff and administration tasks | [Administration flows](design/admin-flows.md) |
+| Every screen and how people move between them | [Screen map](design/screen-map.md) |
+| What each screen drawing must show | [Wireframe guide](design/wireframe-guide.md) |
+| Where each finished wireframe is in Figma | [Wireframes](design/wireframes.md) |
+| Rules every backend address follows | [API conventions](design/api-conventions.md) |
+| Design values, texts, dates and shared pieces of the screens, and the rules every screen follows | [Frontend base](design/frontend-base.md) |
+| Older notes moved out of the SRS | [Design notes](design/design-notes.md) |
 
 Each design document ends with three lists: decisions still waiting for a yes, open questions, and which requirements each diagram covers.
 
 ## For developers: where the code is
 
-The app has two halves that talk to each other. The backend (Laravel, in PHP) keeps the data and the rules. The frontend (React) is what people see on the phone. Both run in containers, so one command starts everything on any computer. The [README at the top](https://github.com/Th3-Minorities/natatorio-gym-app#readme) has the commands.
+The backend (Laravel, in PHP) keeps the data and the rules. The frontend (React) is what people see: the User app on the phone and the dashboard on the front desk computer. Both run in containers, so one command starts everything on any computer.
 
 | What you are looking for | Where it is |
 |---|---|
@@ -88,15 +81,13 @@ The app has two halves that talk to each other. The backend (Laravel, in PHP) ke
 | The code that answers each address | `backend/app/Http/Controllers/` |
 | The data types, like a user | `backend/app/Models/` |
 | The tables in the database | `backend/database/migrations/`. Fake data for testing is in `factories/` and `seeders/` next to it |
-| Error messages in Spanish and English | `frontend/src/i18n/` |
+| Every text of the app in Spanish and English | `frontend/src/i18n/` |
 | Backend tests | `backend/tests/` |
 | The screens | `frontend/src/` |
-| Rules every screen follows | [Frontend base](design/frontend-base.md) |
-| Frontend tests | Next to each screen in `frontend/src/` (`*.test.tsx`), and browser tests in `frontend/e2e/` |
+| Frontend tests | Next to each screen in `frontend/src/` (`*.test.tsx`). Browser tests in `frontend/e2e/`, the path tests in `frontend/e2e-paths/`, and the evidence screenshots in `frontend/e2e-evidence/` |
 | The containers: proxy, PHP, database | `docker-compose.yml` and the `docker/` folder |
 | The checks GitHub runs on every pull request | `.github/workflows/` |
 | The templates for new issues | `.github/ISSUE_TEMPLATE/` |
-| Rules every backend address follows | [API conventions](design/api-conventions.md) |
 
 ### How a feature gets built
 
@@ -109,7 +100,7 @@ The app has two halves that talk to each other. The backend (Laravel, in PHP) ke
 
 ## Codes you will see
 
-The documents use short codes so they can point to each other. When you see one, this tells you what it is and where to find it.
+The documents use short codes so they can point to each other.
 
 | Code | What it is | Where to find it |
 |---|---|---|
