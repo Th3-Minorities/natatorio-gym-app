@@ -90,7 +90,7 @@ class CheckInController extends Controller
             'account_type' => $authorization ? ($authorization->type === 'athlete' ? 'athlete' : 'member') : null,
             'member_group' => $authorization ? CheckIns::memberGroup($authorization) : null,
             // From the roster record, as the session copies it (E-147).
-            'sport' => $authorization?->type === 'athlete' ? $authorization->rosterRecord->sport : null,
+            'sport' => $authorization?->type === 'athlete' ? $authorization->rosterRecord?->sport : null,
         ];
     }
 
