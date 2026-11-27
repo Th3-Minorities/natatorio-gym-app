@@ -25,5 +25,3 @@ What this issue does not cover.
 
 - [ ] 
 - [ ] Another member approved it in a PR
-
-Requirements: REQ-F-, REQ-NF-

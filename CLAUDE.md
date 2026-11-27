@@ -61,7 +61,7 @@ Whenever possible, all work follows this path:
 - Use the templates in `.github/ISSUE_TEMPLATE/`: `feature` for full-stack work (backend to screen), `task` for design, docs, setup and testing.
 - Size: one person, about one week. Split anything bigger. Merge anything under a day into a related issue.
 - Every issue has a clear "Done when" that someone else can check.
-- Plain language. No file paths or internal document names in the issue body. Requirement IDs go in one line at the end (`Requirements: REQ-F-33, REQ-NF-11`) so work traces back to the SRS.
+- Plain language. No file paths or internal document names in the issue body. No requirement IDs in issues: issues are for people, and the test plan traces requirements to tests.
 - Decision IDs (E-xx) do not go in issues. Each new decision is announced as a comment on the pinned "Registro de decisiones" announcement, saying where it came from (meeting minute, review or PR).
 - One label for the feature area. Add `blocked` when the issue waits on CTI, the gym or the professor, and say who and what in the issue.
 - Members pick the issues they want, except the setup issues that every feature depends on: those go first.

@@ -38,5 +38,3 @@ What this issue does not cover, and which issue does.
   - a test tries an injection (SQL and script) on each new input and it is rejected or shown as plain text
 - [ ] Another member approved it in a PR
 - [ ] 
-
-Requirements: REQ-F-, REQ-NF-
