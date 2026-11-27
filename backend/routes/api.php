@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcademicTermController;
 use App\Http\Controllers\ActiveSessionsController;
 use App\Http\Controllers\AthleteRegistrationController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CheckInController;
 use App\Http\Controllers\CheckOutController;
 use App\Http\Controllers\HealthController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\UserPasswordController;
 use App\Http\Controllers\UserSessionController;
 use App\Http\Middleware\EnsureRegistrationGuest;
 use App\Http\Middleware\EnsureUserSessionIsCurrent;
+use App\Services\Backups;
 use Illuminate\Support\Facades\Route;
 
 // Every route here is served under /api (docs/design/api-conventions.md).
@@ -94,6 +96,14 @@ Route::prefix('staff')->group(function () {
         Route::get('/terms', [AcademicTermController::class, 'index']);
         Route::post('/terms', [AcademicTermController::class, 'store']);
         Route::patch('/terms/{term}', [AcademicTermController::class, 'update'])->whereNumber('term');
+    });
+
+    // A-16 backups (#86): make, download encrypted and restore copies of the database and photos.
+    Route::middleware(['auth:staff', 'staff.active', 'role:admin'])->group(function () {
+        Route::get('/backups', [BackupController::class, 'index']);
+        Route::post('/backups', [BackupController::class, 'store']);
+        Route::post('/backups/{backup}/download', [BackupController::class, 'download'])->where('backup', Backups::NAME_PATTERN);
+        Route::post('/backups/{backup}/restore', [BackupController::class, 'restore'])->where('backup', Backups::NAME_PATTERN);
     });
 
     // Athlete roster: Staff read the active athletes (E-59); Administrators add and edit them on A-05 (REQ-F-49).

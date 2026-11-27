@@ -9,6 +9,7 @@ import { ForgotPasswordPage, SetPasswordPage } from './access/StaffAccessPages'
 import { FindPerson } from './people/FindPerson'
 import {
   sessionIdIn,
+  STAFF_BACKUPS_PATH,
   STAFF_FIND_PATH,
   STAFF_FORGOT_PATH,
   STAFF_INVITE_PATH,
@@ -21,6 +22,7 @@ import {
   useStaffPath,
   type Navigate,
 } from './staffPath'
+import { Backups } from './backups/Backups'
 import { AthleteRoster } from './roster/AthleteRoster'
 import { StaffRoster } from './roster/StaffRoster'
 import { ActiveSessions } from './sessions/ActiveSessions'
@@ -54,6 +56,7 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
     staffAccounts: STAFF_TEAM_PATH,
     terms: STAFF_TERMS_PATH,
     roster: STAFF_ROSTER_PATH,
+    backups: STAFF_BACKUPS_PATH,
   }
   const visitId = sessionIdIn(path)
   // A Staff account at an Administrator address sees the empty dashboard; the API refuses the list anyway.
@@ -79,6 +82,7 @@ function SignedIn({ account, path, navigate }: { account: StaffAccount; path: st
   if (admin && path === STAFF_TEAM_PATH) return <StaffTeam shell={shell} />
   if (admin && path === STAFF_TERMS_PATH) return <AcademicTerms shell={shell} />
   if (admin && path === STAFF_ROSTER_PATH) return <AthleteRoster shell={shell} />
+  if (admin && path === STAFF_BACKUPS_PATH) return <Backups shell={shell} />
   // S-01, the first screen after sign-in for both roles (#26).
   if (path === STAFF_PATH) return <ActiveSessions shell={shell} />
   // S-03 and S-02, for both roles (#26).
