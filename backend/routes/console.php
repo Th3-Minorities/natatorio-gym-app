@@ -1,5 +1,6 @@
 <?php
 
+use App\Console\Commands\DeleteExpiredData;
 use App\Services\FacilitySessions;
 use App\Services\UserPhotoCleanup;
 use Illuminate\Foundation\Inspiring;
@@ -15,3 +16,5 @@ Schedule::call(fn () => app(UserPhotoCleanup::class)->deletePending())
 
 Schedule::call(fn () => app(FacilitySessions::class)->closeDue())
     ->name('close-facility-sessions')->everyMinute()->withoutOverlapping();
+
+Schedule::command(DeleteExpiredData::class)->daily()->withoutOverlapping();

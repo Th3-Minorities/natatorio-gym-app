@@ -202,10 +202,11 @@ class RosterLinksAndAuthorizationsTablesTest extends TestCase
 
         $this->assertRejected('23514', fn () => Authorization::factory()->paid()->create(['imported_membership_id' => null]));
         $this->assertRejected('23514', fn () => Authorization::factory()->paid($membership)->create(['roster_record_id' => $record->id]));
-        $this->assertRejected('23514', fn () => Authorization::factory()->athlete()->create(['roster_record_id' => null]));
         $this->assertRejected('23514', fn () => Authorization::factory()->athlete($record)->create(['imported_membership_id' => $membership->id]));
         $this->assertRejected('23514', fn () => Authorization::factory()->manual()->create(['imported_membership_id' => $membership->id]));
         $this->assertRejected('23514', fn () => Authorization::factory()->manual()->create(['roster_record_id' => $record->id]));
+
+        $this->assertNull(Authorization::factory()->athlete()->create(['roster_record_id' => null])->roster_record_id);
     }
 
     public function test_an_authorization_type_and_status_are_from_the_lists(): void
