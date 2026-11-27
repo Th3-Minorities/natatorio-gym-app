@@ -1,10 +1,18 @@
 name: natatorio-gym-app
 
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   proxy:
     image: natatorio-gym-app-proxy:local
     build: ./frontend
-    restart: unless-stopped
+    restart: always
+    mem_limit: 128m
+    logging: *logging
     ports:
       - "127.0.0.1:${APP_PORT:-8080}:80"
     volumes:
@@ -22,7 +30,9 @@ services:
   app:
     image: natatorio-gym-app-php:local
     build: ./docker/php
-    restart: unless-stopped
+    restart: always
+    mem_limit: 1g
+    logging: *logging
     # Same user as the web requests, so no command run with "docker compose exec" creates files as root.
     # For the rare command that needs root: docker compose exec -u root app ...
     user: www-data
@@ -51,9 +61,14 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "php -r '$$socket = @fsockopen(\"127.0.0.1\", 9000); exit($$socket ? 0 : 1);'"]
+      test:
+        - CMD-SHELL
+        - >-
+          SCRIPT_FILENAME=/var/www/html/public/index.php SCRIPT_NAME=/index.php
+          REQUEST_METHOD=GET REQUEST_URI=/api/health
+          cgi-fcgi -bind -connect 127.0.0.1:9000 | grep -q '"status":"ok"'
       interval: 10s
-      timeout: 3s
+      timeout: 5s
       retries: 5
       # The first Composer install can take about 10 minutes on Windows; later starts take seconds.
       start_period: 20m
@@ -67,7 +82,9 @@ services:
     working_dir: /var/www/html
     # Waits for the packages, including when CI installs them after starting the stack.
     # Started again if it ever stops, for example if it starts in the moment Composer is still writing.
-    restart: unless-stopped
+    restart: always
+    mem_limit: 256m
+    logging: *logging
     # Passes SIGTERM on, so "docker compose down" does not wait 10 seconds for the kill.
     init: true
     command: ["sh", "-c", "until [ -f vendor/autoload.php ]; do sleep 2; done; exec php artisan schedule:work"]
@@ -96,7 +113,9 @@ services:
 
   db:
     image: postgres:17.11-bookworm
-    restart: unless-stopped
+    restart: always
+    mem_limit: 1g
+    logging: *logging
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-natatorio_gym}
       POSTGRES_USER: ${POSTGRES_USER:-natatorio}
@@ -116,7 +135,9 @@ services:
   mailpit:
     image: axllent/mailpit:v1.27.11
     profiles: ["development"]
-    restart: unless-stopped
+    restart: always
+    mem_limit: 128m
+    logging: *logging
     command: ["--webroot", "/mailpit/"]
     healthcheck:
       test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8025/mailpit/"]

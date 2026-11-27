@@ -2,13 +2,22 @@
 # Keeps the PHP packages in a Docker volume instead of the Windows folder: on Windows the tests
 # run about 3 times faster (measurements in issue #100). Production starts with
 # "docker compose -f docker-compose.yml" so this file is skipped.
+# Development stacks stopped by hand must stay stopped after Docker restarts.
 services:
+  proxy:
+    restart: unless-stopped
   app:
+    restart: unless-stopped
     volumes:
       - vendor:/var/www/html/vendor
   scheduler:
+    restart: unless-stopped
     volumes:
       - vendor:/var/www/html/vendor
+  db:
+    restart: unless-stopped
+  mailpit:
+    restart: unless-stopped
 
 volumes:
   vendor:
