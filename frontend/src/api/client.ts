@@ -59,10 +59,19 @@ async function toError(response: Response): Promise<ApiError> {
   return new ApiError(error.code, response.status, error.details, retryAfter > 0 ? retryAfter : undefined)
 }
 
-/** A file from the API, like the roster download: its bytes and the name the server gives it. */
-export async function apiDownload(path: string): Promise<{ blob: Blob; filename: string }> {
+/**
+ * A file from the API, like the roster download: its bytes and the name the server gives it. With a body it is a
+ * POST, so a secret like A-16's download password never goes in the address.
+ */
+export async function apiDownload(path: string, body?: unknown): Promise<{ blob: Blob; filename: string }> {
+  const headers: Record<string, string> = {}
+  if (body !== undefined) {
+    headers['Content-Type'] = 'application/json'
+    if (csrfToken() === null) await refreshCsrfCookie()
+    headers['X-XSRF-TOKEN'] = csrfToken() ?? ''
+  }
   // Accept stays JSON, so a refusal (an ended sign-in, a wrong role) comes back as our error code.
-  const response = await send(path, 'GET', {})
+  const response = await send(path, body === undefined ? 'GET' : 'POST', headers, body === undefined ? undefined : JSON.stringify(body))
   if (!response.ok) throw await toError(response)
   const disposition = response.headers.get('Content-Disposition') ?? ''
   const filename = /filename="?([^";]+)"?/.exec(disposition)?.[1] ?? 'download'

@@ -1,0 +1,66 @@
+/* A-16 "Respaldos", Figma 4799:662. The table, chip and notes come from staffTeam.css. */
+
+.backups-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--spacing-16);
+}
+
+.backups-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  margin: 0;
+  padding: var(--spacing-16) var(--spacing-24);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  line-height: 24px;
+  text-align: center;
+}
+
+.backups-list-title {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+/* Figma's columns: 230, 130, 270, 126, 166 and 166 pixels. */
+.backups-table {
+  min-width: 1000px;
+}
+
+.backups-table th {
+  color: var(--muted-foreground);
+  font-weight: var(--weight-medium);
+}
+
+.backups-row-button {
+  width: 158px;
+}
+
+.backups-note {
+  background: var(--surface);
+}
+
+.backups-footnote {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  line-height: 21px;
+}
+
+.backups-modal__lead {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}

@@ -4,6 +4,7 @@ import { Button, Modal } from '../../components'
 import { useMessages } from '../../i18n'
 import { useConnection } from '../../user/useConnection'
 import { ProblemNotice } from '../ProblemNotice'
+import { save } from '../saveFile'
 
 // "Descargar roster" (Figma 4039:2032) and "Preparando archivo" (4039:2077), REQ-F-100, #21. The server builds the
 // whole roster in the chosen format; this dialog asks for it once and saves what comes back.
@@ -15,20 +16,6 @@ type DownloadDialogProps = {
   onDownloaded: () => void
   /** Passes API errors to the staff session, so an ended sign-in goes back to N-11. */
   onError: (error: unknown) => void
-}
-
-/** Saves a file the browser already holds, with the server's name for it. */
-function save(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  // On the page while it is clicked, as iPhone Safari needs; the URL lives 60 seconds, since revoking it at once can
-  // cancel the download there.
-  document.body.append(link)
-  link.click()
-  link.remove()
-  setTimeout(() => URL.revokeObjectURL(url), 60_000)
 }
 
 export function DownloadDialog({ onClose, onDownloaded, onError }: DownloadDialogProps) {

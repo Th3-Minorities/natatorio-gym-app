@@ -31,6 +31,9 @@ export const STAFF_TERMS_PATH = '/staff/terminos'
 /** A-05, the Administrator's athlete roster (#21). */
 export const STAFF_ROSTER_PATH = '/staff/atletas'
 
+/** A-16, the Administrator's backups screen (#86). */
+export const STAFF_BACKUPS_PATH = '/staff/respaldos'
+
 /** S-05, the read-only athlete roster for Staff and Administrators (#26). */
 export const STAFF_ROSTER_VIEW_PATH = '/staff/roster'
 

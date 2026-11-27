@@ -44,6 +44,8 @@ export type DashboardNavigation = {
   staffAccounts: string
   terms: string
   roster: string
+  /** A-16 (#86). */
+  backups: string
 }
 
 /** Icons as drawn: 18px, line 1.5 (2 for Información and Cuentas del staff), orange only for the first two. */
@@ -174,7 +176,7 @@ export function DashboardShell({
                 { label: admin.storeSync, icon: RefreshCw },
                 { label: admin.accounts, icon: UserCog },
                 { label: admin.staffAccounts, icon: ShieldCheck, strokeWidth: 2, href: navigation?.staffAccounts },
-                { label: admin.backups, icon: Database },
+                { label: admin.backups, icon: Database, href: navigation?.backups },
                 { label: admin.manualEntries, icon: NotebookPen },
                 { label: admin.auditLog, icon: ScrollText },
               ]}

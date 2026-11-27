@@ -25,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // The audit log needs the real client IP, so only listed proxies may set it (REQ-NF-39).
         $middleware->replace(TrustProxies::class, App\Http\Middleware\TrustProxies::class);
 
+        // A-16's screen keeps asking whether a restore is still running while the app is in maintenance (#86).
+        $middleware->preventRequestsDuringMaintenance(except: ['api/staff/backups']);
+
         // Every staff route: auth:staff, then staff.active (E-130), then role:... (REQ-F-52).
         $middleware->alias([
             'staff.active' => EnsureStaffSessionIsActive::class,
