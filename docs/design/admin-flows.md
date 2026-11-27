@@ -532,14 +532,14 @@ flowchart TD
   S0["Scheduled task, every two weeks"] --> B3
   B0["Administrator opens Backups"] --> B1["Show the date of the last backup"]
   B1 --> B2{"What to do?"}
-  B2 -->|"Back up now"| B3["Make a backup of the database and the photos<br/>on the second virtual disk"]
+  B2 -->|"Back up now"| B3["Make a backup of the database and the photos<br/>in the backup folder on the server"]
   B2 -->|"Download"| B4["Download one of the backups on the server"]
   B2 -->|"Restore"| B5["Pick a backup already on the server<br/>confirm"]
   B5 --> B6["Replace the current data with that backup"]
   B3 --> B7["Keep the 2 most recent backups<br/>delete the older ones"]
 ```
 
-**About this diagram:** this is REQ-NF-06 (E-122). The second disk is attached to the same VM, so losing the whole VM loses the backups too; the team accepts that risk. Restore takes only a backup already on the server, so there is no upload. A restore replaces everything saved after that backup, audit log entries included. The same install command restores a backup on a new server (section 3). Administrators never use Docker or the server (E-123). A downloaded backup holds all personal data and photos on the computer that downloads it (`context.md` section 7).
+**About this diagram:** this is REQ-NF-06 (E-198, E-199). The backup folder is on the main disk of the same VM, so losing the whole VM loses the copies on it; the Friday download is the only copy outside the server. Restore takes only a backup already on the server, so there is no upload. The Administrator types RESTAURAR; the audit log entries newer than the copy are first exported to a CSV file in the backup folder; then everything is restored, the audit log included, every session is closed and the cache is emptied. The same install command restores a backup on a new server (section 3). Administrators never use Docker or the server (E-123). A downloaded backup holds all personal data and photos on the computer that downloads it (`context.md` section 7).
 
 ## Design decisions to confirm
 
@@ -689,7 +689,7 @@ Marked Decided when the team chose in the design review (October 2026) or earlie
 | E-132 | 18. Manual entries from the paper log (people without an account) |
 | E-139 | 10. Athlete roster (quick form) |
 | E-120 | 6. WooCommerce store sync (refunded orders, student or employee); 12. Manual grant and revoke (notes, refunds) |
-| E-122 | 19. Backups |
+| E-198, E-199 | 19. Backups |
 | E-123 | 3. Install command and first Administrator; 19. Backups |
 | E-125 | 6. WooCommerce store sync (notes); 14. Account deletion when a User asks; 17. Audit log entry and supporting data; gap 12 |
 | E-126 | 12. Manual grant and revoke (manual authorization counts as paid); 17. Audit log entry and supporting data (roster changes filter) |
