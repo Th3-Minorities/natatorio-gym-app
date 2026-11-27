@@ -4,7 +4,7 @@ FROM php:8.3.36-fpm-bookworm
 
 # git lets Composer fall back to cloning a package when GitHub fails to serve its zip.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libpq-dev libpq5 unzip git \
+    && apt-get install -y --no-install-recommends libpq-dev libpq5 libfcgi-bin unzip git \
     && docker-php-ext-install pdo_pgsql \
     && apt-get purge -y --auto-remove libpq-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -29,6 +29,7 @@ COPY --from=composer /usr/bin/composer /usr/bin/composer
 # PHP errors go to the container logs, never to the client: production settings, plus ours.
 RUN cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 COPY app.ini "$PHP_INI_DIR/conf.d/zz-app.ini"
+COPY pool.conf /usr/local/etc/php-fpm.d/zz-pool.conf
 COPY entrypoint.sh /usr/local/bin/app-entrypoint
 ENTRYPOINT ["sh", "/usr/local/bin/app-entrypoint"]
 CMD ["php-fpm"]
