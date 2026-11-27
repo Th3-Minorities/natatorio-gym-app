@@ -2,7 +2,7 @@
 
 **Project:** UPRM Weight Gym Operations and Member-Access Platform
 
-**Version:** 0.26 draft, not approved
+**Version:** 0.27 draft, not approved
 
 **Authors:** Carlos J. Pepin Delgado, Pierre G Vales Torres, Viviana V Ramos Vivoni
 
@@ -90,6 +90,7 @@
 | Team | 2026-11-09 | REQ-NF-33 now follows E-174: the language is chosen on the welcome screen and saved at registration, with no language step; it no longer says the User chooses it when creating the account | 0.24 |
 | Team | 2026-11-09 | Team decisions E-187 to E-190 (`team.md`): visible confirmations on the Administrator screens (E-187); error notices use the pink banner and informational notices stay neutral (E-188); the User app is built and tested for phones and the dashboard for desktop (REQ-NF-30, E-189); continuous integration runs the whole suite on every push and main accepts a merge only when it passes (E-190); the athlete roster download has every athlete, active and withdrawn, an Estado column, a title, a "Generado el ..." line and a counter, which widens E-140 (REQ-F-100) | 0.25 |
 | Team | 2026-11-27 | Team decisions E-192 to E-196 (`team.md`): the hand browser check before each delivery (REQ-NF-30, E-192); the browser path tests are measured in CI before choosing layers (E-193); a new machine guide requirement (REQ-F-104, E-194); the official waiver with an optional "Observaciones" field and no witness (REQ-F-60, E-195); the roster can be pasted by sport (REQ-F-49, E-196) | 0.26 |
+| Team | 2026-11-27 | Team decision E-197 (`team.md`): the security target is OWASP ASVS 5.0.0 level 1 everywhere and level 2 for authentication, sessions, access control and data protection (6.3) | 0.27 |
 
 </details>
 
@@ -465,7 +466,7 @@ Screens by role follow the Overview table. Detailed screen design: design phase.
 
 ### 6.3 Security
 
-Authentication rules (passwords, sessions, attempt limits) are checked in design against NIST SP 800-63B-4 and OWASP ASVS (see 1.4).
+Authentication rules (passwords, sessions, attempt limits) are checked in design against NIST SP 800-63B-4 and OWASP ASVS (see 1.4). The app meets ASVS 5.0.0 level 1 everywhere and level 2 for authentication, sessions, access control and data protection (E-197).
 
 Attempt limits: REQ-F-07 (sign in), REQ-F-15 (athlete link requests), REQ-F-71 (Authorization Number lookups).
 
