@@ -88,7 +88,7 @@ flowchart TD
 
   STORE["WooCommerce store<br/>REST API, wc/v3 orders<br/>outbound HTTPS from the VM pending CTI answer"]
   MAIL["Mail<br/>development: fake mail server container<br/>production: CTI mail gateway, after CTI authorizes the VM<br/>external provider only if it does not"]
-  BK["Backups on a second virtual disk of the same VM (E-122)<br/>every two weeks, the last 2 kept<br/>losing the whole VM loses them too"]
+  BK["Backups in a folder on the main disk (E-198)<br/>every two weeks, the last 2 kept<br/>the Friday download is the only copy outside the VM"]
 
   PH -->|"HTTPS"| PX
   FD -->|"HTTPS"| PX
@@ -111,12 +111,12 @@ flowchart TD
   class MAIL,RELAY,STORE pending
 ```
 
-**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-12 (outbound HTTPS to the store). Backups are decided (E-122, REQ-NF-06). The proxy is nginx (D1, E-173). The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Every kind of data is kept 5 years (REQ-NF-05, E-125, E-131), but only the current photo of each person is kept (REQ-NF-04, E-135).
+**About this diagram:** pending items are M-03 (certificate), M-13 (disk encryption), M-07 (CTI authorizing the VM) and M-12 (outbound HTTPS to the store). Backups are decided (E-198, E-199, REQ-NF-06). The proxy is nginx (D1, E-173). The `/api` rule is D2, the scheduler is D3 and mail during the request is D4. The front desk device is gym question G-06. Every kind of data is kept 5 years (REQ-NF-05, E-125, E-131), but only the current photo of each person is kept (REQ-NF-04, E-135).
 
 Notes:
 
 - The proxy has no route to the photos volume. A photo is read only through a Laravel route that checks the role (REQ-NF-20). Uploads are JPEG, PNG or HEIC up to 10 MB, saved as JPEG without location metadata and shrunk to about 0.5 MB, about 1,200 pixels on the long side (REQ-NF-24, E-138).
-- Every kind of data is kept 5 years, and only the current photo is kept (E-125, E-131, E-135). The storage estimate was redone on 2026-11-05 with that rule (E-111). The backups sit on a second virtual disk of the same VM, asked for in the same CTI request (E-122).
+- Every kind of data is kept 5 years, and only the current photo is kept (E-125, E-131, E-135). The storage estimate was redone on 2026-11-05 with that rule (E-111). The backups sit in a folder on the main disk of the same VM, and the Administrator downloads a copy every Friday (E-198).
 - The service worker in the PWA does not cache `/api` responses, so stale data is never shown as current (`design-notes.md`, REQ-NF-26). Screens poll `/api` every 20 to 30 seconds (REQ-F-43).
 - The scheduler makes the backups, runs the store sync at least 3 times a day (REQ-F-28), closes sessions at a closure or the end of a term, and marks old sessions as expired. The backend still computes session expiry at query time, from backend time (REQ-NF-01, REQ-F-38, check-in D3).
 - Email goes out during the request. There is no queue and no worker container for now (D4). The lookup at registration also asks the store during the request (REQ-F-97), through the same lookup limits.
@@ -194,7 +194,7 @@ flowchart LR
   end
 
   SMTP["Outgoing mail: relay to the CTI mail gateway after CTI authorizes the VM<br/>sender: usually no-reply at the server's name, owner may want another<br/>SPF and DKIM not discussed"]
-  BK2["Backups on a second virtual disk of the same VM (E-122)<br/>every two weeks, the last 2 kept<br/>losing the whole VM loses them too"]
+  BK2["Backups in a folder on the main disk (E-198)<br/>every two weeks, the last 2 kept<br/>the Friday download is the only copy outside the VM"]
 
   PHN -->|"HTTPS, reach from the internet not answered (M-01)"| PX2
   DESK -->|"HTTPS"| PX2
@@ -223,8 +223,8 @@ Notes:
 - Whoever has administrator access to the VM can read the database and the photos volume. That conflicts with REQ-NF-23 if team members run the server (M-16, gym G-01). CTI usually creates an account with sudo for the owner, who passes it to the team or makes another; off campus the team needs a VPN the owner requests, and the owner answers for those accounts. CTI has no staff to take over the system, and part of the install and orientation after December is the owner's.
 - Staff accounts have no recovery code (E-114). A forgotten staff password is reset with a single-use email link at `/staff/recuperar` (E-166).
 - If an external mail provider is used, the SMTP arrow leaves the VM, and student email addresses go with it (M-11).
-- VM request: CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team asks for 2 processors, 8 GB of memory, a 60 GB main disk and a 40 GB second disk for backups, in the same request, with a large margin on purpose (E-111, E-122).
-- Restore (E-122): the Administrator panel restores a backup already on the server, with no upload. The same install command restores a backup on a new server (E-123). A restore replaces everything saved after that backup, audit log entries included.
+- VM request: CTI's usual size for a web app is 2 processors, 4 GB of memory and 40 to 60 GB of disk. The team asked for 2 processors, 8 GB of memory, a 60 GB main disk and a 40 GB second disk for backups, with a large margin on purpose (E-111). CTI approved 2 processors, 4 GB of memory and one 80 GB disk on 2026-11-27, and the backups go to a folder on that disk (E-198).
+- Restore (E-199): the Administrator panel restores a backup already on the server, with no upload, after typing RESTAURAR. The audit log entries newer than the copy are first exported to a CSV file in the backup folder; then everything is restored, the audit log included, every session is closed and the cache is emptied. The same install command restores a backup on a new server (E-123).
 
 ### Pending CTI items on these diagrams
 
@@ -235,7 +235,7 @@ Notes:
 | M-03 | Who makes the subdomain and certificate; app and API on one name | Diagrams 1, 2 and 4, proxy | Two names: cookie login design changes (cross-site cookies, CORS) |
 | M-04 | What CTI needs to approve the VM, and how long | Diagram 4, VM box | Late VM: no production in December. CTI stated no conditions and described no approval step (to confirm). CTI did not say whether its usual requests (audit log, installer, disaster plan) are conditions; any condition becomes a new requirement |
 | M-05 | Early access to the VM | Diagram 4, VM box | First real deployment happens close to the demo. Demo option D5 A is at risk |
-| M-06 | Where backups go and for how long | Diagrams 2 and 4, backup box | Decided by the team (E-122): a second virtual disk on the same VM, every two weeks, the last 2 kept. It is not outside the VM and the team accepts that risk. CTI snapshots were not discussed |
+| M-06 | Where backups go and for how long | Diagrams 2 and 4, backup box | Decided by the team (E-198): a folder on the main disk of the same VM, every two weeks, the last 2 kept, plus the Administrator's encrypted download every Friday as the only copy outside the VM. CTI snapshots were not discussed |
 | M-07 | Outgoing mail: answered A in principle (CTI relay after CTI authorizes the VM). Open: the authorization, SPF and DKIM, the sender. External provider only if CTI declines | Diagrams 1, 2 and 4, mail box | CTI cannot provide it: the team uses an external SMTP or transactional provider (E-61), which needs approval (M-11) because email addresses leave the VM. "No mail" is no longer a plan |
 | M-09 | PostgreSQL accepted (answered: team's choice) | Diagrams 2 and 4, database | MySQL required: REQ-F-17 and REQ-F-36 need a new design |
 | M-13 | Data on the VM disk, disk encryption (data on the VM disk: answered; encryption still pending) | Diagrams 2 and 4, volumes | Disk not encrypted: team decides whether to encrypt files itself |
@@ -400,7 +400,7 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 3. **REQ-NF-29 does not say where the demo runs or what data it uses.** Decided (E-126): the classroom demo uses fake data only. Where it runs: see D5 and D6.
 4. **REQ-NF-01 depends on a correct clock.** Backend time decides expiry, so the VM clock must be synced. No CTI question asks about time sync. Suggest adding it to M-04.
 5. **Real client IP for the audit log (REQ-NF-39).** If CTI puts its own proxy in front of the VM (M-01 answer C), the real IP passes two proxies, and Laravel must trust both. The trusted proxy list depends on M-01. The attempt counters keyed by IP (E-91) depend on the same list.
-6. **REQ-NF-06 frequency and recovery target.** Resolved by E-122: a backup every two weeks on a second virtual disk of the same VM, the last 2 kept; losing the whole VM loses the backups too. The database and the photos volume are copied together so they match. The written disaster recovery plan CTI asks for is still open (E-110).
+6. **REQ-NF-06 frequency and recovery target.** Resolved by E-198: a backup every two weeks in a folder on the main disk of the same VM, the last 2 kept, plus the Friday download; losing the whole VM loses the copies on it. The database and the photos volume are copied together so they match. The written disaster recovery plan CTI asks for is still open (E-110).
 7. **An external mail provider sends data out of the VM.** If CTI does not authorize the VM on its mail gateway, the fallback provider (E-61) receives student email addresses, which needs approval (M-11). M-11 asks who approves such services. The compromised-password check (E-63) is also an external call, but it sends no student data, only a 5-character hash prefix, so it is not submitted to M-11 (E-98).
 8. **The path of the gym dashboard.** Decided (E-124, E-157): the dashboard is `/staff` under the app's own name, a route of the same PWA build as the User app. Closed.
 9. **The name of the flag in D6 is not set.** D6 does not name it.
@@ -450,7 +450,7 @@ Recommendation: A for December, because it has fewer parts. Move to B if the tea
 | Check-in D4, check-in D3 (exclusion constraint, expiry task) | 5. Request path: one Check In notes, 2. Containers on one host notes |
 | Architecture D2, D3, D4, D6, D7 | D2, D3, D4, D6, D7 |
 | E-114 (personal staff accounts) | 1. System context, 2. Containers on one host, 4. Production and demo notes |
-| E-122 (backups), E-123 (Rocky Linux 10 and install command) | 2. Containers on one host, 4. Production and demo, M-06 row |
+| E-198 and E-199 (backups and restore), E-123 (Rocky Linux 10 and install command) | 2. Containers on one host, 4. Production and demo, M-06 row |
 | E-124 (own subdomain, dashboard as a path) | 1. System context, 4. Production and demo, Gaps 8 |
 | E-125 (every kind of data kept 5 years) | 2. Containers on one host notes, 4. Production and demo notes |
 
